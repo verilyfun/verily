@@ -1,0 +1,14 @@
+# The brand package is standalone for now, so it carries its own lints
+# instead of the workspace's.
+include: package:skribble_lints/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - build/**
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+
+formatter:
+  trailing_commas: preserve
