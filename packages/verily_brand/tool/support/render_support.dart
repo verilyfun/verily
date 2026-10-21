@@ -58,7 +58,7 @@ Future<void> loadSkribbleFonts({
 
 /// The root directory of [package], as resolved by `flutter pub get`.
 Uri packageRoot(String package) {
-  final config = File('.dart_tool/package_config.json');
+  final config = _packageConfig();
   final json = jsonDecode(config.readAsStringSync());
   if (json case {'packages': final List<Object?> packages}) {
     for (final entry in packages) {
@@ -70,6 +70,26 @@ Uri packageRoot(String package) {
     }
   }
   throw StateError('$package is not in ${config.path}; run flutter pub get.');
+}
+
+/// The package config `flutter pub get` wrote for this package.
+///
+/// A workspace member has none of its own: pub writes one config at the
+/// workspace root, so the search walks up from the working directory.
+File _packageConfig() {
+  var directory = Directory.current.absolute;
+  while (true) {
+    final config = File('${directory.path}/.dart_tool/package_config.json');
+    if (config.existsSync()) return config;
+    final parent = directory.parent;
+    if (parent.path == directory.path) {
+      throw StateError(
+        'No .dart_tool/package_config.json at or above '
+        '${Directory.current.path}; run flutter pub get.',
+      );
+    }
+    directory = parent;
+  }
 }
 
 /// Writes the pixels of [boundary] at [pixelRatio] to [path] as a PNG.
