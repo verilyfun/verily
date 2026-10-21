@@ -8,7 +8,6 @@ abstract final class VerilyTestKeys {
   static const navigationDo = ValueKey<String>('navigation-do');
   static const navigationCreate = ValueKey<String>('navigation-create');
   static const navigationMe = ValueKey<String>('navigation-me');
-  static const comingSoonGoToDo = ValueKey<String>('coming-soon-go-to-do');
 
   // ── Appearance ──
   static const appearanceSystem = ValueKey<String>('appearance-system');
@@ -301,4 +300,107 @@ abstract final class VerilyTestKeys {
       ValueKey<String>('appeal-accept-$appealId');
   static ValueKey<String> appealReject(String appealId) =>
       ValueKey<String>('appeal-reject-$appealId');
+
+  // ── Deep links: verification requests and App linking ──
+  static const verifyRequestConsent = ValueKey<String>(
+    'verify-request-consent',
+  );
+  static const verifyRequestAccept = ValueKey<String>('verify-request-accept');
+  static const verifyRequestDecline = ValueKey<String>(
+    'verify-request-decline',
+  );
+  static const verifyRequestClose = ValueKey<String>('verify-request-close');
+  static const verifyRequestSharePlace = ValueKey<String>(
+    'verify-request-share-place',
+  );
+  static const verifyRequestSkipPlace = ValueKey<String>(
+    'verify-request-skip-place',
+  );
+  static const verifyRequestCapture = ValueKey<String>(
+    'verify-request-capture',
+  );
+  static const verifyRequestReturn = ValueKey<String>('verify-request-return');
+  static const verifyRequestDeclineInstead = ValueKey<String>(
+    'verify-request-decline-instead',
+  );
+  static const verifyRequestNotice = ValueKey<String>('verify-request-notice');
+  static const appLinkConsent = ValueKey<String>('app-link-consent');
+  static const appLinkApprove = ValueKey<String>('app-link-approve');
+  static const appLinkDecline = ValueKey<String>('app-link-decline');
+  static const deepLinkReturning = ValueKey<String>('deep-link-returning');
+  static const deepLinkOpenApp = ValueKey<String>('deep-link-open-app');
+  static const deepLinkBackToVerily = ValueKey<String>(
+    'deep-link-back-to-verily',
+  );
+  static const deepLinkRetry = ValueKey<String>('deep-link-retry');
+  static const deepLinkUnavailable = ValueKey<String>('deep-link-unavailable');
+
+  // ── Local checks ──
+  static const captureLocalCheckGuide = ValueKey<String>(
+    'capture-local-check-guide',
+  );
+  static ValueKey<String> editorQuickCheckAdd(String requirementKey) =>
+      ValueKey<String>('editor-quick-check-add-$requirementKey');
+  static ValueKey<String> editorQuickCheckRemove(String requirementKey) =>
+      ValueKey<String>('editor-quick-check-remove-$requirementKey');
+  static ValueKey<String> editorQuickCheckTask(
+    String requirementKey,
+    String task,
+  ) => ValueKey<String>('editor-quick-check-task-$requirementKey-$task');
+  static ValueKey<String> editorQuickCheckGesture(
+    String requirementKey,
+    String label,
+  ) => ValueKey<String>('editor-quick-check-gesture-$requirementKey-$label');
+  static ValueKey<String> editorQuickCheckPickLabel(String requirementKey) =>
+      ValueKey<String>('editor-quick-check-pick-label-$requirementKey');
+  static ValueKey<String> editorQuickCheckLabelOption(String label) =>
+      ValueKey<String>('editor-quick-check-label-option-$label');
+  static const editorQuickCheckSearch = ValueKey<String>(
+    'editor-quick-check-search',
+  );
+  static ValueKey<String> editorQuickCheckScore(String requirementKey) =>
+      ValueKey<String>('editor-quick-check-score-$requirementKey');
+  static ValueKey<String> editorQuickCheckFrames(String requirementKey) =>
+      ValueKey<String>('editor-quick-check-frames-$requirementKey');
+
+  // ── App platform: settings and pull checks ──
+  static ValueKey<String> editorAppMode(String requirementKey, String mode) =>
+      ValueKey<String>('editor-app-mode-$requirementKey-$mode');
+  static const editorAppModeNeedsWebhook = ValueKey<String>(
+    'editor-app-mode-needs-webhook',
+  );
+  static const appsWebhookPanel = ValueKey<String>('apps-webhook-panel');
+  static const appsWebhookUrl = ValueKey<String>('apps-webhook-url');
+  static const appsWebhookSave = ValueKey<String>('apps-webhook-save');
+  static const appsWebhookRemove = ValueKey<String>('apps-webhook-remove');
+  static const appsWebhookProblem = ValueKey<String>('apps-webhook-problem');
+  static const appsWebhookNotSending = ValueKey<String>(
+    'apps-webhook-not-sending',
+  );
+  static const appsSecretStatus = ValueKey<String>('apps-secret-status');
+  static const appsSecretRotate = ValueKey<String>('apps-secret-rotate');
+  static const appsSecretValue = ValueKey<String>('apps-secret-value');
+  static const appsSecretCopy = ValueKey<String>('apps-secret-copy');
+  static const appsSecretSaved = ValueKey<String>('apps-secret-saved');
+  static const appsRedirectPanel = ValueKey<String>('apps-redirect-panel');
+  static const appsRedirectInput = ValueKey<String>('apps-redirect-input');
+  static const appsRedirectAdd = ValueKey<String>('apps-redirect-add');
+  static const appsRedirectCount = ValueKey<String>('apps-redirect-count');
+  static const appsRedirectProblem = ValueKey<String>('apps-redirect-problem');
+  static const appsRedirectRemoveConfirm = ValueKey<String>(
+    'apps-redirect-remove-confirm',
+  );
+  static ValueKey<String> appsRedirectRow(String uri) =>
+      ValueKey<String>('apps-redirect-row-$uri');
+  static ValueKey<String> appsRedirectRemove(String uri) =>
+      ValueKey<String>('apps-redirect-remove-$uri');
+  static const appsDeliveriesMore = ValueKey<String>('apps-deliveries-more');
+  static ValueKey<String> appsDelivery(String deliveryId) =>
+      ValueKey<String>('apps-delivery-$deliveryId');
+  static ValueKey<String> actionPullReference(String requirementKey) =>
+      ValueKey<String>('action-pull-reference-$requirementKey');
+  static ValueKey<String> actionPullAsk(String requirementKey) =>
+      ValueKey<String>('action-pull-ask-$requirementKey');
+  static ValueKey<String> actionPullStatus(String requirementKey) =>
+      ValueKey<String>('action-pull-status-$requirementKey');
 }

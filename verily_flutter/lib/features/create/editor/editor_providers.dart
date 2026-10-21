@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hooks_riverpod/misc.dart';
+import 'package:uuid/validation.dart';
 import 'package:verily_client/verily_client.dart';
 
 import 'package:verily_flutter/features/actions/action_repository.dart';
@@ -30,13 +31,24 @@ final FutureProvider<List<ActionTemplate>> editorTemplatesProvider =
       (ref) => ref.watch(actionRepositoryProvider).listTemplates(),
     );
 
-/// One of the creator's saved actions, as the editor opens it.
+/// One of the creator's saved actions, as the editor opens it. A malformed
+/// link fails like a missing action, with [ResourceNotFoundException],
+/// without asking the server.
 final FutureProviderFamily<ActionOpportunity, String> editorActionProvider =
-    FutureProvider.autoDispose.family<ActionOpportunity, String>(
-      (ref, actionId) => ref
+    FutureProvider.autoDispose.family<ActionOpportunity, String>((
+      ref,
+      actionId,
+    ) {
+      if (!UuidValidation.isValidUUIDFormat(fromString: actionId)) {
+        throw ResourceNotFoundException(
+          resource: MissingResource.action,
+          message: 'Malformed action link.',
+        );
+      }
+      return ref
           .watch(actionRepositoryProvider)
-          .preview(UuidValue.fromString(actionId)),
-    );
+          .preview(UuidValue.fromString(actionId));
+    });
 
 /// The creator's Apps that can confirm proof now. A revoked App can no longer
 /// confirm anything, so it is never offered.

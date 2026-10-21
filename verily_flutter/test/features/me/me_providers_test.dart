@@ -1,41 +1,41 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:verily_client/verily_client.dart';
 
 import 'package:verily_flutter/features/me/me_providers.dart';
 
 import 'support/fakes.dart';
 
 void main() {
-  group('joinAttemptsWithActions', () {
-    test("finds an attempt's action by the action's current attempt", () {
-      final attempt = fakeAttempt(id: 1, actionId: 99);
-      final action = fakeAction(id: 10, title: 'Squats', myAttempt: attempt);
+  group('joinAttemptsWithPayouts', () {
+    test('pairs each attempt with the payout it won', () {
+      final won = fakeAttempt(id: 1, actionId: 10);
+      final payout = fakePayout(
+        id: 40,
+        actionTitle: 'Squats',
+        status: RewardPayoutStatus.released,
+      ).copyWith(attemptId: won.id);
 
-      final joined = joinAttemptsWithActions([attempt], [action]);
+      final joined = joinAttemptsWithPayouts([won], [payout]);
 
-      expect(joined.single.action, same(action));
+      expect(joined.single.attempt, same(won));
+      expect(joined.single.payout, same(payout));
     });
 
-    test('falls back to the action revision the attempt names', () {
+    test('leaves the payout empty for an attempt that won none', () {
       final attempt = fakeAttempt(id: 2, actionId: 11);
-      final action = fakeAction(id: 11, title: 'Check in at the café');
 
-      final joined = joinAttemptsWithActions([attempt], [action]);
-
-      expect(joined.single.action, same(action));
-    });
-
-    test('leaves the action empty when it is no longer listed', () {
-      final attempt = fakeAttempt(id: 3, actionId: 12);
-
-      final joined = joinAttemptsWithActions(
+      final joined = joinAttemptsWithPayouts(
+        [attempt],
         [
-          attempt,
+          fakePayout(
+            id: 41,
+            actionTitle: 'Another action',
+            status: RewardPayoutStatus.released,
+          ),
         ],
-        [fakeAction(id: 13, title: 'Another action')],
       );
 
-      expect(joined.single.attempt, same(attempt));
-      expect(joined.single.action, isNull);
+      expect(joined.single.payout, isNull);
     });
   });
 }

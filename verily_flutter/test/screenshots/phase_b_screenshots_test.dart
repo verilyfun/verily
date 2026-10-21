@@ -266,6 +266,7 @@ void main() {
                 me.fakeAttempt(
                   id: 1,
                   actionId: 10,
+                  actionTitle: 'Ten squats at the park',
                   status: ActionAttemptStatus.verified,
                   payoutStatus: RewardPayoutStatus.released,
                   rewardOutcome: RewardOutcome.won,
@@ -273,31 +274,26 @@ void main() {
                 me.fakeAttempt(
                   id: 2,
                   actionId: 11,
+                  actionTitle: 'Sunrise at the bridge',
                   status: ActionAttemptStatus.verifying,
                 ),
                 me.fakeAttempt(
                   id: 3,
                   actionId: 12,
+                  actionTitle: 'Scan the code at the bar',
                   status: ActionAttemptStatus.rejected,
                 ),
-              ],
-              available: [
-                me.fakeAction(
-                  id: 10,
-                  title: 'Ten squats at the park',
-                  reward: me.fakeReward(),
-                ),
-                me.fakeAction(id: 11, title: 'Sunrise at the bridge'),
-                me.fakeAction(id: 12, title: 'Scan the code at the bar'),
               ],
             ),
             rewards: me.FakeRewardRepository(
               payouts: [
-                me.fakePayout(
-                  id: 40,
-                  actionTitle: 'Ten squats at the park',
-                  status: RewardPayoutStatus.released,
-                ),
+                me
+                    .fakePayout(
+                      id: 40,
+                      actionTitle: 'Ten squats at the park',
+                      status: RewardPayoutStatus.released,
+                    )
+                    .copyWith(attemptId: me.testUuid(1)),
                 me.fakePayout(
                   id: 41,
                   actionTitle: 'Sunrise at the bridge',

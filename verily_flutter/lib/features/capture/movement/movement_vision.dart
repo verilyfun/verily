@@ -6,7 +6,7 @@ import 'package:mp_vision/mp_vision.dart';
 
 import 'package:verily_flutter/features/capture/movement/ball_tracking.dart';
 import 'package:verily_flutter/features/capture/movement/exercise_tracking.dart';
-import 'package:verily_flutter/features/capture/movement/movement_model_store.dart';
+import 'package:verily_flutter/features/capture/models/pinned_model_store.dart';
 import 'package:verily_flutter/features/capture/movement/movement_models.dart';
 
 /// Turns camera frames into upright pose observations.
@@ -29,7 +29,7 @@ final class MediaPipeMovementVision implements MovementVision {
   MediaPipeMovementVision._(this._pose, this._objects);
 
   static Future<MovementVision> create(
-    MovementModelStore models, {
+    PinnedModelStore models, {
     required bool detectBall,
   }) async {
     final pose = await PoseLandmarker.create(

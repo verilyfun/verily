@@ -39,10 +39,18 @@ void main() {
     ) async {
       final squats = fakeAttempt(
         id: 1,
-        actionId: 900,
+        actionId: 10,
+        actionTitle: 'Ten squats at the park',
         status: ActionAttemptStatus.verified,
+        payoutStatus: RewardPayoutStatus.released,
+        rewardOutcome: RewardOutcome.won,
       );
-      final cafe = fakeAttempt(id: 2, actionId: 11);
+      final cafe = fakeAttempt(
+        id: 2,
+        actionId: 11,
+        actionTitle: 'Check in at Café Lumen',
+      );
+      // An attempt from before titles were recorded.
       final ended = fakeAttempt(
         id: 3,
         actionId: 12,
@@ -51,15 +59,14 @@ void main() {
       await _pumpMe(
         tester,
         overrides: meSliceOverrides(
-          actions: FakeActionRepository(
-            attempts: [squats, cafe, ended],
-            available: [
-              fakeAction(
-                id: 10,
-                title: 'Ten squats at the park',
-                myAttempt: squats,
-              ),
-              fakeAction(id: 11, title: 'Check in at Café Lumen'),
+          actions: FakeActionRepository(attempts: [squats, cafe, ended]),
+          rewards: FakeRewardRepository(
+            payouts: [
+              fakePayout(
+                id: 40,
+                actionTitle: 'Ten squats at the park',
+                status: RewardPayoutStatus.released,
+              ).copyWith(attemptId: squats.id),
             ],
           ),
         ),
@@ -86,6 +93,13 @@ void main() {
         ),
         findsOneWidget,
       );
+      expect(
+        find.descendant(
+          of: find.byKey(VerilyTestKeys.meAttempt(squats.id.toString())),
+          matching: find.text('5 USDC paid'),
+        ),
+        findsOneWidget,
+      );
       expect(find.text('Verified'), findsOneWidget);
       expect(find.text('In progress'), findsOneWidget);
       expect(find.text('This action is full'), findsOneWidget);
@@ -105,18 +119,19 @@ void main() {
       );
     });
 
-    testWidgets('a tap on a known action opens it', (tester) async {
-      final attempt = fakeAttempt(id: 1, actionId: 10);
+    testWidgets('a tap opens the action it belongs to', (tester) async {
+      final attempt = fakeAttempt(
+        id: 1,
+        actionId: 10,
+        actionTitle: 'Ten squats at the park',
+      );
       await pumpVerilyRoutes(
         tester,
         initialLocation: VerilyRoutePaths.me,
         physicalSize: const Size(800, 3200),
         screens: {VerilyRouteNames.me: const MeScreen()},
         overrides: meSliceOverrides(
-          actions: FakeActionRepository(
-            attempts: [attempt],
-            available: [fakeAction(id: 10, title: 'Ten squats at the park')],
-          ),
+          actions: FakeActionRepository(attempts: [attempt]),
         ),
       );
       await tester.pumpAndSettle();
@@ -446,10 +461,7 @@ void main() {
       physicalSize: const Size(1080, 2400),
       devicePixelRatio: 2.625,
       overrides: meSliceOverrides(
-        actions: FakeActionRepository(
-          attempts: [rejected],
-          available: [fakeAction(id: 10, title: 'Ten squats at the park')],
-        ),
+        actions: FakeActionRepository(attempts: [rejected]),
         rewards: FakeRewardRepository(
           payouts: [
             fakePayout(

@@ -136,35 +136,11 @@ abstract class AppLocalizations {
   /// **'We couldn\'t find that. It may have ended or been removed.'**
   String get errorNotFound;
 
-  /// Title shown when another app opens a verification request link.
-  ///
-  /// In en, this message translates to:
-  /// **'Verify with Verily is almost here'**
-  String get comingSoonVerificationTitle;
-
-  /// Body shown for a verification request link before the feature exists.
-  ///
-  /// In en, this message translates to:
-  /// **'An app asked you to prove something with Verily. Requests like this will open right here soon. Nothing was captured or shared.'**
-  String get comingSoonVerificationBody;
-
-  /// Title shown when another app opens an account-linking link.
-  ///
-  /// In en, this message translates to:
-  /// **'Linking apps is almost here'**
-  String get comingSoonLinkTitle;
-
-  /// Body shown for an App linking link before the feature exists.
-  ///
-  /// In en, this message translates to:
-  /// **'An app asked to link with your Verily account. Soon you\'ll confirm that here. Until then, copy your link code from the action the app shared.'**
-  String get comingSoonLinkBody;
-
-  /// Button that leaves a coming-soon page for the Do tab.
+  /// Button that leaves a page for the Do tab.
   ///
   /// In en, this message translates to:
   /// **'Find actions'**
-  String get comingSoonGoToDo;
+  String get navigationFindActions;
 
   /// Trust label for actions whose proof is captured live and checked by Verily.
   ///
@@ -795,12 +771,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Say plainly what the proof must show. Everything in the recording is treated as evidence, never as instructions.'**
   String get editorVerifierPromptHelp;
-
-  /// Shown when editing a saved media proof whose check text is not returned by the server.
-  ///
-  /// In en, this message translates to:
-  /// **'Write this again: saved actions don\'t send it back to the app.'**
-  String get editorVerifierPromptRewrite;
 
   /// Label of the minimum recording length field.
   ///
@@ -3940,6 +3910,12 @@ abstract class AppLocalizations {
   /// **'Hold your phone close and speak clearly.'**
   String get captureAudioHint;
 
+  /// Hint before recording audio for a proof with a sound quick check.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold your phone close to the sound.'**
+  String get captureAudioSoundHint;
+
   /// Screen reader value of the microphone level meter.
   ///
   /// In en, this message translates to:
@@ -5409,6 +5385,2166 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Doodles and icons'**
   String get skribblePreviewDoodlesHeading;
+
+  /// Header of the page another app opens to ask for verified proof.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify with Verily'**
+  String get verifyRequestHeaderTitle;
+
+  /// Under the header: which App sent the request.
+  ///
+  /// In en, this message translates to:
+  /// **'From {app}'**
+  String verifyRequestFrom(String app);
+
+  /// Under the header: the App and the host of its registered website.
+  ///
+  /// In en, this message translates to:
+  /// **'From {app} · {website}'**
+  String verifyRequestFromWebsite(String app, String website);
+
+  /// The headline of a request: who wants what kind of proof.
+  ///
+  /// In en, this message translates to:
+  /// **'{kind, select, video{{app} wants a live video} photo{{app} wants a live photo} audio{{app} wants a live recording} location{{app} wants to check you\'re at their place} other{{app} wants live proof}}'**
+  String verifyRequestAsks(String app, String kind);
+
+  /// Label above the App's own instructions, shown quoted.
+  ///
+  /// In en, this message translates to:
+  /// **'What they asked for'**
+  String get verifyRequestTheirWords;
+
+  /// The App's instructions, quoted so they read as the App's words, not Verily's.
+  ///
+  /// In en, this message translates to:
+  /// **'“{instructions}”'**
+  String verifyRequestInstructions(String instructions);
+
+  /// Heading above how the proof is captured and checked.
+  ///
+  /// In en, this message translates to:
+  /// **'How it works'**
+  String get verifyRequestHowHeading;
+
+  /// How the proof is captured, by kind.
+  ///
+  /// In en, this message translates to:
+  /// **'{kind, select, video{You record it live in Verily, in one take. Nothing from your gallery.} photo{You take it live in Verily. Nothing from your gallery.} audio{You record it live in Verily, in one take.} other{Verily checks your location once, right now.}}'**
+  String verifyRequestHowCapture(String kind);
+
+  /// The spoken challenge, explained before consent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily gives you a word to say while you record.'**
+  String get verifyRequestHowWord;
+
+  /// The place check on a media request, explained before consent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily checks your location once, to see if you\'re at their place.'**
+  String get verifyRequestHowPlace;
+
+  /// The request asks Verily to check the content, not just that it is live.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily checks it shows what they asked for.'**
+  String get verifyRequestHowContent;
+
+  /// The request asks Verily only to check the capture is genuine and live.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily checks it\'s a genuine live capture.'**
+  String get verifyRequestHowCaptureOnly;
+
+  /// Heading above exactly what the App will receive.
+  ///
+  /// In en, this message translates to:
+  /// **'What {app} gets'**
+  String verifyRequestSharedHeading(String app);
+
+  /// Always shared with the App.
+  ///
+  /// In en, this message translates to:
+  /// **'Whether it passed, and when it was captured.'**
+  String get verifyRequestSharesResult;
+
+  /// Shared when the request checks a place.
+  ///
+  /// In en, this message translates to:
+  /// **'Whether you were inside their place. Never where you were.'**
+  String get verifyRequestSharesPlace;
+
+  /// Shared when the App asked to download the capture.
+  ///
+  /// In en, this message translates to:
+  /// **'{kind, select, video{A copy of your video to download.} photo{A copy of your photo to download.} audio{A copy of your recording to download.} other{A copy of your proof to download.}}'**
+  String verifyRequestSharesMedia(String kind);
+
+  /// Said when the App did not ask to download the capture.
+  ///
+  /// In en, this message translates to:
+  /// **'{kind, select, video{Not your video. It stays with Verily.} photo{Not your photo. It stays with Verily.} audio{Not your recording. It stays with Verily.} other{Not your proof. It stays with Verily.}}'**
+  String verifyRequestKeepsMedia(String kind);
+
+  /// The pairwise subject the App receives, in plain words.
+  ///
+  /// In en, this message translates to:
+  /// **'A private ID made only for {app}. Never your name, email, or account.'**
+  String verifyRequestSharesSubject(String app);
+
+  /// When the request stops working.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer by {time}'**
+  String verifyRequestExpires(String time);
+
+  /// Agrees to the request and starts capturing.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept and start'**
+  String get verifyRequestAccept;
+
+  /// Turns the request down; the App is told it was declined.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get verifyRequestDecline;
+
+  /// Tooltip: leaves the request without answering it.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get verifyRequestClose;
+
+  /// Header while capturing proof for a request.
+  ///
+  /// In en, this message translates to:
+  /// **'Your proof for {app}'**
+  String verifyRequestProofTitle(String app);
+
+  /// The location step of a request.
+  ///
+  /// In en, this message translates to:
+  /// **'Check in at their place'**
+  String get verifyRequestStepPlace;
+
+  /// Explains the location step.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your location once. {app} only learns inside or outside.'**
+  String verifyRequestStepPlaceBody(String app);
+
+  /// Sends one precise location fix.
+  ///
+  /// In en, this message translates to:
+  /// **'Share my location'**
+  String get verifyRequestSharePlace;
+
+  /// Skips an optional place check.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue without it'**
+  String get verifyRequestSkipPlace;
+
+  /// The location step is done.
+  ///
+  /// In en, this message translates to:
+  /// **'Location sent'**
+  String get verifyRequestPlaceSent;
+
+  /// The optional location step was skipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped. {app} will see your place wasn\'t checked.'**
+  String verifyRequestPlaceSkipped(String app);
+
+  /// The location was sent but did not match the place.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily couldn\'t confirm you\'re inside their place. {app} will see that.'**
+  String verifyRequestPlaceNotConfirmed(String app);
+
+  /// The live capture step of a request.
+  ///
+  /// In en, this message translates to:
+  /// **'{kind, select, photo{Take the photo} audio{Record the audio} other{Record the video}}'**
+  String verifyRequestStepMedia(String kind);
+
+  /// Explains the capture step.
+  ///
+  /// In en, this message translates to:
+  /// **'Live, in one take. This phone signs it before it\'s sent.'**
+  String get verifyRequestStepMediaBody;
+
+  /// Opens the live capture.
+  ///
+  /// In en, this message translates to:
+  /// **'{kind, select, audio{Open the recorder} other{Open the camera}}'**
+  String verifyRequestOpenCapture(String kind);
+
+  /// The capture step is done.
+  ///
+  /// In en, this message translates to:
+  /// **'Proof sent'**
+  String get verifyRequestMediaSent;
+
+  /// Why the capture step is not ready yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Check in first, then capture.'**
+  String get verifyRequestPlaceFirst;
+
+  /// Every step is done; only the return to the App is left.
+  ///
+  /// In en, this message translates to:
+  /// **'Your proof is in'**
+  String get verifyRequestProofIn;
+
+  /// Gets the App's return address and opens it.
+  ///
+  /// In en, this message translates to:
+  /// **'Return to {app}'**
+  String verifyRequestReturn(String app);
+
+  /// Turns the request down after accepting, before any proof is sent.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline instead'**
+  String get verifyRequestDeclineInstead;
+
+  /// Retries the last step after a failure.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get verifyRequestTryAgain;
+
+  /// Accessible label while the request loads.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading the request'**
+  String get verifyRequestLoading;
+
+  /// Accessible label while an answer or proof is sent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending your answer'**
+  String get verifyRequestSending;
+
+  /// Shown while the App is opened again.
+  ///
+  /// In en, this message translates to:
+  /// **'Returning you to {app}'**
+  String verifyRequestReturningTitle(String app);
+
+  /// How the proof went, when it passed before leaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily checked your proof and it passed.'**
+  String get verifyRequestReturningPassed;
+
+  /// How the proof went, while it is still being checked.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily is still checking your proof. {app} will get the result.'**
+  String verifyRequestReturningChecking(String app);
+
+  /// How the proof went, when it did not pass.
+  ///
+  /// In en, this message translates to:
+  /// **'Your proof didn\'t pass. {app} will be told.'**
+  String verifyRequestReturningFailed(String app);
+
+  /// Shown after turning a request down.
+  ///
+  /// In en, this message translates to:
+  /// **'Request declined'**
+  String get verifyRequestDeclinedTitle;
+
+  /// Shown after turning a request down.
+  ///
+  /// In en, this message translates to:
+  /// **'Returning you to {app}. Nothing was captured or shared.'**
+  String verifyRequestDeclinedBody(String app);
+
+  /// The App could not be opened automatically.
+  ///
+  /// In en, this message translates to:
+  /// **'{app} didn\'t open. Switch back to it yourself to carry on.'**
+  String verifyRequestOpenFailed(String app);
+
+  /// Opens the App again.
+  ///
+  /// In en, this message translates to:
+  /// **'Open {app}'**
+  String verifyRequestOpenApp(String app);
+
+  /// Leaves the request page for the Do tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Verily'**
+  String get verifyRequestBackToVerily;
+
+  /// Stands in for the App's name when the request could not be loaded.
+  ///
+  /// In en, this message translates to:
+  /// **'the app'**
+  String get verifyRequestTheApp;
+
+  /// The request id is unknown or malformed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find this request'**
+  String get verifyRequestNotFoundTitle;
+
+  /// The request id is unknown or malformed.
+  ///
+  /// In en, this message translates to:
+  /// **'The link may be wrong, or the request was removed. Ask the app to send a new one.'**
+  String get verifyRequestNotFoundBody;
+
+  /// The request ran out of time.
+  ///
+  /// In en, this message translates to:
+  /// **'This request has expired'**
+  String get verifyRequestExpiredTitle;
+
+  /// The request ran out of time.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests only last a short while. Ask {app} for a new one.'**
+  String verifyRequestExpiredBody(String app);
+
+  /// Another account already accepted the request.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone else answered this request'**
+  String get verifyRequestTakenTitle;
+
+  /// Another account already accepted the request.
+  ///
+  /// In en, this message translates to:
+  /// **'Each request is for one person. Ask {app} for your own.'**
+  String verifyRequestTakenBody(String app);
+
+  /// The request was already answered or declined.
+  ///
+  /// In en, this message translates to:
+  /// **'This request is closed'**
+  String get verifyRequestClosedTitle;
+
+  /// The request was already answered or declined.
+  ///
+  /// In en, this message translates to:
+  /// **'It was already answered or turned down. Ask {app} for a new one if you still need it.'**
+  String verifyRequestClosedBody(String app);
+
+  /// Too many accepted requests from one App in an hour.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s a lot of requests for now'**
+  String get verifyRequestRateLimitedTitle;
+
+  /// Too many accepted requests from one App in an hour.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve answered many requests from {app} in the last hour. Try again later.'**
+  String verifyRequestRateLimitedBody(String app);
+
+  /// The App was revoked or cannot use Verily right now.
+  ///
+  /// In en, this message translates to:
+  /// **'{app} isn\'t available'**
+  String verifyRequestAppUnavailableTitle(String app);
+
+  /// A generic failure while loading; can be retried.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load this request'**
+  String get verifyRequestLoadFailedTitle;
+
+  /// Sign-in title when another app opened a verification request.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to answer this request'**
+  String get signInTitleAnswerRequest;
+
+  /// Sign-in title when another app asked to link.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to link this app'**
+  String get signInTitleLinkApp;
+
+  /// Header of the page another app opens to link with Verily.
+  ///
+  /// In en, this message translates to:
+  /// **'Link an app'**
+  String get appLinkHeaderTitle;
+
+  /// The headline of a link request.
+  ///
+  /// In en, this message translates to:
+  /// **'{app} wants to link with your Verily account'**
+  String appLinkAsks(String app);
+
+  /// What linking lets the App do.
+  ///
+  /// In en, this message translates to:
+  /// **'Once linked, {app} can tell Verily when you\'ve done its actions.'**
+  String appLinkHow(String app);
+
+  /// The account is already linked to this App.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve linked {app} before. Linking again confirms it\'s still you.'**
+  String appLinkAlreadyLinked(String app);
+
+  /// What the App receives when linked.
+  ///
+  /// In en, this message translates to:
+  /// **'A private ID made only for {app}. Never your name, email, or account.'**
+  String appLinkSharesSubject(String app);
+
+  /// What the App does not receive.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing else. It can\'t see your proof, payouts, or other apps.'**
+  String get appLinkSharesNothingElse;
+
+  /// Approves the link and returns to the App.
+  ///
+  /// In en, this message translates to:
+  /// **'Link {app}'**
+  String appLinkApprove(String app);
+
+  /// Declines the link and returns to the App.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t link'**
+  String get appLinkDecline;
+
+  /// After approving a link, while returning to the App.
+  ///
+  /// In en, this message translates to:
+  /// **'{app} is linked to your Verily account.'**
+  String appLinkLinkedBody(String app);
+
+  /// After declining a link, while returning to the App.
+  ///
+  /// In en, this message translates to:
+  /// **'{app} wasn\'t linked. Nothing was shared.'**
+  String appLinkDeclinedBody(String app);
+
+  /// After declining a link.
+  ///
+  /// In en, this message translates to:
+  /// **'Not linked'**
+  String get appLinkDeclinedTitle;
+
+  /// The link request is missing parts or does not match the App.
+  ///
+  /// In en, this message translates to:
+  /// **'This link doesn\'t work'**
+  String get appLinkInvalidTitle;
+
+  /// The link request is missing parts or does not match the App.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s missing something or wasn\'t made for Verily. Go back to the app and try again.'**
+  String get appLinkInvalidBody;
+
+  /// A generic failure while loading a link request; can be retried.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load this link'**
+  String get appLinkLoadFailedTitle;
+
+  /// Too many link attempts.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve tried to link with {app} many times. Try again later.'**
+  String appLinkRateLimitedBody(String app);
+
+  /// Heading of the live quick-check guide on the camera, naming what the phone looks for.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick check: {label}'**
+  String localCheckGuideTitle(String label);
+
+  /// While the phone loads the quick check before or during capture.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting the quick check ready'**
+  String get localCheckPreparing;
+
+  /// When the phone cannot run the quick check live; the server still checks the photo or video.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily checks for “{label}” after you finish'**
+  String localCheckAfterFinishLook(String label);
+
+  /// On the audio recorder: the sound is checked on the server after recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily listens for “{label}” after you finish'**
+  String localCheckAfterFinishListen(String label);
+
+  /// Live guidance: no matching hand gesture in view.
+  ///
+  /// In en, this message translates to:
+  /// **'We can\'t see your “{label}” yet'**
+  String localCheckGestureNotSeen(String label);
+
+  /// Live guidance: a hand is in view but not making the gesture yet.
+  ///
+  /// In en, this message translates to:
+  /// **'We can see your hand. Now show “{label}”'**
+  String localCheckGestureHandSeen(String label);
+
+  /// Live guidance: the thing is not in view.
+  ///
+  /// In en, this message translates to:
+  /// **'We can\'t spot “{label}” yet'**
+  String localCheckObjectNotSeen(String label);
+
+  /// Live guidance: the thing may be in view but the phone is not sure yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Almost. Bring “{label}” closer or into better light'**
+  String localCheckObjectAlmost(String label);
+
+  /// Live guidance: the gesture or thing is in view; keep it there.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it, hold it there'**
+  String get localCheckHolding;
+
+  /// Live guidance: the phone sees what was asked for. Advisory only; Verily checks again.
+  ///
+  /// In en, this message translates to:
+  /// **'That looks like “{label}”'**
+  String localCheckLooksRight(String label);
+
+  /// Shown with the guide before recording, once the phone sees what was asked for.
+  ///
+  /// In en, this message translates to:
+  /// **'Start recording when you\'re ready'**
+  String get localCheckReadyToRecord;
+
+  /// While recording: the phone sees it, but the recording is shorter than the action asks.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep going a moment'**
+  String get localCheckKeepGoing;
+
+  /// While recording with a spoken word: the phone sees it; the person still says the word and stops themselves.
+  ///
+  /// In en, this message translates to:
+  /// **'Say your word, then stop'**
+  String get localCheckSayWordThenStop;
+
+  /// The phone stops the recording or takes the photo by itself now that it sees what was asked.
+  ///
+  /// In en, this message translates to:
+  /// **'Finishing'**
+  String get localCheckFinishing;
+
+  /// On the review screen before sending, for a proof with a quick check.
+  ///
+  /// In en, this message translates to:
+  /// **'The phone\'s quick check is only a guide. Verily checks your proof again before it counts.'**
+  String get localCheckReviewNote;
+
+  /// Button on a photo, video, or audio proof in the action editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a quick check'**
+  String get editorQuickCheckAdd;
+
+  /// Explains what a quick check does, under the add button.
+  ///
+  /// In en, this message translates to:
+  /// **'The phone looks for a hand gesture, a thing, or a sound while people capture, and helps them get it right.'**
+  String get editorQuickCheckAddHelp;
+
+  /// Heading of the quick-check settings on a proof.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick check'**
+  String get editorQuickCheckTitle;
+
+  /// Button that removes the quick check from a proof.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove quick check'**
+  String get editorQuickCheckRemove;
+
+  /// Label above the choice of gesture, thing, or sound.
+  ///
+  /// In en, this message translates to:
+  /// **'Look for'**
+  String get editorQuickCheckTaskLabel;
+
+  /// Quick-check choice: a hand gesture.
+  ///
+  /// In en, this message translates to:
+  /// **'A hand gesture'**
+  String get editorQuickCheckTaskGesture;
+
+  /// Quick-check choice: an object in view.
+  ///
+  /// In en, this message translates to:
+  /// **'A thing'**
+  String get editorQuickCheckTaskObject;
+
+  /// Quick-check choice: a sound in an audio proof.
+  ///
+  /// In en, this message translates to:
+  /// **'A sound'**
+  String get editorQuickCheckTaskSound;
+
+  /// Label above the gesture choices.
+  ///
+  /// In en, this message translates to:
+  /// **'Gesture'**
+  String get editorQuickCheckGestureLabel;
+
+  /// Label of the button that picks which thing to look for.
+  ///
+  /// In en, this message translates to:
+  /// **'Thing'**
+  String get editorQuickCheckObjectLabel;
+
+  /// Label of the button that picks which sound to listen for.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound'**
+  String get editorQuickCheckSoundLabel;
+
+  /// Heading of the sheet that lists things a quick check can look for.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a thing'**
+  String get editorQuickCheckPickObject;
+
+  /// Heading of the sheet that lists sounds a quick check can listen for.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a sound'**
+  String get editorQuickCheckPickSound;
+
+  /// Search field in the thing or sound list.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get editorQuickCheckSearch;
+
+  /// Shown in the thing or sound list when the search finds nothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing matches that'**
+  String get editorQuickCheckNoMatches;
+
+  /// Label above the quick check's confidence slider.
+  ///
+  /// In en, this message translates to:
+  /// **'How sure: {percent}%'**
+  String editorQuickCheckScore(int percent);
+
+  /// Screen reader label for the quick check's confidence slider.
+  ///
+  /// In en, this message translates to:
+  /// **'How sure the quick check must be'**
+  String get editorQuickCheckScoreSemantic;
+
+  /// Label above the slider for how many sampled frames or sound windows must match.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 matching moment} other{{count} matching moments}}'**
+  String editorQuickCheckFrames(int count);
+
+  /// Screen reader label for the matching-moments slider.
+  ///
+  /// In en, this message translates to:
+  /// **'How many moments must match'**
+  String get editorQuickCheckFramesSemantic;
+
+  /// Help under the matching-moments slider.
+  ///
+  /// In en, this message translates to:
+  /// **'How many of the moments Verily samples from the recording must show it.'**
+  String get editorQuickCheckFramesHelp;
+
+  /// Shown instead of the matching-moments slider for a photo.
+  ///
+  /// In en, this message translates to:
+  /// **'A photo is checked once.'**
+  String get editorQuickCheckPhotoFrames;
+
+  /// Note in the quick-check settings: the phone's result never decides.
+  ///
+  /// In en, this message translates to:
+  /// **'People see live guidance while they capture. Verily checks the proof again itself before it counts.'**
+  String get editorQuickCheckNote;
+
+  /// Helper under the verification prompt when a quick check is set.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional with a quick check. Leave it empty and Verily writes the check from what you picked.'**
+  String get editorQuickCheckPromptHelp;
+
+  /// Help under the spoken-word switch when a quick check is set.
+  ///
+  /// In en, this message translates to:
+  /// **'A quick check can\'t hear words, so with the word on, Verily\'s other checks or a person decide.'**
+  String get editorQuickCheckSpokenHelp;
+
+  /// A hand gesture a quick check looks for (the model calls it "Closed_Fist").
+  ///
+  /// In en, this message translates to:
+  /// **'Closed fist'**
+  String get localCheckGestureClosedFist;
+
+  /// A hand gesture a quick check looks for (the model calls it "Open_Palm").
+  ///
+  /// In en, this message translates to:
+  /// **'Open palm'**
+  String get localCheckGestureOpenPalm;
+
+  /// A hand gesture a quick check looks for (the model calls it "Pointing_Up").
+  ///
+  /// In en, this message translates to:
+  /// **'Pointing up'**
+  String get localCheckGesturePointingUp;
+
+  /// A hand gesture a quick check looks for (the model calls it "Thumb_Down").
+  ///
+  /// In en, this message translates to:
+  /// **'Thumbs down'**
+  String get localCheckGestureThumbDown;
+
+  /// A hand gesture a quick check looks for (the model calls it "Thumb_Up").
+  ///
+  /// In en, this message translates to:
+  /// **'Thumbs up'**
+  String get localCheckGestureThumbUp;
+
+  /// A hand gesture a quick check looks for (the model calls it "Victory").
+  ///
+  /// In en, this message translates to:
+  /// **'Victory sign'**
+  String get localCheckGestureVictory;
+
+  /// A hand gesture a quick check looks for (the model calls it "ILoveYou").
+  ///
+  /// In en, this message translates to:
+  /// **'“I love you” sign'**
+  String get localCheckGestureILoveYou;
+
+  /// A thing a quick check looks for (the model calls it "person").
+  ///
+  /// In en, this message translates to:
+  /// **'Person'**
+  String get localCheckObjectPerson;
+
+  /// A thing a quick check looks for (the model calls it "bicycle").
+  ///
+  /// In en, this message translates to:
+  /// **'Bicycle'**
+  String get localCheckObjectBicycle;
+
+  /// A thing a quick check looks for (the model calls it "car").
+  ///
+  /// In en, this message translates to:
+  /// **'Car'**
+  String get localCheckObjectCar;
+
+  /// A thing a quick check looks for (the model calls it "motorcycle").
+  ///
+  /// In en, this message translates to:
+  /// **'Motorbike'**
+  String get localCheckObjectMotorcycle;
+
+  /// A thing a quick check looks for (the model calls it "airplane").
+  ///
+  /// In en, this message translates to:
+  /// **'Aeroplane'**
+  String get localCheckObjectAirplane;
+
+  /// A thing a quick check looks for (the model calls it "bus").
+  ///
+  /// In en, this message translates to:
+  /// **'Bus'**
+  String get localCheckObjectBus;
+
+  /// A thing a quick check looks for (the model calls it "train").
+  ///
+  /// In en, this message translates to:
+  /// **'Train'**
+  String get localCheckObjectTrain;
+
+  /// A thing a quick check looks for (the model calls it "truck").
+  ///
+  /// In en, this message translates to:
+  /// **'Truck'**
+  String get localCheckObjectTruck;
+
+  /// A thing a quick check looks for (the model calls it "boat").
+  ///
+  /// In en, this message translates to:
+  /// **'Boat'**
+  String get localCheckObjectBoat;
+
+  /// A thing a quick check looks for (the model calls it "traffic light").
+  ///
+  /// In en, this message translates to:
+  /// **'Traffic light'**
+  String get localCheckObjectTrafficLight;
+
+  /// A thing a quick check looks for (the model calls it "fire hydrant").
+  ///
+  /// In en, this message translates to:
+  /// **'Fire hydrant'**
+  String get localCheckObjectFireHydrant;
+
+  /// A thing a quick check looks for (the model calls it "stop sign").
+  ///
+  /// In en, this message translates to:
+  /// **'Stop sign'**
+  String get localCheckObjectStopSign;
+
+  /// A thing a quick check looks for (the model calls it "parking meter").
+  ///
+  /// In en, this message translates to:
+  /// **'Parking meter'**
+  String get localCheckObjectParkingMeter;
+
+  /// A thing a quick check looks for (the model calls it "bench").
+  ///
+  /// In en, this message translates to:
+  /// **'Bench'**
+  String get localCheckObjectBench;
+
+  /// A thing a quick check looks for (the model calls it "bird").
+  ///
+  /// In en, this message translates to:
+  /// **'Bird'**
+  String get localCheckObjectBird;
+
+  /// A thing a quick check looks for (the model calls it "cat").
+  ///
+  /// In en, this message translates to:
+  /// **'Cat'**
+  String get localCheckObjectCat;
+
+  /// A thing a quick check looks for (the model calls it "dog").
+  ///
+  /// In en, this message translates to:
+  /// **'Dog'**
+  String get localCheckObjectDog;
+
+  /// A thing a quick check looks for (the model calls it "horse").
+  ///
+  /// In en, this message translates to:
+  /// **'Horse'**
+  String get localCheckObjectHorse;
+
+  /// A thing a quick check looks for (the model calls it "sheep").
+  ///
+  /// In en, this message translates to:
+  /// **'Sheep'**
+  String get localCheckObjectSheep;
+
+  /// A thing a quick check looks for (the model calls it "cow").
+  ///
+  /// In en, this message translates to:
+  /// **'Cow'**
+  String get localCheckObjectCow;
+
+  /// A thing a quick check looks for (the model calls it "elephant").
+  ///
+  /// In en, this message translates to:
+  /// **'Elephant'**
+  String get localCheckObjectElephant;
+
+  /// A thing a quick check looks for (the model calls it "bear").
+  ///
+  /// In en, this message translates to:
+  /// **'Bear'**
+  String get localCheckObjectBear;
+
+  /// A thing a quick check looks for (the model calls it "zebra").
+  ///
+  /// In en, this message translates to:
+  /// **'Zebra'**
+  String get localCheckObjectZebra;
+
+  /// A thing a quick check looks for (the model calls it "giraffe").
+  ///
+  /// In en, this message translates to:
+  /// **'Giraffe'**
+  String get localCheckObjectGiraffe;
+
+  /// A thing a quick check looks for (the model calls it "backpack").
+  ///
+  /// In en, this message translates to:
+  /// **'Backpack'**
+  String get localCheckObjectBackpack;
+
+  /// A thing a quick check looks for (the model calls it "umbrella").
+  ///
+  /// In en, this message translates to:
+  /// **'Umbrella'**
+  String get localCheckObjectUmbrella;
+
+  /// A thing a quick check looks for (the model calls it "handbag").
+  ///
+  /// In en, this message translates to:
+  /// **'Handbag'**
+  String get localCheckObjectHandbag;
+
+  /// A thing a quick check looks for (the model calls it "tie").
+  ///
+  /// In en, this message translates to:
+  /// **'Tie'**
+  String get localCheckObjectTie;
+
+  /// A thing a quick check looks for (the model calls it "suitcase").
+  ///
+  /// In en, this message translates to:
+  /// **'Suitcase'**
+  String get localCheckObjectSuitcase;
+
+  /// A thing a quick check looks for (the model calls it "frisbee").
+  ///
+  /// In en, this message translates to:
+  /// **'Frisbee'**
+  String get localCheckObjectFrisbee;
+
+  /// A thing a quick check looks for (the model calls it "skis").
+  ///
+  /// In en, this message translates to:
+  /// **'Skis'**
+  String get localCheckObjectSkis;
+
+  /// A thing a quick check looks for (the model calls it "snowboard").
+  ///
+  /// In en, this message translates to:
+  /// **'Snowboard'**
+  String get localCheckObjectSnowboard;
+
+  /// A thing a quick check looks for (the model calls it "sports ball").
+  ///
+  /// In en, this message translates to:
+  /// **'Ball'**
+  String get localCheckObjectSportsBall;
+
+  /// A thing a quick check looks for (the model calls it "kite").
+  ///
+  /// In en, this message translates to:
+  /// **'Kite'**
+  String get localCheckObjectKite;
+
+  /// A thing a quick check looks for (the model calls it "baseball bat").
+  ///
+  /// In en, this message translates to:
+  /// **'Baseball bat'**
+  String get localCheckObjectBaseballBat;
+
+  /// A thing a quick check looks for (the model calls it "baseball glove").
+  ///
+  /// In en, this message translates to:
+  /// **'Baseball glove'**
+  String get localCheckObjectBaseballGlove;
+
+  /// A thing a quick check looks for (the model calls it "skateboard").
+  ///
+  /// In en, this message translates to:
+  /// **'Skateboard'**
+  String get localCheckObjectSkateboard;
+
+  /// A thing a quick check looks for (the model calls it "surfboard").
+  ///
+  /// In en, this message translates to:
+  /// **'Surfboard'**
+  String get localCheckObjectSurfboard;
+
+  /// A thing a quick check looks for (the model calls it "tennis racket").
+  ///
+  /// In en, this message translates to:
+  /// **'Tennis racket'**
+  String get localCheckObjectTennisRacket;
+
+  /// A thing a quick check looks for (the model calls it "bottle").
+  ///
+  /// In en, this message translates to:
+  /// **'Bottle'**
+  String get localCheckObjectBottle;
+
+  /// A thing a quick check looks for (the model calls it "wine glass").
+  ///
+  /// In en, this message translates to:
+  /// **'Wine glass'**
+  String get localCheckObjectWineGlass;
+
+  /// A thing a quick check looks for (the model calls it "cup").
+  ///
+  /// In en, this message translates to:
+  /// **'Cup'**
+  String get localCheckObjectCup;
+
+  /// A thing a quick check looks for (the model calls it "fork").
+  ///
+  /// In en, this message translates to:
+  /// **'Fork'**
+  String get localCheckObjectFork;
+
+  /// A thing a quick check looks for (the model calls it "knife").
+  ///
+  /// In en, this message translates to:
+  /// **'Knife'**
+  String get localCheckObjectKnife;
+
+  /// A thing a quick check looks for (the model calls it "spoon").
+  ///
+  /// In en, this message translates to:
+  /// **'Spoon'**
+  String get localCheckObjectSpoon;
+
+  /// A thing a quick check looks for (the model calls it "bowl").
+  ///
+  /// In en, this message translates to:
+  /// **'Bowl'**
+  String get localCheckObjectBowl;
+
+  /// A thing a quick check looks for (the model calls it "banana").
+  ///
+  /// In en, this message translates to:
+  /// **'Banana'**
+  String get localCheckObjectBanana;
+
+  /// A thing a quick check looks for (the model calls it "apple").
+  ///
+  /// In en, this message translates to:
+  /// **'Apple'**
+  String get localCheckObjectApple;
+
+  /// A thing a quick check looks for (the model calls it "sandwich").
+  ///
+  /// In en, this message translates to:
+  /// **'Sandwich'**
+  String get localCheckObjectSandwich;
+
+  /// A thing a quick check looks for (the model calls it "orange").
+  ///
+  /// In en, this message translates to:
+  /// **'Orange'**
+  String get localCheckObjectOrange;
+
+  /// A thing a quick check looks for (the model calls it "broccoli").
+  ///
+  /// In en, this message translates to:
+  /// **'Broccoli'**
+  String get localCheckObjectBroccoli;
+
+  /// A thing a quick check looks for (the model calls it "carrot").
+  ///
+  /// In en, this message translates to:
+  /// **'Carrot'**
+  String get localCheckObjectCarrot;
+
+  /// A thing a quick check looks for (the model calls it "hot dog").
+  ///
+  /// In en, this message translates to:
+  /// **'Hot dog'**
+  String get localCheckObjectHotDog;
+
+  /// A thing a quick check looks for (the model calls it "pizza").
+  ///
+  /// In en, this message translates to:
+  /// **'Pizza'**
+  String get localCheckObjectPizza;
+
+  /// A thing a quick check looks for (the model calls it "donut").
+  ///
+  /// In en, this message translates to:
+  /// **'Doughnut'**
+  String get localCheckObjectDonut;
+
+  /// A thing a quick check looks for (the model calls it "cake").
+  ///
+  /// In en, this message translates to:
+  /// **'Cake'**
+  String get localCheckObjectCake;
+
+  /// A thing a quick check looks for (the model calls it "chair").
+  ///
+  /// In en, this message translates to:
+  /// **'Chair'**
+  String get localCheckObjectChair;
+
+  /// A thing a quick check looks for (the model calls it "couch").
+  ///
+  /// In en, this message translates to:
+  /// **'Sofa'**
+  String get localCheckObjectCouch;
+
+  /// A thing a quick check looks for (the model calls it "potted plant").
+  ///
+  /// In en, this message translates to:
+  /// **'Potted plant'**
+  String get localCheckObjectPottedPlant;
+
+  /// A thing a quick check looks for (the model calls it "bed").
+  ///
+  /// In en, this message translates to:
+  /// **'Bed'**
+  String get localCheckObjectBed;
+
+  /// A thing a quick check looks for (the model calls it "dining table").
+  ///
+  /// In en, this message translates to:
+  /// **'Table'**
+  String get localCheckObjectDiningTable;
+
+  /// A thing a quick check looks for (the model calls it "toilet").
+  ///
+  /// In en, this message translates to:
+  /// **'Toilet'**
+  String get localCheckObjectToilet;
+
+  /// A thing a quick check looks for (the model calls it "tv").
+  ///
+  /// In en, this message translates to:
+  /// **'TV'**
+  String get localCheckObjectTv;
+
+  /// A thing a quick check looks for (the model calls it "laptop").
+  ///
+  /// In en, this message translates to:
+  /// **'Laptop'**
+  String get localCheckObjectLaptop;
+
+  /// A thing a quick check looks for (the model calls it "mouse").
+  ///
+  /// In en, this message translates to:
+  /// **'Computer mouse'**
+  String get localCheckObjectMouse;
+
+  /// A thing a quick check looks for (the model calls it "remote").
+  ///
+  /// In en, this message translates to:
+  /// **'Remote control'**
+  String get localCheckObjectRemote;
+
+  /// A thing a quick check looks for (the model calls it "keyboard").
+  ///
+  /// In en, this message translates to:
+  /// **'Keyboard'**
+  String get localCheckObjectKeyboard;
+
+  /// A thing a quick check looks for (the model calls it "cell phone").
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get localCheckObjectCellPhone;
+
+  /// A thing a quick check looks for (the model calls it "microwave").
+  ///
+  /// In en, this message translates to:
+  /// **'Microwave'**
+  String get localCheckObjectMicrowave;
+
+  /// A thing a quick check looks for (the model calls it "oven").
+  ///
+  /// In en, this message translates to:
+  /// **'Oven'**
+  String get localCheckObjectOven;
+
+  /// A thing a quick check looks for (the model calls it "toaster").
+  ///
+  /// In en, this message translates to:
+  /// **'Toaster'**
+  String get localCheckObjectToaster;
+
+  /// A thing a quick check looks for (the model calls it "sink").
+  ///
+  /// In en, this message translates to:
+  /// **'Sink'**
+  String get localCheckObjectSink;
+
+  /// A thing a quick check looks for (the model calls it "refrigerator").
+  ///
+  /// In en, this message translates to:
+  /// **'Refrigerator'**
+  String get localCheckObjectRefrigerator;
+
+  /// A thing a quick check looks for (the model calls it "book").
+  ///
+  /// In en, this message translates to:
+  /// **'Book'**
+  String get localCheckObjectBook;
+
+  /// A thing a quick check looks for (the model calls it "clock").
+  ///
+  /// In en, this message translates to:
+  /// **'Clock'**
+  String get localCheckObjectClock;
+
+  /// A thing a quick check looks for (the model calls it "vase").
+  ///
+  /// In en, this message translates to:
+  /// **'Vase'**
+  String get localCheckObjectVase;
+
+  /// A thing a quick check looks for (the model calls it "scissors").
+  ///
+  /// In en, this message translates to:
+  /// **'Scissors'**
+  String get localCheckObjectScissors;
+
+  /// A thing a quick check looks for (the model calls it "teddy bear").
+  ///
+  /// In en, this message translates to:
+  /// **'Teddy bear'**
+  String get localCheckObjectTeddyBear;
+
+  /// A thing a quick check looks for (the model calls it "hair drier").
+  ///
+  /// In en, this message translates to:
+  /// **'Hair dryer'**
+  String get localCheckObjectHairDrier;
+
+  /// A thing a quick check looks for (the model calls it "toothbrush").
+  ///
+  /// In en, this message translates to:
+  /// **'Toothbrush'**
+  String get localCheckObjectToothbrush;
+
+  /// A sound a quick check listens for (the model calls it "Clapping").
+  ///
+  /// In en, this message translates to:
+  /// **'Clapping'**
+  String get localCheckSoundClapping;
+
+  /// A sound a quick check listens for (the model calls it "Finger snapping").
+  ///
+  /// In en, this message translates to:
+  /// **'Finger snapping'**
+  String get localCheckSoundFingerSnapping;
+
+  /// A sound a quick check listens for (the model calls it "Whistling").
+  ///
+  /// In en, this message translates to:
+  /// **'Whistling'**
+  String get localCheckSoundWhistling;
+
+  /// A sound a quick check listens for (the model calls it "Applause").
+  ///
+  /// In en, this message translates to:
+  /// **'Applause'**
+  String get localCheckSoundApplause;
+
+  /// A sound a quick check listens for (the model calls it "Laughter").
+  ///
+  /// In en, this message translates to:
+  /// **'Laughter'**
+  String get localCheckSoundLaughter;
+
+  /// A sound a quick check listens for (the model calls it "Cough").
+  ///
+  /// In en, this message translates to:
+  /// **'Coughing'**
+  String get localCheckSoundCough;
+
+  /// A sound a quick check listens for (the model calls it "Sneeze").
+  ///
+  /// In en, this message translates to:
+  /// **'Sneezing'**
+  String get localCheckSoundSneeze;
+
+  /// A sound a quick check listens for (the model calls it "Bell").
+  ///
+  /// In en, this message translates to:
+  /// **'Bell'**
+  String get localCheckSoundBell;
+
+  /// A sound a quick check listens for (the model calls it "Doorbell").
+  ///
+  /// In en, this message translates to:
+  /// **'Doorbell'**
+  String get localCheckSoundDoorbell;
+
+  /// A sound a quick check listens for (the model calls it "Knock").
+  ///
+  /// In en, this message translates to:
+  /// **'Knocking'**
+  String get localCheckSoundKnock;
+
+  /// A sound a quick check listens for (the model calls it "Dog").
+  ///
+  /// In en, this message translates to:
+  /// **'Dog'**
+  String get localCheckSoundDog;
+
+  /// A sound a quick check listens for (the model calls it "Bark").
+  ///
+  /// In en, this message translates to:
+  /// **'Dog barking'**
+  String get localCheckSoundBark;
+
+  /// A sound a quick check listens for (the model calls it "Cat").
+  ///
+  /// In en, this message translates to:
+  /// **'Cat'**
+  String get localCheckSoundCat;
+
+  /// A sound a quick check listens for (the model calls it "Meow").
+  ///
+  /// In en, this message translates to:
+  /// **'Cat meowing'**
+  String get localCheckSoundMeow;
+
+  /// A sound a quick check listens for (the model calls it "Bird").
+  ///
+  /// In en, this message translates to:
+  /// **'Bird'**
+  String get localCheckSoundBird;
+
+  /// A sound a quick check listens for (the model calls it "Chirp, tweet").
+  ///
+  /// In en, this message translates to:
+  /// **'Birdsong'**
+  String get localCheckSoundChirpTweet;
+
+  /// A sound a quick check listens for (the model calls it "Crowing, cock-a-doodle-doo").
+  ///
+  /// In en, this message translates to:
+  /// **'Rooster crowing'**
+  String get localCheckSoundCrowingCockADoodleDoo;
+
+  /// A sound a quick check listens for (the model calls it "Siren").
+  ///
+  /// In en, this message translates to:
+  /// **'Siren'**
+  String get localCheckSoundSiren;
+
+  /// A sound a quick check listens for (the model calls it "Alarm clock").
+  ///
+  /// In en, this message translates to:
+  /// **'Alarm clock'**
+  String get localCheckSoundAlarmClock;
+
+  /// A sound a quick check listens for (the model calls it "Typing").
+  ///
+  /// In en, this message translates to:
+  /// **'Typing'**
+  String get localCheckSoundTyping;
+
+  /// A sound a quick check listens for (the model calls it "Water tap, faucet").
+  ///
+  /// In en, this message translates to:
+  /// **'Running tap'**
+  String get localCheckSoundWaterTapFaucet;
+
+  /// A sound a quick check listens for (the model calls it "Guitar").
+  ///
+  /// In en, this message translates to:
+  /// **'Guitar'**
+  String get localCheckSoundGuitar;
+
+  /// A sound a quick check listens for (the model calls it "Piano").
+  ///
+  /// In en, this message translates to:
+  /// **'Piano'**
+  String get localCheckSoundPiano;
+
+  /// A sound a quick check listens for (the model calls it "Drum").
+  ///
+  /// In en, this message translates to:
+  /// **'Drum'**
+  String get localCheckSoundDrum;
+
+  /// A sound a quick check listens for (the model calls it "Whistle").
+  ///
+  /// In en, this message translates to:
+  /// **'Whistle blown'**
+  String get localCheckSoundWhistle;
+
+  /// Label above the choice of push or pull verification for an App-confirmed proof.
+  ///
+  /// In en, this message translates to:
+  /// **'How {appName} confirms'**
+  String editorAppModeLabel(String appName);
+
+  /// Push verification choice: the App confirms on its own.
+  ///
+  /// In en, this message translates to:
+  /// **'It tells Verily'**
+  String get editorAppModePush;
+
+  /// Pull verification choice: Verily asks the App's webhook when the participant taps I did it.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily asks it'**
+  String get editorAppModePull;
+
+  /// Explains push verification in the editor.
+  ///
+  /// In en, this message translates to:
+  /// **'{appName}\'s server sends a confirmation when someone does it, using the link code they gave it. Participants have nothing to tap.'**
+  String editorAppModePushBody(String appName);
+
+  /// Explains pull verification in the editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Participants tap \"I did it\" and Verily asks {appName}\'s webhook straight away. They can add a username or order number so {appName} can find them.'**
+  String editorAppModePullBody(String appName);
+
+  /// Warning when pull verification is chosen for an App without a webhook URL.
+  ///
+  /// In en, this message translates to:
+  /// **'{appName} has no webhook address yet. Add one on its App page before you publish, or Verily has nowhere to ask.'**
+  String editorAppModePullNeedsWebhook(String appName);
+
+  /// Title of the dialog that shows a new webhook signing secret once.
+  ///
+  /// In en, this message translates to:
+  /// **'Save your signing secret'**
+  String get appsSecretTitle;
+
+  /// Explains what a webhook signing secret is for.
+  ///
+  /// In en, this message translates to:
+  /// **'{appName}\'s server uses this secret to check that each webhook call really came from Verily. Keep it on that server only.'**
+  String appsSecretBody(String appName);
+
+  /// Warning that a signing secret is shown once.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily shows this secret only once. If you lose it, rotate to get a new one.'**
+  String get appsSecretWarning;
+
+  /// After a rotation, until when the previous secret keeps signing.
+  ///
+  /// In en, this message translates to:
+  /// **'Calls are signed with both this secret and the previous one until {date}, so you can switch over without missing any.'**
+  String appsSecretOverlap(String date);
+
+  /// Label above a newly issued signing secret.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing secret, version {version}'**
+  String appsSecretLabel(int version);
+
+  /// Copies a newly issued signing secret.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy secret'**
+  String get appsSecretCopy;
+
+  /// Heading of the App's webhook settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Webhook'**
+  String get appsWebhookHeading;
+
+  /// Explains what the webhook address receives.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily sends signed events here (verified and rejected attempts, payouts, finished verification requests) and asks it to confirm proof on actions set to \"Verily asks it\".'**
+  String get appsWebhookBody;
+
+  /// Label of the webhook URL field.
+  ///
+  /// In en, this message translates to:
+  /// **'Webhook address'**
+  String get appsWebhookLabel;
+
+  /// Example webhook URL shown in the empty field.
+  ///
+  /// In en, this message translates to:
+  /// **'https://example.com/verily/webhook'**
+  String get appsWebhookHint;
+
+  /// Saves the webhook URL.
+  ///
+  /// In en, this message translates to:
+  /// **'Save address'**
+  String get appsWebhookSave;
+
+  /// Clears the webhook URL.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove address'**
+  String get appsWebhookRemove;
+
+  /// Confirms the webhook URL was saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Webhook address saved'**
+  String get appsWebhookSaved;
+
+  /// Confirms the webhook URL was cleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Webhook address removed'**
+  String get appsWebhookRemoved;
+
+  /// Why a webhook URL was refused.
+  ///
+  /// In en, this message translates to:
+  /// **'Use an https address on a public website: the standard port, no password, and no #fragment. Local, private, and internal addresses can\'t receive webhooks.'**
+  String get appsWebhookInvalid;
+
+  /// The server has no webhook signing configured.
+  ///
+  /// In en, this message translates to:
+  /// **'Webhooks aren\'t switched on for Verily yet. Try again later.'**
+  String get appsWebhooksUnavailable;
+
+  /// Shown while an App lacks a webhook URL or a signing secret.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily sends events once this App has both a webhook address and a signing secret.'**
+  String get appsWebhookNotSending;
+
+  /// Which signing secret version the App has.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing secret: version {version}'**
+  String appsSecretVersion(int version);
+
+  /// The App has never been issued a signing secret.
+  ///
+  /// In en, this message translates to:
+  /// **'No signing secret yet'**
+  String get appsSecretNone;
+
+  /// Explains rotating a signing secret.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate it if it may have leaked. The old secret keeps signing for 24 hours, so nothing is missed.'**
+  String get appsSecretHelp;
+
+  /// Explains issuing the first signing secret.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue one so your server can check that each call came from Verily.'**
+  String get appsSecretNoneHelp;
+
+  /// Issues a new signing secret, replacing the current one.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate secret'**
+  String get appsSecretRotate;
+
+  /// Issues the App's first signing secret.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue secret'**
+  String get appsSecretIssue;
+
+  /// Heading of the App's redirect URI settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Return addresses'**
+  String get appsRedirectHeading;
+
+  /// Explains redirect URIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Where Verily sends people back after they link their account or finish a verification for this App. Matching is exact, so add each address exactly as your app sends it.'**
+  String get appsRedirectBody;
+
+  /// Shown when the App has no redirect URIs.
+  ///
+  /// In en, this message translates to:
+  /// **'No return addresses yet.'**
+  String get appsRedirectEmpty;
+
+  /// Label of the field for a new redirect URI.
+  ///
+  /// In en, this message translates to:
+  /// **'Return address'**
+  String get appsRedirectLabel;
+
+  /// Example redirect URI shown in the empty field.
+  ///
+  /// In en, this message translates to:
+  /// **'com.example.app://verily'**
+  String get appsRedirectHint;
+
+  /// Adds the typed redirect URI.
+  ///
+  /// In en, this message translates to:
+  /// **'Add address'**
+  String get appsRedirectAdd;
+
+  /// How many redirect URIs the App has, out of the limit.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} of {max}'**
+  String appsRedirectCount(int count, int max);
+
+  /// The App has the most redirect URIs allowed.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s all {max}. Remove one to add another.'**
+  String appsRedirectFull(int max);
+
+  /// The typed redirect URI is already registered.
+  ///
+  /// In en, this message translates to:
+  /// **'That address is already on the list.'**
+  String get appsRedirectDuplicate;
+
+  /// Why a redirect URI was refused.
+  ///
+  /// In en, this message translates to:
+  /// **'Use an exact https address or your app\'s own scheme, such as com.example.app://verily. Wildcards, #fragments, plain http, and verily: addresses aren\'t allowed.'**
+  String get appsRedirectInvalid;
+
+  /// The server refused more redirect URIs than allowed.
+  ///
+  /// In en, this message translates to:
+  /// **'An App can have at most {max} return addresses. Remove one first.'**
+  String appsRedirectTooMany(int max);
+
+  /// Title of the dialog confirming a redirect URI removal.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this return address?'**
+  String get appsRedirectRemoveTitle;
+
+  /// What removing a redirect URI does.
+  ///
+  /// In en, this message translates to:
+  /// **'Links that send people back to {uri} will stop working.'**
+  String appsRedirectRemoveBody(String uri);
+
+  /// Confirms removing a redirect URI.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get appsRedirectRemoveConfirm;
+
+  /// Tooltip of the button that removes one redirect URI.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {uri}'**
+  String appsRedirectRemoveTooltip(String uri);
+
+  /// The server is rate limiting the caller.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s a lot of requests in a short time. Wait a little, then try again.'**
+  String get appsRateLimited;
+
+  /// Heading of the log of calls to the App's webhook.
+  ///
+  /// In en, this message translates to:
+  /// **'Webhook calls'**
+  String get appsDeliveriesHeading;
+
+  /// Explains the webhook call log.
+  ///
+  /// In en, this message translates to:
+  /// **'Every call Verily made to your webhook, newest first, with how your server answered.'**
+  String get appsDeliveriesBody;
+
+  /// Shown while the webhook call log loads.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading webhook calls'**
+  String get appsDeliveriesLoading;
+
+  /// The webhook call log could not be loaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Webhook calls didn\'t load'**
+  String get appsDeliveriesFailed;
+
+  /// The App's webhook has never been called.
+  ///
+  /// In en, this message translates to:
+  /// **'No calls yet. They appear here once this App has a webhook address and a signing secret.'**
+  String get appsDeliveriesEmpty;
+
+  /// Loads the next page of webhook calls.
+  ///
+  /// In en, this message translates to:
+  /// **'Show older calls'**
+  String get appsDeliveriesMore;
+
+  /// A webhook call that got no HTTP response, inside the call details.
+  ///
+  /// In en, this message translates to:
+  /// **'no answer'**
+  String get appsDeliveryNoAnswer;
+
+  /// The HTTP status a webhook call got, inside the call details.
+  ///
+  /// In en, this message translates to:
+  /// **'HTTP {code}'**
+  String appsDeliveryHttp(int code);
+
+  /// A webhook call that succeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Your server accepted it.'**
+  String get appsDeliverySucceeded;
+
+  /// Which delivery try, the HTTP answer, and how long it took.
+  ///
+  /// In en, this message translates to:
+  /// **'Try {attempt} · {answer} · {milliseconds} ms'**
+  String appsDeliveryDetails(int attempt, String answer, int milliseconds);
+
+  /// The raw event type, for matching the App's own logs.
+  ///
+  /// In en, this message translates to:
+  /// **'Event: {eventType}'**
+  String appsDeliveryEvent(String eventType);
+
+  /// The raw event type and error code, for matching the App's own logs.
+  ///
+  /// In en, this message translates to:
+  /// **'Event: {eventType} · Error code: {errorCode}'**
+  String appsDeliveryEventError(String eventType, String errorCode);
+
+  /// Explains an App-confirmed step the App checks when asked.
+  ///
+  /// In en, this message translates to:
+  /// **'{appName} checks this step when you say you\'ve done it. Verily doesn\'t check the act, only that {appName} said so.'**
+  String actionAppPullBody(String appName);
+
+  /// A webhook call asking the App to confirm a participant's proof.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull check: asked to confirm'**
+  String get appsEventAttemptVerify;
+
+  /// Webhook event: an attempt was verified.
+  ///
+  /// In en, this message translates to:
+  /// **'Attempt verified'**
+  String get appsEventAttemptVerified;
+
+  /// Webhook event: an attempt was rejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Attempt rejected'**
+  String get appsEventAttemptRejected;
+
+  /// Webhook event: a reward payout was released.
+  ///
+  /// In en, this message translates to:
+  /// **'Payout released'**
+  String get appsEventPayoutReleased;
+
+  /// Webhook event: a Verify with Verily request finished.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification request finished'**
+  String get appsEventRequestCompleted;
+
+  /// A webhook event of a type this version does not name.
+  ///
+  /// In en, this message translates to:
+  /// **'Webhook event'**
+  String get appsEventOther;
+
+  /// A webhook call timed out.
+  ///
+  /// In en, this message translates to:
+  /// **'Your server didn\'t answer within 10 seconds.'**
+  String get appsDeliveryTimeout;
+
+  /// A webhook call could not connect.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily couldn\'t connect to your server.'**
+  String get appsDeliveryConnectionFailed;
+
+  /// A webhook call failed during TLS.
+  ///
+  /// In en, this message translates to:
+  /// **'The secure connection to your server failed.'**
+  String get appsDeliveryTlsFailure;
+
+  /// A webhook host resolved to a private address.
+  ///
+  /// In en, this message translates to:
+  /// **'The address didn\'t lead to a public server.'**
+  String get appsDeliveryHostNotPublic;
+
+  /// A webhook call had an invalid URL.
+  ///
+  /// In en, this message translates to:
+  /// **'The webhook address isn\'t valid.'**
+  String get appsDeliveryInvalidUrl;
+
+  /// A webhook answer exceeded the size limit.
+  ///
+  /// In en, this message translates to:
+  /// **'Your server\'s answer was too large.'**
+  String get appsDeliveryTooLarge;
+
+  /// A pull check answer could not be parsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your server\'s answer wasn\'t the expected JSON verdict.'**
+  String get appsDeliveryInvalidResponse;
+
+  /// A call was due but the App had no webhook URL.
+  ///
+  /// In en, this message translates to:
+  /// **'There was no webhook address to call.'**
+  String get appsDeliveryNoWebhook;
+
+  /// A call was due but the App had no signing secret.
+  ///
+  /// In en, this message translates to:
+  /// **'There was no signing secret to sign the call with.'**
+  String get appsDeliveryNoSecret;
+
+  /// A webhook call got a non-success HTTP status.
+  ///
+  /// In en, this message translates to:
+  /// **'Your server answered HTTP {code}.'**
+  String appsDeliveryRefused(int code);
+
+  /// A webhook call failed for another reason.
+  ///
+  /// In en, this message translates to:
+  /// **'The call didn\'t go through.'**
+  String get appsDeliveryFailedOther;
+
+  /// The event behind a call is waiting for another try.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily will try again.'**
+  String get appsEventStatusPending;
+
+  /// The event behind a call is being delivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Being delivered now.'**
+  String get appsEventStatusDelivering;
+
+  /// The event behind a call was delivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered.'**
+  String get appsEventStatusDelivered;
+
+  /// The event behind a call ran out of tries.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily stopped trying.'**
+  String get appsEventStatusFailed;
+
+  /// Introduces the pull check on an App-confirmed action.
+  ///
+  /// In en, this message translates to:
+  /// **'Done it in {appName}? Tap \"I did it\" and Verily asks {appName} to confirm.'**
+  String actionPullIntro(String appName);
+
+  /// Label of the optional note sent to the App with I did it.
+  ///
+  /// In en, this message translates to:
+  /// **'Username or order number (optional)'**
+  String get actionPullReferenceLabel;
+
+  /// Example note shown in the empty field.
+  ///
+  /// In en, this message translates to:
+  /// **'ada_lovelace or #1234'**
+  String get actionPullReferenceHint;
+
+  /// Helper text under the optional note field.
+  ///
+  /// In en, this message translates to:
+  /// **'Helps {appName} find you. Letters, numbers, spaces, and . _ @ # : / + - only.'**
+  String actionPullReferenceHelp(String appName);
+
+  /// The note has characters the App cannot be sent.
+  ///
+  /// In en, this message translates to:
+  /// **'Use up to 120 letters, numbers, spaces, or . _ @ # : / + -'**
+  String get actionPullReferenceInvalid;
+
+  /// Asks the App to confirm the participant did the action.
+  ///
+  /// In en, this message translates to:
+  /// **'I did it'**
+  String get actionPullAsk;
+
+  /// Asks the App again after it did not answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask again'**
+  String get actionPullAskAgain;
+
+  /// The App said it is still deciding.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {appName}'**
+  String actionPullWaitingTitle(String appName);
+
+  /// Explains that the App confirms later.
+  ///
+  /// In en, this message translates to:
+  /// **'{appName} is checking and will confirm on its own. You can leave this page; it updates when {appName} answers.'**
+  String actionPullWaitingBody(String appName);
+
+  /// Verily stopped calling the App for now.
+  ///
+  /// In en, this message translates to:
+  /// **'{appName} didn\'t answer'**
+  String actionPullFailedTitle(String appName);
+
+  /// What to do after the App did not answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again in a little while.'**
+  String get actionPullFailedBody;
+
+  /// Pull check status when the App did not answer within a day and the proof was not accepted.
+  ///
+  /// In en, this message translates to:
+  /// **'{appName} never answered'**
+  String actionPullUnansweredTitle(String appName);
+
+  /// The App confirmed the participant's proof.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing more to do here.'**
+  String get actionPullAcceptedBody;
+
+  /// The App said no, or did not answer within a day.
+  ///
+  /// In en, this message translates to:
+  /// **'{appName} didn\'t confirm it'**
+  String actionPullRejectedTitle(String appName);
+
+  /// What to do after the App did not confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'If you think that\'s wrong, check with {appName}, or appeal and the action\'s creator will look again.'**
+  String actionPullRejectedBody(String appName);
+
+  /// The App cannot be asked: revoked, or no webhook or secret.
+  ///
+  /// In en, this message translates to:
+  /// **'{appName} can\'t confirm proof right now. Try again later.'**
+  String actionPullUnavailable(String appName);
+
+  /// The server's public reason proof_accepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Your proof passed.'**
+  String get proofReasonProofAccepted;
+
+  /// Public reason checking: verification is running.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily is checking your proof.'**
+  String get proofReasonChecking;
+
+  /// Public reason needs_review.
+  ///
+  /// In en, this message translates to:
+  /// **'A person will check this before it counts.'**
+  String get proofReasonNeedsReview;
+
+  /// Public reason proof_not_accepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Your proof didn\'t show what this action asks for.'**
+  String get proofReasonNotAccepted;
+
+  /// Public reason proof_missing.
+  ///
+  /// In en, this message translates to:
+  /// **'Some proof is still missing. Finish every step first.'**
+  String get proofReasonMissing;
+
+  /// Public reason action_full.
+  ///
+  /// In en, this message translates to:
+  /// **'This action has reached its limit.'**
+  String get proofReasonActionFull;
+
+  /// Public reason outside_area.
+  ///
+  /// In en, this message translates to:
+  /// **'You weren\'t inside the area for this action. Go to the pin and try again.'**
+  String get proofReasonOutsideArea;
+
+  /// Public reason location_not_precise.
+  ///
+  /// In en, this message translates to:
+  /// **'Your location wasn\'t precise enough. Step outside or near a window and try again.'**
+  String get proofReasonLocationNotPrecise;
+
+  /// Public reason location_too_old.
+  ///
+  /// In en, this message translates to:
+  /// **'Your location was too old by the time it arrived. Try again.'**
+  String get proofReasonLocationTooOld;
+
+  /// Public reason phone_clock.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone\'s clock doesn\'t match the time. Set it to automatic and try again.'**
+  String get proofReasonPhoneClock;
+
+  /// Public reason recording_length.
+  ///
+  /// In en, this message translates to:
+  /// **'The recording was too short or too long for this action.'**
+  String get proofReasonRecordingLength;
+
+  /// Public reason challenge_word_missing.
+  ///
+  /// In en, this message translates to:
+  /// **'The word to say wasn\'t ready before you recorded. Record again.'**
+  String get proofReasonChallengeWordMissing;
+
+  /// Public reason challenge_word_too_early.
+  ///
+  /// In en, this message translates to:
+  /// **'The recording started before your word arrived. Record again.'**
+  String get proofReasonChallengeWordTooEarly;
+
+  /// Public reason challenge_word_not_heard.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t hear your word. Say it clearly and record again.'**
+  String get proofReasonChallengeWordNotHeard;
+
+  /// Public reason code_not_matched.
+  ///
+  /// In en, this message translates to:
+  /// **'That code isn\'t this place\'s code. Scan the one shown here.'**
+  String get proofReasonCodeNotMatched;
+
+  /// Public reason motion_not_matched.
+  ///
+  /// In en, this message translates to:
+  /// **'The movement didn\'t match what this action asks for. Try again.'**
+  String get proofReasonMotionNotMatched;
+
+  /// Public reason capture_not_verified.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone couldn\'t vouch for this capture. Record it again in Verily.'**
+  String get proofReasonCaptureNotVerified;
+
+  /// Public reason payout_review.
+  ///
+  /// In en, this message translates to:
+  /// **'Bigger rewards get a quick look from a person before they\'re sent.'**
+  String get proofReasonPayoutReview;
+
+  /// Public reason app_confirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'The App confirmed it.'**
+  String get proofReasonAppConfirmed;
+
+  /// Public reason app_not_confirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'The App didn\'t confirm it.'**
+  String get proofReasonAppNotConfirmed;
+
+  /// Public reason app_checking.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the App to confirm.'**
+  String get proofReasonAppChecking;
+
+  /// Public reason app_unreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'The App couldn\'t be reached. Try again in a little while.'**
+  String get proofReasonAppUnreachable;
+
+  /// Public reason app_no_answer.
+  ///
+  /// In en, this message translates to:
+  /// **'The App didn\'t answer in time.'**
+  String get proofReasonAppNoAnswer;
+
+  /// A reason the app does not know yet, for a rejection.
+  ///
+  /// In en, this message translates to:
+  /// **'Your proof wasn\'t accepted.'**
+  String get proofReasonOther;
+
+  /// Review queue category payout_review.
+  ///
+  /// In en, this message translates to:
+  /// **'Large reward'**
+  String get reviewReasonPayout;
+
+  /// Review queue category security_review.
+  ///
+  /// In en, this message translates to:
+  /// **'Security check'**
+  String get reviewReasonSecurity;
+
+  /// Review queue category challenge_word_unclear.
+  ///
+  /// In en, this message translates to:
+  /// **'Word unclear'**
+  String get reviewReasonChallengeWord;
+
+  /// Review queue category location_review.
+  ///
+  /// In en, this message translates to:
+  /// **'Location check'**
+  String get reviewReasonLocation;
+
+  /// Review queue category abuse_review.
+  ///
+  /// In en, this message translates to:
+  /// **'Possible misuse'**
+  String get reviewReasonAbuse;
+
+  /// Review queue category local_check_unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick check didn\'t run'**
+  String get reviewReasonLocalCheck;
+
+  /// Review queue category verifier_unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic check unavailable'**
+  String get reviewReasonVerifier;
+
+  /// Review queue category low_confidence.
+  ///
+  /// In en, this message translates to:
+  /// **'Not sure enough'**
+  String get reviewReasonLowConfidence;
+
+  /// Review queue category needs_review, and any category the app does not know yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs a person'**
+  String get reviewReasonNeedsPerson;
+
+  /// Names the review queue category on a proof. reason is one of the reviewReason labels.
+  ///
+  /// In en, this message translates to:
+  /// **'Why it\'s here: {reason}'**
+  String reviewReasonLabel(String reason);
 }
 
 class _AppLocalizationsDelegate

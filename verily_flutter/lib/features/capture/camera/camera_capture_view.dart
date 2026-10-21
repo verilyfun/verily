@@ -14,6 +14,10 @@ import 'package:verily_flutter/features/capture/capture_providers.dart';
 import 'package:verily_flutter/features/capture/widgets/capture_problem_panel.dart';
 import 'package:verily_flutter/features/capture/widgets/spoken_challenge_bubble.dart';
 import 'package:verily_flutter/features/capture/widgets/viewfinder.dart';
+import 'package:verily_flutter/features/local_check/local_check_providers.dart';
+import 'package:verily_flutter/features/local_check/local_check_session.dart';
+import 'package:verily_flutter/features/local_check/local_check_tally.dart';
+import 'package:verily_flutter/features/local_check/widgets/local_check_guide.dart';
 import 'package:verily_flutter/l10n/l10n.dart';
 import 'package:verily_flutter/testing/verily_test_keys.dart';
 
@@ -25,6 +29,12 @@ enum CameraCaptureMode { photo, video }
 /// There is no gallery and no file picker: the only way in is the shutter
 /// or the record button, at the moment the action happens. When the action
 /// asks for a spoken word, it is shown before and while recording.
+///
+/// A proof with a quick check runs the pinned model on the camera frames
+/// where the phone can: a guide says what it sees, a video stops by itself
+/// once enough of the recording shows the label (unless a word is still to
+/// be said), and a photo is taken by itself once the label holds for a few
+/// frames. The shutter and stop button always work too.
 class CameraCaptureView extends HookConsumerWidget {
   const CameraCaptureView({
     required this.requirement,
@@ -50,11 +60,19 @@ class CameraCaptureView extends HookConsumerWidget {
     final video = mode == CameraCaptureMode.video;
     final minimum = minimumRecording(requirement);
     final maximum = maximumRecording(requirement);
+    final check = requirement.localCheck;
+    final checkModel = requirement.localCheckModel;
+    final liveCheck =
+        check != null &&
+        checkModel != null &&
+        check.task != LocalCheckTask.sound &&
+        ref.watch(localCheckSupportedProvider);
 
     final camera = useMemoized(
       () => ref.read(captureCameraFactoryProvider)(
         recordAudio: video,
         initialLens: CaptureLens.back,
+        analyseFrames: liveCheck,
       ),
     );
     useEffect(() {
@@ -65,6 +83,31 @@ class CameraCaptureView extends HookConsumerWidget {
     final state = camera.state;
     final recording = state.phase == CaptureCameraPhase.recording;
     final ready = state.phase == CaptureCameraPhase.ready;
+
+    final session = useMemoized(
+      () => liveCheck
+          ? LocalCheckSession(
+              check: check,
+              model: checkModel,
+              photo: !video,
+              vision: ref.read(localCheckVisionFactoryProvider),
+            )
+          : null,
+    );
+    useEffect(() {
+      final current = session;
+      if (current == null) return null;
+      unawaited(current.start());
+      return current.dispose;
+    }, [session]);
+    useListenable(session);
+    final checking = session?.availability == LocalCheckAvailability.active;
+    useEffect(() {
+      final current = session;
+      if (current == null || !checking) return null;
+      camera.setFrameAnalyser(current.analyse);
+      return () => camera.setFrameAnalyser(null);
+    }, [checking]);
 
     final elapsed = useState(Duration.zero);
     final interrupted = useState(false);
@@ -77,6 +120,10 @@ class CameraCaptureView extends HookConsumerWidget {
       busy.value = true;
       final measured = elapsed.value;
       final clip = await camera.stopRecording();
+      // What the quick check counted over this recording, before the guide
+      // goes back to the preview.
+      final advice = session?.advisory();
+      session?.stopRecording();
       if (!context.mounted) return;
       busy.value = false;
       limitReached.value = atLimit;
@@ -86,6 +133,7 @@ class CameraCaptureView extends HookConsumerWidget {
           file: clip,
           capturedAt: clock.now().toUtc(),
           measuredDuration: measured,
+          localCheck: advice,
         ),
       );
     }
@@ -94,17 +142,26 @@ class CameraCaptureView extends HookConsumerWidget {
       interrupted.value = false;
       limitReached.value = false;
       elapsed.value = Duration.zero;
+      session?.startRecording();
       await camera.startRecording();
     }
 
     Future<void> shoot() async {
       if (busy.value) return;
       busy.value = true;
+      // The frames right before the shutter are what the check saw.
+      final advice = session?.advisory();
       final photo = await camera.takePhoto();
       if (!context.mounted) return;
       busy.value = false;
       if (photo == null) return;
-      onCaptured(RawCapture(file: photo, capturedAt: clock.now().toUtc()));
+      onCaptured(
+        RawCapture(
+          file: photo,
+          capturedAt: clock.now().toUtc(),
+          localCheck: advice,
+        ),
+      );
     }
 
     useOnAppLifecycleStateChange((_, current) {
@@ -142,6 +199,22 @@ class CameraCaptureView extends HookConsumerWidget {
       return null;
     }, [overLimit]);
 
+    // The quick check finishes the capture once it sees enough. A video
+    // waits for the shortest length the action takes, and never cuts off a
+    // spoken word: the person stops that recording themselves.
+    final checkPassed = session?.passed ?? false;
+    final longEnough = elapsed.value >= minimum;
+    final word = spokenWord;
+    final autoFinish =
+        checkPassed &&
+        !busy.value &&
+        (video ? recording && longEnough && word == null : ready);
+    useEffect(() {
+      if (!autoFinish) return null;
+      unawaited(video ? stop() : shoot());
+      return null;
+    }, [autoFinish]);
+
     final status = switch (state.phase) {
       CaptureCameraPhase.opening => l10n.movementCaptureOpening,
       CaptureCameraPhase.recording => l10n.captureElapsed(
@@ -154,7 +227,22 @@ class CameraCaptureView extends HookConsumerWidget {
       ),
       _ => requirement.instructions,
     };
-    final word = spokenWord;
+    final guide = check == null
+        ? null
+        : localCheckGuideCopy(
+            l10n,
+            check: check,
+            availability: session?.availability,
+            guidance: session?.guidance ?? LocalCheckGuidance.notSeen,
+            moment: switch ((recording, autoFinish || busy.value)) {
+              (_, true) => LocalCheckMoment.finishing,
+              (true, _) when word != null => LocalCheckMoment.recordingWithWord,
+              (true, _) when !longEnough => LocalCheckMoment.recordingTooShort,
+              (true, _) => LocalCheckMoment.finishing,
+              (false, _) =>
+                video ? LocalCheckMoment.preview : LocalCheckMoment.finishing,
+            },
+          );
 
     final Widget button;
     if (!video) {
@@ -230,6 +318,10 @@ class CameraCaptureView extends HookConsumerWidget {
                         if (word != null) ...[
                           SpokenChallengeBubble(word: word, intro: !recording),
                           const SizedBox(height: 12),
+                        ],
+                        if (guide != null) ...[
+                          LocalCheckGuide(copy: guide),
+                          const SizedBox(height: 10),
                         ],
                         Text(
                           status,

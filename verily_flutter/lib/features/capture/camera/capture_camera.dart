@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:mp_camera/mp_camera.dart';
 
 import 'package:verily_flutter/features/capture/movement/recording_files.dart';
 
@@ -51,6 +53,10 @@ final class CaptureCameraState {
   );
 }
 
+/// Looks at one camera frame, such as a quick check scoring it. The camera
+/// drops frames that arrive while the returned future is still running.
+typedef CaptureFrameAnalyser = Future<void> Function(MpCameraFrame frame);
+
 /// A live camera for photo and video proof.
 ///
 /// The interface keeps capture screens testable without camera hardware.
@@ -74,6 +80,11 @@ abstract interface class CaptureCamera implements Listenable {
 
   Future<void> flip();
 
+  /// Hands frames to [analyser] while the preview shows and while
+  /// recording; null stops. Only a camera built with `analyseFrames`
+  /// delivers frames.
+  void setFrameAnalyser(CaptureFrameAnalyser? analyser);
+
   /// Releases the camera, discarding any recording in progress.
   Future<void> close();
 
@@ -81,9 +92,13 @@ abstract interface class CaptureCamera implements Listenable {
 }
 
 /// Builds the camera for one capture; replaced in widget tests.
+///
+/// [analyseFrames] opens a stream of frames for on-device checks, at the
+/// resolution live analysis can keep up with.
 typedef CaptureCameraFactory = CaptureCamera Function({
   required bool recordAudio,
   required CaptureLens initialLens,
+  required bool analyseFrames,
 });
 
 /// The production camera, backed by `package:camera`.
@@ -92,10 +107,19 @@ typedef CaptureCameraFactory = CaptureCamera Function({
 /// open can never resurrect a camera that was already closed.
 final class PluginCaptureCamera extends ChangeNotifier
     implements CaptureCamera {
-  PluginCaptureCamera({required this.recordAudio, this._lens = .back});
+  PluginCaptureCamera({
+    required this.recordAudio,
+    this.analyseFrames = false,
+    this._lens = .back,
+  });
 
   /// Whether video records sound, needed for a spoken challenge.
   final bool recordAudio;
+
+  /// Whether frames are converted for on-device analysis. Analysis runs at a
+  /// medium resolution, as movement tracking does, so it keeps up with the
+  /// preview; the server still checks the full recording it receives.
+  final bool analyseFrames;
 
   CaptureLens _lens;
   CaptureCameraState _state = const CaptureCameraState(
@@ -105,6 +129,9 @@ final class PluginCaptureCamera extends ChangeNotifier
   Future<void> _operation = Future<void>.value();
   int _generation = 0;
   bool _disposed = false;
+  CaptureFrameAnalyser? _analyser;
+  bool _analysing = false;
+  final MpCameraClock _clock = MpCameraClock();
 
   @override
   CaptureCameraState get state => _state;
@@ -136,8 +163,13 @@ final class PluginCaptureCamera extends ChangeNotifier
       );
       final camera = CameraController(
         description,
-        ResolutionPreset.high,
+        analyseFrames ? ResolutionPreset.medium : ResolutionPreset.high,
         enableAudio: recordAudio,
+        imageFormatGroup: analyseFrames
+            ? defaultTargetPlatform == TargetPlatform.iOS
+                  ? ImageFormatGroup.bgra8888
+                  : ImageFormatGroup.nv21
+            : null,
       );
       _camera = camera;
       await camera.initialize();
@@ -155,6 +187,7 @@ final class PluginCaptureCamera extends ChangeNotifier
           }),
         ),
       );
+      await _startStream(camera, generation);
     } on CameraException catch (error) {
       if (_disposed || generation != _generation) return;
       await _release();
@@ -174,7 +207,10 @@ final class PluginCaptureCamera extends ChangeNotifier
       final camera = _camera;
       if (camera == null || _state.phase != CaptureCameraPhase.ready) return;
       try {
+        // Not every camera can take a still while streaming frames.
+        await _stopStream(camera);
         photo = await camera.takePicture();
+        await _startStream(camera, _generation);
       } on CameraException catch (error, stack) {
         _report(error, stack, 'while taking a photo');
         _fail(CaptureCameraFailure.recordingFailed);
@@ -188,7 +224,15 @@ final class PluginCaptureCamera extends ChangeNotifier
     final camera = _camera;
     if (camera == null || _state.phase != CaptureCameraPhase.ready) return;
     try {
-      await camera.startVideoRecording();
+      // While recording, frames come from the recording itself.
+      await _stopStream(camera);
+      final generation = _generation;
+      final description = camera.description;
+      await camera.startVideoRecording(
+        onAvailable: _analyser == null
+            ? null
+            : (image) => _deliver(image, description, generation),
+      );
       _emit(_state.copyWith(phase: CaptureCameraPhase.recording));
     } on CameraException catch (error, stack) {
       _report(error, stack, 'while starting a recording');
@@ -205,6 +249,7 @@ final class PluginCaptureCamera extends ChangeNotifier
       try {
         clip = await camera.stopVideoRecording();
         _emit(_state.copyWith(phase: CaptureCameraPhase.ready));
+        await _startStream(camera, _generation);
       } on CameraException catch (error, stack) {
         _report(error, stack, 'while saving a recording');
         _fail(CaptureCameraFailure.recordingFailed);
@@ -218,6 +263,27 @@ final class PluginCaptureCamera extends ChangeNotifier
     if (!_state.canFlip || _state.phase != CaptureCameraPhase.ready) return;
     _lens = _lens == CaptureLens.front ? CaptureLens.back : CaptureLens.front;
     await open();
+  }
+
+  @override
+  void setFrameAnalyser(CaptureFrameAnalyser? analyser) {
+    _analyser = analyser;
+    if (!analyseFrames) return;
+    unawaited(
+      _serialized(() async {
+        final camera = _camera;
+        if (camera == null ||
+            !camera.value.isInitialized ||
+            camera.value.isRecordingVideo) {
+          return;
+        }
+        if (analyser == null) {
+          await _stopStream(camera);
+        } else {
+          await _startStream(camera, _generation);
+        }
+      }),
+    );
   }
 
   @override
@@ -238,6 +304,65 @@ final class PluginCaptureCamera extends ChangeNotifier
     super.dispose();
   }
 
+  /// Streams preview frames to the analyser, when there is one.
+  Future<void> _startStream(CameraController camera, int generation) async {
+    if (!analyseFrames ||
+        _analyser == null ||
+        camera.value.isStreamingImages ||
+        camera.value.isRecordingVideo) {
+      return;
+    }
+    final description = camera.description;
+    await camera.startImageStream(
+      (image) => _deliver(image, description, generation),
+    );
+  }
+
+  Future<void> _stopStream(CameraController camera) async {
+    if (camera.value.isStreamingImages) await camera.stopImageStream();
+  }
+
+  /// Converts and hands one frame over, unless the last one is still being
+  /// analysed: frames are dropped before conversion so analysis never
+  /// queues behind the camera.
+  void _deliver(
+    CameraImage image,
+    CameraDescription description,
+    int generation,
+  ) {
+    final analyser = _analyser;
+    if (_analysing ||
+        analyser == null ||
+        _disposed ||
+        generation != _generation) {
+      return;
+    }
+    _analysing = true;
+    final MpCameraFrame frame;
+    try {
+      frame = MpCameraFrameConverter.convert(
+        image,
+        timestampMs: _clock.nextTimestampMs(),
+        rotationDegrees: MpCameraRotation.degrees(
+          description,
+          DeviceOrientation.portraitUp,
+        ),
+        mirroredPreview: MpCameraRotation.isPreviewMirrored(description),
+      );
+    } on Object catch (error, stack) {
+      _analysing = false;
+      _report(error, stack, 'while converting a camera frame');
+      return;
+    }
+    unawaited(
+      analyser(frame)
+          .catchError((Object error, StackTrace stack) {
+            _report(error, stack, 'while analysing a camera frame');
+          })
+          .whenComplete(() => _analysing = false),
+    );
+  }
+
   Future<void> _release() async {
     final camera = _camera;
     _camera = null;
@@ -247,6 +372,7 @@ final class PluginCaptureCamera extends ChangeNotifier
         // A discarded capture never leaves a clip behind.
         await deleteRecording(await camera.stopVideoRecording());
       }
+      await _stopStream(camera);
     } on CameraException {
       // The camera is being torn down; disposal below still releases it.
     } finally {

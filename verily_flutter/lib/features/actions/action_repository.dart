@@ -18,7 +18,8 @@ abstract interface class ActionRepository {
   Future<ActionOpportunity> createAction(CreateActionDefinitionRequest request);
   Future<ActionOpportunity> saveDraft(CreateActionDefinitionRequest request);
 
-  /// The creator's own view of one of their actions.
+  /// The creator's own view of one of their actions. Throws
+  /// [ResourceNotFoundException] for an action that is not theirs.
   Future<ActionOpportunity> preview(UuidValue actionId);
   Future<List<ActionOpportunity>> listOwned();
   Future<ActionOpportunity> publish(ActionOpportunity action);
@@ -32,6 +33,11 @@ abstract interface class ActionRepository {
 
   // Doing.
   Future<List<ActionOpportunity>> listAvailable();
+
+  /// One action as a participant sees it: any published public action,
+  /// including paused and completed ones, or the caller's own draft. Throws
+  /// [ResourceNotFoundException] for anything else.
+  Future<ActionOpportunity> getAction(UuidValue actionId);
 
   /// Live actions with a place within [radiusKm] (0.1 to 50), nearest first.
   /// The server coarsens the point to about 100 m and never stores it.
@@ -52,6 +58,16 @@ abstract interface class ActionRepository {
   });
   Future<ActionAttemptView> completeAttempt(UuidValue attemptId);
   Future<List<ActionAttemptView>> listMyAttempts();
+
+  /// "I did it" on a pull-verified App proof: Verily asks the App's webhook
+  /// and answers with where the check stands (`status` null while the App
+  /// has not decided). Asking again while the App is deciding makes no new
+  /// call. [reference] is the participant's optional note for the App.
+  Future<EvidenceSubmissionResult> requestAppVerification({
+    required UuidValue attemptId,
+    required UuidValue requirementId,
+    String? reference,
+  });
 }
 
 class ServerpodActionRepository implements ActionRepository {
@@ -114,6 +130,10 @@ class ServerpodActionRepository implements ActionRepository {
       _actions.listAvailableActions(limit: 100);
 
   @override
+  Future<ActionOpportunity> getAction(UuidValue actionId) =>
+      _actions.getAction(actionId: actionId);
+
+  @override
   Future<List<ActionOpportunity>> listNearby({
     required double latitude,
     required double longitude,
@@ -150,6 +170,17 @@ class ServerpodActionRepository implements ActionRepository {
   @override
   Future<List<ActionAttemptView>> listMyAttempts() =>
       _actions.listMyAttempts(limit: 50);
+
+  @override
+  Future<EvidenceSubmissionResult> requestAppVerification({
+    required UuidValue attemptId,
+    required UuidValue requirementId,
+    String? reference,
+  }) => _actions.requestAppVerification(
+    attemptId: attemptId,
+    requirementId: requirementId,
+    reference: reference,
+  );
 }
 
 final actionRepositoryProvider = Provider<ActionRepository>(

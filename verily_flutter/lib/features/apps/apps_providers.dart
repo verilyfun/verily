@@ -14,6 +14,17 @@ final FutureProvider<List<VerilyAppView>> verilyAppsProvider =
       (ref) => ref.watch(appsRepositoryProvider).listApps(),
     );
 
+/// One of the caller's Apps, for its own page.
+final FutureProviderFamily<VerilyAppView, UuidValue> verilyAppProvider =
+    FutureProvider.autoDispose.family<VerilyAppView, UuidValue>(
+      (ref, appId) => ref.watch(appsRepositoryProvider).getApp(appId),
+    );
+
+/// Reloads the App list and [appId]'s own page after a change to it.
+void refreshApp(WidgetRef ref, UuidValue appId) => ref
+  ..invalidate(verilyAppsProvider)
+  ..invalidate(verilyAppProvider(appId));
+
 /// The keys of [app] that still work.
 Iterable<VerilyAppKeyView> activeKeysOf(VerilyAppView app) =>
     app.keys.where((key) => key.revokedAt == null);
@@ -37,41 +48,53 @@ String appBearerKey(VerilyAppCredential credential) {
 /// The public part of a key, safe to show and log.
 String appKeyLabel(String keyId) => 'vly_$keyId';
 
-/// One page of an App's confirmation receipts, newest first.
+/// The rows of an append-only App log loaded so far, newest first.
 @immutable
-class AppConfirmationsPage {
-  const AppConfirmationsPage({
+class AppLogPage<T> {
+  const AppLogPage({
     required this.items,
     required this.hasMore,
     this.loadingMore = false,
   });
 
-  final List<AppConfirmationView> items;
+  final List<T> items;
   final bool hasMore;
   final bool loadingMore;
 
-  AppConfirmationsPage copyWith({bool? loadingMore}) => AppConfirmationsPage(
+  AppLogPage<T> copyWith({bool? loadingMore}) => AppLogPage<T>(
     items: items,
     hasMore: hasMore,
     loadingMore: loadingMore ?? this.loadingMore,
   );
 }
 
-/// Loads an App's append-only confirmation receipts a page at a time.
-class AppConfirmationsController extends AsyncNotifier<AppConfirmationsPage> {
-  AppConfirmationsController(this.appId);
+/// One page of an App's confirmation receipts.
+typedef AppConfirmationsPage = AppLogPage<AppConfirmationView>;
 
-  /// The server's page size for `listConfirmations`.
-  static const pageSize = 50;
+/// One page of the calls Verily made to an App's webhook.
+typedef AppDeliveriesPage = AppLogPage<AppWebhookDeliveryView>;
+
+/// Loads one of an App's append-only logs a page at a time, newest first,
+/// paging backwards by the last row's id.
+abstract class AppLogController<T> extends AsyncNotifier<AppLogPage<T>> {
+  AppLogController(this.appId);
 
   final UuidValue appId;
 
+  /// The page size the repository asks the server for; a shorter page is the
+  /// last one.
+  int get pageSize;
+
+  /// The page of rows older than [beforeId], or the newest page.
+  Future<List<T>> fetch(AppsRepository apps, {UuidValue? beforeId});
+
+  /// The id the next page is fetched before.
+  UuidValue idOf(T item);
+
   @override
-  Future<AppConfirmationsPage> build() async {
-    final page = await ref
-        .read(appsRepositoryProvider)
-        .listConfirmations(appId);
-    return AppConfirmationsPage(items: page, hasMore: page.length == pageSize);
+  Future<AppLogPage<T>> build() async {
+    final page = await fetch(ref.read(appsRepositoryProvider));
+    return AppLogPage<T>(items: page, hasMore: page.length == pageSize);
   }
 
   /// Appends the next older page. A failure keeps the rows already loaded
@@ -81,11 +104,12 @@ class AppConfirmationsController extends AsyncNotifier<AppConfirmationsPage> {
     if (current == null || !current.hasMore || current.loadingMore) return;
     state = AsyncData(current.copyWith(loadingMore: true));
     try {
-      final page = await ref
-          .read(appsRepositoryProvider)
-          .listConfirmations(appId, beforeId: current.items.last.id);
+      final page = await fetch(
+        ref.read(appsRepositoryProvider),
+        beforeId: idOf(current.items.last),
+      );
       state = AsyncData(
-        AppConfirmationsPage(
+        AppLogPage<T>(
           items: [...current.items, ...page],
           hasMore: page.length == pageSize,
         ),
@@ -97,6 +121,23 @@ class AppConfirmationsController extends AsyncNotifier<AppConfirmationsPage> {
   }
 }
 
+/// An App's confirmation receipts.
+class AppConfirmationsController extends AppLogController<AppConfirmationView> {
+  AppConfirmationsController(super.appId);
+
+  @override
+  int get pageSize => AppPageSizes.confirmations;
+
+  @override
+  Future<List<AppConfirmationView>> fetch(
+    AppsRepository apps, {
+    UuidValue? beforeId,
+  }) => apps.listConfirmations(appId, beforeId: beforeId);
+
+  @override
+  UuidValue idOf(AppConfirmationView item) => item.id;
+}
+
 final AsyncNotifierProviderFamily<
   AppConfirmationsController,
   AppConfirmationsPage,
@@ -105,4 +146,31 @@ final AsyncNotifierProviderFamily<
 appConfirmationsProvider = AsyncNotifierProvider.autoDispose
     .family<AppConfirmationsController, AppConfirmationsPage, UuidValue>(
       AppConfirmationsController.new,
+    );
+
+/// The calls Verily made to an App's webhook: events and pull checks.
+class AppDeliveriesController extends AppLogController<AppWebhookDeliveryView> {
+  AppDeliveriesController(super.appId);
+
+  @override
+  int get pageSize => AppPageSizes.deliveries;
+
+  @override
+  Future<List<AppWebhookDeliveryView>> fetch(
+    AppsRepository apps, {
+    UuidValue? beforeId,
+  }) => apps.listWebhookDeliveries(appId, beforeId: beforeId);
+
+  @override
+  UuidValue idOf(AppWebhookDeliveryView item) => item.id;
+}
+
+final AsyncNotifierProviderFamily<
+  AppDeliveriesController,
+  AppDeliveriesPage,
+  UuidValue
+>
+appDeliveriesProvider = AsyncNotifierProvider.autoDispose
+    .family<AppDeliveriesController, AppDeliveriesPage, UuidValue>(
+      AppDeliveriesController.new,
     );

@@ -68,16 +68,16 @@ abstract final class VerilyLocations {
   static const signInReturningAccount = 'returning';
 }
 
-/// Route names a signed-out visitor may open.
+/// Route names whose content a signed-out visitor may see.
 ///
-/// Every server call needs an account, so only the front door and the
-/// deep-link landing pages are public. Route names are used rather than URL
-/// prefixes so a new route cannot silently become public.
+/// Every server call needs an account, so only the front door is public.
+/// Every other page, including the request and link pages other Apps open,
+/// shows the account prompt in place and its own content once the person
+/// has signed in. Route names are used rather than URL prefixes so a new
+/// route cannot silently become public.
 const guestAccessibleRouteNames = <String>{
   VerilyRouteNames.welcome,
   VerilyRouteNames.signIn,
-  VerilyRouteNames.verificationRequest,
-  VerilyRouteNames.link,
 };
 
 bool isGuestAccessibleRoute(String? routeName) =>

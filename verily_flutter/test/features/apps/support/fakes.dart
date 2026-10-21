@@ -86,6 +86,20 @@ class FakeAppsRepository implements AppsRepository {
   @override
   Future<List<VerilyAppView>> listApps() async => apps;
 
+  final appsFetched = <UuidValue>[];
+
+  @override
+  Future<VerilyAppView> getApp(UuidValue appId) async {
+    appsFetched.add(appId);
+    for (final app in apps) {
+      if (app.id == appId) return app;
+    }
+    throw ResourceNotFoundException(
+      resource: MissingResource.app,
+      message: 'That app was not found.',
+    );
+  }
+
   @override
   Future<VerilyAppCredential> createApp({
     required String name,
@@ -167,4 +181,104 @@ class FakeAppsRepository implements AppsRepository {
   @override
   Future<VerilyAppLinkView> linkApp(UuidValue appId) =>
       throw UnimplementedError('linkApp is not used by the Apps pages.');
+
+  /// Thrown by the next settings change while set, then cleared.
+  Object? settingsError;
+
+  /// Pages returned by successive `listWebhookDeliveries` calls.
+  List<List<AppWebhookDeliveryView>> deliveryPages = const [];
+
+  final webhookUrlsSet = <String?>[];
+  final secretsRotated = <UuidValue>[];
+  final redirectUrisSet = <List<String>>[];
+  final deliveryRequests = <({UuidValue appId, UuidValue? beforeId})>[];
+
+  void _failIfAsked() {
+    if (settingsError case final error?) {
+      settingsError = null;
+      Error.throwWithStackTrace(error, StackTrace.current);
+    }
+  }
+
+  VerilyAppView _update(
+    UuidValue appId,
+    VerilyAppView Function(VerilyAppView app) change,
+  ) {
+    final updated = change(apps.firstWhere((item) => item.id == appId));
+    apps = [
+      for (final item in apps)
+        if (item.id == appId) updated else item,
+    ];
+    return updated;
+  }
+
+  @override
+  Future<VerilyAppView> setWebhookUrl({
+    required UuidValue appId,
+    required String? webhookUrl,
+  }) async {
+    webhookUrlsSet.add(webhookUrl);
+    _failIfAsked();
+    // The generated copyWith clears a field given an explicit null.
+    return _update(appId, (app) => app.copyWith(webhookUrl: webhookUrl));
+  }
+
+  @override
+  Future<VerilyAppWebhookSecret> rotateWebhookSecret(UuidValue appId) async {
+    secretsRotated.add(appId);
+    _failIfAsked();
+    final app = _update(
+      appId,
+      (app) => app.copyWith(webhookSecretVersion: app.webhookSecretVersion + 1),
+    );
+    return VerilyAppWebhookSecret(
+      appId: appId,
+      version: app.webhookSecretVersion,
+      secret: 'whsec_${fixtureSecret}v${app.webhookSecretVersion}',
+      previousSecretValidUntil: app.webhookSecretVersion > 1
+          ? fixtureNow.add(const Duration(hours: 24))
+          : null,
+    );
+  }
+
+  @override
+  Future<VerilyAppView> setRedirectUris({
+    required UuidValue appId,
+    required List<String> redirectUris,
+  }) async {
+    redirectUrisSet.add(redirectUris);
+    _failIfAsked();
+    return _update(appId, (app) => app.copyWith(redirectUris: redirectUris));
+  }
+
+  @override
+  Future<List<AppWebhookDeliveryView>> listWebhookDeliveries(
+    UuidValue appId, {
+    UuidValue? beforeId,
+  }) async {
+    deliveryRequests.add((appId: appId, beforeId: beforeId));
+    final index = deliveryRequests.length - 1;
+    return index < deliveryPages.length ? deliveryPages[index] : [];
+  }
 }
+
+AppWebhookDeliveryView fixtureDelivery(
+  int index, {
+  String eventType = 'attempt.verified',
+  bool succeeded = true,
+  int? statusCode = 200,
+  String? errorCode,
+  int attemptNumber = 1,
+  AppEventStatus? eventStatus = AppEventStatus.delivered,
+}) => AppWebhookDeliveryView(
+  id: fixtureId(7000 + index),
+  eventId: 'vev_$index',
+  eventType: eventType,
+  attemptNumber: attemptNumber,
+  requestedAt: fixtureNow.subtract(Duration(minutes: index)),
+  durationMilliseconds: 120 + index,
+  statusCode: statusCode,
+  errorCode: errorCode,
+  succeeded: succeeded,
+  eventStatus: eventStatus,
+);

@@ -66,10 +66,13 @@ class ActionEditorScreen extends HookConsumerWidget {
           child: VerilyStatePanel.problem(
             title: l10n.editorLoadFailed,
             message: userMessageFor(l10n, error),
-            action: VerilyStateAction(
-              label: l10n.dialogRetry,
-              onPressed: () => ref.invalidate(editorActionProvider(id)),
-            ),
+            // A missing action stays missing; anything else may pass.
+            action: error is ResourceNotFoundException
+                ? null
+                : VerilyStateAction(
+                    label: l10n.dialogRetry,
+                    onPressed: () => ref.invalidate(editorActionProvider(id)),
+                  ),
           ),
         ),
       ),

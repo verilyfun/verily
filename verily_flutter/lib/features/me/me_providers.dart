@@ -6,51 +6,37 @@ import 'package:verily_flutter/features/actions/action_repository.dart';
 import 'package:verily_flutter/features/appeals/evidence_appeal_repository.dart';
 import 'package:verily_flutter/features/rewards/reward_repository.dart';
 
-/// One of the caller's attempts with the action it belongs to, when that
-/// action is still listed.
+/// One of the caller's attempts with the payout it won, if any.
 @immutable
 class MyAttempt {
-  const MyAttempt({required this.attempt, this.action});
+  const MyAttempt({required this.attempt, this.payout});
 
   final ActionAttemptView attempt;
 
-  /// Null when the action has ended, been paused, or fallen out of the list:
-  /// the attempt view itself carries no title.
-  final ActionOpportunity? action;
+  /// The payout this attempt won; null when it won none or the action
+  /// carries no reward.
+  final RewardPayoutView? payout;
 }
 
-/// Matches each attempt to its action. Actions carry the caller's attempt for
-/// the current period, and every attempt names the action revision it
-/// belongs to, so both are tried.
-List<MyAttempt> joinAttemptsWithActions(
+/// Matches each attempt to the payout it won, by attempt id.
+List<MyAttempt> joinAttemptsWithPayouts(
   List<ActionAttemptView> attempts,
-  List<ActionOpportunity> actions,
+  List<RewardPayoutView> payouts,
 ) {
-  final byAttemptId = {
-    for (final action in actions)
-      if (action.myAttempt case final attempt?) attempt.id: action,
-  };
-  final byRevisionId = {for (final action in actions) action.id: action};
+  final byAttempt = {for (final payout in payouts) payout.attemptId: payout};
   return [
     for (final attempt in attempts)
-      MyAttempt(
-        attempt: attempt,
-        action:
-            byAttemptId[attempt.id] ?? byRevisionId[attempt.actionDefinitionId],
-      ),
+      MyAttempt(attempt: attempt, payout: byAttempt[attempt.id]),
   ];
 }
 
 final FutureProvider<List<MyAttempt>> myAttemptsProvider =
-    FutureProvider.autoDispose<List<MyAttempt>>((
-      ref,
-    ) async {
-      final actions = ref.watch(actionRepositoryProvider);
-      final (attempts, available) = await (
-        actions.listMyAttempts(),
-        actions.listAvailable(),
+    FutureProvider.autoDispose<List<MyAttempt>>((ref) async {
+      final (attempts, payouts) = await (
+        ref.watch(actionRepositoryProvider).listMyAttempts(),
+        ref.watch(myPayoutsProvider.future),
       ).wait;
-      return joinAttemptsWithActions(attempts, available);
+      return joinAttemptsWithPayouts(attempts, payouts);
     });
 
 final FutureProvider<List<RewardPayoutView>> myPayoutsProvider =

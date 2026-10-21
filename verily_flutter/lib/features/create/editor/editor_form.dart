@@ -6,6 +6,7 @@ import 'package:verily_client/verily_client.dart';
 import 'package:verily_evidence/verily_evidence.dart';
 
 import 'package:verily_flutter/core/token_amount.dart';
+import 'package:verily_flutter/features/local_check/local_check_catalog.dart';
 
 /// The proofs the editor offers. Movement reps are a `video` requirement with
 /// a movement kind; App confirmation is the `externalApp` kind.
@@ -153,7 +154,6 @@ class RequirementForm {
     this.radiusMeters = 100,
     this.maxAccuracyMeters = 50,
     String prompt = '',
-    this.promptNeedsRewrite = false,
     int? minSeconds,
     int? maxSeconds,
     bool? spokenChallenge,
@@ -171,8 +171,10 @@ class RequirementForm {
     this.minPeakAcceleration = 12,
     this.maxPeakAcceleration = 60,
     String? venueSecret,
+    bool venueSecretStored = false,
     this.appId,
     this.appName,
+    this.appVerificationMode = AppVerificationMode.push,
     this.localCheck,
   }) : title = TextEditingController(text: title),
        instructions = TextEditingController(text: instructions),
@@ -189,7 +191,9 @@ class RequirementForm {
        targetRepetitions = TextEditingController(
          text: '${targetRepetitions ?? _defaultTarget(kind)}',
        ),
-       venueSecret = venueSecret ?? freshVenueSecret();
+       venueSecret = venueSecretStored
+           ? null
+           : venueSecret ?? freshVenueSecret();
 
   /// A new proof of [kind] with [title] and [instructions] as starting copy.
   factory RequirementForm.blank(
@@ -247,12 +251,13 @@ class RequirementForm {
     );
   }
 
-  /// A saved proof, for editing.
+  /// A saved proof, for editing, from the creator's own view.
   ///
-  /// The server does not return a media proof's verification prompt, its
-  /// confidence threshold, or a venue code's secret. The prompt is marked for
-  /// rewriting, the threshold falls back to the default, and the venue gets a
-  /// fresh secret (participants only ever scan server-issued codes).
+  /// The prompt comes back as the creator wrote it, or null when the server
+  /// writes it (a quick check saved without creator text), and is sent back
+  /// the same way. A venue's stored secret is never sent to the phone: it is
+  /// kept by saving with no code, and only a venue without one gets a fresh
+  /// secret.
   factory RequirementForm.fromView(ActionRequirementView view) {
     final kind = proofKindOf(view.kind, hasMovement: view.movementKind != null);
     return RequirementForm(
@@ -265,11 +270,12 @@ class RequirementForm {
       longitude: view.longitude,
       radiusMeters: view.radiusMeters ?? 100,
       maxAccuracyMeters: view.maxAccuracyMeters ?? 50,
-      promptNeedsRewrite: kind.hasVerificationPrompt,
+      prompt: view.verificationPrompt ?? '',
       minSeconds: view.minDurationSeconds,
       maxSeconds: view.maxDurationSeconds,
       spokenChallenge: view.spokenChallengeRequired,
       policy: view.verificationPolicy ?? ActionVerificationPolicy.singleModel,
+      minConfidence: view.minConfidence ?? EditorLimits.defaultMinConfidence,
       movementKind: view.movementKind ?? ActionMovementKind.squats,
       targetRepetitions: view.targetRepetitions,
       motionType: view.motionType ?? ActionMotionType.rotation,
@@ -281,8 +287,10 @@ class RequirementForm {
       maxFreeFallMilliseconds: view.maxFreeFallMilliseconds ?? 700,
       minPeakAcceleration: view.minPeakAccelerationMetersPerSecondSquared ?? 12,
       maxPeakAcceleration: view.maxPeakAccelerationMetersPerSecondSquared ?? 60,
+      venueSecretStored: view.venueCodeConfigured ?? false,
       appId: view.appId,
       appName: view.appName,
+      appVerificationMode: view.appVerificationMode ?? AppVerificationMode.push,
       localCheck: view.localCheck,
     );
   }
@@ -302,9 +310,6 @@ class RequirementForm {
   // Media.
   final TextEditingController prompt;
 
-  /// True when editing a saved media proof: the server does not hand its
-  /// prompt back, so the creator writes it again before saving.
-  bool promptNeedsRewrite;
   final TextEditingController minSeconds;
   final TextEditingController maxSeconds;
   bool spokenChallenge;
@@ -325,15 +330,43 @@ class RequirementForm {
   double maxPeakAcceleration;
 
   // Venue code.
-  final String venueSecret;
+
+  /// The secret a new venue is seeded with; null for a saved venue whose
+  /// secret the server keeps (saving with no code leaves it as it was).
+  final String? venueSecret;
 
   // App confirmation.
   UuidValue? appId;
   String? appName;
 
-  /// An on-device check a template carries for a photo, video, or audio
-  /// proof. The editor keeps it as it is; the server bounds it.
-  final ActionLocalCheck? localCheck;
+  /// How the App confirms: it tells Verily on its own (push), or Verily asks
+  /// its webhook when the participant says they are done (pull).
+  AppVerificationMode appVerificationMode;
+
+  /// A quick check for a photo, video, or audio proof: a gesture, a thing,
+  /// or a sound the phone guides people toward and Verily checks again on
+  /// the server. Null when the proof has none.
+  ActionLocalCheck? localCheck;
+
+  /// Adds a quick check of [task] with sensible starting values, or swaps
+  /// the task of the one already set. A quick check cannot hear words, so
+  /// adding one turns the spoken word off; the creator may turn it back on.
+  void setLocalCheckTask(LocalCheckTask task) {
+    final current = localCheck;
+    if (current != null && current.task == task) return;
+    if (current == null) spokenChallenge = false;
+    localCheck = ActionLocalCheck(
+      task: task,
+      label: defaultLocalCheckLabel(task),
+      minScore: current?.minScore ?? 0.6,
+      // A photo is one frame; a recording needs a few moments to be sure.
+      minFrames: kind == ProofKind.photo ? 1 : current?.minFrames ?? 3,
+    );
+  }
+
+  /// Whether the creator may leave the verification prompt empty: with a
+  /// quick check, Verily writes the check from the label.
+  bool get promptOptional => localCheck != null;
 
   double? get latitudeValue => double.tryParse(latitude.text.trim());
   double? get longitudeValue => double.tryParse(longitude.text.trim());
@@ -399,9 +432,13 @@ class RequirementForm {
       longitude: kind == ProofKind.location ? longitudeValue : null,
       radiusMeters: kind == ProofKind.location ? radiusMeters : null,
       maxAccuracyMeters: kind == ProofKind.location ? maxAccuracyMeters : null,
-      verificationPrompt: kind.hasVerificationPrompt
-          ? prompt.text.trim()
-          : null,
+      // With a quick check an empty prompt is left out, and the server
+      // writes the check from the label.
+      verificationPrompt:
+          !kind.hasVerificationPrompt ||
+              (localCheck != null && prompt.text.trim().isEmpty)
+          ? null
+          : prompt.text.trim(),
       minDurationSeconds: timed ? int.tryParse(minSeconds.text) : null,
       maxDurationSeconds: timed ? int.tryParse(maxSeconds.text) : null,
       minConfidence: kind.isMedia ? minConfidence : null,
@@ -441,6 +478,9 @@ class RequirementForm {
           : null,
       qrCode: kind == ProofKind.venueCode ? venueSecret : null,
       appId: kind == ProofKind.appConfirmation ? appId : null,
+      appVerificationMode: kind == ProofKind.appConfirmation
+          ? appVerificationMode
+          : null,
       localCheck: kind.hasVerificationPrompt ? localCheck : null,
     );
   }
@@ -527,6 +567,7 @@ class RewardForm {
       maxPayouts: summary.maxPayouts,
       maxWinsPerAccount: summary.maxWinsPerAccount,
       expiresAt: summary.expiresAt.toLocal(),
+      refundDelayDays: summary.refundDelayDays,
       lockedStatus: summary.status == RewardPoolStatus.draft
           ? null
           : summary.status,

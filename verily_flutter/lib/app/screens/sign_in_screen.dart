@@ -88,6 +88,8 @@ class SignInScreen extends HookConsumerWidget {
       AccountRequestReason.createAction => l10n.signInTitleCreateAction,
       AccountRequestReason.privateHistory => l10n.signInTitlePrivateHistory,
       AccountRequestReason.manageApps => l10n.signInTitleManageApps,
+      AccountRequestReason.answerRequest => l10n.signInTitleAnswerRequest,
+      AccountRequestReason.linkApp => l10n.signInTitleLinkApp,
     };
     final providersOff = !emailEnabled && !googleEnabled;
 

@@ -46,7 +46,7 @@ ActionRequirementView _requirement(ActionRequirementKind kind) =>
 EvidenceSubmissionResult _result() => EvidenceSubmissionResult(
   attempt: _attempt(),
   requirementId: _requirementId,
-  reasonCode: 'queued',
+  reasonCode: 'checking',
   summary: 'Checking your proof.',
 );
 

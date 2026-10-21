@@ -63,9 +63,11 @@ ActionAttemptView _attempt({
   RewardPayoutStatus? payoutStatus,
   RewardOutcome? rewardOutcome,
   bool rewardValueReview = false,
+  String? rejectionCode,
 }) => attemptFixture(
   actionId: _actionId,
   status: status,
+  rejectionCode: rejectionCode,
   accepted: [for (final requirement in accepted) requirement.id],
   payoutStatus: payoutStatus,
   rewardOutcome: rewardOutcome,
@@ -104,16 +106,16 @@ void main() {
       await settle(tester);
 
       expect(find.byKey(VerilyTestKeys.actionNotFound), findsOneWidget);
-      expect(fakes.actions.listAvailableCalls, 0);
+      expect(fakes.actions.getActionCalls, 0);
     });
 
     testWidgets('a failed load can be retried', (tester) async {
       final action = actionFixture(id: _actionId);
-      final fakes = DoFakes()..actions.availableError = Exception('offline');
+      final fakes = DoFakes()..actions.getActionError = Exception('offline');
       await _pumpAction(tester, fakes, action);
 
       expect(find.text("We couldn't open this action"), findsOneWidget);
-      fakes.actions.availableError = null;
+      fakes.actions.getActionError = null;
       await tester.tap(find.text('Try again'));
       await settle(tester);
       expect(find.text(action.title), findsOneWidget);
@@ -648,6 +650,56 @@ void main() {
   });
 
   group('ActionScreen rejected', () {
+    testWidgets('a rejected proof says why in plain words', (tester) async {
+      final place = placeRequirement();
+      final action = actionFixture(
+        id: _actionId,
+        requirements: [place],
+        myAttempt: _attempt(),
+      );
+      final fakes = DoFakes();
+      fakes.evidence.onSubmit = (_) => resultFixture(
+        attempt: _attempt(),
+        requirement: place,
+        status: EvidenceDecisionStatus.rejected,
+        reasonCode: 'outside_area',
+        // The server's own copy is not what the page shows.
+        summary: 'Server summary',
+      );
+      await _pumpAction(tester, fakes, action);
+
+      await _tap(tester, _row(place));
+
+      expect(
+        find.text(
+          "You weren't inside the area for this action. Go to the pin and "
+          'try again.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Server summary'), findsNothing);
+    });
+
+    testWidgets("a restored rejection explains the attempt's reason", (
+      tester,
+    ) async {
+      final action = actionFixture(
+        id: _actionId,
+        myAttempt: _attempt(
+          status: ActionAttemptStatus.rejected,
+          rejectionCode: 'challenge_word_not_heard',
+        ),
+      );
+      await _pumpAction(tester, DoFakes(), action);
+
+      expect(
+        find.text(
+          "We couldn't hear your word. Say it clearly and record again.",
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('allows one appeal', (tester) async {
       final action = actionFixture(
         id: _actionId,

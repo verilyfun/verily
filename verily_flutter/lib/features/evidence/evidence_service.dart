@@ -270,6 +270,11 @@ class EvidenceService {
         capturedAt: media.capturedAt,
         deviceRepetitionCount: media.deviceRepetitionCount,
         deviceTrackerVersion: media.deviceTrackerVersion,
+        // The phone's quick-check result is advice for calibration, and the
+        // server ignores it for a rule without a quick check.
+        deviceLocalCheck: requirement.localCheck == null
+            ? null
+            : media.deviceLocalCheck,
         captureChallengeId: integrity.challengeId,
         deviceIntegrityToken: integrity.token,
         captureManifest: integrity.provenance?.manifest,

@@ -26,11 +26,21 @@ class AppConfirmationCard extends StatelessWidget {
   const AppConfirmationCard({
     required this.requirement,
     required this.confirmed,
+    this.pullCheck,
+    this.showLinkCode = true,
     super.key,
   });
 
   final ActionRequirementView requirement;
   final bool confirmed;
+
+  /// "I did it" and its state, when Verily asks this App rather than
+  /// waiting for it to confirm on its own.
+  final Widget? pullCheck;
+
+  /// Whether to offer the participant's link code. A pull check hides it
+  /// once the App has been asked, so the state of the check leads.
+  final bool showLinkCode;
 
   @override
   Widget build(BuildContext context) {
@@ -73,12 +83,18 @@ class AppConfirmationCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            available
-                ? l10n.actionAppBody(appName)
-                : l10n.actionAppUnavailable(appName),
+            switch ((available, pullCheck)) {
+              (false, _) => l10n.actionAppUnavailable(appName),
+              (true, null) => l10n.actionAppBody(appName),
+              (true, _) => l10n.actionAppPullBody(appName),
+            },
             style: theme.textTheme.bodySmall?.copyWith(color: palette.mutedInk),
           ),
-          if (available && appId != null && !confirmed) ...[
+          if (pullCheck case final check? when !confirmed) ...[
+            const SizedBox(height: 16),
+            check,
+          ],
+          if (available && appId != null && !confirmed && showLinkCode) ...[
             const SizedBox(height: 12),
             VerilyActionButton(
               key: VerilyTestKeys.actionLinkCodeOpen,

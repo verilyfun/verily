@@ -103,6 +103,7 @@ ActionRequirementView appRequirement({
   String appName = 'Slopper',
   int appId = 900,
   bool available = true,
+  AppVerificationMode mode = AppVerificationMode.push,
 }) => ActionRequirementView(
   id: doUuid(id),
   requirementKey: key,
@@ -114,7 +115,7 @@ ActionRequirementView appRequirement({
   appId: doUuid(appId),
   appName: appName,
   appAvailable: available,
-  appVerificationMode: AppVerificationMode.push,
+  appVerificationMode: mode,
 );
 
 ActionAttemptView attemptFixture({
@@ -125,11 +126,13 @@ ActionAttemptView attemptFixture({
   RewardPayoutStatus? payoutStatus,
   RewardOutcome? rewardOutcome,
   bool rewardValueReview = false,
+  String? rejectionCode,
 }) => ActionAttemptView(
   id: doUuid(id),
   actionDefinitionId: doUuid(actionId),
   periodKey: 'once',
   status: status,
+  rejectionCode: rejectionCode,
   startedAt: doFixtureNow,
   updatedAt: doFixtureNow,
   acceptedRequirementIds: accepted,
@@ -190,12 +193,20 @@ EvidenceSubmissionResult resultFixture({
   required ActionAttemptView attempt,
   required ActionRequirementView requirement,
   EvidenceDecisionStatus? status = EvidenceDecisionStatus.accepted,
+  String? reasonCode,
   String summary = '',
 }) => EvidenceSubmissionResult(
   attempt: attempt,
   requirementId: requirement.id,
   status: status,
-  reasonCode: status?.name ?? 'queued',
+  reasonCode:
+      reasonCode ??
+      switch (status) {
+        EvidenceDecisionStatus.accepted => 'proof_accepted',
+        EvidenceDecisionStatus.rejected => 'proof_not_accepted',
+        EvidenceDecisionStatus.manualReview => 'needs_review',
+        null => 'checking',
+      },
   summary: summary,
 );
 
@@ -251,9 +262,27 @@ class FakeActionRepository extends Fake implements ActionRepository {
   @override
   Future<ActionOpportunity> preview(UuidValue actionId) async {
     if (owned[actionId] case final action?) return action;
-    // What previewAction's untyped refusal looks like on the client.
-    throw ServerpodClientInternalServerError();
+    throw _notFound;
   }
+
+  /// Thrown by [getAction] while set, before looking anything up.
+  Exception? getActionError;
+  int getActionCalls = 0;
+
+  @override
+  Future<ActionOpportunity> getAction(UuidValue actionId) async {
+    getActionCalls++;
+    if (getActionError case final error?) throw error;
+    for (final action in [...available, ...nearby, ...owned.values]) {
+      if (action.id == actionId) return action;
+    }
+    throw _notFound;
+  }
+
+  static final _notFound = ResourceNotFoundException(
+    resource: MissingResource.action,
+    message: 'No such action.',
+  );
 
   @override
   Future<ActionAttemptView> beginAttempt(UuidValue actionId) async {
@@ -275,6 +304,30 @@ class FakeActionRepository extends Fake implements ActionRepository {
   Future<List<ActionAttemptView>> listMyAttempts() async {
     listMyAttemptsCalls++;
     return myAttempts;
+  }
+
+  /// What [requestAppVerification] answers, or throws.
+  EvidenceSubmissionResult Function(UuidValue requirementId)? onAskApp;
+
+  final List<
+    ({UuidValue attemptId, UuidValue requirementId, String? reference})
+  >
+  appRequests = [];
+
+  @override
+  Future<EvidenceSubmissionResult> requestAppVerification({
+    required UuidValue attemptId,
+    required UuidValue requirementId,
+    String? reference,
+  }) async {
+    appRequests.add((
+      attemptId: attemptId,
+      requirementId: requirementId,
+      reference: reference,
+    ));
+    final answer = onAskApp;
+    if (answer == null) throw StateError('No App answer for $requirementId');
+    return answer(requirementId);
   }
 }
 

@@ -13,8 +13,12 @@ import 'package:verily_flutter/features/evidence/motion_capture_service.dart';
 /// Opens the camera for one capture.
 final captureCameraFactoryProvider = Provider<CaptureCameraFactory>(
   (ref) =>
-      ({required recordAudio, required initialLens}) =>
-          PluginCaptureCamera(recordAudio: recordAudio, lens: initialLens),
+      ({required recordAudio, required initialLens, required analyseFrames}) =>
+          PluginCaptureCamera(
+            recordAudio: recordAudio,
+            analyseFrames: analyseFrames,
+            lens: initialLens,
+          ),
 );
 
 /// Opens the microphone for one capture.

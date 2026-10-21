@@ -7,6 +7,10 @@ import 'package:verily_flutter/core/api_client.dart';
 abstract interface class AppsRepository {
   Future<List<VerilyAppView>> listApps();
 
+  /// One of the caller's Apps. Throws [ResourceNotFoundException] for an App
+  /// that does not exist or belongs to someone else.
+  Future<VerilyAppView> getApp(UuidValue appId);
+
   /// Registers an App. The returned credential carries its first key's
   /// secret, which the server never shows again.
   Future<VerilyAppCredential> createApp({
@@ -33,6 +37,30 @@ abstract interface class AppsRepository {
   /// The caller's own pairwise `vls_` subject for an App with a live action:
   /// the code a participant gives the App so it can confirm them.
   Future<VerilyAppLinkView> linkApp(UuidValue appId);
+
+  /// Sets the https address that receives the App's events and pull checks,
+  /// or clears it with null. The server refuses private and local hosts.
+  Future<VerilyAppView> setWebhookUrl({
+    required UuidValue appId,
+    required String? webhookUrl,
+  });
+
+  /// Issues the App's next `whsec_` signing secret, shown once. The previous
+  /// secret keeps signing alongside it for 24 hours.
+  Future<VerilyAppWebhookSecret> rotateWebhookSecret(UuidValue appId);
+
+  /// Replaces the App's exact-match deep-link return addresses.
+  Future<VerilyAppView> setRedirectUris({
+    required UuidValue appId,
+    required List<String> redirectUris,
+  });
+
+  /// The append-only log of calls Verily made to the App's webhook, newest
+  /// first.
+  Future<List<AppWebhookDeliveryView>> listWebhookDeliveries(
+    UuidValue appId, {
+    UuidValue? beforeId,
+  });
 }
 
 class ServerpodAppsRepository implements AppsRepository {
@@ -42,6 +70,10 @@ class ServerpodAppsRepository implements AppsRepository {
 
   @override
   Future<List<VerilyAppView>> listApps() => _client.verilyApp.listApps();
+
+  @override
+  Future<VerilyAppView> getApp(UuidValue appId) =>
+      _client.verilyApp.getApp(appId: appId);
 
   @override
   Future<VerilyAppCredential> createApp({
@@ -69,13 +101,48 @@ class ServerpodAppsRepository implements AppsRepository {
     UuidValue? beforeId,
   }) => _client.verilyApp.listConfirmations(
     appId: appId,
-    limit: 50,
+    limit: AppPageSizes.confirmations,
     beforeId: beforeId,
   );
 
   @override
   Future<VerilyAppLinkView> linkApp(UuidValue appId) =>
       _client.verilyApp.linkApp(appId: appId);
+
+  @override
+  Future<VerilyAppView> setWebhookUrl({
+    required UuidValue appId,
+    required String? webhookUrl,
+  }) => _client.verilyApp.setWebhookUrl(appId: appId, webhookUrl: webhookUrl);
+
+  @override
+  Future<VerilyAppWebhookSecret> rotateWebhookSecret(UuidValue appId) =>
+      _client.verilyApp.rotateWebhookSecret(appId: appId);
+
+  @override
+  Future<VerilyAppView> setRedirectUris({
+    required UuidValue appId,
+    required List<String> redirectUris,
+  }) => _client.verilyApp.setRedirectUris(
+    appId: appId,
+    redirectUris: redirectUris,
+  );
+
+  @override
+  Future<List<AppWebhookDeliveryView>> listWebhookDeliveries(
+    UuidValue appId, {
+    UuidValue? beforeId,
+  }) => _client.verilyApp.listWebhookDeliveries(
+    appId: appId,
+    limit: AppPageSizes.deliveries,
+    beforeId: beforeId,
+  );
+}
+
+/// How many log rows one request asks for.
+abstract final class AppPageSizes {
+  static const confirmations = 50;
+  static const deliveries = 50;
 }
 
 final appsRepositoryProvider = Provider<AppsRepository>(

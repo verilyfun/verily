@@ -5,6 +5,8 @@ import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/misc.dart';
+import 'package:mp_camera/mp_camera.dart';
+import 'package:mp_core/mp_core.dart';
 import 'package:verily_client/verily_client.dart';
 
 import 'package:verily_flutter/features/actions/action_repository.dart';
@@ -18,6 +20,9 @@ import 'package:verily_flutter/features/capture/movement/movement_tracking_provi
 import 'package:verily_flutter/features/evidence/captured_media.dart';
 import 'package:verily_flutter/features/evidence/evidence_service.dart';
 import 'package:verily_flutter/features/evidence/motion_capture_service.dart';
+import 'package:verily_flutter/features/local_check/local_check_providers.dart';
+import 'package:verily_flutter/features/local_check/local_check_tally.dart';
+import 'package:verily_flutter/features/local_check/local_check_vision.dart';
 
 /// Fixed ids so assertions can name the attempt and requirement.
 final testAttemptId = UuidValue.fromString(
@@ -48,6 +53,8 @@ ActionRequirementView testRequirement(
   int? targetRepetitions,
   ActionMotionType? motionType,
   List<String>? acceptedContentTypes,
+  ActionLocalCheck? localCheck,
+  LocalCheckModelView? localCheckModel,
 }) => ActionRequirementView(
   id: testRequirementId,
   requirementKey: 'proof',
@@ -62,6 +69,8 @@ ActionRequirementView testRequirement(
   movementKind: movementKind,
   targetRepetitions: targetRepetitions,
   motionType: motionType,
+  localCheck: localCheck,
+  localCheckModel: localCheckModel,
   acceptedContentTypes:
       acceptedContentTypes ??
       switch (kind) {
@@ -79,12 +88,102 @@ XFile memoryCapture(String name, {String? mimeType}) => XFile.fromData(
   mimeType: mimeType,
 );
 
+/// The pinned gesture model the server sends with a gesture check.
+final testGestureModel = LocalCheckModelView(
+  modelId: 'mediapipe/gesture_recognizer/float16/1',
+  url:
+      'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/'
+      'gesture_recognizer/float16/1/gesture_recognizer.task',
+  byteLength: 8373440,
+  sha256: '97952348cf6a6a4915c2ea1496b4b37ebabc50cbbf80571435643c455f2b0482',
+);
+
+/// The pinned object model the server sends with an object check.
+final testObjectModel = LocalCheckModelView(
+  modelId: 'mediapipe/efficientdet_lite0/int8/1',
+  url:
+      'https://storage.googleapis.com/mediapipe-models/object_detector/'
+      'efficientdet_lite0/int8/1/efficientdet_lite0.tflite',
+  byteLength: 4602795,
+  sha256: '0720bf247bd76e6594ea28fa9c6f7c5242be774818997dbbeffc4da460c723bb',
+);
+
+/// The pinned sound model the server sends with a sound check.
+final testSoundModel = LocalCheckModelView(
+  modelId: 'mediapipe/yamnet/float32/1',
+  url:
+      'https://storage.googleapis.com/mediapipe-models/audio_classifier/'
+      'yamnet/float32/1/yamnet.tflite',
+  byteLength: 4126810,
+  sha256: '4d8b4a53282dc83ef04e3e7dbc4fbc98082e34e44ed798e16c3a0cdd4c584faf',
+);
+
+/// A thumbs-up check: three matching frames at 0.6.
+ActionLocalCheck thumbsUpCheck({int minFrames = 3}) => ActionLocalCheck(
+  task: LocalCheckTask.gesture,
+  label: 'Thumb_Up',
+  minScore: 0.6,
+  minFrames: minFrames,
+);
+
+/// One tiny camera frame; the fake vision ignores its pixels.
+MpCameraFrame testCameraFrame(int timestampMs) => MpCameraFrame(
+  image: MpImageUint8(
+    width: 1,
+    height: 1,
+    format: MpImageFormat.srgb,
+    data: Uint8List(3),
+  ),
+  timestampMs: timestampMs,
+  processingOptions: ImageProcessingOptions(),
+  mirroredPreview: false,
+);
+
+/// Scores frames from a queue the test fills; frames past the queue score
+/// zero with nothing in view.
+final class FakeLocalCheckVision implements LocalCheckVision {
+  final List<LocalCheckFrame> frames = [];
+  int observed = 0;
+  bool closed = false;
+
+  @override
+  Future<LocalCheckFrame> observe(MpCameraFrame frame) async {
+    observed++;
+    return frames.isEmpty
+        ? const LocalCheckFrame(score: 0)
+        : frames.removeAt(0);
+  }
+
+  @override
+  Future<void> close() async => closed = true;
+}
+
 /// Drives the camera views without hardware.
 final class FakeCaptureCamera extends ChangeNotifier implements CaptureCamera {
-  FakeCaptureCamera({this.openFailure, this.canFlip = true, this.id = 1});
+  FakeCaptureCamera({
+    this.openFailure,
+    this.canFlip = true,
+    this.id = 1,
+    this.analyseFrames = false,
+  });
 
   /// Which camera this is, in the order a flow opened them.
   final int id;
+
+  /// Whether the view asked for frames to analyse.
+  final bool analyseFrames;
+  CaptureFrameAnalyser? analyser;
+  int _frameClock = 0;
+
+  /// Hands [count] frames to the analyser, one at a time, the way the real
+  /// camera does: each waits for the previous analysis.
+  Future<void> deliverFrames(int count) async {
+    for (var index = 0; index < count; index++) {
+      final current = analyser;
+      if (current == null) return;
+      await current(testCameraFrame(_frameClock += 33));
+    }
+  }
 
   /// When set, opening fails this way.
   CaptureCameraFailure? openFailure;
@@ -152,6 +251,11 @@ final class FakeCaptureCamera extends ChangeNotifier implements CaptureCamera {
 
   @override
   Future<void> flip() async => flips++;
+
+  @override
+  void setFrameAnalyser(CaptureFrameAnalyser? analyser) {
+    this.analyser = analyser;
+  }
 
   @override
   Future<void> close() async {
@@ -329,7 +433,7 @@ final class FakeEvidenceGateway implements EvidenceGateway {
   late final result = EvidenceSubmissionResult(
     attempt: testAttempt,
     requirementId: testRequirementId,
-    reasonCode: 'queued',
+    reasonCode: 'checking',
     summary: 'Proof received',
   );
 
@@ -406,6 +510,8 @@ final class CaptureHarness {
     this.duration = const Duration(seconds: 12),
     this.motion,
     this.trackingSupported = true,
+    this.localCheckSupported = true,
+    this.visionFailure,
   }) : recorder = recorder ?? FakeCaptureRecorder(),
        gateway = gateway ?? FakeEvidenceGateway(),
        actions = FakeActionRepository(words ?? ['pelican']);
@@ -425,6 +531,17 @@ final class CaptureHarness {
   final MotionCaptureCallback? motion;
   final bool trackingSupported;
 
+  /// Whether this "phone" runs quick checks live.
+  final bool localCheckSupported;
+
+  /// When set, loading the quick check's model fails with it.
+  final Exception? visionFailure;
+
+  /// Every quick-check vision the flow loaded.
+  final List<FakeLocalCheckVision> visions = [];
+  FakeLocalCheckVision get vision => visions.last;
+  final List<(ActionLocalCheck, LocalCheckModelView)> visionRequests = [];
+
   final List<({bool recordAudio, CaptureLens lens})> cameraRequests = [];
   final List<FakeMovementCaptureController> movementControllers = [];
   int settingsOpened = 0;
@@ -433,11 +550,13 @@ final class CaptureHarness {
     captureCameraFactoryProvider.overrideWithValue(({
       required recordAudio,
       required initialLens,
+      required analyseFrames,
     }) {
       cameraRequests.add((recordAudio: recordAudio, lens: initialLens));
       final camera = FakeCaptureCamera(
         openFailure: cameraFailure,
         id: cameras.length + 1,
+        analyseFrames: analyseFrames,
       );
       cameras.add(camera);
       return camera;
@@ -467,6 +586,14 @@ final class CaptureHarness {
     }),
     if (motion case final callback?)
       motionCaptureCallbackProvider.overrideWithValue(callback),
+    localCheckSupportedProvider.overrideWithValue(localCheckSupported),
+    localCheckVisionFactoryProvider.overrideWithValue((check, model) async {
+      visionRequests.add((check, model));
+      if (visionFailure case final failure?) throw failure;
+      final vision = FakeLocalCheckVision();
+      visions.add(vision);
+      return vision;
+    }),
   ];
 }
 

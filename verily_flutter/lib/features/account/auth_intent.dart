@@ -18,6 +18,12 @@ enum AccountRequestReason {
 
   /// Manage Verily Apps and their keys.
   manageApps,
+
+  /// Answer a verification request another App opened Verily with.
+  answerRequest,
+
+  /// Link this account to another App that asked.
+  linkApp,
 }
 
 /// Stable identifier for a plain sign-in with no work behind it.

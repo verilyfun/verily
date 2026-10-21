@@ -80,6 +80,8 @@ Future<void> pumpVerilyPage(
         ...overrides,
       ],
       child: MaterialApp(
+        // As in the app, so screenshots carry no debug ribbon.
+        debugShowCheckedModeBanner: false,
         theme: buildVerilyTheme(
           brightness: brightness,
           useAppTypeface: useAppTypeface,

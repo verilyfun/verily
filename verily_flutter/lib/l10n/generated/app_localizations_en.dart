@@ -32,21 +32,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'We couldn\'t find that. It may have ended or been removed.';
 
   @override
-  String get comingSoonVerificationTitle => 'Verify with Verily is almost here';
-
-  @override
-  String get comingSoonVerificationBody =>
-      'An app asked you to prove something with Verily. Requests like this will open right here soon. Nothing was captured or shared.';
-
-  @override
-  String get comingSoonLinkTitle => 'Linking apps is almost here';
-
-  @override
-  String get comingSoonLinkBody =>
-      'An app asked to link with your Verily account. Soon you\'ll confirm that here. Until then, copy your link code from the action the app shared.';
-
-  @override
-  String get comingSoonGoToDo => 'Find actions';
+  String get navigationFindActions => 'Find actions';
 
   @override
   String get trustVerifiedOnPhone => 'Verified on your phone';
@@ -425,10 +411,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get editorVerifierPromptHelp =>
       'Say plainly what the proof must show. Everything in the recording is treated as evidence, never as instructions.';
-
-  @override
-  String get editorVerifierPromptRewrite =>
-      'Write this again: saved actions don\'t send it back to the app.';
 
   @override
   String get editorMinSecondsLabel => 'Shortest (seconds)';
@@ -2448,6 +2430,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get captureAudioHint => 'Hold your phone close and speak clearly.';
 
   @override
+  String get captureAudioSoundHint => 'Hold your phone close to the sound.';
+
+  @override
   String captureAudioLevelSemantics(int percent) {
     return 'Sound level $percent%';
   }
@@ -3287,4 +3272,1346 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get skribblePreviewDoodlesHeading => 'Doodles and icons';
+
+  @override
+  String get verifyRequestHeaderTitle => 'Verify with Verily';
+
+  @override
+  String verifyRequestFrom(String app) {
+    return 'From $app';
+  }
+
+  @override
+  String verifyRequestFromWebsite(String app, String website) {
+    return 'From $app · $website';
+  }
+
+  @override
+  String verifyRequestAsks(String app, String kind) {
+    String _temp0 = intl.Intl.selectLogic(
+      kind,
+      {
+        'video': '$app wants a live video',
+        'photo': '$app wants a live photo',
+        'audio': '$app wants a live recording',
+        'location': '$app wants to check you\'re at their place',
+        'other': '$app wants live proof',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get verifyRequestTheirWords => 'What they asked for';
+
+  @override
+  String verifyRequestInstructions(String instructions) {
+    return '“$instructions”';
+  }
+
+  @override
+  String get verifyRequestHowHeading => 'How it works';
+
+  @override
+  String verifyRequestHowCapture(String kind) {
+    String _temp0 = intl.Intl.selectLogic(
+      kind,
+      {
+        'video': 'You record it live in Verily, in one take. Nothing from your gallery.',
+        'photo': 'You take it live in Verily. Nothing from your gallery.',
+        'audio': 'You record it live in Verily, in one take.',
+        'other': 'Verily checks your location once, right now.',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get verifyRequestHowWord =>
+      'Verily gives you a word to say while you record.';
+
+  @override
+  String get verifyRequestHowPlace =>
+      'Verily checks your location once, to see if you\'re at their place.';
+
+  @override
+  String get verifyRequestHowContent =>
+      'Verily checks it shows what they asked for.';
+
+  @override
+  String get verifyRequestHowCaptureOnly =>
+      'Verily checks it\'s a genuine live capture.';
+
+  @override
+  String verifyRequestSharedHeading(String app) {
+    return 'What $app gets';
+  }
+
+  @override
+  String get verifyRequestSharesResult =>
+      'Whether it passed, and when it was captured.';
+
+  @override
+  String get verifyRequestSharesPlace =>
+      'Whether you were inside their place. Never where you were.';
+
+  @override
+  String verifyRequestSharesMedia(String kind) {
+    String _temp0 = intl.Intl.selectLogic(
+      kind,
+      {
+        'video': 'A copy of your video to download.',
+        'photo': 'A copy of your photo to download.',
+        'audio': 'A copy of your recording to download.',
+        'other': 'A copy of your proof to download.',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String verifyRequestKeepsMedia(String kind) {
+    String _temp0 = intl.Intl.selectLogic(
+      kind,
+      {
+        'video': 'Not your video. It stays with Verily.',
+        'photo': 'Not your photo. It stays with Verily.',
+        'audio': 'Not your recording. It stays with Verily.',
+        'other': 'Not your proof. It stays with Verily.',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String verifyRequestSharesSubject(String app) {
+    return 'A private ID made only for $app. Never your name, email, or account.';
+  }
+
+  @override
+  String verifyRequestExpires(String time) {
+    return 'Answer by $time';
+  }
+
+  @override
+  String get verifyRequestAccept => 'Accept and start';
+
+  @override
+  String get verifyRequestDecline => 'Decline';
+
+  @override
+  String get verifyRequestClose => 'Close';
+
+  @override
+  String verifyRequestProofTitle(String app) {
+    return 'Your proof for $app';
+  }
+
+  @override
+  String get verifyRequestStepPlace => 'Check in at their place';
+
+  @override
+  String verifyRequestStepPlaceBody(String app) {
+    return 'Share your location once. $app only learns inside or outside.';
+  }
+
+  @override
+  String get verifyRequestSharePlace => 'Share my location';
+
+  @override
+  String get verifyRequestSkipPlace => 'Continue without it';
+
+  @override
+  String get verifyRequestPlaceSent => 'Location sent';
+
+  @override
+  String verifyRequestPlaceSkipped(String app) {
+    return 'Skipped. $app will see your place wasn\'t checked.';
+  }
+
+  @override
+  String verifyRequestPlaceNotConfirmed(String app) {
+    return 'Verily couldn\'t confirm you\'re inside their place. $app will see that.';
+  }
+
+  @override
+  String verifyRequestStepMedia(String kind) {
+    String _temp0 = intl.Intl.selectLogic(
+      kind,
+      {
+        'photo': 'Take the photo',
+        'audio': 'Record the audio',
+        'other': 'Record the video',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get verifyRequestStepMediaBody =>
+      'Live, in one take. This phone signs it before it\'s sent.';
+
+  @override
+  String verifyRequestOpenCapture(String kind) {
+    String _temp0 = intl.Intl.selectLogic(
+      kind,
+      {
+        'audio': 'Open the recorder',
+        'other': 'Open the camera',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get verifyRequestMediaSent => 'Proof sent';
+
+  @override
+  String get verifyRequestPlaceFirst => 'Check in first, then capture.';
+
+  @override
+  String get verifyRequestProofIn => 'Your proof is in';
+
+  @override
+  String verifyRequestReturn(String app) {
+    return 'Return to $app';
+  }
+
+  @override
+  String get verifyRequestDeclineInstead => 'Decline instead';
+
+  @override
+  String get verifyRequestTryAgain => 'Try again';
+
+  @override
+  String get verifyRequestLoading => 'Loading the request';
+
+  @override
+  String get verifyRequestSending => 'Sending your answer';
+
+  @override
+  String verifyRequestReturningTitle(String app) {
+    return 'Returning you to $app';
+  }
+
+  @override
+  String get verifyRequestReturningPassed =>
+      'Verily checked your proof and it passed.';
+
+  @override
+  String verifyRequestReturningChecking(String app) {
+    return 'Verily is still checking your proof. $app will get the result.';
+  }
+
+  @override
+  String verifyRequestReturningFailed(String app) {
+    return 'Your proof didn\'t pass. $app will be told.';
+  }
+
+  @override
+  String get verifyRequestDeclinedTitle => 'Request declined';
+
+  @override
+  String verifyRequestDeclinedBody(String app) {
+    return 'Returning you to $app. Nothing was captured or shared.';
+  }
+
+  @override
+  String verifyRequestOpenFailed(String app) {
+    return '$app didn\'t open. Switch back to it yourself to carry on.';
+  }
+
+  @override
+  String verifyRequestOpenApp(String app) {
+    return 'Open $app';
+  }
+
+  @override
+  String get verifyRequestBackToVerily => 'Back to Verily';
+
+  @override
+  String get verifyRequestTheApp => 'the app';
+
+  @override
+  String get verifyRequestNotFoundTitle => 'We couldn\'t find this request';
+
+  @override
+  String get verifyRequestNotFoundBody =>
+      'The link may be wrong, or the request was removed. Ask the app to send a new one.';
+
+  @override
+  String get verifyRequestExpiredTitle => 'This request has expired';
+
+  @override
+  String verifyRequestExpiredBody(String app) {
+    return 'Requests only last a short while. Ask $app for a new one.';
+  }
+
+  @override
+  String get verifyRequestTakenTitle => 'Someone else answered this request';
+
+  @override
+  String verifyRequestTakenBody(String app) {
+    return 'Each request is for one person. Ask $app for your own.';
+  }
+
+  @override
+  String get verifyRequestClosedTitle => 'This request is closed';
+
+  @override
+  String verifyRequestClosedBody(String app) {
+    return 'It was already answered or turned down. Ask $app for a new one if you still need it.';
+  }
+
+  @override
+  String get verifyRequestRateLimitedTitle =>
+      'That\'s a lot of requests for now';
+
+  @override
+  String verifyRequestRateLimitedBody(String app) {
+    return 'You\'ve answered many requests from $app in the last hour. Try again later.';
+  }
+
+  @override
+  String verifyRequestAppUnavailableTitle(String app) {
+    return '$app isn\'t available';
+  }
+
+  @override
+  String get verifyRequestLoadFailedTitle => 'We couldn\'t load this request';
+
+  @override
+  String get signInTitleAnswerRequest => 'Sign in to answer this request';
+
+  @override
+  String get signInTitleLinkApp => 'Sign in to link this app';
+
+  @override
+  String get appLinkHeaderTitle => 'Link an app';
+
+  @override
+  String appLinkAsks(String app) {
+    return '$app wants to link with your Verily account';
+  }
+
+  @override
+  String appLinkHow(String app) {
+    return 'Once linked, $app can tell Verily when you\'ve done its actions.';
+  }
+
+  @override
+  String appLinkAlreadyLinked(String app) {
+    return 'You\'ve linked $app before. Linking again confirms it\'s still you.';
+  }
+
+  @override
+  String appLinkSharesSubject(String app) {
+    return 'A private ID made only for $app. Never your name, email, or account.';
+  }
+
+  @override
+  String get appLinkSharesNothingElse =>
+      'Nothing else. It can\'t see your proof, payouts, or other apps.';
+
+  @override
+  String appLinkApprove(String app) {
+    return 'Link $app';
+  }
+
+  @override
+  String get appLinkDecline => 'Don\'t link';
+
+  @override
+  String appLinkLinkedBody(String app) {
+    return '$app is linked to your Verily account.';
+  }
+
+  @override
+  String appLinkDeclinedBody(String app) {
+    return '$app wasn\'t linked. Nothing was shared.';
+  }
+
+  @override
+  String get appLinkDeclinedTitle => 'Not linked';
+
+  @override
+  String get appLinkInvalidTitle => 'This link doesn\'t work';
+
+  @override
+  String get appLinkInvalidBody =>
+      'It\'s missing something or wasn\'t made for Verily. Go back to the app and try again.';
+
+  @override
+  String get appLinkLoadFailedTitle => 'We couldn\'t load this link';
+
+  @override
+  String appLinkRateLimitedBody(String app) {
+    return 'You\'ve tried to link with $app many times. Try again later.';
+  }
+
+  @override
+  String localCheckGuideTitle(String label) {
+    return 'Quick check: $label';
+  }
+
+  @override
+  String get localCheckPreparing => 'Getting the quick check ready';
+
+  @override
+  String localCheckAfterFinishLook(String label) {
+    return 'Verily checks for “$label” after you finish';
+  }
+
+  @override
+  String localCheckAfterFinishListen(String label) {
+    return 'Verily listens for “$label” after you finish';
+  }
+
+  @override
+  String localCheckGestureNotSeen(String label) {
+    return 'We can\'t see your “$label” yet';
+  }
+
+  @override
+  String localCheckGestureHandSeen(String label) {
+    return 'We can see your hand. Now show “$label”';
+  }
+
+  @override
+  String localCheckObjectNotSeen(String label) {
+    return 'We can\'t spot “$label” yet';
+  }
+
+  @override
+  String localCheckObjectAlmost(String label) {
+    return 'Almost. Bring “$label” closer or into better light';
+  }
+
+  @override
+  String get localCheckHolding => 'Got it, hold it there';
+
+  @override
+  String localCheckLooksRight(String label) {
+    return 'That looks like “$label”';
+  }
+
+  @override
+  String get localCheckReadyToRecord => 'Start recording when you\'re ready';
+
+  @override
+  String get localCheckKeepGoing => 'Keep going a moment';
+
+  @override
+  String get localCheckSayWordThenStop => 'Say your word, then stop';
+
+  @override
+  String get localCheckFinishing => 'Finishing';
+
+  @override
+  String get localCheckReviewNote =>
+      'The phone\'s quick check is only a guide. Verily checks your proof again before it counts.';
+
+  @override
+  String get editorQuickCheckAdd => 'Add a quick check';
+
+  @override
+  String get editorQuickCheckAddHelp =>
+      'The phone looks for a hand gesture, a thing, or a sound while people capture, and helps them get it right.';
+
+  @override
+  String get editorQuickCheckTitle => 'Quick check';
+
+  @override
+  String get editorQuickCheckRemove => 'Remove quick check';
+
+  @override
+  String get editorQuickCheckTaskLabel => 'Look for';
+
+  @override
+  String get editorQuickCheckTaskGesture => 'A hand gesture';
+
+  @override
+  String get editorQuickCheckTaskObject => 'A thing';
+
+  @override
+  String get editorQuickCheckTaskSound => 'A sound';
+
+  @override
+  String get editorQuickCheckGestureLabel => 'Gesture';
+
+  @override
+  String get editorQuickCheckObjectLabel => 'Thing';
+
+  @override
+  String get editorQuickCheckSoundLabel => 'Sound';
+
+  @override
+  String get editorQuickCheckPickObject => 'Pick a thing';
+
+  @override
+  String get editorQuickCheckPickSound => 'Pick a sound';
+
+  @override
+  String get editorQuickCheckSearch => 'Search';
+
+  @override
+  String get editorQuickCheckNoMatches => 'Nothing matches that';
+
+  @override
+  String editorQuickCheckScore(int percent) {
+    return 'How sure: $percent%';
+  }
+
+  @override
+  String get editorQuickCheckScoreSemantic =>
+      'How sure the quick check must be';
+
+  @override
+  String editorQuickCheckFrames(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count matching moments',
+      one: '1 matching moment',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get editorQuickCheckFramesSemantic => 'How many moments must match';
+
+  @override
+  String get editorQuickCheckFramesHelp =>
+      'How many of the moments Verily samples from the recording must show it.';
+
+  @override
+  String get editorQuickCheckPhotoFrames => 'A photo is checked once.';
+
+  @override
+  String get editorQuickCheckNote =>
+      'People see live guidance while they capture. Verily checks the proof again itself before it counts.';
+
+  @override
+  String get editorQuickCheckPromptHelp =>
+      'Optional with a quick check. Leave it empty and Verily writes the check from what you picked.';
+
+  @override
+  String get editorQuickCheckSpokenHelp =>
+      'A quick check can\'t hear words, so with the word on, Verily\'s other checks or a person decide.';
+
+  @override
+  String get localCheckGestureClosedFist => 'Closed fist';
+
+  @override
+  String get localCheckGestureOpenPalm => 'Open palm';
+
+  @override
+  String get localCheckGesturePointingUp => 'Pointing up';
+
+  @override
+  String get localCheckGestureThumbDown => 'Thumbs down';
+
+  @override
+  String get localCheckGestureThumbUp => 'Thumbs up';
+
+  @override
+  String get localCheckGestureVictory => 'Victory sign';
+
+  @override
+  String get localCheckGestureILoveYou => '“I love you” sign';
+
+  @override
+  String get localCheckObjectPerson => 'Person';
+
+  @override
+  String get localCheckObjectBicycle => 'Bicycle';
+
+  @override
+  String get localCheckObjectCar => 'Car';
+
+  @override
+  String get localCheckObjectMotorcycle => 'Motorbike';
+
+  @override
+  String get localCheckObjectAirplane => 'Aeroplane';
+
+  @override
+  String get localCheckObjectBus => 'Bus';
+
+  @override
+  String get localCheckObjectTrain => 'Train';
+
+  @override
+  String get localCheckObjectTruck => 'Truck';
+
+  @override
+  String get localCheckObjectBoat => 'Boat';
+
+  @override
+  String get localCheckObjectTrafficLight => 'Traffic light';
+
+  @override
+  String get localCheckObjectFireHydrant => 'Fire hydrant';
+
+  @override
+  String get localCheckObjectStopSign => 'Stop sign';
+
+  @override
+  String get localCheckObjectParkingMeter => 'Parking meter';
+
+  @override
+  String get localCheckObjectBench => 'Bench';
+
+  @override
+  String get localCheckObjectBird => 'Bird';
+
+  @override
+  String get localCheckObjectCat => 'Cat';
+
+  @override
+  String get localCheckObjectDog => 'Dog';
+
+  @override
+  String get localCheckObjectHorse => 'Horse';
+
+  @override
+  String get localCheckObjectSheep => 'Sheep';
+
+  @override
+  String get localCheckObjectCow => 'Cow';
+
+  @override
+  String get localCheckObjectElephant => 'Elephant';
+
+  @override
+  String get localCheckObjectBear => 'Bear';
+
+  @override
+  String get localCheckObjectZebra => 'Zebra';
+
+  @override
+  String get localCheckObjectGiraffe => 'Giraffe';
+
+  @override
+  String get localCheckObjectBackpack => 'Backpack';
+
+  @override
+  String get localCheckObjectUmbrella => 'Umbrella';
+
+  @override
+  String get localCheckObjectHandbag => 'Handbag';
+
+  @override
+  String get localCheckObjectTie => 'Tie';
+
+  @override
+  String get localCheckObjectSuitcase => 'Suitcase';
+
+  @override
+  String get localCheckObjectFrisbee => 'Frisbee';
+
+  @override
+  String get localCheckObjectSkis => 'Skis';
+
+  @override
+  String get localCheckObjectSnowboard => 'Snowboard';
+
+  @override
+  String get localCheckObjectSportsBall => 'Ball';
+
+  @override
+  String get localCheckObjectKite => 'Kite';
+
+  @override
+  String get localCheckObjectBaseballBat => 'Baseball bat';
+
+  @override
+  String get localCheckObjectBaseballGlove => 'Baseball glove';
+
+  @override
+  String get localCheckObjectSkateboard => 'Skateboard';
+
+  @override
+  String get localCheckObjectSurfboard => 'Surfboard';
+
+  @override
+  String get localCheckObjectTennisRacket => 'Tennis racket';
+
+  @override
+  String get localCheckObjectBottle => 'Bottle';
+
+  @override
+  String get localCheckObjectWineGlass => 'Wine glass';
+
+  @override
+  String get localCheckObjectCup => 'Cup';
+
+  @override
+  String get localCheckObjectFork => 'Fork';
+
+  @override
+  String get localCheckObjectKnife => 'Knife';
+
+  @override
+  String get localCheckObjectSpoon => 'Spoon';
+
+  @override
+  String get localCheckObjectBowl => 'Bowl';
+
+  @override
+  String get localCheckObjectBanana => 'Banana';
+
+  @override
+  String get localCheckObjectApple => 'Apple';
+
+  @override
+  String get localCheckObjectSandwich => 'Sandwich';
+
+  @override
+  String get localCheckObjectOrange => 'Orange';
+
+  @override
+  String get localCheckObjectBroccoli => 'Broccoli';
+
+  @override
+  String get localCheckObjectCarrot => 'Carrot';
+
+  @override
+  String get localCheckObjectHotDog => 'Hot dog';
+
+  @override
+  String get localCheckObjectPizza => 'Pizza';
+
+  @override
+  String get localCheckObjectDonut => 'Doughnut';
+
+  @override
+  String get localCheckObjectCake => 'Cake';
+
+  @override
+  String get localCheckObjectChair => 'Chair';
+
+  @override
+  String get localCheckObjectCouch => 'Sofa';
+
+  @override
+  String get localCheckObjectPottedPlant => 'Potted plant';
+
+  @override
+  String get localCheckObjectBed => 'Bed';
+
+  @override
+  String get localCheckObjectDiningTable => 'Table';
+
+  @override
+  String get localCheckObjectToilet => 'Toilet';
+
+  @override
+  String get localCheckObjectTv => 'TV';
+
+  @override
+  String get localCheckObjectLaptop => 'Laptop';
+
+  @override
+  String get localCheckObjectMouse => 'Computer mouse';
+
+  @override
+  String get localCheckObjectRemote => 'Remote control';
+
+  @override
+  String get localCheckObjectKeyboard => 'Keyboard';
+
+  @override
+  String get localCheckObjectCellPhone => 'Phone';
+
+  @override
+  String get localCheckObjectMicrowave => 'Microwave';
+
+  @override
+  String get localCheckObjectOven => 'Oven';
+
+  @override
+  String get localCheckObjectToaster => 'Toaster';
+
+  @override
+  String get localCheckObjectSink => 'Sink';
+
+  @override
+  String get localCheckObjectRefrigerator => 'Refrigerator';
+
+  @override
+  String get localCheckObjectBook => 'Book';
+
+  @override
+  String get localCheckObjectClock => 'Clock';
+
+  @override
+  String get localCheckObjectVase => 'Vase';
+
+  @override
+  String get localCheckObjectScissors => 'Scissors';
+
+  @override
+  String get localCheckObjectTeddyBear => 'Teddy bear';
+
+  @override
+  String get localCheckObjectHairDrier => 'Hair dryer';
+
+  @override
+  String get localCheckObjectToothbrush => 'Toothbrush';
+
+  @override
+  String get localCheckSoundClapping => 'Clapping';
+
+  @override
+  String get localCheckSoundFingerSnapping => 'Finger snapping';
+
+  @override
+  String get localCheckSoundWhistling => 'Whistling';
+
+  @override
+  String get localCheckSoundApplause => 'Applause';
+
+  @override
+  String get localCheckSoundLaughter => 'Laughter';
+
+  @override
+  String get localCheckSoundCough => 'Coughing';
+
+  @override
+  String get localCheckSoundSneeze => 'Sneezing';
+
+  @override
+  String get localCheckSoundBell => 'Bell';
+
+  @override
+  String get localCheckSoundDoorbell => 'Doorbell';
+
+  @override
+  String get localCheckSoundKnock => 'Knocking';
+
+  @override
+  String get localCheckSoundDog => 'Dog';
+
+  @override
+  String get localCheckSoundBark => 'Dog barking';
+
+  @override
+  String get localCheckSoundCat => 'Cat';
+
+  @override
+  String get localCheckSoundMeow => 'Cat meowing';
+
+  @override
+  String get localCheckSoundBird => 'Bird';
+
+  @override
+  String get localCheckSoundChirpTweet => 'Birdsong';
+
+  @override
+  String get localCheckSoundCrowingCockADoodleDoo => 'Rooster crowing';
+
+  @override
+  String get localCheckSoundSiren => 'Siren';
+
+  @override
+  String get localCheckSoundAlarmClock => 'Alarm clock';
+
+  @override
+  String get localCheckSoundTyping => 'Typing';
+
+  @override
+  String get localCheckSoundWaterTapFaucet => 'Running tap';
+
+  @override
+  String get localCheckSoundGuitar => 'Guitar';
+
+  @override
+  String get localCheckSoundPiano => 'Piano';
+
+  @override
+  String get localCheckSoundDrum => 'Drum';
+
+  @override
+  String get localCheckSoundWhistle => 'Whistle blown';
+
+  @override
+  String editorAppModeLabel(String appName) {
+    return 'How $appName confirms';
+  }
+
+  @override
+  String get editorAppModePush => 'It tells Verily';
+
+  @override
+  String get editorAppModePull => 'Verily asks it';
+
+  @override
+  String editorAppModePushBody(String appName) {
+    return '$appName\'s server sends a confirmation when someone does it, using the link code they gave it. Participants have nothing to tap.';
+  }
+
+  @override
+  String editorAppModePullBody(String appName) {
+    return 'Participants tap \"I did it\" and Verily asks $appName\'s webhook straight away. They can add a username or order number so $appName can find them.';
+  }
+
+  @override
+  String editorAppModePullNeedsWebhook(String appName) {
+    return '$appName has no webhook address yet. Add one on its App page before you publish, or Verily has nowhere to ask.';
+  }
+
+  @override
+  String get appsSecretTitle => 'Save your signing secret';
+
+  @override
+  String appsSecretBody(String appName) {
+    return '$appName\'s server uses this secret to check that each webhook call really came from Verily. Keep it on that server only.';
+  }
+
+  @override
+  String get appsSecretWarning =>
+      'Verily shows this secret only once. If you lose it, rotate to get a new one.';
+
+  @override
+  String appsSecretOverlap(String date) {
+    return 'Calls are signed with both this secret and the previous one until $date, so you can switch over without missing any.';
+  }
+
+  @override
+  String appsSecretLabel(int version) {
+    return 'Signing secret, version $version';
+  }
+
+  @override
+  String get appsSecretCopy => 'Copy secret';
+
+  @override
+  String get appsWebhookHeading => 'Webhook';
+
+  @override
+  String get appsWebhookBody =>
+      'Verily sends signed events here (verified and rejected attempts, payouts, finished verification requests) and asks it to confirm proof on actions set to \"Verily asks it\".';
+
+  @override
+  String get appsWebhookLabel => 'Webhook address';
+
+  @override
+  String get appsWebhookHint => 'https://example.com/verily/webhook';
+
+  @override
+  String get appsWebhookSave => 'Save address';
+
+  @override
+  String get appsWebhookRemove => 'Remove address';
+
+  @override
+  String get appsWebhookSaved => 'Webhook address saved';
+
+  @override
+  String get appsWebhookRemoved => 'Webhook address removed';
+
+  @override
+  String get appsWebhookInvalid =>
+      'Use an https address on a public website: the standard port, no password, and no #fragment. Local, private, and internal addresses can\'t receive webhooks.';
+
+  @override
+  String get appsWebhooksUnavailable =>
+      'Webhooks aren\'t switched on for Verily yet. Try again later.';
+
+  @override
+  String get appsWebhookNotSending =>
+      'Verily sends events once this App has both a webhook address and a signing secret.';
+
+  @override
+  String appsSecretVersion(int version) {
+    return 'Signing secret: version $version';
+  }
+
+  @override
+  String get appsSecretNone => 'No signing secret yet';
+
+  @override
+  String get appsSecretHelp =>
+      'Rotate it if it may have leaked. The old secret keeps signing for 24 hours, so nothing is missed.';
+
+  @override
+  String get appsSecretNoneHelp =>
+      'Issue one so your server can check that each call came from Verily.';
+
+  @override
+  String get appsSecretRotate => 'Rotate secret';
+
+  @override
+  String get appsSecretIssue => 'Issue secret';
+
+  @override
+  String get appsRedirectHeading => 'Return addresses';
+
+  @override
+  String get appsRedirectBody =>
+      'Where Verily sends people back after they link their account or finish a verification for this App. Matching is exact, so add each address exactly as your app sends it.';
+
+  @override
+  String get appsRedirectEmpty => 'No return addresses yet.';
+
+  @override
+  String get appsRedirectLabel => 'Return address';
+
+  @override
+  String get appsRedirectHint => 'com.example.app://verily';
+
+  @override
+  String get appsRedirectAdd => 'Add address';
+
+  @override
+  String appsRedirectCount(int count, int max) {
+    return '$count of $max';
+  }
+
+  @override
+  String appsRedirectFull(int max) {
+    return 'That\'s all $max. Remove one to add another.';
+  }
+
+  @override
+  String get appsRedirectDuplicate => 'That address is already on the list.';
+
+  @override
+  String get appsRedirectInvalid =>
+      'Use an exact https address or your app\'s own scheme, such as com.example.app://verily. Wildcards, #fragments, plain http, and verily: addresses aren\'t allowed.';
+
+  @override
+  String appsRedirectTooMany(int max) {
+    return 'An App can have at most $max return addresses. Remove one first.';
+  }
+
+  @override
+  String get appsRedirectRemoveTitle => 'Remove this return address?';
+
+  @override
+  String appsRedirectRemoveBody(String uri) {
+    return 'Links that send people back to $uri will stop working.';
+  }
+
+  @override
+  String get appsRedirectRemoveConfirm => 'Remove';
+
+  @override
+  String appsRedirectRemoveTooltip(String uri) {
+    return 'Remove $uri';
+  }
+
+  @override
+  String get appsRateLimited =>
+      'That\'s a lot of requests in a short time. Wait a little, then try again.';
+
+  @override
+  String get appsDeliveriesHeading => 'Webhook calls';
+
+  @override
+  String get appsDeliveriesBody =>
+      'Every call Verily made to your webhook, newest first, with how your server answered.';
+
+  @override
+  String get appsDeliveriesLoading => 'Loading webhook calls';
+
+  @override
+  String get appsDeliveriesFailed => 'Webhook calls didn\'t load';
+
+  @override
+  String get appsDeliveriesEmpty =>
+      'No calls yet. They appear here once this App has a webhook address and a signing secret.';
+
+  @override
+  String get appsDeliveriesMore => 'Show older calls';
+
+  @override
+  String get appsDeliveryNoAnswer => 'no answer';
+
+  @override
+  String appsDeliveryHttp(int code) {
+    return 'HTTP $code';
+  }
+
+  @override
+  String get appsDeliverySucceeded => 'Your server accepted it.';
+
+  @override
+  String appsDeliveryDetails(int attempt, String answer, int milliseconds) {
+    return 'Try $attempt · $answer · $milliseconds ms';
+  }
+
+  @override
+  String appsDeliveryEvent(String eventType) {
+    return 'Event: $eventType';
+  }
+
+  @override
+  String appsDeliveryEventError(String eventType, String errorCode) {
+    return 'Event: $eventType · Error code: $errorCode';
+  }
+
+  @override
+  String actionAppPullBody(String appName) {
+    return '$appName checks this step when you say you\'ve done it. Verily doesn\'t check the act, only that $appName said so.';
+  }
+
+  @override
+  String get appsEventAttemptVerify => 'Pull check: asked to confirm';
+
+  @override
+  String get appsEventAttemptVerified => 'Attempt verified';
+
+  @override
+  String get appsEventAttemptRejected => 'Attempt rejected';
+
+  @override
+  String get appsEventPayoutReleased => 'Payout released';
+
+  @override
+  String get appsEventRequestCompleted => 'Verification request finished';
+
+  @override
+  String get appsEventOther => 'Webhook event';
+
+  @override
+  String get appsDeliveryTimeout =>
+      'Your server didn\'t answer within 10 seconds.';
+
+  @override
+  String get appsDeliveryConnectionFailed =>
+      'Verily couldn\'t connect to your server.';
+
+  @override
+  String get appsDeliveryTlsFailure =>
+      'The secure connection to your server failed.';
+
+  @override
+  String get appsDeliveryHostNotPublic =>
+      'The address didn\'t lead to a public server.';
+
+  @override
+  String get appsDeliveryInvalidUrl => 'The webhook address isn\'t valid.';
+
+  @override
+  String get appsDeliveryTooLarge => 'Your server\'s answer was too large.';
+
+  @override
+  String get appsDeliveryInvalidResponse =>
+      'Your server\'s answer wasn\'t the expected JSON verdict.';
+
+  @override
+  String get appsDeliveryNoWebhook => 'There was no webhook address to call.';
+
+  @override
+  String get appsDeliveryNoSecret =>
+      'There was no signing secret to sign the call with.';
+
+  @override
+  String appsDeliveryRefused(int code) {
+    return 'Your server answered HTTP $code.';
+  }
+
+  @override
+  String get appsDeliveryFailedOther => 'The call didn\'t go through.';
+
+  @override
+  String get appsEventStatusPending => 'Verily will try again.';
+
+  @override
+  String get appsEventStatusDelivering => 'Being delivered now.';
+
+  @override
+  String get appsEventStatusDelivered => 'Delivered.';
+
+  @override
+  String get appsEventStatusFailed => 'Verily stopped trying.';
+
+  @override
+  String actionPullIntro(String appName) {
+    return 'Done it in $appName? Tap \"I did it\" and Verily asks $appName to confirm.';
+  }
+
+  @override
+  String get actionPullReferenceLabel => 'Username or order number (optional)';
+
+  @override
+  String get actionPullReferenceHint => 'ada_lovelace or #1234';
+
+  @override
+  String actionPullReferenceHelp(String appName) {
+    return 'Helps $appName find you. Letters, numbers, spaces, and . _ @ # : / + - only.';
+  }
+
+  @override
+  String get actionPullReferenceInvalid =>
+      'Use up to 120 letters, numbers, spaces, or . _ @ # : / + -';
+
+  @override
+  String get actionPullAsk => 'I did it';
+
+  @override
+  String get actionPullAskAgain => 'Ask again';
+
+  @override
+  String actionPullWaitingTitle(String appName) {
+    return 'Waiting for $appName';
+  }
+
+  @override
+  String actionPullWaitingBody(String appName) {
+    return '$appName is checking and will confirm on its own. You can leave this page; it updates when $appName answers.';
+  }
+
+  @override
+  String actionPullFailedTitle(String appName) {
+    return '$appName didn\'t answer';
+  }
+
+  @override
+  String get actionPullFailedBody => 'Try again in a little while.';
+
+  @override
+  String actionPullUnansweredTitle(String appName) {
+    return '$appName never answered';
+  }
+
+  @override
+  String get actionPullAcceptedBody => 'Nothing more to do here.';
+
+  @override
+  String actionPullRejectedTitle(String appName) {
+    return '$appName didn\'t confirm it';
+  }
+
+  @override
+  String actionPullRejectedBody(String appName) {
+    return 'If you think that\'s wrong, check with $appName, or appeal and the action\'s creator will look again.';
+  }
+
+  @override
+  String actionPullUnavailable(String appName) {
+    return '$appName can\'t confirm proof right now. Try again later.';
+  }
+
+  @override
+  String get proofReasonProofAccepted => 'Your proof passed.';
+
+  @override
+  String get proofReasonChecking => 'Verily is checking your proof.';
+
+  @override
+  String get proofReasonNeedsReview =>
+      'A person will check this before it counts.';
+
+  @override
+  String get proofReasonNotAccepted =>
+      'Your proof didn\'t show what this action asks for.';
+
+  @override
+  String get proofReasonMissing =>
+      'Some proof is still missing. Finish every step first.';
+
+  @override
+  String get proofReasonActionFull => 'This action has reached its limit.';
+
+  @override
+  String get proofReasonOutsideArea =>
+      'You weren\'t inside the area for this action. Go to the pin and try again.';
+
+  @override
+  String get proofReasonLocationNotPrecise =>
+      'Your location wasn\'t precise enough. Step outside or near a window and try again.';
+
+  @override
+  String get proofReasonLocationTooOld =>
+      'Your location was too old by the time it arrived. Try again.';
+
+  @override
+  String get proofReasonPhoneClock =>
+      'Your phone\'s clock doesn\'t match the time. Set it to automatic and try again.';
+
+  @override
+  String get proofReasonRecordingLength =>
+      'The recording was too short or too long for this action.';
+
+  @override
+  String get proofReasonChallengeWordMissing =>
+      'The word to say wasn\'t ready before you recorded. Record again.';
+
+  @override
+  String get proofReasonChallengeWordTooEarly =>
+      'The recording started before your word arrived. Record again.';
+
+  @override
+  String get proofReasonChallengeWordNotHeard =>
+      'We couldn\'t hear your word. Say it clearly and record again.';
+
+  @override
+  String get proofReasonCodeNotMatched =>
+      'That code isn\'t this place\'s code. Scan the one shown here.';
+
+  @override
+  String get proofReasonMotionNotMatched =>
+      'The movement didn\'t match what this action asks for. Try again.';
+
+  @override
+  String get proofReasonCaptureNotVerified =>
+      'Your phone couldn\'t vouch for this capture. Record it again in Verily.';
+
+  @override
+  String get proofReasonPayoutReview =>
+      'Bigger rewards get a quick look from a person before they\'re sent.';
+
+  @override
+  String get proofReasonAppConfirmed => 'The App confirmed it.';
+
+  @override
+  String get proofReasonAppNotConfirmed => 'The App didn\'t confirm it.';
+
+  @override
+  String get proofReasonAppChecking => 'Waiting for the App to confirm.';
+
+  @override
+  String get proofReasonAppUnreachable =>
+      'The App couldn\'t be reached. Try again in a little while.';
+
+  @override
+  String get proofReasonAppNoAnswer => 'The App didn\'t answer in time.';
+
+  @override
+  String get proofReasonOther => 'Your proof wasn\'t accepted.';
+
+  @override
+  String get reviewReasonPayout => 'Large reward';
+
+  @override
+  String get reviewReasonSecurity => 'Security check';
+
+  @override
+  String get reviewReasonChallengeWord => 'Word unclear';
+
+  @override
+  String get reviewReasonLocation => 'Location check';
+
+  @override
+  String get reviewReasonAbuse => 'Possible misuse';
+
+  @override
+  String get reviewReasonLocalCheck => 'Quick check didn\'t run';
+
+  @override
+  String get reviewReasonVerifier => 'Automatic check unavailable';
+
+  @override
+  String get reviewReasonLowConfidence => 'Not sure enough';
+
+  @override
+  String get reviewReasonNeedsPerson => 'Needs a person';
+
+  @override
+  String reviewReasonLabel(String reason) {
+    return 'Why it\'s here: $reason';
+  }
 }

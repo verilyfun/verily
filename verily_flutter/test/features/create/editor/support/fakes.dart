@@ -135,6 +135,9 @@ ActionRequirementView requirementViewFor(
   minDurationSeconds: draft.minDurationSeconds,
   maxDurationSeconds: draft.maxDurationSeconds,
   verificationPolicy: draft.verificationPolicy,
+  verificationPrompt: draft.verificationPrompt,
+  minConfidence: draft.minConfidence,
+  venueCodeConfigured: draft.kind == ActionRequirementKind.qrCode ? true : null,
   spokenChallengeRequired: draft.spokenChallengeRequired ?? false,
   movementKind: draft.movementKind,
   motionType: draft.motionType,
@@ -321,12 +324,15 @@ class FakeActionRepository implements ActionRepository {
     );
   }
 
+  int previewCalls = 0;
+
   @override
   Future<ActionOpportunity> preview(UuidValue actionId) async {
+    previewCalls++;
     final action = previews[actionId.uuid];
     if (action == null) {
-      throw ActionAuthoringException(
-        reason: ActionAuthoringProblem.appUnavailable,
+      throw ResourceNotFoundException(
+        resource: MissingResource.action,
         message: 'Not found.',
       );
     }
@@ -367,6 +373,10 @@ class FakeActionRepository implements ActionRepository {
   Future<List<ActionOpportunity>> listAvailable() => throw UnimplementedError();
 
   @override
+  Future<ActionOpportunity> getAction(UuidValue actionId) =>
+      throw UnimplementedError();
+
+  @override
   Future<List<ActionOpportunity>> listNearby({
     required double latitude,
     required double longitude,
@@ -390,6 +400,13 @@ class FakeActionRepository implements ActionRepository {
   @override
   Future<List<ActionAttemptView>> listMyAttempts() =>
       throw UnimplementedError();
+
+  @override
+  Future<EvidenceSubmissionResult> requestAppVerification({
+    required UuidValue attemptId,
+    required UuidValue requirementId,
+    String? reference,
+  }) => throw UnimplementedError();
 }
 
 /// A [RewardRepository] whose funding answers are set per test.
@@ -492,6 +509,9 @@ class FakeAppsRepository implements AppsRepository {
   Future<List<VerilyAppView>> listApps() async => apps;
 
   @override
+  Future<VerilyAppView> getApp(UuidValue appId) => throw UnimplementedError();
+
+  @override
   Future<VerilyAppCredential> createApp({
     required String name,
     String? websiteUrl,
@@ -520,6 +540,28 @@ class FakeAppsRepository implements AppsRepository {
   @override
   Future<VerilyAppLinkView> linkApp(UuidValue appId) =>
       throw UnimplementedError();
+
+  @override
+  Future<VerilyAppView> setWebhookUrl({
+    required UuidValue appId,
+    required String? webhookUrl,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<VerilyAppWebhookSecret> rotateWebhookSecret(UuidValue appId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<VerilyAppView> setRedirectUris({
+    required UuidValue appId,
+    required List<String> redirectUris,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<List<AppWebhookDeliveryView>> listWebhookDeliveries(
+    UuidValue appId, {
+    UuidValue? beforeId,
+  }) => throw UnimplementedError();
 }
 
 /// A wallet that authorizes [address] and signs whatever it is asked to,

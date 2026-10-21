@@ -18,15 +18,18 @@ import 'package:verily_flutter/app/widgets/verily_action_button.dart';
 import 'package:verily_flutter/app/widgets/verily_state_panel.dart';
 import 'package:verily_flutter/core/user_message.dart';
 import 'package:verily_flutter/features/actions/action_repository.dart';
+import 'package:verily_flutter/features/apps/app_platform_messages.dart';
 import 'package:verily_flutter/features/create/venue_code/venue_code_sheet.dart';
 import 'package:verily_flutter/features/do/do_providers.dart';
 import 'package:verily_flutter/features/do/widgets/app_confirmation_card.dart';
+import 'package:verily_flutter/features/do/widgets/app_pull_check.dart';
 import 'package:verily_flutter/features/do/widgets/appeal_section.dart';
 import 'package:verily_flutter/features/do/widgets/place_preview.dart';
 import 'package:verily_flutter/features/do/widgets/proof_checklist.dart';
 import 'package:verily_flutter/features/do/widgets/verified_outcome.dart';
 import 'package:verily_flutter/features/evidence/evidence_service.dart';
 import 'package:verily_flutter/features/evidence/location_service.dart';
+import 'package:verily_flutter/features/evidence/proof_reasons.dart';
 import 'package:verily_flutter/l10n/l10n.dart';
 import 'package:verily_flutter/testing/verily_test_keys.dart';
 
@@ -76,7 +79,7 @@ class ActionScreen extends ConsumerWidget {
                     title: l10n.actionNotFoundTitle,
                     message: l10n.errorNotFound,
                     action: VerilyStateAction(
-                      label: l10n.comingSoonGoToDo,
+                      label: l10n.navigationFindActions,
                       onPressed: () => context.go(VerilyRoutePaths.doTab),
                     ),
                   ),
@@ -98,7 +101,7 @@ class _BackOrHome extends StatelessWidget {
     final l10n = context.l10n;
     final canPop = GoRouter.maybeOf(context)?.canPop() ?? false;
     return IconButton(
-      tooltip: canPop ? l10n.actionBack : l10n.comingSoonGoToDo,
+      tooltip: canPop ? l10n.actionBack : l10n.navigationFindActions,
       icon: SkribbleIcon(data: canPop ? VerilyIcons.back : VerilyIcons.close),
       onPressed: () => canPop
           ? context.pop()
@@ -141,7 +144,8 @@ class _ActionPage extends HookConsumerWidget {
     final starting = useState(false);
     final completing = useState(false);
     final notice = useState<_Notice?>(null);
-    final lastSummary = useState<String?>(null);
+    // Why the last proof sent from this page was not accepted.
+    final lastReason = useState<String?>(null);
     // Only a verification that arrives while this page is open earns the
     // stamp slam; a restored result shows it settled.
     final celebrate = useState(false);
@@ -156,6 +160,35 @@ class _ActionPage extends HookConsumerWidget {
     ];
     final appConfirmed = appRequirements.isNotEmpty;
     final accepted = {...?attempt.value?.acceptedRequirementIds};
+    // The App's last answer to "I did it", per pull-checked requirement.
+    final pullResults = useState<Map<UuidValue, EvidenceSubmissionResult>>(
+      const {},
+    );
+    final askingApp = useState<UuidValue?>(null);
+
+    AppPullPhase pullPhaseOf(ActionRequirementView requirement) {
+      if (accepted.contains(requirement.id)) return AppPullPhase.accepted;
+      final result = pullResults.value[requirement.id];
+      if (result == null) return AppPullPhase.ready;
+      final phase = appPullPhaseOf(result);
+      final status = attempt.value?.status;
+      if (phase.isOpen &&
+          status != null &&
+          status != ActionAttemptStatus.collectingEvidence) {
+        // The App decided while the page was checking: its verdict settled
+        // the attempt.
+        return status == ActionAttemptStatus.rejected
+            ? AppPullPhase.rejected
+            : AppPullPhase.accepted;
+      }
+      return phase;
+    }
+
+    final pullOpen = appRequirements.any(
+      (requirement) =>
+          requirement.appVerificationMode == AppVerificationMode.pull &&
+          pullPhaseOf(requirement).isOpen,
+    );
 
     void adopt(ActionAttemptView next) {
       final wasVerified = attempt.value?.status == ActionAttemptStatus.verified;
@@ -210,8 +243,10 @@ class _ActionPage extends HookConsumerWidget {
 
     final pollInterval = ref.watch(attemptPollIntervalProvider);
     final status = attempt.value?.status;
+    // Proof being checked, or an App still deciding on "I did it".
+    final polling = status == ActionAttemptStatus.verifying || pullOpen;
     useEffect(() {
-      if (status != ActionAttemptStatus.verifying) return null;
+      if (!polling) return null;
       var cancelled = false;
       var elapsed = Duration.zero;
       Timer? timer;
@@ -238,7 +273,7 @@ class _ActionPage extends HookConsumerWidget {
         timer?.cancel();
         lifecycle.dispose();
       };
-    }, [status, attempt.value?.id]);
+    }, [polling, attempt.value?.id]);
 
     bool allRequiredAccepted(ActionAttemptView current) {
       final done = {...?current.acceptedRequirementIds};
@@ -263,6 +298,43 @@ class _ActionPage extends HookConsumerWidget {
         }
       } finally {
         if (context.mounted) completing.value = false;
+      }
+    }
+
+    /// "I did it" on a pull-checked App proof. Opens the attempt first when
+    /// there is none, since the App is asked about one attempt.
+    Future<void> askApp(
+      ActionRequirementView requirement,
+      String? reference,
+    ) async {
+      askingApp.value = requirement.id;
+      notice.value = null;
+      try {
+        final repository = ref.read(actionRepositoryProvider);
+        var current = attempt.value;
+        if (current == null) {
+          current = await repository.beginAttempt(action.id);
+          if (!context.mounted) return;
+          adopt(current);
+        }
+        final result = await repository.requestAppVerification(
+          attemptId: current.id,
+          requirementId: requirement.id,
+          reference: reference,
+        );
+        if (!context.mounted) return;
+        pullResults.value = {...pullResults.value, requirement.id: result};
+        adopt(result.attempt);
+      } on Exception catch (error) {
+        debugPrint('Asking the App to confirm failed: $error');
+        if (context.mounted) {
+          notice.value = _Notice(
+            appPlatformMessage(l10n, error, appName: requirement.appName),
+            problem: true,
+          );
+        }
+      } finally {
+        if (context.mounted) askingApp.value = null;
       }
     }
 
@@ -328,7 +400,7 @@ class _ActionPage extends HookConsumerWidget {
         }
         if (result == null || !context.mounted) return;
         adopt(result.attempt);
-        lastSummary.value = result.summary;
+        lastReason.value = result.reasonCode;
         notice.value = _Notice(
           _resultMessage(l10n, result),
           problem: result.status == EvidenceDecisionStatus.rejected,
@@ -458,7 +530,7 @@ class _ActionPage extends HookConsumerWidget {
             ),
             ActionAttemptStatus.rejected => AppealSection(
               attempt: current,
-              summary: lastSummary.value,
+              reasonCode: lastReason.value,
             ),
             ActionAttemptStatus.capacityReached => _StatusBox(
               key: VerilyTestKeys.actionCapacityOutcome,
@@ -493,6 +565,27 @@ class _ActionPage extends HookConsumerWidget {
           AppConfirmationCard(
             requirement: requirement,
             confirmed: accepted.contains(requirement.id),
+            showLinkCode:
+                requirement.appVerificationMode != AppVerificationMode.pull ||
+                pullPhaseOf(requirement).canAsk,
+            pullCheck:
+                requirement.appVerificationMode == AppVerificationMode.pull &&
+                    !action.viewerIsCreator
+                ? AppPullCheck(
+                    requirement: requirement,
+                    appName: requirement.appName ?? l10n.actionAppUnnamed,
+                    phase: pullPhaseOf(requirement),
+                    asking: askingApp.value == requirement.id,
+                    onAsk:
+                        action.status == ActionDefinitionStatus.active &&
+                            (current == null || collecting) &&
+                            askingApp.value == null &&
+                            (requirement.appAvailable ?? true)
+                        ? (reference) =>
+                              unawaited(askApp(requirement, reference))
+                        : null,
+                  )
+                : null,
           ),
         ],
         if (!appConfirmed) ...[
@@ -561,16 +654,18 @@ class _ActionPage extends HookConsumerWidget {
   }
 }
 
-String _resultMessage(AppLocalizations l10n, EvidenceSubmissionResult result) {
-  final summary = result.summary.trim();
-  return switch (result.status) {
-    EvidenceDecisionStatus.accepted => l10n.actionProofAccepted,
-    EvidenceDecisionStatus.manualReview => l10n.actionProofWithReviewer,
-    EvidenceDecisionStatus.rejected =>
-      summary.isEmpty ? l10n.actionProofNotAccepted : summary,
-    null => l10n.actionProofSent,
-  };
-}
+String _resultMessage(
+  AppLocalizations l10n,
+  EvidenceSubmissionResult result,
+) => switch (result.status) {
+  EvidenceDecisionStatus.accepted => l10n.actionProofAccepted,
+  EvidenceDecisionStatus.manualReview => l10n.actionProofWithReviewer,
+  EvidenceDecisionStatus.rejected => proofReasonMessage(
+    l10n,
+    result.reasonCode,
+  ),
+  null => l10n.actionProofSent,
+};
 
 _Notice _locationNotice(AppLocalizations l10n, LocationException error) =>
     switch (error.failure) {

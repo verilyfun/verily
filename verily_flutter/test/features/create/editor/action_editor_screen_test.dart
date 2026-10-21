@@ -341,7 +341,8 @@ void main() {
           fakes.actions.savedRequests.single.requirements.single;
       expect(requirement.kind, ActionRequirementKind.externalApp);
       expect(requirement.appId, editorUuid(900));
-      expect(requirement.appVerificationMode, isNull);
+      // An App confirms on its own unless the creator picks pull.
+      expect(requirement.appVerificationMode, AppVerificationMode.push);
     });
 
     testWidgets('a place comes from a map tap or the device position', (
@@ -599,13 +600,6 @@ void main() {
 
       expect(find.text(l10n.editorRewardStatusFunded), findsOneWidget);
       expect(find.text(l10n.editorRewardLocked), findsOneWidget);
-      // The server does not hand a media prompt back; it is written again.
-      expect(find.text(l10n.editorVerifierPromptRewrite), findsOneWidget);
-      await scrollAndEnter(
-        tester,
-        find.byKey(VerilyTestKeys.editorVerifierPrompt('view')),
-        'The video shows a park in daylight.',
-      );
 
       await scrollAndTap(tester, find.byKey(VerilyTestKeys.editorPublish));
       await tester.tap(find.byKey(VerilyTestKeys.editorPublishConfirm));
@@ -614,6 +608,78 @@ void main() {
       expect(find.byKey(VerilyTestKeys.fundingSheet), findsNothing);
       expect(fakes.actions.savedRequests.single.reward, isNull);
       expect(fakes.actions.publishedActions, hasLength(1));
+    });
+
+    testWidgets(
+      'a saved action keeps its prompt, threshold, and venue secret',
+      (
+        tester,
+      ) async {
+        final saved = actionFixture(
+          requirements: [
+            for (final (index, draft) in [
+              ...walkTemplate().requirements,
+              ...venueTemplate().requirements,
+            ].indexed)
+              requirementViewFor(
+                draft.copyWith(minConfidence: draft.minConfidence ?? 0.8),
+                index,
+              ),
+          ],
+        );
+        final fakes = EditorFakes(
+          actions: FakeActionRepository(previews: {saved.id.uuid: saved})
+            ..lastSaved = saved,
+        );
+        await pumpEditor(
+          tester,
+          fakes,
+          initialLocation: VerilyLocations.actionEdit(saved.id.uuid),
+        );
+
+        expect(
+          find.text('The video shows a park in daylight.'),
+          findsOneWidget,
+        );
+        await scrollAndTap(tester, find.byKey(VerilyTestKeys.editorSave));
+
+        final sent = fakes.actions.savedRequests.single.requirements;
+        final video = sent.firstWhere(
+          (draft) => draft.requirementKey == 'view',
+        );
+        expect(video.verificationPrompt, 'The video shows a park in daylight.');
+        expect(video.minConfidence, 0.8);
+        // The server keeps the venue's stored secret when no code is sent.
+        final door = sent.firstWhere((draft) => draft.requirementKey == 'door');
+        expect(door.qrCode, isNull);
+      },
+    );
+
+    testWidgets("an action that is not the creator's is not found", (
+      tester,
+    ) async {
+      await pumpEditor(
+        tester,
+        EditorFakes(),
+        initialLocation: VerilyLocations.actionEdit(editorUuid(42).uuid),
+      );
+
+      expect(find.text(l10n.errorNotFound), findsOneWidget);
+      expect(find.text(l10n.dialogRetry), findsNothing);
+    });
+
+    testWidgets('a malformed edit link is not found without a server call', (
+      tester,
+    ) async {
+      final fakes = EditorFakes();
+      await pumpEditor(
+        tester,
+        fakes,
+        initialLocation: VerilyLocations.actionEdit('not-an-id'),
+      );
+
+      expect(find.text(l10n.errorNotFound), findsOneWidget);
+      expect(fakes.actions.previewCalls, 0);
     });
 
     testWidgets('a server refusal is shown in its own words', (tester) async {

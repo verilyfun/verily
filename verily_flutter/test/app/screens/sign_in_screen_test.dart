@@ -40,6 +40,8 @@ void main() {
       'Sign in to see your proof and payouts',
     ),
     (AccountRequestReason.manageApps, 'Sign in to manage your Verily Apps'),
+    (AccountRequestReason.answerRequest, 'Sign in to answer this request'),
+    (AccountRequestReason.linkApp, 'Sign in to link this app'),
   ]) {
     testWidgets('asks for an account in words that fit ${reason?.name}', (
       tester,

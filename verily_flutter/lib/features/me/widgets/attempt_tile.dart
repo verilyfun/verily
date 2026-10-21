@@ -12,6 +12,7 @@ import 'package:verily_flutter/app/theme/verily_icons.g.dart';
 import 'package:verily_flutter/app/theme/verily_rough_decoration.dart';
 import 'package:verily_flutter/app/theme/verily_theme.dart';
 import 'package:verily_flutter/app/widgets/verily_action_button.dart';
+import 'package:verily_flutter/core/token_amount.dart';
 import 'package:verily_flutter/core/user_message.dart';
 import 'package:verily_flutter/features/actions/action_labels.dart';
 import 'package:verily_flutter/features/appeals/evidence_appeal_repository.dart';
@@ -34,8 +35,7 @@ class AttemptTile extends ConsumerWidget {
     final palette = theme.verily;
     final l10n = context.l10n;
     final attempt = item.attempt;
-    final action = item.action;
-    final reward = action?.reward;
+    final payout = item.payout;
     final started = DateFormat.yMMMd(
       l10n.localeName,
     ).format(attempt.startedAt.toLocal());
@@ -56,7 +56,7 @@ class AttemptTile extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            action?.title ?? l10n.meAttemptUnknownAction,
+            attempt.actionTitle ?? l10n.meAttemptUnknownAction,
             style: theme.textTheme.titleMedium?.copyWith(color: palette.ink),
           ),
           const SizedBox(height: 4),
@@ -83,13 +83,17 @@ class AttemptTile extends ConsumerWidget {
             l10n.meAttemptStarted(started),
             style: theme.textTheme.bodySmall?.copyWith(color: palette.mutedInk),
           ),
-          if (payoutStatus != null && reward != null) ...[
+          if (payoutStatus != null && payout != null) ...[
             const SizedBox(height: 8),
             Text(
               payoutStatusLabel(
                 l10n,
                 payoutStatus,
-                payoutAmountOf(reward).format(l10n.localeName),
+                TokenAmount(
+                  atoms: payout.amount,
+                  decimals: payout.decimals,
+                  symbol: payout.tokenSymbol,
+                ).format(l10n.localeName),
               ),
               style: theme.textTheme.bodySmall?.copyWith(color: palette.ink),
             ),
@@ -111,12 +115,13 @@ class AttemptTile extends ConsumerWidget {
       ),
     );
 
-    if (action == null) return card;
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
         borderRadius: BorderRadius.circular(VerilyRadius.card),
-        onTap: () => context.push(VerilyLocations.action(action.id.toString())),
+        onTap: () => context.push(
+          VerilyLocations.action(attempt.actionDefinitionId.toString()),
+        ),
         child: card,
       ),
     );

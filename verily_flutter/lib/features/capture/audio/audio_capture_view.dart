@@ -16,6 +16,7 @@ import 'package:verily_flutter/features/capture/capture_providers.dart';
 import 'package:verily_flutter/features/capture/widgets/capture_problem_panel.dart';
 import 'package:verily_flutter/features/capture/widgets/spoken_challenge_bubble.dart';
 import 'package:verily_flutter/features/capture/widgets/viewfinder.dart';
+import 'package:verily_flutter/features/local_check/widgets/local_check_guide.dart';
 import 'package:verily_flutter/l10n/l10n.dart';
 import 'package:verily_flutter/testing/verily_test_keys.dart';
 
@@ -25,6 +26,11 @@ enum _AudioPhase { idle, recording, denied, failed }
 ///
 /// There is no file picker: the only way in is the record button. When the
 /// action asks for a spoken word, it is shown before and while recording.
+///
+/// A sound quick check is not run live: the microphone records straight to
+/// the compressed file Verily accepts, and the phone cannot hear the same
+/// sound twice. The guide says what Verily listens for after the recording
+/// is sent, where the server runs the pinned sound model over it.
 class AudioCaptureView extends HookConsumerWidget {
   const AudioCaptureView({
     required this.requirement,
@@ -176,6 +182,8 @@ class AudioCaptureView extends HookConsumerWidget {
       _ when limitReached.value => l10n.captureLimitReached(
         clockLabel(maximum),
       ),
+      // A sound check is about the sound, not about speaking.
+      _ when requirement.localCheck != null => l10n.captureAudioSoundHint,
       _ => l10n.captureAudioHint,
     };
 
@@ -239,6 +247,16 @@ class AudioCaptureView extends HookConsumerWidget {
                     if (word != null) ...[
                       SpokenChallengeBubble(word: word, intro: !recording),
                       const SizedBox(height: 12),
+                    ],
+                    if (requirement.localCheck case final check?) ...[
+                      LocalCheckGuide(
+                        copy: localCheckGuideCopy(
+                          l10n,
+                          check: check,
+                          availability: null,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
                     ],
                     Text(
                       status,

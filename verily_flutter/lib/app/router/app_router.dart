@@ -2,12 +2,12 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:verily_flutter/app/router/verily_routes.dart';
-import 'package:verily_flutter/app/screens/coming_soon_screen.dart';
 import 'package:verily_flutter/app/screens/sign_in_screen.dart';
 import 'package:verily_flutter/app/screens/welcome_screen.dart';
 import 'package:verily_flutter/app/shell/tabs_shell.dart';
 import 'package:verily_flutter/features/account/account_required.dart';
 import 'package:verily_flutter/features/account/auth_intent.dart';
+import 'package:verily_flutter/features/app_link/app_link_screen.dart';
 import 'package:verily_flutter/features/appeals/appeals_screen.dart';
 import 'package:verily_flutter/features/apps/app_screen.dart';
 import 'package:verily_flutter/features/apps/apps_screen.dart';
@@ -18,6 +18,7 @@ import 'package:verily_flutter/features/do/do_screen.dart';
 import 'package:verily_flutter/features/me/me_screen.dart';
 import 'package:verily_flutter/features/review/review_queue_screen.dart';
 import 'package:verily_flutter/features/settings/settings_screen.dart';
+import 'package:verily_flutter/features/verify_request/verify_request_screen.dart';
 
 /// Builds the app's router.
 ///
@@ -163,17 +164,25 @@ GoRouter buildAppRouter({
         builder: (context, state) =>
             const AccountRequired(child: SettingsScreen()),
       ),
+      // Opened by other Apps. The account prompt shows in place, so the
+      // request or link is still on screen once the person has signed in.
       GoRoute(
         path: VerilyRoutePaths.verificationRequest,
         name: VerilyRouteNames.verificationRequest,
-        builder: (context, state) =>
-            const ComingSoonScreen(kind: ComingSoonKind.verificationRequest),
+        builder: (context, state) => AccountRequired(
+          reason: AccountRequestReason.answerRequest,
+          child: VerifyRequestScreen(
+            requestId: state.pathParameters['requestId']!,
+          ),
+        ),
       ),
       GoRoute(
         path: VerilyRoutePaths.link,
         name: VerilyRouteNames.link,
-        builder: (context, state) =>
-            const ComingSoonScreen(kind: ComingSoonKind.appLink),
+        builder: (context, state) => AccountRequired(
+          reason: AccountRequestReason.linkApp,
+          child: AppLinkScreen(query: state.uri.queryParameters),
+        ),
       ),
     ],
   );

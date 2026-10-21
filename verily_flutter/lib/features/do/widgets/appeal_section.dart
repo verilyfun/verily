@@ -15,18 +15,20 @@ import 'package:verily_flutter/core/user_message.dart';
 import 'package:verily_flutter/features/appeals/evidence_appeal_repository.dart';
 import 'package:verily_flutter/l10n/l10n.dart';
 import 'package:verily_flutter/testing/verily_test_keys.dart';
+import 'package:verily_flutter/features/evidence/proof_reasons.dart';
 
 /// A rejected attempt and the one appeal it allows.
 ///
 /// A person (the action's creator) reads the appeal; the copy says so and
 /// promises nothing about the outcome.
 class AppealSection extends HookConsumerWidget {
-  const AppealSection({required this.attempt, this.summary, super.key});
+  const AppealSection({required this.attempt, this.reasonCode, super.key});
 
   final ActionAttemptView attempt;
 
-  /// The product copy of the decision, when it arrived on this page.
-  final String? summary;
+  /// Why the proof sent from this page was not accepted, when it was; the
+  /// attempt's own reason otherwise.
+  final String? reasonCode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -95,9 +97,10 @@ class AppealSection extends HookConsumerWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            summary?.trim().isNotEmpty == true
-                ? summary!
-                : l10n.actionRejectedBody,
+            switch (reasonCode ?? attempt.rejectionCode) {
+              final code? => proofReasonMessage(l10n, code),
+              null => l10n.actionRejectedBody,
+            },
             style: theme.textTheme.bodyMedium?.copyWith(
               color: palette.mutedInk,
             ),

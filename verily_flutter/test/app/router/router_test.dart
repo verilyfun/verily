@@ -1,30 +1,44 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:hooks_riverpod/misc.dart';
 
 import 'package:verily_flutter/app/app.dart';
 import 'package:verily_flutter/app/router/verily_routes.dart';
-import 'package:verily_flutter/app/screens/coming_soon_screen.dart';
 import 'package:verily_flutter/app/screens/sign_in_screen.dart';
 import 'package:verily_flutter/app/screens/welcome_screen.dart';
 import 'package:verily_flutter/app/shell/tabs_shell.dart';
+import 'package:verily_flutter/core/external_url_launcher.dart';
 import 'package:verily_flutter/core/provider_retry.dart';
 import 'package:verily_flutter/features/account/account_session.dart';
+import 'package:verily_flutter/features/app_link/app_link_repository.dart';
+import 'package:verily_flutter/features/app_link/app_link_screen.dart';
 import 'package:verily_flutter/features/do/action_screen.dart';
 import 'package:verily_flutter/features/do/do_screen.dart';
+import 'package:verily_flutter/features/verify_request/verification_request_repository.dart';
+import 'package:verily_flutter/features/verify_request/verify_request_screen.dart';
+import 'package:verily_flutter/testing/verily_test_keys.dart';
 
 import '../../support/skribble_faces.dart';
+import '../../features/verify_request/support/fakes.dart';
 import '../../support/test_app.dart';
 
-Future<void> _pumpApp(WidgetTester tester, {required bool signedIn}) async {
+Future<void> _pumpApp(
+  WidgetTester tester, {
+  required bool signedIn,
+  List<Override> overrides = const [],
+}) async {
   await tester.pumpWidget(
     ProviderScope(
       retry: noAutomaticProviderRetry,
-      overrides: baseTestOverrides(
-        session: signedIn
-            ? testSignedInSession
-            : const AccountSession.signedOut(),
-      ),
+      overrides: [
+        ...baseTestOverrides(
+          session: signedIn
+              ? testSignedInSession
+              : const AccountSession.signedOut(),
+        ),
+        ...overrides,
+      ],
       child: const VerilyApp(),
     ),
   );
@@ -75,12 +89,10 @@ void main() {
     });
   });
 
-  test('only the front door and deep-link pages are public', () {
+  test('only the front door is public', () {
     expect(guestAccessibleRouteNames, {
       VerilyRouteNames.welcome,
       VerilyRouteNames.signIn,
-      VerilyRouteNames.verificationRequest,
-      VerilyRouteNames.link,
     });
   });
 
@@ -149,20 +161,75 @@ void main() {
     );
   });
 
-  for (final (link, kind) in [
-    ('verily://r/req_123', ComingSoonKind.verificationRequest),
-    ('https://verily.fun/r/req_123', ComingSoonKind.verificationRequest),
-    ('verily://link?app=abc', ComingSoonKind.appLink),
-    ('https://verily.fun/link?app=abc', ComingSoonKind.appLink),
-  ]) {
-    testWidgets('$link lands on the coming-soon page', (tester) async {
-      await _pumpApp(tester, signedIn: false);
-      await _openDeepLink(tester, link);
+  group('links from other apps', () {
+    late FakeVerificationRequestRepository requests;
+    late FakeAppLinkRepository links;
+    late FakeExternalUrlLauncher launcher;
 
-      expect(
-        tester.widget<ComingSoonScreen>(find.byType(ComingSoonScreen)).kind,
-        kind,
-      );
+    setUp(() {
+      requests = FakeVerificationRequestRepository();
+      links = FakeAppLinkRepository();
+      launcher = FakeExternalUrlLauncher();
     });
-  }
+
+    List<Override> fakes() => [
+      verificationRequestRepositoryProvider.overrideWithValue(requests),
+      appLinkRepositoryProvider.overrideWithValue(links),
+      externalUrlLauncherProvider.overrideWithValue(launcher.call),
+    ];
+
+    for (final link in [
+      'verily://r/$requestId',
+      'https://verily.fun/r/$requestId',
+    ]) {
+      testWidgets('$link opens the request for a signed-in person', (
+        tester,
+      ) async {
+        await _pumpApp(tester, signedIn: true, overrides: fakes());
+        await _openDeepLink(tester, link);
+
+        expect(
+          tester
+              .widget<VerifyRequestScreen>(find.byType(VerifyRequestScreen))
+              .requestId,
+          requestId.toString(),
+        );
+        expect(find.byKey(VerilyTestKeys.verifyRequestConsent), findsOneWidget);
+        expect(requests.calls, ['get']);
+      });
+    }
+
+    final linkQuery =
+        'app=$requestAppId&redirect_uri=${Uri.encodeComponent('com.slopper.app://verily')}&state=s1';
+    for (final link in [
+      'verily://link?$linkQuery',
+      'https://verily.fun/link?$linkQuery',
+    ]) {
+      testWidgets('$link opens the link request for a signed-in person', (
+        tester,
+      ) async {
+        await _pumpApp(tester, signedIn: true, overrides: fakes());
+        await _openDeepLink(tester, link);
+
+        expect(find.byType(AppLinkScreen), findsOneWidget);
+        expect(find.byKey(VerilyTestKeys.appLinkConsent), findsOneWidget);
+        final asked = links.requests.single;
+        expect(asked.appId, requestAppId);
+        expect(asked.redirectUri, 'com.slopper.app://verily');
+        expect(asked.state, 's1');
+      });
+    }
+
+    testWidgets('a visitor is asked to sign in on the request page itself', (
+      tester,
+    ) async {
+      await _pumpApp(tester, signedIn: false, overrides: fakes());
+      await _openDeepLink(tester, 'verily://r/$requestId');
+
+      expect(find.byType(SignInScreen), findsOneWidget);
+      expect(find.text('Sign in to answer this request'), findsOneWidget);
+      expect(find.byType(WelcomeScreen), findsNothing);
+      expect(requests.calls, isEmpty);
+    });
+  });
 }

@@ -61,55 +61,20 @@ List<Override> meSliceOverrides({
 ActionAttemptView fakeAttempt({
   required int id,
   required int actionId,
+  String? actionTitle,
   ActionAttemptStatus status = ActionAttemptStatus.collectingEvidence,
   RewardPayoutStatus? payoutStatus,
   RewardOutcome? rewardOutcome,
 }) => ActionAttemptView(
   id: testUuid(id),
   actionDefinitionId: testUuid(actionId),
+  actionTitle: actionTitle,
   periodKey: 'once',
   status: status,
   startedAt: fixtureNow,
   updatedAt: fixtureNow,
   payoutStatus: payoutStatus,
   rewardOutcome: rewardOutcome,
-);
-
-RewardSummary fakeReward({int amountPerPayout = 5000000}) => RewardSummary(
-  cluster: RewardCluster.devnet,
-  mint: 'mint',
-  tokenSymbol: 'USDC',
-  decimals: 6,
-  amountPerPayout: amountPerPayout,
-  maxPayouts: 20,
-  payoutsRemaining: 12,
-  maxWinsPerAccount: 1,
-  myWins: 0,
-  status: RewardPoolStatus.funded,
-  expiresAt: fixtureNow.add(const Duration(days: 30)),
-);
-
-ActionOpportunity fakeAction({
-  required int id,
-  required String title,
-  ActionAttemptView? myAttempt,
-  RewardSummary? reward,
-}) => ActionOpportunity(
-  id: testUuid(id),
-  creatorDisplayName: 'Café Lumen',
-  viewerIsCreator: false,
-  actionKey: 'action-$id',
-  revision: 1,
-  status: ActionDefinitionStatus.active,
-  title: title,
-  description: 'A test action.',
-  recurrence: ActionRecurrence.once,
-  timeZone: 'Europe/London',
-  verifiedCompletions: 3,
-  updatedAt: fixtureNow,
-  requirements: const [],
-  myAttempt: myAttempt,
-  reward: reward,
 );
 
 RewardPayoutView fakePayout({
@@ -176,16 +141,12 @@ EvidenceReviewQueueItem fakeReviewItem({
 );
 
 class FakeActionRepository implements ActionRepository {
-  FakeActionRepository({this.attempts = const [], this.available = const []});
+  FakeActionRepository({this.attempts = const []});
 
   List<ActionAttemptView> attempts;
-  List<ActionOpportunity> available;
 
   @override
   Future<List<ActionAttemptView>> listMyAttempts() async => attempts;
-
-  @override
-  Future<List<ActionOpportunity>> listAvailable() async => available;
 
   @override
   dynamic noSuchMethod(Invocation invocation) =>

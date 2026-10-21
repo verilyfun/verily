@@ -20,6 +20,7 @@ class CapturedMedia {
     this.spokenChallengeWord,
     this.deviceRepetitionCount,
     this.deviceTrackerVersion,
+    this.deviceLocalCheck,
   });
 
   final MediaEvidenceKind kind;
@@ -42,6 +43,10 @@ class CapturedMedia {
   /// verifies the recording itself.
   final int? deviceRepetitionCount;
   final String? deviceTrackerVersion;
+
+  /// What the phone's quick check saw while capturing. Advisory only: the
+  /// server replays the same pinned model over the evidence and decides.
+  final DeviceLocalCheckResult? deviceLocalCheck;
 }
 
 /// Measures and fingerprints [file] as evidence of [kind].
@@ -54,6 +59,7 @@ Future<CapturedMedia> describeCapturedMedia(
   String? spokenChallengeWord,
   int? deviceRepetitionCount,
   String? deviceTrackerVersion,
+  DeviceLocalCheckResult? deviceLocalCheck,
 }) async {
   final digest = await sha256Stream(file.openRead());
   return CapturedMedia(
@@ -67,6 +73,7 @@ Future<CapturedMedia> describeCapturedMedia(
     spokenChallengeWord: spokenChallengeWord,
     deviceRepetitionCount: deviceRepetitionCount,
     deviceTrackerVersion: deviceTrackerVersion,
+    deviceLocalCheck: deviceLocalCheck,
   );
 }
 

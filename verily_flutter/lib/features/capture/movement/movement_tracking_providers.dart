@@ -3,7 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:verily_flutter/features/capture/movement/exercise_tracking.dart';
 import 'package:verily_flutter/features/capture/movement/movement_capture_controller.dart';
-import 'package:verily_flutter/features/capture/movement/movement_model_store.dart';
+import 'package:verily_flutter/features/capture/models/pinned_model_providers.dart';
 import 'package:verily_flutter/features/capture/movement/movement_vision.dart';
 
 /// Whether this platform can count movements live while recording.
@@ -14,13 +14,9 @@ final Provider<bool> movementTrackingSupportedProvider = Provider(
   (ref) => !kIsWeb && defaultTargetPlatform == TargetPlatform.android,
 );
 
-final Provider<MovementModelStore> movementModelStoreProvider = Provider(
-  (ref) => MovementModelStore(),
-);
-
 final Provider<MovementCaptureControllerFactory>
 movementCaptureControllerFactoryProvider = Provider((ref) {
-  final models = ref.watch(movementModelStoreProvider);
+  final models = ref.watch(pinnedModelStoreProvider);
   return (kind, {required recordAudio}) => CameraMovementCaptureController(
     kind: kind,
     recordAudio: recordAudio,

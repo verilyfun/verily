@@ -18,6 +18,7 @@ final class RawCapture {
     this.measuredDuration,
     this.repetitions,
     this.trackerVersion,
+    this.localCheck,
   });
 
   final XFile file;
@@ -32,6 +33,10 @@ final class RawCapture {
   /// What live tracking counted, for movement recordings. Advisory only.
   final int? repetitions;
   final String? trackerVersion;
+
+  /// What the phone's quick check saw, when one ran. Advisory only: the
+  /// server replays the same model over the evidence and decides.
+  final DeviceLocalCheckResult? localCheck;
 }
 
 /// Why a capture cannot be sent as it is.
@@ -165,5 +170,7 @@ Future<CapturedMedia> prepareCapture(
     spokenChallengeWord: spokenChallengeWord,
     deviceRepetitionCount: raw.repetitions,
     deviceTrackerVersion: raw.trackerVersion,
+    // Sent only for a proof whose rule has a quick check.
+    deviceLocalCheck: requirement.localCheck == null ? null : raw.localCheck,
   );
 }

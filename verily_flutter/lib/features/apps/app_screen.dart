@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hooks_riverpod/misc.dart';
 import 'package:skribble/skribble.dart' show SkribbleIcon;
+import 'package:uuid/validation.dart';
 import 'package:verily_client/verily_client.dart';
 
 import 'package:verily_flutter/app/router/verily_routes.dart';
@@ -22,7 +23,10 @@ import 'package:verily_flutter/features/apps/apps_repository.dart';
 import 'package:verily_flutter/features/apps/widgets/app_key_dialog.dart';
 import 'package:verily_flutter/features/apps/widgets/apps_common.dart';
 import 'package:verily_flutter/features/apps/widgets/confirmations_log.dart';
+import 'package:verily_flutter/features/apps/widgets/deliveries_log.dart';
 import 'package:verily_flutter/features/apps/widgets/integration_guide.dart';
+import 'package:verily_flutter/features/apps/widgets/redirect_uris_settings.dart';
+import 'package:verily_flutter/features/apps/widgets/webhook_settings.dart';
 import 'package:verily_flutter/l10n/l10n.dart';
 import 'package:verily_flutter/testing/verily_test_keys.dart';
 
@@ -55,9 +59,12 @@ class AppScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final palette = Theme.of(context).verily;
-    final apps = ref.watch(verilyAppsProvider);
-    // There is no single-App endpoint, so the App comes from the list.
-    final app = apps.value?.where((item) => item.id.toString() == appId);
+    // A malformed link names no App, so it never reaches the server.
+    final id = UuidValidation.isValidUUIDFormat(fromString: appId)
+        ? UuidValue.fromString(appId)
+        : null;
+    final app = id == null ? null : ref.watch(verilyAppProvider(id));
+    final loaded = app?.value;
 
     return Scaffold(
       backgroundColor: palette.canvas,
@@ -65,10 +72,10 @@ class AppScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           VerilyAppHeader(
-            title: app == null || app.isEmpty ? l10n.appsTitle : app.first.name,
-            subtitle: app == null || app.isEmpty
+            title: loaded?.name ?? l10n.appsTitle,
+            subtitle: loaded == null
                 ? null
-                : app.first.websiteUrl ?? l10n.appsSubtitle,
+                : loaded.websiteUrl ?? l10n.appsSubtitle,
             leading: IconButton(
               tooltip: MaterialLocalizations.of(context).backButtonTooltip,
               onPressed: () {
@@ -91,41 +98,39 @@ class AppScreen extends ConsumerWidget {
                     appsPageGutter,
                     (constraints.maxWidth - appsMaxContentWidth) / 2,
                   );
+                  final notFound = [
+                    VerilyStatePanel.problem(
+                      title: l10n.errorNotFound,
+                      action: VerilyStateAction(
+                        label: l10n.appsBackToApps,
+                        onPressed: () => context.goNamed(VerilyRouteNames.apps),
+                      ),
+                    ),
+                  ];
                   return ListView(
                     padding: EdgeInsets.fromLTRB(gutter, 8, gutter, 32),
-                    children: apps.when(
-                      loading: () => [
-                        VerilyLoadingPanel(label: l10n.appsLoading),
-                      ],
-                      error: (error, _) => [
+                    children: switch (app) {
+                      null => notFound,
+                      AsyncData(:final value) => _appDetails(
+                        context,
+                        ref,
+                        value,
+                      ),
+                      AsyncError(error: ResourceNotFoundException()) =>
+                        notFound,
+                      AsyncError() => [
                         VerilyStatePanel.problem(
                           title: l10n.appsLoadFailedTitle,
                           message: l10n.errorGeneric,
                           action: VerilyStateAction(
                             label: l10n.dialogRetry,
-                            onPressed: () => ref.invalidate(verilyAppsProvider),
+                            onPressed: () =>
+                                ref.invalidate(verilyAppProvider(id!)),
                           ),
                         ),
                       ],
-                      data: (items) {
-                        final match = items.where(
-                          (item) => item.id.toString() == appId,
-                        );
-                        if (match.isEmpty) {
-                          return [
-                            VerilyStatePanel.problem(
-                              title: l10n.errorNotFound,
-                              action: VerilyStateAction(
-                                label: l10n.appsBackToApps,
-                                onPressed: () =>
-                                    context.goNamed(VerilyRouteNames.apps),
-                              ),
-                            ),
-                          ];
-                        }
-                        return _appDetails(context, ref, match.first);
-                      },
-                    ),
+                      _ => [VerilyLoadingPanel(label: l10n.appsLoading)],
+                    },
                   );
                 },
               ),
@@ -173,8 +178,14 @@ List<Widget> _appDetails(
         actionKey: exampleActionKey.value,
       ),
       const SizedBox(height: 24),
+      AppWebhookSettings(app: app),
+      const SizedBox(height: 24),
+      AppRedirectUrisSettings(app: app),
+      const SizedBox(height: 24),
     ],
     AppConfirmationsLog(appId: app.id),
+    const SizedBox(height: 24),
+    AppDeliveriesLog(appId: app.id),
     if (active) ...[
       const SizedBox(height: 32),
       Align(
@@ -190,6 +201,7 @@ List<Widget> _appDetails(
 Future<void> _runAppChange(
   BuildContext context,
   WidgetRef ref,
+  UuidValue appId,
   Future<void> Function() change,
 ) async {
   try {
@@ -201,7 +213,7 @@ Future<void> _runAppChange(
       SnackBar(content: Text(userMessageFor(context.l10n, error))),
     );
   } finally {
-    ref.invalidate(verilyAppsProvider);
+    refreshApp(ref, appId);
   }
 }
 
@@ -218,7 +230,7 @@ class _KeysPanel extends ConsumerWidget {
     final active = app.status == VerilyAppStatus.active;
     final canAddKey = canIssueKey(app);
 
-    Future<void> newKey() => _runAppChange(context, ref, () async {
+    Future<void> newKey() => _runAppChange(context, ref, app.id, () async {
       final credential = await ref
           .read(appsRepositoryProvider)
           .createKey(app.id);
@@ -237,6 +249,7 @@ class _KeysPanel extends ConsumerWidget {
       await _runAppChange(
         context,
         ref,
+        app.id,
         () => ref
             .read(appsRepositoryProvider)
             .revokeKey(appId: app.id, keyId: key.keyId),
@@ -382,6 +395,7 @@ class _RevokeAppButton extends ConsumerWidget {
       await _runAppChange(
         context,
         ref,
+        app.id,
         () => ref.read(appsRepositoryProvider).revokeApp(app.id),
       );
     }

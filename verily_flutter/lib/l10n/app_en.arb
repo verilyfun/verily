@@ -29,25 +29,9 @@
   "@errorNotFound": {
     "description": "Shown when an action, App, or link no longer exists."
   },
-  "comingSoonVerificationTitle": "Verify with Verily is almost here",
-  "@comingSoonVerificationTitle": {
-    "description": "Title shown when another app opens a verification request link."
-  },
-  "comingSoonVerificationBody": "An app asked you to prove something with Verily. Requests like this will open right here soon. Nothing was captured or shared.",
-  "@comingSoonVerificationBody": {
-    "description": "Body shown for a verification request link before the feature exists."
-  },
-  "comingSoonLinkTitle": "Linking apps is almost here",
-  "@comingSoonLinkTitle": {
-    "description": "Title shown when another app opens an account-linking link."
-  },
-  "comingSoonLinkBody": "An app asked to link with your Verily account. Soon you'll confirm that here. Until then, copy your link code from the action the app shared.",
-  "@comingSoonLinkBody": {
-    "description": "Body shown for an App linking link before the feature exists."
-  },
-  "comingSoonGoToDo": "Find actions",
-  "@comingSoonGoToDo": {
-    "description": "Button that leaves a coming-soon page for the Do tab."
+  "navigationFindActions": "Find actions",
+  "@navigationFindActions": {
+    "description": "Button that leaves a page for the Do tab."
   },
   "trustVerifiedOnPhone": "Verified on your phone",
   "@trustVerifiedOnPhone": {
@@ -524,10 +508,6 @@
   "editorVerifierPromptHelp": "Say plainly what the proof must show. Everything in the recording is treated as evidence, never as instructions.",
   "@editorVerifierPromptHelp": {
     "description": "Helper under the verification prompt field."
-  },
-  "editorVerifierPromptRewrite": "Write this again: saved actions don't send it back to the app.",
-  "@editorVerifierPromptRewrite": {
-    "description": "Shown when editing a saved media proof whose check text is not returned by the server."
   },
   "editorMinSecondsLabel": "Shortest (seconds)",
   "@editorMinSecondsLabel": {
@@ -3051,6 +3031,10 @@
   "@captureAudioHint": {
     "description": "Guidance before recording audio proof."
   },
+  "captureAudioSoundHint": "Hold your phone close to the sound.",
+  "@captureAudioSoundHint": {
+    "description": "Hint before recording audio for a proof with a sound quick check."
+  },
   "captureAudioLevelSemantics": "Sound level {percent}%",
   "@captureAudioLevelSemantics": {
     "description": "Screen reader value of the microphone level meter.",
@@ -4137,5 +4121,1891 @@
   "skribblePreviewDoodlesHeading": "Doodles and icons",
   "@skribblePreviewDoodlesHeading": {
     "description": "Component gallery section showing decorative doodles and icons."
+  },
+  "@@x-section-deep-links": "Verify with Verily requests (/r) and App linking (/link). Owned by the deep-links fork.",
+  "verifyRequestHeaderTitle": "Verify with Verily",
+  "@verifyRequestHeaderTitle": {
+    "description": "Header of the page another app opens to ask for verified proof."
+  },
+  "verifyRequestFrom": "From {app}",
+  "@verifyRequestFrom": {
+    "description": "Under the header: which App sent the request.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestFromWebsite": "From {app} · {website}",
+  "@verifyRequestFromWebsite": {
+    "description": "Under the header: the App and the host of its registered website.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      },
+      "website": {
+        "type": "String",
+        "example": "slopper.app"
+      }
+    }
+  },
+  "verifyRequestAsks": "{kind, select, video{{app} wants a live video} photo{{app} wants a live photo} audio{{app} wants a live recording} location{{app} wants to check you're at their place} other{{app} wants live proof}}",
+  "@verifyRequestAsks": {
+    "description": "The headline of a request: who wants what kind of proof.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      },
+      "kind": {
+        "type": "String",
+        "description": "video, photo, audio, or location"
+      }
+    }
+  },
+  "verifyRequestTheirWords": "What they asked for",
+  "@verifyRequestTheirWords": {
+    "description": "Label above the App's own instructions, shown quoted."
+  },
+  "verifyRequestInstructions": "“{instructions}”",
+  "@verifyRequestInstructions": {
+    "description": "The App's instructions, quoted so they read as the App's words, not Verily's.",
+    "placeholders": {
+      "instructions": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyRequestHowHeading": "How it works",
+  "@verifyRequestHowHeading": {
+    "description": "Heading above how the proof is captured and checked."
+  },
+  "verifyRequestHowCapture": "{kind, select, video{You record it live in Verily, in one take. Nothing from your gallery.} photo{You take it live in Verily. Nothing from your gallery.} audio{You record it live in Verily, in one take.} other{Verily checks your location once, right now.}}",
+  "@verifyRequestHowCapture": {
+    "description": "How the proof is captured, by kind.",
+    "placeholders": {
+      "kind": {
+        "type": "String",
+        "description": "video, photo, audio, or location"
+      }
+    }
+  },
+  "verifyRequestHowWord": "Verily gives you a word to say while you record.",
+  "@verifyRequestHowWord": {
+    "description": "The spoken challenge, explained before consent."
+  },
+  "verifyRequestHowPlace": "Verily checks your location once, to see if you're at their place.",
+  "@verifyRequestHowPlace": {
+    "description": "The place check on a media request, explained before consent."
+  },
+  "verifyRequestHowContent": "Verily checks it shows what they asked for.",
+  "@verifyRequestHowContent": {
+    "description": "The request asks Verily to check the content, not just that it is live."
+  },
+  "verifyRequestHowCaptureOnly": "Verily checks it's a genuine live capture.",
+  "@verifyRequestHowCaptureOnly": {
+    "description": "The request asks Verily only to check the capture is genuine and live."
+  },
+  "verifyRequestSharedHeading": "What {app} gets",
+  "@verifyRequestSharedHeading": {
+    "description": "Heading above exactly what the App will receive.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestSharesResult": "Whether it passed, and when it was captured.",
+  "@verifyRequestSharesResult": {
+    "description": "Always shared with the App."
+  },
+  "verifyRequestSharesPlace": "Whether you were inside their place. Never where you were.",
+  "@verifyRequestSharesPlace": {
+    "description": "Shared when the request checks a place."
+  },
+  "verifyRequestSharesMedia": "{kind, select, video{A copy of your video to download.} photo{A copy of your photo to download.} audio{A copy of your recording to download.} other{A copy of your proof to download.}}",
+  "@verifyRequestSharesMedia": {
+    "description": "Shared when the App asked to download the capture.",
+    "placeholders": {
+      "kind": {
+        "type": "String",
+        "description": "video, photo, audio, or location"
+      }
+    }
+  },
+  "verifyRequestKeepsMedia": "{kind, select, video{Not your video. It stays with Verily.} photo{Not your photo. It stays with Verily.} audio{Not your recording. It stays with Verily.} other{Not your proof. It stays with Verily.}}",
+  "@verifyRequestKeepsMedia": {
+    "description": "Said when the App did not ask to download the capture.",
+    "placeholders": {
+      "kind": {
+        "type": "String",
+        "description": "video, photo, audio, or location"
+      }
+    }
+  },
+  "verifyRequestSharesSubject": "A private ID made only for {app}. Never your name, email, or account.",
+  "@verifyRequestSharesSubject": {
+    "description": "The pairwise subject the App receives, in plain words.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestExpires": "Answer by {time}",
+  "@verifyRequestExpires": {
+    "description": "When the request stops working.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "3:42 PM"
+      }
+    }
+  },
+  "verifyRequestAccept": "Accept and start",
+  "@verifyRequestAccept": {
+    "description": "Agrees to the request and starts capturing."
+  },
+  "verifyRequestDecline": "Decline",
+  "@verifyRequestDecline": {
+    "description": "Turns the request down; the App is told it was declined."
+  },
+  "verifyRequestClose": "Close",
+  "@verifyRequestClose": {
+    "description": "Tooltip: leaves the request without answering it."
+  },
+  "verifyRequestProofTitle": "Your proof for {app}",
+  "@verifyRequestProofTitle": {
+    "description": "Header while capturing proof for a request.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestStepPlace": "Check in at their place",
+  "@verifyRequestStepPlace": {
+    "description": "The location step of a request."
+  },
+  "verifyRequestStepPlaceBody": "Share your location once. {app} only learns inside or outside.",
+  "@verifyRequestStepPlaceBody": {
+    "description": "Explains the location step.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestSharePlace": "Share my location",
+  "@verifyRequestSharePlace": {
+    "description": "Sends one precise location fix."
+  },
+  "verifyRequestSkipPlace": "Continue without it",
+  "@verifyRequestSkipPlace": {
+    "description": "Skips an optional place check."
+  },
+  "verifyRequestPlaceSent": "Location sent",
+  "@verifyRequestPlaceSent": {
+    "description": "The location step is done."
+  },
+  "verifyRequestPlaceSkipped": "Skipped. {app} will see your place wasn't checked.",
+  "@verifyRequestPlaceSkipped": {
+    "description": "The optional location step was skipped.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestPlaceNotConfirmed": "Verily couldn't confirm you're inside their place. {app} will see that.",
+  "@verifyRequestPlaceNotConfirmed": {
+    "description": "The location was sent but did not match the place.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestStepMedia": "{kind, select, photo{Take the photo} audio{Record the audio} other{Record the video}}",
+  "@verifyRequestStepMedia": {
+    "description": "The live capture step of a request.",
+    "placeholders": {
+      "kind": {
+        "type": "String",
+        "description": "video, photo, audio, or location"
+      }
+    }
+  },
+  "verifyRequestStepMediaBody": "Live, in one take. This phone signs it before it's sent.",
+  "@verifyRequestStepMediaBody": {
+    "description": "Explains the capture step."
+  },
+  "verifyRequestOpenCapture": "{kind, select, audio{Open the recorder} other{Open the camera}}",
+  "@verifyRequestOpenCapture": {
+    "description": "Opens the live capture.",
+    "placeholders": {
+      "kind": {
+        "type": "String",
+        "description": "video, photo, audio, or location"
+      }
+    }
+  },
+  "verifyRequestMediaSent": "Proof sent",
+  "@verifyRequestMediaSent": {
+    "description": "The capture step is done."
+  },
+  "verifyRequestPlaceFirst": "Check in first, then capture.",
+  "@verifyRequestPlaceFirst": {
+    "description": "Why the capture step is not ready yet."
+  },
+  "verifyRequestProofIn": "Your proof is in",
+  "@verifyRequestProofIn": {
+    "description": "Every step is done; only the return to the App is left."
+  },
+  "verifyRequestReturn": "Return to {app}",
+  "@verifyRequestReturn": {
+    "description": "Gets the App's return address and opens it.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestDeclineInstead": "Decline instead",
+  "@verifyRequestDeclineInstead": {
+    "description": "Turns the request down after accepting, before any proof is sent."
+  },
+  "verifyRequestTryAgain": "Try again",
+  "@verifyRequestTryAgain": {
+    "description": "Retries the last step after a failure."
+  },
+  "verifyRequestLoading": "Loading the request",
+  "@verifyRequestLoading": {
+    "description": "Accessible label while the request loads."
+  },
+  "verifyRequestSending": "Sending your answer",
+  "@verifyRequestSending": {
+    "description": "Accessible label while an answer or proof is sent."
+  },
+  "verifyRequestReturningTitle": "Returning you to {app}",
+  "@verifyRequestReturningTitle": {
+    "description": "Shown while the App is opened again.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestReturningPassed": "Verily checked your proof and it passed.",
+  "@verifyRequestReturningPassed": {
+    "description": "How the proof went, when it passed before leaving."
+  },
+  "verifyRequestReturningChecking": "Verily is still checking your proof. {app} will get the result.",
+  "@verifyRequestReturningChecking": {
+    "description": "How the proof went, while it is still being checked.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestReturningFailed": "Your proof didn't pass. {app} will be told.",
+  "@verifyRequestReturningFailed": {
+    "description": "How the proof went, when it did not pass.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestDeclinedTitle": "Request declined",
+  "@verifyRequestDeclinedTitle": {
+    "description": "Shown after turning a request down."
+  },
+  "verifyRequestDeclinedBody": "Returning you to {app}. Nothing was captured or shared.",
+  "@verifyRequestDeclinedBody": {
+    "description": "Shown after turning a request down.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestOpenFailed": "{app} didn't open. Switch back to it yourself to carry on.",
+  "@verifyRequestOpenFailed": {
+    "description": "The App could not be opened automatically.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestOpenApp": "Open {app}",
+  "@verifyRequestOpenApp": {
+    "description": "Opens the App again.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestBackToVerily": "Back to Verily",
+  "@verifyRequestBackToVerily": {
+    "description": "Leaves the request page for the Do tab."
+  },
+  "verifyRequestTheApp": "the app",
+  "@verifyRequestTheApp": {
+    "description": "Stands in for the App's name when the request could not be loaded."
+  },
+  "verifyRequestNotFoundTitle": "We couldn't find this request",
+  "@verifyRequestNotFoundTitle": {
+    "description": "The request id is unknown or malformed."
+  },
+  "verifyRequestNotFoundBody": "The link may be wrong, or the request was removed. Ask the app to send a new one.",
+  "@verifyRequestNotFoundBody": {
+    "description": "The request id is unknown or malformed."
+  },
+  "verifyRequestExpiredTitle": "This request has expired",
+  "@verifyRequestExpiredTitle": {
+    "description": "The request ran out of time."
+  },
+  "verifyRequestExpiredBody": "Requests only last a short while. Ask {app} for a new one.",
+  "@verifyRequestExpiredBody": {
+    "description": "The request ran out of time.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestTakenTitle": "Someone else answered this request",
+  "@verifyRequestTakenTitle": {
+    "description": "Another account already accepted the request."
+  },
+  "verifyRequestTakenBody": "Each request is for one person. Ask {app} for your own.",
+  "@verifyRequestTakenBody": {
+    "description": "Another account already accepted the request.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestClosedTitle": "This request is closed",
+  "@verifyRequestClosedTitle": {
+    "description": "The request was already answered or declined."
+  },
+  "verifyRequestClosedBody": "It was already answered or turned down. Ask {app} for a new one if you still need it.",
+  "@verifyRequestClosedBody": {
+    "description": "The request was already answered or declined.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestRateLimitedTitle": "That's a lot of requests for now",
+  "@verifyRequestRateLimitedTitle": {
+    "description": "Too many accepted requests from one App in an hour."
+  },
+  "verifyRequestRateLimitedBody": "You've answered many requests from {app} in the last hour. Try again later.",
+  "@verifyRequestRateLimitedBody": {
+    "description": "Too many accepted requests from one App in an hour.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestAppUnavailableTitle": "{app} isn't available",
+  "@verifyRequestAppUnavailableTitle": {
+    "description": "The App was revoked or cannot use Verily right now.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestLoadFailedTitle": "We couldn't load this request",
+  "@verifyRequestLoadFailedTitle": {
+    "description": "A generic failure while loading; can be retried."
+  },
+  "signInTitleAnswerRequest": "Sign in to answer this request",
+  "@signInTitleAnswerRequest": {
+    "description": "Sign-in title when another app opened a verification request."
+  },
+  "signInTitleLinkApp": "Sign in to link this app",
+  "@signInTitleLinkApp": {
+    "description": "Sign-in title when another app asked to link."
+  },
+  "appLinkHeaderTitle": "Link an app",
+  "@appLinkHeaderTitle": {
+    "description": "Header of the page another app opens to link with Verily."
+  },
+  "appLinkAsks": "{app} wants to link with your Verily account",
+  "@appLinkAsks": {
+    "description": "The headline of a link request.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "appLinkHow": "Once linked, {app} can tell Verily when you've done its actions.",
+  "@appLinkHow": {
+    "description": "What linking lets the App do.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "appLinkAlreadyLinked": "You've linked {app} before. Linking again confirms it's still you.",
+  "@appLinkAlreadyLinked": {
+    "description": "The account is already linked to this App.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "appLinkSharesSubject": "A private ID made only for {app}. Never your name, email, or account.",
+  "@appLinkSharesSubject": {
+    "description": "What the App receives when linked.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "appLinkSharesNothingElse": "Nothing else. It can't see your proof, payouts, or other apps.",
+  "@appLinkSharesNothingElse": {
+    "description": "What the App does not receive."
+  },
+  "appLinkApprove": "Link {app}",
+  "@appLinkApprove": {
+    "description": "Approves the link and returns to the App.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "appLinkDecline": "Don't link",
+  "@appLinkDecline": {
+    "description": "Declines the link and returns to the App."
+  },
+  "appLinkLinkedBody": "{app} is linked to your Verily account.",
+  "@appLinkLinkedBody": {
+    "description": "After approving a link, while returning to the App.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "appLinkDeclinedBody": "{app} wasn't linked. Nothing was shared.",
+  "@appLinkDeclinedBody": {
+    "description": "After declining a link, while returning to the App.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "appLinkDeclinedTitle": "Not linked",
+  "@appLinkDeclinedTitle": {
+    "description": "After declining a link."
+  },
+  "appLinkInvalidTitle": "This link doesn't work",
+  "@appLinkInvalidTitle": {
+    "description": "The link request is missing parts or does not match the App."
+  },
+  "appLinkInvalidBody": "It's missing something or wasn't made for Verily. Go back to the app and try again.",
+  "@appLinkInvalidBody": {
+    "description": "The link request is missing parts or does not match the App."
+  },
+  "appLinkLoadFailedTitle": "We couldn't load this link",
+  "@appLinkLoadFailedTitle": {
+    "description": "A generic failure while loading a link request; can be retried."
+  },
+  "appLinkRateLimitedBody": "You've tried to link with {app} many times. Try again later.",
+  "@appLinkRateLimitedBody": {
+    "description": "Too many link attempts.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "@@x-section-local-checks": "On-phone quick checks (gesture, object, sound) and the editor's quick-check settings. Owned by the local-checks fork.",
+  "localCheckGuideTitle": "Quick check: {label}",
+  "@localCheckGuideTitle": {
+    "description": "Heading of the live quick-check guide on the camera, naming what the phone looks for.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Thumbs up"
+      }
+    }
+  },
+  "localCheckPreparing": "Getting the quick check ready",
+  "@localCheckPreparing": {
+    "description": "While the phone loads the quick check before or during capture."
+  },
+  "localCheckAfterFinishLook": "Verily checks for “{label}” after you finish",
+  "@localCheckAfterFinishLook": {
+    "description": "When the phone cannot run the quick check live; the server still checks the photo or video.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Thumbs up"
+      }
+    }
+  },
+  "localCheckAfterFinishListen": "Verily listens for “{label}” after you finish",
+  "@localCheckAfterFinishListen": {
+    "description": "On the audio recorder: the sound is checked on the server after recording.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Clapping"
+      }
+    }
+  },
+  "localCheckGestureNotSeen": "We can't see your “{label}” yet",
+  "@localCheckGestureNotSeen": {
+    "description": "Live guidance: no matching hand gesture in view.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Thumbs up"
+      }
+    }
+  },
+  "localCheckGestureHandSeen": "We can see your hand. Now show “{label}”",
+  "@localCheckGestureHandSeen": {
+    "description": "Live guidance: a hand is in view but not making the gesture yet.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Thumbs up"
+      }
+    }
+  },
+  "localCheckObjectNotSeen": "We can't spot “{label}” yet",
+  "@localCheckObjectNotSeen": {
+    "description": "Live guidance: the thing is not in view.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Cup"
+      }
+    }
+  },
+  "localCheckObjectAlmost": "Almost. Bring “{label}” closer or into better light",
+  "@localCheckObjectAlmost": {
+    "description": "Live guidance: the thing may be in view but the phone is not sure yet.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Cup"
+      }
+    }
+  },
+  "localCheckHolding": "Got it, hold it there",
+  "@localCheckHolding": {
+    "description": "Live guidance: the gesture or thing is in view; keep it there."
+  },
+  "localCheckLooksRight": "That looks like “{label}”",
+  "@localCheckLooksRight": {
+    "description": "Live guidance: the phone sees what was asked for. Advisory only; Verily checks again.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Thumbs up"
+      }
+    }
+  },
+  "localCheckReadyToRecord": "Start recording when you're ready",
+  "@localCheckReadyToRecord": {
+    "description": "Shown with the guide before recording, once the phone sees what was asked for."
+  },
+  "localCheckKeepGoing": "Keep going a moment",
+  "@localCheckKeepGoing": {
+    "description": "While recording: the phone sees it, but the recording is shorter than the action asks."
+  },
+  "localCheckSayWordThenStop": "Say your word, then stop",
+  "@localCheckSayWordThenStop": {
+    "description": "While recording with a spoken word: the phone sees it; the person still says the word and stops themselves."
+  },
+  "localCheckFinishing": "Finishing",
+  "@localCheckFinishing": {
+    "description": "The phone stops the recording or takes the photo by itself now that it sees what was asked."
+  },
+  "localCheckReviewNote": "The phone's quick check is only a guide. Verily checks your proof again before it counts.",
+  "@localCheckReviewNote": {
+    "description": "On the review screen before sending, for a proof with a quick check."
+  },
+  "editorQuickCheckAdd": "Add a quick check",
+  "@editorQuickCheckAdd": {
+    "description": "Button on a photo, video, or audio proof in the action editor."
+  },
+  "editorQuickCheckAddHelp": "The phone looks for a hand gesture, a thing, or a sound while people capture, and helps them get it right.",
+  "@editorQuickCheckAddHelp": {
+    "description": "Explains what a quick check does, under the add button."
+  },
+  "editorQuickCheckTitle": "Quick check",
+  "@editorQuickCheckTitle": {
+    "description": "Heading of the quick-check settings on a proof."
+  },
+  "editorQuickCheckRemove": "Remove quick check",
+  "@editorQuickCheckRemove": {
+    "description": "Button that removes the quick check from a proof."
+  },
+  "editorQuickCheckTaskLabel": "Look for",
+  "@editorQuickCheckTaskLabel": {
+    "description": "Label above the choice of gesture, thing, or sound."
+  },
+  "editorQuickCheckTaskGesture": "A hand gesture",
+  "@editorQuickCheckTaskGesture": {
+    "description": "Quick-check choice: a hand gesture."
+  },
+  "editorQuickCheckTaskObject": "A thing",
+  "@editorQuickCheckTaskObject": {
+    "description": "Quick-check choice: an object in view."
+  },
+  "editorQuickCheckTaskSound": "A sound",
+  "@editorQuickCheckTaskSound": {
+    "description": "Quick-check choice: a sound in an audio proof."
+  },
+  "editorQuickCheckGestureLabel": "Gesture",
+  "@editorQuickCheckGestureLabel": {
+    "description": "Label above the gesture choices."
+  },
+  "editorQuickCheckObjectLabel": "Thing",
+  "@editorQuickCheckObjectLabel": {
+    "description": "Label of the button that picks which thing to look for."
+  },
+  "editorQuickCheckSoundLabel": "Sound",
+  "@editorQuickCheckSoundLabel": {
+    "description": "Label of the button that picks which sound to listen for."
+  },
+  "editorQuickCheckPickObject": "Pick a thing",
+  "@editorQuickCheckPickObject": {
+    "description": "Heading of the sheet that lists things a quick check can look for."
+  },
+  "editorQuickCheckPickSound": "Pick a sound",
+  "@editorQuickCheckPickSound": {
+    "description": "Heading of the sheet that lists sounds a quick check can listen for."
+  },
+  "editorQuickCheckSearch": "Search",
+  "@editorQuickCheckSearch": {
+    "description": "Search field in the thing or sound list."
+  },
+  "editorQuickCheckNoMatches": "Nothing matches that",
+  "@editorQuickCheckNoMatches": {
+    "description": "Shown in the thing or sound list when the search finds nothing."
+  },
+  "editorQuickCheckScore": "How sure: {percent}%",
+  "@editorQuickCheckScore": {
+    "description": "Label above the quick check's confidence slider.",
+    "placeholders": {
+      "percent": {
+        "type": "int",
+        "example": "60"
+      }
+    }
+  },
+  "editorQuickCheckScoreSemantic": "How sure the quick check must be",
+  "@editorQuickCheckScoreSemantic": {
+    "description": "Screen reader label for the quick check's confidence slider."
+  },
+  "editorQuickCheckFrames": "{count, plural, =1{1 matching moment} other{{count} matching moments}}",
+  "@editorQuickCheckFrames": {
+    "description": "Label above the slider for how many sampled frames or sound windows must match.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "editorQuickCheckFramesSemantic": "How many moments must match",
+  "@editorQuickCheckFramesSemantic": {
+    "description": "Screen reader label for the matching-moments slider."
+  },
+  "editorQuickCheckFramesHelp": "How many of the moments Verily samples from the recording must show it.",
+  "@editorQuickCheckFramesHelp": {
+    "description": "Help under the matching-moments slider."
+  },
+  "editorQuickCheckPhotoFrames": "A photo is checked once.",
+  "@editorQuickCheckPhotoFrames": {
+    "description": "Shown instead of the matching-moments slider for a photo."
+  },
+  "editorQuickCheckNote": "People see live guidance while they capture. Verily checks the proof again itself before it counts.",
+  "@editorQuickCheckNote": {
+    "description": "Note in the quick-check settings: the phone's result never decides."
+  },
+  "editorQuickCheckPromptHelp": "Optional with a quick check. Leave it empty and Verily writes the check from what you picked.",
+  "@editorQuickCheckPromptHelp": {
+    "description": "Helper under the verification prompt when a quick check is set."
+  },
+  "editorQuickCheckSpokenHelp": "A quick check can't hear words, so with the word on, Verily's other checks or a person decide.",
+  "@editorQuickCheckSpokenHelp": {
+    "description": "Help under the spoken-word switch when a quick check is set."
+  },
+  "localCheckGestureClosedFist": "Closed fist",
+  "@localCheckGestureClosedFist": {
+    "description": "A hand gesture a quick check looks for (the model calls it \"Closed_Fist\")."
+  },
+  "localCheckGestureOpenPalm": "Open palm",
+  "@localCheckGestureOpenPalm": {
+    "description": "A hand gesture a quick check looks for (the model calls it \"Open_Palm\")."
+  },
+  "localCheckGesturePointingUp": "Pointing up",
+  "@localCheckGesturePointingUp": {
+    "description": "A hand gesture a quick check looks for (the model calls it \"Pointing_Up\")."
+  },
+  "localCheckGestureThumbDown": "Thumbs down",
+  "@localCheckGestureThumbDown": {
+    "description": "A hand gesture a quick check looks for (the model calls it \"Thumb_Down\")."
+  },
+  "localCheckGestureThumbUp": "Thumbs up",
+  "@localCheckGestureThumbUp": {
+    "description": "A hand gesture a quick check looks for (the model calls it \"Thumb_Up\")."
+  },
+  "localCheckGestureVictory": "Victory sign",
+  "@localCheckGestureVictory": {
+    "description": "A hand gesture a quick check looks for (the model calls it \"Victory\")."
+  },
+  "localCheckGestureILoveYou": "“I love you” sign",
+  "@localCheckGestureILoveYou": {
+    "description": "A hand gesture a quick check looks for (the model calls it \"ILoveYou\")."
+  },
+  "localCheckObjectPerson": "Person",
+  "@localCheckObjectPerson": {
+    "description": "A thing a quick check looks for (the model calls it \"person\")."
+  },
+  "localCheckObjectBicycle": "Bicycle",
+  "@localCheckObjectBicycle": {
+    "description": "A thing a quick check looks for (the model calls it \"bicycle\")."
+  },
+  "localCheckObjectCar": "Car",
+  "@localCheckObjectCar": {
+    "description": "A thing a quick check looks for (the model calls it \"car\")."
+  },
+  "localCheckObjectMotorcycle": "Motorbike",
+  "@localCheckObjectMotorcycle": {
+    "description": "A thing a quick check looks for (the model calls it \"motorcycle\")."
+  },
+  "localCheckObjectAirplane": "Aeroplane",
+  "@localCheckObjectAirplane": {
+    "description": "A thing a quick check looks for (the model calls it \"airplane\")."
+  },
+  "localCheckObjectBus": "Bus",
+  "@localCheckObjectBus": {
+    "description": "A thing a quick check looks for (the model calls it \"bus\")."
+  },
+  "localCheckObjectTrain": "Train",
+  "@localCheckObjectTrain": {
+    "description": "A thing a quick check looks for (the model calls it \"train\")."
+  },
+  "localCheckObjectTruck": "Truck",
+  "@localCheckObjectTruck": {
+    "description": "A thing a quick check looks for (the model calls it \"truck\")."
+  },
+  "localCheckObjectBoat": "Boat",
+  "@localCheckObjectBoat": {
+    "description": "A thing a quick check looks for (the model calls it \"boat\")."
+  },
+  "localCheckObjectTrafficLight": "Traffic light",
+  "@localCheckObjectTrafficLight": {
+    "description": "A thing a quick check looks for (the model calls it \"traffic light\")."
+  },
+  "localCheckObjectFireHydrant": "Fire hydrant",
+  "@localCheckObjectFireHydrant": {
+    "description": "A thing a quick check looks for (the model calls it \"fire hydrant\")."
+  },
+  "localCheckObjectStopSign": "Stop sign",
+  "@localCheckObjectStopSign": {
+    "description": "A thing a quick check looks for (the model calls it \"stop sign\")."
+  },
+  "localCheckObjectParkingMeter": "Parking meter",
+  "@localCheckObjectParkingMeter": {
+    "description": "A thing a quick check looks for (the model calls it \"parking meter\")."
+  },
+  "localCheckObjectBench": "Bench",
+  "@localCheckObjectBench": {
+    "description": "A thing a quick check looks for (the model calls it \"bench\")."
+  },
+  "localCheckObjectBird": "Bird",
+  "@localCheckObjectBird": {
+    "description": "A thing a quick check looks for (the model calls it \"bird\")."
+  },
+  "localCheckObjectCat": "Cat",
+  "@localCheckObjectCat": {
+    "description": "A thing a quick check looks for (the model calls it \"cat\")."
+  },
+  "localCheckObjectDog": "Dog",
+  "@localCheckObjectDog": {
+    "description": "A thing a quick check looks for (the model calls it \"dog\")."
+  },
+  "localCheckObjectHorse": "Horse",
+  "@localCheckObjectHorse": {
+    "description": "A thing a quick check looks for (the model calls it \"horse\")."
+  },
+  "localCheckObjectSheep": "Sheep",
+  "@localCheckObjectSheep": {
+    "description": "A thing a quick check looks for (the model calls it \"sheep\")."
+  },
+  "localCheckObjectCow": "Cow",
+  "@localCheckObjectCow": {
+    "description": "A thing a quick check looks for (the model calls it \"cow\")."
+  },
+  "localCheckObjectElephant": "Elephant",
+  "@localCheckObjectElephant": {
+    "description": "A thing a quick check looks for (the model calls it \"elephant\")."
+  },
+  "localCheckObjectBear": "Bear",
+  "@localCheckObjectBear": {
+    "description": "A thing a quick check looks for (the model calls it \"bear\")."
+  },
+  "localCheckObjectZebra": "Zebra",
+  "@localCheckObjectZebra": {
+    "description": "A thing a quick check looks for (the model calls it \"zebra\")."
+  },
+  "localCheckObjectGiraffe": "Giraffe",
+  "@localCheckObjectGiraffe": {
+    "description": "A thing a quick check looks for (the model calls it \"giraffe\")."
+  },
+  "localCheckObjectBackpack": "Backpack",
+  "@localCheckObjectBackpack": {
+    "description": "A thing a quick check looks for (the model calls it \"backpack\")."
+  },
+  "localCheckObjectUmbrella": "Umbrella",
+  "@localCheckObjectUmbrella": {
+    "description": "A thing a quick check looks for (the model calls it \"umbrella\")."
+  },
+  "localCheckObjectHandbag": "Handbag",
+  "@localCheckObjectHandbag": {
+    "description": "A thing a quick check looks for (the model calls it \"handbag\")."
+  },
+  "localCheckObjectTie": "Tie",
+  "@localCheckObjectTie": {
+    "description": "A thing a quick check looks for (the model calls it \"tie\")."
+  },
+  "localCheckObjectSuitcase": "Suitcase",
+  "@localCheckObjectSuitcase": {
+    "description": "A thing a quick check looks for (the model calls it \"suitcase\")."
+  },
+  "localCheckObjectFrisbee": "Frisbee",
+  "@localCheckObjectFrisbee": {
+    "description": "A thing a quick check looks for (the model calls it \"frisbee\")."
+  },
+  "localCheckObjectSkis": "Skis",
+  "@localCheckObjectSkis": {
+    "description": "A thing a quick check looks for (the model calls it \"skis\")."
+  },
+  "localCheckObjectSnowboard": "Snowboard",
+  "@localCheckObjectSnowboard": {
+    "description": "A thing a quick check looks for (the model calls it \"snowboard\")."
+  },
+  "localCheckObjectSportsBall": "Ball",
+  "@localCheckObjectSportsBall": {
+    "description": "A thing a quick check looks for (the model calls it \"sports ball\")."
+  },
+  "localCheckObjectKite": "Kite",
+  "@localCheckObjectKite": {
+    "description": "A thing a quick check looks for (the model calls it \"kite\")."
+  },
+  "localCheckObjectBaseballBat": "Baseball bat",
+  "@localCheckObjectBaseballBat": {
+    "description": "A thing a quick check looks for (the model calls it \"baseball bat\")."
+  },
+  "localCheckObjectBaseballGlove": "Baseball glove",
+  "@localCheckObjectBaseballGlove": {
+    "description": "A thing a quick check looks for (the model calls it \"baseball glove\")."
+  },
+  "localCheckObjectSkateboard": "Skateboard",
+  "@localCheckObjectSkateboard": {
+    "description": "A thing a quick check looks for (the model calls it \"skateboard\")."
+  },
+  "localCheckObjectSurfboard": "Surfboard",
+  "@localCheckObjectSurfboard": {
+    "description": "A thing a quick check looks for (the model calls it \"surfboard\")."
+  },
+  "localCheckObjectTennisRacket": "Tennis racket",
+  "@localCheckObjectTennisRacket": {
+    "description": "A thing a quick check looks for (the model calls it \"tennis racket\")."
+  },
+  "localCheckObjectBottle": "Bottle",
+  "@localCheckObjectBottle": {
+    "description": "A thing a quick check looks for (the model calls it \"bottle\")."
+  },
+  "localCheckObjectWineGlass": "Wine glass",
+  "@localCheckObjectWineGlass": {
+    "description": "A thing a quick check looks for (the model calls it \"wine glass\")."
+  },
+  "localCheckObjectCup": "Cup",
+  "@localCheckObjectCup": {
+    "description": "A thing a quick check looks for (the model calls it \"cup\")."
+  },
+  "localCheckObjectFork": "Fork",
+  "@localCheckObjectFork": {
+    "description": "A thing a quick check looks for (the model calls it \"fork\")."
+  },
+  "localCheckObjectKnife": "Knife",
+  "@localCheckObjectKnife": {
+    "description": "A thing a quick check looks for (the model calls it \"knife\")."
+  },
+  "localCheckObjectSpoon": "Spoon",
+  "@localCheckObjectSpoon": {
+    "description": "A thing a quick check looks for (the model calls it \"spoon\")."
+  },
+  "localCheckObjectBowl": "Bowl",
+  "@localCheckObjectBowl": {
+    "description": "A thing a quick check looks for (the model calls it \"bowl\")."
+  },
+  "localCheckObjectBanana": "Banana",
+  "@localCheckObjectBanana": {
+    "description": "A thing a quick check looks for (the model calls it \"banana\")."
+  },
+  "localCheckObjectApple": "Apple",
+  "@localCheckObjectApple": {
+    "description": "A thing a quick check looks for (the model calls it \"apple\")."
+  },
+  "localCheckObjectSandwich": "Sandwich",
+  "@localCheckObjectSandwich": {
+    "description": "A thing a quick check looks for (the model calls it \"sandwich\")."
+  },
+  "localCheckObjectOrange": "Orange",
+  "@localCheckObjectOrange": {
+    "description": "A thing a quick check looks for (the model calls it \"orange\")."
+  },
+  "localCheckObjectBroccoli": "Broccoli",
+  "@localCheckObjectBroccoli": {
+    "description": "A thing a quick check looks for (the model calls it \"broccoli\")."
+  },
+  "localCheckObjectCarrot": "Carrot",
+  "@localCheckObjectCarrot": {
+    "description": "A thing a quick check looks for (the model calls it \"carrot\")."
+  },
+  "localCheckObjectHotDog": "Hot dog",
+  "@localCheckObjectHotDog": {
+    "description": "A thing a quick check looks for (the model calls it \"hot dog\")."
+  },
+  "localCheckObjectPizza": "Pizza",
+  "@localCheckObjectPizza": {
+    "description": "A thing a quick check looks for (the model calls it \"pizza\")."
+  },
+  "localCheckObjectDonut": "Doughnut",
+  "@localCheckObjectDonut": {
+    "description": "A thing a quick check looks for (the model calls it \"donut\")."
+  },
+  "localCheckObjectCake": "Cake",
+  "@localCheckObjectCake": {
+    "description": "A thing a quick check looks for (the model calls it \"cake\")."
+  },
+  "localCheckObjectChair": "Chair",
+  "@localCheckObjectChair": {
+    "description": "A thing a quick check looks for (the model calls it \"chair\")."
+  },
+  "localCheckObjectCouch": "Sofa",
+  "@localCheckObjectCouch": {
+    "description": "A thing a quick check looks for (the model calls it \"couch\")."
+  },
+  "localCheckObjectPottedPlant": "Potted plant",
+  "@localCheckObjectPottedPlant": {
+    "description": "A thing a quick check looks for (the model calls it \"potted plant\")."
+  },
+  "localCheckObjectBed": "Bed",
+  "@localCheckObjectBed": {
+    "description": "A thing a quick check looks for (the model calls it \"bed\")."
+  },
+  "localCheckObjectDiningTable": "Table",
+  "@localCheckObjectDiningTable": {
+    "description": "A thing a quick check looks for (the model calls it \"dining table\")."
+  },
+  "localCheckObjectToilet": "Toilet",
+  "@localCheckObjectToilet": {
+    "description": "A thing a quick check looks for (the model calls it \"toilet\")."
+  },
+  "localCheckObjectTv": "TV",
+  "@localCheckObjectTv": {
+    "description": "A thing a quick check looks for (the model calls it \"tv\")."
+  },
+  "localCheckObjectLaptop": "Laptop",
+  "@localCheckObjectLaptop": {
+    "description": "A thing a quick check looks for (the model calls it \"laptop\")."
+  },
+  "localCheckObjectMouse": "Computer mouse",
+  "@localCheckObjectMouse": {
+    "description": "A thing a quick check looks for (the model calls it \"mouse\")."
+  },
+  "localCheckObjectRemote": "Remote control",
+  "@localCheckObjectRemote": {
+    "description": "A thing a quick check looks for (the model calls it \"remote\")."
+  },
+  "localCheckObjectKeyboard": "Keyboard",
+  "@localCheckObjectKeyboard": {
+    "description": "A thing a quick check looks for (the model calls it \"keyboard\")."
+  },
+  "localCheckObjectCellPhone": "Phone",
+  "@localCheckObjectCellPhone": {
+    "description": "A thing a quick check looks for (the model calls it \"cell phone\")."
+  },
+  "localCheckObjectMicrowave": "Microwave",
+  "@localCheckObjectMicrowave": {
+    "description": "A thing a quick check looks for (the model calls it \"microwave\")."
+  },
+  "localCheckObjectOven": "Oven",
+  "@localCheckObjectOven": {
+    "description": "A thing a quick check looks for (the model calls it \"oven\")."
+  },
+  "localCheckObjectToaster": "Toaster",
+  "@localCheckObjectToaster": {
+    "description": "A thing a quick check looks for (the model calls it \"toaster\")."
+  },
+  "localCheckObjectSink": "Sink",
+  "@localCheckObjectSink": {
+    "description": "A thing a quick check looks for (the model calls it \"sink\")."
+  },
+  "localCheckObjectRefrigerator": "Refrigerator",
+  "@localCheckObjectRefrigerator": {
+    "description": "A thing a quick check looks for (the model calls it \"refrigerator\")."
+  },
+  "localCheckObjectBook": "Book",
+  "@localCheckObjectBook": {
+    "description": "A thing a quick check looks for (the model calls it \"book\")."
+  },
+  "localCheckObjectClock": "Clock",
+  "@localCheckObjectClock": {
+    "description": "A thing a quick check looks for (the model calls it \"clock\")."
+  },
+  "localCheckObjectVase": "Vase",
+  "@localCheckObjectVase": {
+    "description": "A thing a quick check looks for (the model calls it \"vase\")."
+  },
+  "localCheckObjectScissors": "Scissors",
+  "@localCheckObjectScissors": {
+    "description": "A thing a quick check looks for (the model calls it \"scissors\")."
+  },
+  "localCheckObjectTeddyBear": "Teddy bear",
+  "@localCheckObjectTeddyBear": {
+    "description": "A thing a quick check looks for (the model calls it \"teddy bear\")."
+  },
+  "localCheckObjectHairDrier": "Hair dryer",
+  "@localCheckObjectHairDrier": {
+    "description": "A thing a quick check looks for (the model calls it \"hair drier\")."
+  },
+  "localCheckObjectToothbrush": "Toothbrush",
+  "@localCheckObjectToothbrush": {
+    "description": "A thing a quick check looks for (the model calls it \"toothbrush\")."
+  },
+  "localCheckSoundClapping": "Clapping",
+  "@localCheckSoundClapping": {
+    "description": "A sound a quick check listens for (the model calls it \"Clapping\")."
+  },
+  "localCheckSoundFingerSnapping": "Finger snapping",
+  "@localCheckSoundFingerSnapping": {
+    "description": "A sound a quick check listens for (the model calls it \"Finger snapping\")."
+  },
+  "localCheckSoundWhistling": "Whistling",
+  "@localCheckSoundWhistling": {
+    "description": "A sound a quick check listens for (the model calls it \"Whistling\")."
+  },
+  "localCheckSoundApplause": "Applause",
+  "@localCheckSoundApplause": {
+    "description": "A sound a quick check listens for (the model calls it \"Applause\")."
+  },
+  "localCheckSoundLaughter": "Laughter",
+  "@localCheckSoundLaughter": {
+    "description": "A sound a quick check listens for (the model calls it \"Laughter\")."
+  },
+  "localCheckSoundCough": "Coughing",
+  "@localCheckSoundCough": {
+    "description": "A sound a quick check listens for (the model calls it \"Cough\")."
+  },
+  "localCheckSoundSneeze": "Sneezing",
+  "@localCheckSoundSneeze": {
+    "description": "A sound a quick check listens for (the model calls it \"Sneeze\")."
+  },
+  "localCheckSoundBell": "Bell",
+  "@localCheckSoundBell": {
+    "description": "A sound a quick check listens for (the model calls it \"Bell\")."
+  },
+  "localCheckSoundDoorbell": "Doorbell",
+  "@localCheckSoundDoorbell": {
+    "description": "A sound a quick check listens for (the model calls it \"Doorbell\")."
+  },
+  "localCheckSoundKnock": "Knocking",
+  "@localCheckSoundKnock": {
+    "description": "A sound a quick check listens for (the model calls it \"Knock\")."
+  },
+  "localCheckSoundDog": "Dog",
+  "@localCheckSoundDog": {
+    "description": "A sound a quick check listens for (the model calls it \"Dog\")."
+  },
+  "localCheckSoundBark": "Dog barking",
+  "@localCheckSoundBark": {
+    "description": "A sound a quick check listens for (the model calls it \"Bark\")."
+  },
+  "localCheckSoundCat": "Cat",
+  "@localCheckSoundCat": {
+    "description": "A sound a quick check listens for (the model calls it \"Cat\")."
+  },
+  "localCheckSoundMeow": "Cat meowing",
+  "@localCheckSoundMeow": {
+    "description": "A sound a quick check listens for (the model calls it \"Meow\")."
+  },
+  "localCheckSoundBird": "Bird",
+  "@localCheckSoundBird": {
+    "description": "A sound a quick check listens for (the model calls it \"Bird\")."
+  },
+  "localCheckSoundChirpTweet": "Birdsong",
+  "@localCheckSoundChirpTweet": {
+    "description": "A sound a quick check listens for (the model calls it \"Chirp, tweet\")."
+  },
+  "localCheckSoundCrowingCockADoodleDoo": "Rooster crowing",
+  "@localCheckSoundCrowingCockADoodleDoo": {
+    "description": "A sound a quick check listens for (the model calls it \"Crowing, cock-a-doodle-doo\")."
+  },
+  "localCheckSoundSiren": "Siren",
+  "@localCheckSoundSiren": {
+    "description": "A sound a quick check listens for (the model calls it \"Siren\")."
+  },
+  "localCheckSoundAlarmClock": "Alarm clock",
+  "@localCheckSoundAlarmClock": {
+    "description": "A sound a quick check listens for (the model calls it \"Alarm clock\")."
+  },
+  "localCheckSoundTyping": "Typing",
+  "@localCheckSoundTyping": {
+    "description": "A sound a quick check listens for (the model calls it \"Typing\")."
+  },
+  "localCheckSoundWaterTapFaucet": "Running tap",
+  "@localCheckSoundWaterTapFaucet": {
+    "description": "A sound a quick check listens for (the model calls it \"Water tap, faucet\")."
+  },
+  "localCheckSoundGuitar": "Guitar",
+  "@localCheckSoundGuitar": {
+    "description": "A sound a quick check listens for (the model calls it \"Guitar\")."
+  },
+  "localCheckSoundPiano": "Piano",
+  "@localCheckSoundPiano": {
+    "description": "A sound a quick check listens for (the model calls it \"Piano\")."
+  },
+  "localCheckSoundDrum": "Drum",
+  "@localCheckSoundDrum": {
+    "description": "A sound a quick check listens for (the model calls it \"Drum\")."
+  },
+  "localCheckSoundWhistle": "Whistle blown",
+  "@localCheckSoundWhistle": {
+    "description": "A sound a quick check listens for (the model calls it \"Whistle\")."
+  },
+  "@@x-section-app-platform": "App settings (webhooks, secrets, redirect URIs, deliveries), push or pull verification, and the participant's pull check. Owned by the app-platform fork.",
+  "editorAppModeLabel": "How {appName} confirms",
+  "@editorAppModeLabel": {
+    "description": "Label above the choice of push or pull verification for an App-confirmed proof.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "editorAppModePush": "It tells Verily",
+  "@editorAppModePush": {
+    "description": "Push verification choice: the App confirms on its own."
+  },
+  "editorAppModePull": "Verily asks it",
+  "@editorAppModePull": {
+    "description": "Pull verification choice: Verily asks the App's webhook when the participant taps I did it."
+  },
+  "editorAppModePushBody": "{appName}'s server sends a confirmation when someone does it, using the link code they gave it. Participants have nothing to tap.",
+  "@editorAppModePushBody": {
+    "description": "Explains push verification in the editor.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "editorAppModePullBody": "Participants tap \"I did it\" and Verily asks {appName}'s webhook straight away. They can add a username or order number so {appName} can find them.",
+  "@editorAppModePullBody": {
+    "description": "Explains pull verification in the editor.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "editorAppModePullNeedsWebhook": "{appName} has no webhook address yet. Add one on its App page before you publish, or Verily has nowhere to ask.",
+  "@editorAppModePullNeedsWebhook": {
+    "description": "Warning when pull verification is chosen for an App without a webhook URL.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "appsSecretTitle": "Save your signing secret",
+  "@appsSecretTitle": {
+    "description": "Title of the dialog that shows a new webhook signing secret once."
+  },
+  "appsSecretBody": "{appName}'s server uses this secret to check that each webhook call really came from Verily. Keep it on that server only.",
+  "@appsSecretBody": {
+    "description": "Explains what a webhook signing secret is for.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "appsSecretWarning": "Verily shows this secret only once. If you lose it, rotate to get a new one.",
+  "@appsSecretWarning": {
+    "description": "Warning that a signing secret is shown once."
+  },
+  "appsSecretOverlap": "Calls are signed with both this secret and the previous one until {date}, so you can switch over without missing any.",
+  "@appsSecretOverlap": {
+    "description": "After a rotation, until when the previous secret keeps signing.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appsSecretLabel": "Signing secret, version {version}",
+  "@appsSecretLabel": {
+    "description": "Label above a newly issued signing secret.",
+    "placeholders": {
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "appsSecretCopy": "Copy secret",
+  "@appsSecretCopy": {
+    "description": "Copies a newly issued signing secret."
+  },
+  "appsWebhookHeading": "Webhook",
+  "@appsWebhookHeading": {
+    "description": "Heading of the App's webhook settings."
+  },
+  "appsWebhookBody": "Verily sends signed events here (verified and rejected attempts, payouts, finished verification requests) and asks it to confirm proof on actions set to \"Verily asks it\".",
+  "@appsWebhookBody": {
+    "description": "Explains what the webhook address receives."
+  },
+  "appsWebhookLabel": "Webhook address",
+  "@appsWebhookLabel": {
+    "description": "Label of the webhook URL field."
+  },
+  "appsWebhookHint": "https://example.com/verily/webhook",
+  "@appsWebhookHint": {
+    "description": "Example webhook URL shown in the empty field."
+  },
+  "appsWebhookSave": "Save address",
+  "@appsWebhookSave": {
+    "description": "Saves the webhook URL."
+  },
+  "appsWebhookRemove": "Remove address",
+  "@appsWebhookRemove": {
+    "description": "Clears the webhook URL."
+  },
+  "appsWebhookSaved": "Webhook address saved",
+  "@appsWebhookSaved": {
+    "description": "Confirms the webhook URL was saved."
+  },
+  "appsWebhookRemoved": "Webhook address removed",
+  "@appsWebhookRemoved": {
+    "description": "Confirms the webhook URL was cleared."
+  },
+  "appsWebhookInvalid": "Use an https address on a public website: the standard port, no password, and no #fragment. Local, private, and internal addresses can't receive webhooks.",
+  "@appsWebhookInvalid": {
+    "description": "Why a webhook URL was refused."
+  },
+  "appsWebhooksUnavailable": "Webhooks aren't switched on for Verily yet. Try again later.",
+  "@appsWebhooksUnavailable": {
+    "description": "The server has no webhook signing configured."
+  },
+  "appsWebhookNotSending": "Verily sends events once this App has both a webhook address and a signing secret.",
+  "@appsWebhookNotSending": {
+    "description": "Shown while an App lacks a webhook URL or a signing secret."
+  },
+  "appsSecretVersion": "Signing secret: version {version}",
+  "@appsSecretVersion": {
+    "description": "Which signing secret version the App has.",
+    "placeholders": {
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "appsSecretNone": "No signing secret yet",
+  "@appsSecretNone": {
+    "description": "The App has never been issued a signing secret."
+  },
+  "appsSecretHelp": "Rotate it if it may have leaked. The old secret keeps signing for 24 hours, so nothing is missed.",
+  "@appsSecretHelp": {
+    "description": "Explains rotating a signing secret."
+  },
+  "appsSecretNoneHelp": "Issue one so your server can check that each call came from Verily.",
+  "@appsSecretNoneHelp": {
+    "description": "Explains issuing the first signing secret."
+  },
+  "appsSecretRotate": "Rotate secret",
+  "@appsSecretRotate": {
+    "description": "Issues a new signing secret, replacing the current one."
+  },
+  "appsSecretIssue": "Issue secret",
+  "@appsSecretIssue": {
+    "description": "Issues the App's first signing secret."
+  },
+  "appsRedirectHeading": "Return addresses",
+  "@appsRedirectHeading": {
+    "description": "Heading of the App's redirect URI settings."
+  },
+  "appsRedirectBody": "Where Verily sends people back after they link their account or finish a verification for this App. Matching is exact, so add each address exactly as your app sends it.",
+  "@appsRedirectBody": {
+    "description": "Explains redirect URIs."
+  },
+  "appsRedirectEmpty": "No return addresses yet.",
+  "@appsRedirectEmpty": {
+    "description": "Shown when the App has no redirect URIs."
+  },
+  "appsRedirectLabel": "Return address",
+  "@appsRedirectLabel": {
+    "description": "Label of the field for a new redirect URI."
+  },
+  "appsRedirectHint": "com.example.app://verily",
+  "@appsRedirectHint": {
+    "description": "Example redirect URI shown in the empty field."
+  },
+  "appsRedirectAdd": "Add address",
+  "@appsRedirectAdd": {
+    "description": "Adds the typed redirect URI."
+  },
+  "appsRedirectCount": "{count} of {max}",
+  "@appsRedirectCount": {
+    "description": "How many redirect URIs the App has, out of the limit.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "appsRedirectFull": "That's all {max}. Remove one to add another.",
+  "@appsRedirectFull": {
+    "description": "The App has the most redirect URIs allowed.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "appsRedirectDuplicate": "That address is already on the list.",
+  "@appsRedirectDuplicate": {
+    "description": "The typed redirect URI is already registered."
+  },
+  "appsRedirectInvalid": "Use an exact https address or your app's own scheme, such as com.example.app://verily. Wildcards, #fragments, plain http, and verily: addresses aren't allowed.",
+  "@appsRedirectInvalid": {
+    "description": "Why a redirect URI was refused."
+  },
+  "appsRedirectTooMany": "An App can have at most {max} return addresses. Remove one first.",
+  "@appsRedirectTooMany": {
+    "description": "The server refused more redirect URIs than allowed.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "appsRedirectRemoveTitle": "Remove this return address?",
+  "@appsRedirectRemoveTitle": {
+    "description": "Title of the dialog confirming a redirect URI removal."
+  },
+  "appsRedirectRemoveBody": "Links that send people back to {uri} will stop working.",
+  "@appsRedirectRemoveBody": {
+    "description": "What removing a redirect URI does.",
+    "placeholders": {
+      "uri": {
+        "type": "String"
+      }
+    }
+  },
+  "appsRedirectRemoveConfirm": "Remove",
+  "@appsRedirectRemoveConfirm": {
+    "description": "Confirms removing a redirect URI."
+  },
+  "appsRedirectRemoveTooltip": "Remove {uri}",
+  "@appsRedirectRemoveTooltip": {
+    "description": "Tooltip of the button that removes one redirect URI.",
+    "placeholders": {
+      "uri": {
+        "type": "String"
+      }
+    }
+  },
+  "appsRateLimited": "That's a lot of requests in a short time. Wait a little, then try again.",
+  "@appsRateLimited": {
+    "description": "The server is rate limiting the caller."
+  },
+  "appsDeliveriesHeading": "Webhook calls",
+  "@appsDeliveriesHeading": {
+    "description": "Heading of the log of calls to the App's webhook."
+  },
+  "appsDeliveriesBody": "Every call Verily made to your webhook, newest first, with how your server answered.",
+  "@appsDeliveriesBody": {
+    "description": "Explains the webhook call log."
+  },
+  "appsDeliveriesLoading": "Loading webhook calls",
+  "@appsDeliveriesLoading": {
+    "description": "Shown while the webhook call log loads."
+  },
+  "appsDeliveriesFailed": "Webhook calls didn't load",
+  "@appsDeliveriesFailed": {
+    "description": "The webhook call log could not be loaded."
+  },
+  "appsDeliveriesEmpty": "No calls yet. They appear here once this App has a webhook address and a signing secret.",
+  "@appsDeliveriesEmpty": {
+    "description": "The App's webhook has never been called."
+  },
+  "appsDeliveriesMore": "Show older calls",
+  "@appsDeliveriesMore": {
+    "description": "Loads the next page of webhook calls."
+  },
+  "appsDeliveryNoAnswer": "no answer",
+  "@appsDeliveryNoAnswer": {
+    "description": "A webhook call that got no HTTP response, inside the call details."
+  },
+  "appsDeliveryHttp": "HTTP {code}",
+  "@appsDeliveryHttp": {
+    "description": "The HTTP status a webhook call got, inside the call details.",
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "appsDeliverySucceeded": "Your server accepted it.",
+  "@appsDeliverySucceeded": {
+    "description": "A webhook call that succeeded."
+  },
+  "appsDeliveryDetails": "Try {attempt} · {answer} · {milliseconds} ms",
+  "@appsDeliveryDetails": {
+    "description": "Which delivery try, the HTTP answer, and how long it took.",
+    "placeholders": {
+      "attempt": {
+        "type": "int"
+      },
+      "answer": {
+        "type": "String"
+      },
+      "milliseconds": {
+        "type": "int"
+      }
+    }
+  },
+  "appsDeliveryEvent": "Event: {eventType}",
+  "@appsDeliveryEvent": {
+    "description": "The raw event type, for matching the App's own logs.",
+    "placeholders": {
+      "eventType": {
+        "type": "String"
+      }
+    }
+  },
+  "appsDeliveryEventError": "Event: {eventType} · Error code: {errorCode}",
+  "@appsDeliveryEventError": {
+    "description": "The raw event type and error code, for matching the App's own logs.",
+    "placeholders": {
+      "eventType": {
+        "type": "String"
+      },
+      "errorCode": {
+        "type": "String"
+      }
+    }
+  },
+  "actionAppPullBody": "{appName} checks this step when you say you've done it. Verily doesn't check the act, only that {appName} said so.",
+  "@actionAppPullBody": {
+    "description": "Explains an App-confirmed step the App checks when asked.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "appsEventAttemptVerify": "Pull check: asked to confirm",
+  "@appsEventAttemptVerify": {
+    "description": "A webhook call asking the App to confirm a participant's proof."
+  },
+  "appsEventAttemptVerified": "Attempt verified",
+  "@appsEventAttemptVerified": {
+    "description": "Webhook event: an attempt was verified."
+  },
+  "appsEventAttemptRejected": "Attempt rejected",
+  "@appsEventAttemptRejected": {
+    "description": "Webhook event: an attempt was rejected."
+  },
+  "appsEventPayoutReleased": "Payout released",
+  "@appsEventPayoutReleased": {
+    "description": "Webhook event: a reward payout was released."
+  },
+  "appsEventRequestCompleted": "Verification request finished",
+  "@appsEventRequestCompleted": {
+    "description": "Webhook event: a Verify with Verily request finished."
+  },
+  "appsEventOther": "Webhook event",
+  "@appsEventOther": {
+    "description": "A webhook event of a type this version does not name."
+  },
+  "appsDeliveryTimeout": "Your server didn't answer within 10 seconds.",
+  "@appsDeliveryTimeout": {
+    "description": "A webhook call timed out."
+  },
+  "appsDeliveryConnectionFailed": "Verily couldn't connect to your server.",
+  "@appsDeliveryConnectionFailed": {
+    "description": "A webhook call could not connect."
+  },
+  "appsDeliveryTlsFailure": "The secure connection to your server failed.",
+  "@appsDeliveryTlsFailure": {
+    "description": "A webhook call failed during TLS."
+  },
+  "appsDeliveryHostNotPublic": "The address didn't lead to a public server.",
+  "@appsDeliveryHostNotPublic": {
+    "description": "A webhook host resolved to a private address."
+  },
+  "appsDeliveryInvalidUrl": "The webhook address isn't valid.",
+  "@appsDeliveryInvalidUrl": {
+    "description": "A webhook call had an invalid URL."
+  },
+  "appsDeliveryTooLarge": "Your server's answer was too large.",
+  "@appsDeliveryTooLarge": {
+    "description": "A webhook answer exceeded the size limit."
+  },
+  "appsDeliveryInvalidResponse": "Your server's answer wasn't the expected JSON verdict.",
+  "@appsDeliveryInvalidResponse": {
+    "description": "A pull check answer could not be parsed."
+  },
+  "appsDeliveryNoWebhook": "There was no webhook address to call.",
+  "@appsDeliveryNoWebhook": {
+    "description": "A call was due but the App had no webhook URL."
+  },
+  "appsDeliveryNoSecret": "There was no signing secret to sign the call with.",
+  "@appsDeliveryNoSecret": {
+    "description": "A call was due but the App had no signing secret."
+  },
+  "appsDeliveryRefused": "Your server answered HTTP {code}.",
+  "@appsDeliveryRefused": {
+    "description": "A webhook call got a non-success HTTP status.",
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "appsDeliveryFailedOther": "The call didn't go through.",
+  "@appsDeliveryFailedOther": {
+    "description": "A webhook call failed for another reason."
+  },
+  "appsEventStatusPending": "Verily will try again.",
+  "@appsEventStatusPending": {
+    "description": "The event behind a call is waiting for another try."
+  },
+  "appsEventStatusDelivering": "Being delivered now.",
+  "@appsEventStatusDelivering": {
+    "description": "The event behind a call is being delivered."
+  },
+  "appsEventStatusDelivered": "Delivered.",
+  "@appsEventStatusDelivered": {
+    "description": "The event behind a call was delivered."
+  },
+  "appsEventStatusFailed": "Verily stopped trying.",
+  "@appsEventStatusFailed": {
+    "description": "The event behind a call ran out of tries."
+  },
+  "actionPullIntro": "Done it in {appName}? Tap \"I did it\" and Verily asks {appName} to confirm.",
+  "@actionPullIntro": {
+    "description": "Introduces the pull check on an App-confirmed action.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "actionPullReferenceLabel": "Username or order number (optional)",
+  "@actionPullReferenceLabel": {
+    "description": "Label of the optional note sent to the App with I did it."
+  },
+  "actionPullReferenceHint": "ada_lovelace or #1234",
+  "@actionPullReferenceHint": {
+    "description": "Example note shown in the empty field."
+  },
+  "actionPullReferenceHelp": "Helps {appName} find you. Letters, numbers, spaces, and . _ @ # : / + - only.",
+  "@actionPullReferenceHelp": {
+    "description": "Helper text under the optional note field.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "actionPullReferenceInvalid": "Use up to 120 letters, numbers, spaces, or . _ @ # : / + -",
+  "@actionPullReferenceInvalid": {
+    "description": "The note has characters the App cannot be sent."
+  },
+  "actionPullAsk": "I did it",
+  "@actionPullAsk": {
+    "description": "Asks the App to confirm the participant did the action."
+  },
+  "actionPullAskAgain": "Ask again",
+  "@actionPullAskAgain": {
+    "description": "Asks the App again after it did not answer."
+  },
+  "actionPullWaitingTitle": "Waiting for {appName}",
+  "@actionPullWaitingTitle": {
+    "description": "The App said it is still deciding.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "actionPullWaitingBody": "{appName} is checking and will confirm on its own. You can leave this page; it updates when {appName} answers.",
+  "@actionPullWaitingBody": {
+    "description": "Explains that the App confirms later.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "actionPullFailedTitle": "{appName} didn't answer",
+  "@actionPullFailedTitle": {
+    "description": "Verily stopped calling the App for now.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "actionPullFailedBody": "Try again in a little while.",
+  "@actionPullFailedBody": {
+    "description": "What to do after the App did not answer."
+  },
+  "actionPullUnansweredTitle": "{appName} never answered",
+  "@actionPullUnansweredTitle": {
+    "description": "Pull check status when the App did not answer within a day and the proof was not accepted.",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "actionPullAcceptedBody": "Nothing more to do here.",
+  "@actionPullAcceptedBody": {
+    "description": "The App confirmed the participant's proof."
+  },
+  "actionPullRejectedTitle": "{appName} didn't confirm it",
+  "@actionPullRejectedTitle": {
+    "description": "The App said no, or did not answer within a day.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "actionPullRejectedBody": "If you think that's wrong, check with {appName}, or appeal and the action's creator will look again.",
+  "@actionPullRejectedBody": {
+    "description": "What to do after the App did not confirm.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "actionPullUnavailable": "{appName} can't confirm proof right now. Try again later.",
+  "@actionPullUnavailable": {
+    "description": "The App cannot be asked: revoked, or no webhook or secret.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "@@x-section-proof-reasons": "Words for the server's public proof reasons and review categories. Owned by the coordinator.",
+  "proofReasonProofAccepted": "Your proof passed.",
+  "@proofReasonProofAccepted": {
+    "description": "The server's public reason proof_accepted."
+  },
+  "proofReasonChecking": "Verily is checking your proof.",
+  "@proofReasonChecking": {
+    "description": "Public reason checking: verification is running."
+  },
+  "proofReasonNeedsReview": "A person will check this before it counts.",
+  "@proofReasonNeedsReview": {
+    "description": "Public reason needs_review."
+  },
+  "proofReasonNotAccepted": "Your proof didn't show what this action asks for.",
+  "@proofReasonNotAccepted": {
+    "description": "Public reason proof_not_accepted."
+  },
+  "proofReasonMissing": "Some proof is still missing. Finish every step first.",
+  "@proofReasonMissing": {
+    "description": "Public reason proof_missing."
+  },
+  "proofReasonActionFull": "This action has reached its limit.",
+  "@proofReasonActionFull": {
+    "description": "Public reason action_full."
+  },
+  "proofReasonOutsideArea": "You weren't inside the area for this action. Go to the pin and try again.",
+  "@proofReasonOutsideArea": {
+    "description": "Public reason outside_area."
+  },
+  "proofReasonLocationNotPrecise": "Your location wasn't precise enough. Step outside or near a window and try again.",
+  "@proofReasonLocationNotPrecise": {
+    "description": "Public reason location_not_precise."
+  },
+  "proofReasonLocationTooOld": "Your location was too old by the time it arrived. Try again.",
+  "@proofReasonLocationTooOld": {
+    "description": "Public reason location_too_old."
+  },
+  "proofReasonPhoneClock": "Your phone's clock doesn't match the time. Set it to automatic and try again.",
+  "@proofReasonPhoneClock": {
+    "description": "Public reason phone_clock."
+  },
+  "proofReasonRecordingLength": "The recording was too short or too long for this action.",
+  "@proofReasonRecordingLength": {
+    "description": "Public reason recording_length."
+  },
+  "proofReasonChallengeWordMissing": "The word to say wasn't ready before you recorded. Record again.",
+  "@proofReasonChallengeWordMissing": {
+    "description": "Public reason challenge_word_missing."
+  },
+  "proofReasonChallengeWordTooEarly": "The recording started before your word arrived. Record again.",
+  "@proofReasonChallengeWordTooEarly": {
+    "description": "Public reason challenge_word_too_early."
+  },
+  "proofReasonChallengeWordNotHeard": "We couldn't hear your word. Say it clearly and record again.",
+  "@proofReasonChallengeWordNotHeard": {
+    "description": "Public reason challenge_word_not_heard."
+  },
+  "proofReasonCodeNotMatched": "That code isn't this place's code. Scan the one shown here.",
+  "@proofReasonCodeNotMatched": {
+    "description": "Public reason code_not_matched."
+  },
+  "proofReasonMotionNotMatched": "The movement didn't match what this action asks for. Try again.",
+  "@proofReasonMotionNotMatched": {
+    "description": "Public reason motion_not_matched."
+  },
+  "proofReasonCaptureNotVerified": "Your phone couldn't vouch for this capture. Record it again in Verily.",
+  "@proofReasonCaptureNotVerified": {
+    "description": "Public reason capture_not_verified."
+  },
+  "proofReasonPayoutReview": "Bigger rewards get a quick look from a person before they're sent.",
+  "@proofReasonPayoutReview": {
+    "description": "Public reason payout_review."
+  },
+  "proofReasonAppConfirmed": "The App confirmed it.",
+  "@proofReasonAppConfirmed": {
+    "description": "Public reason app_confirmed."
+  },
+  "proofReasonAppNotConfirmed": "The App didn't confirm it.",
+  "@proofReasonAppNotConfirmed": {
+    "description": "Public reason app_not_confirmed."
+  },
+  "proofReasonAppChecking": "Waiting for the App to confirm.",
+  "@proofReasonAppChecking": {
+    "description": "Public reason app_checking."
+  },
+  "proofReasonAppUnreachable": "The App couldn't be reached. Try again in a little while.",
+  "@proofReasonAppUnreachable": {
+    "description": "Public reason app_unreachable."
+  },
+  "proofReasonAppNoAnswer": "The App didn't answer in time.",
+  "@proofReasonAppNoAnswer": {
+    "description": "Public reason app_no_answer."
+  },
+  "proofReasonOther": "Your proof wasn't accepted.",
+  "@proofReasonOther": {
+    "description": "A reason the app does not know yet, for a rejection."
+  },
+  "reviewReasonPayout": "Large reward",
+  "@reviewReasonPayout": {
+    "description": "Review queue category payout_review."
+  },
+  "reviewReasonSecurity": "Security check",
+  "@reviewReasonSecurity": {
+    "description": "Review queue category security_review."
+  },
+  "reviewReasonChallengeWord": "Word unclear",
+  "@reviewReasonChallengeWord": {
+    "description": "Review queue category challenge_word_unclear."
+  },
+  "reviewReasonLocation": "Location check",
+  "@reviewReasonLocation": {
+    "description": "Review queue category location_review."
+  },
+  "reviewReasonAbuse": "Possible misuse",
+  "@reviewReasonAbuse": {
+    "description": "Review queue category abuse_review."
+  },
+  "reviewReasonLocalCheck": "Quick check didn't run",
+  "@reviewReasonLocalCheck": {
+    "description": "Review queue category local_check_unavailable."
+  },
+  "reviewReasonVerifier": "Automatic check unavailable",
+  "@reviewReasonVerifier": {
+    "description": "Review queue category verifier_unavailable."
+  },
+  "reviewReasonLowConfidence": "Not sure enough",
+  "@reviewReasonLowConfidence": {
+    "description": "Review queue category low_confidence."
+  },
+  "reviewReasonNeedsPerson": "Needs a person",
+  "@reviewReasonNeedsPerson": {
+    "description": "Review queue category needs_review, and any category the app does not know yet."
+  },
+  "reviewReasonLabel": "Why it's here: {reason}",
+  "@reviewReasonLabel": {
+    "description": "Names the review queue category on a proof. reason is one of the reviewReason labels.",
+    "placeholders": {
+      "reason": {
+        "type": "String",
+        "example": "Large reward"
+      }
+    }
   }
 }

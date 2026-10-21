@@ -10,8 +10,10 @@ import 'package:verily_flutter/app/theme/verily_theme.dart';
 import 'package:verily_flutter/features/create/editor/editor_form.dart';
 import 'package:verily_flutter/features/create/editor/editor_labels.dart';
 import 'package:verily_flutter/features/create/editor/editor_providers.dart';
+import 'package:verily_flutter/features/create/editor/widgets/app_verification_mode_field.dart';
 import 'package:verily_flutter/features/create/editor/widgets/editor_common.dart';
 import 'package:verily_flutter/features/create/editor/widgets/place_picker.dart';
+import 'package:verily_flutter/features/create/editor/widgets/quick_check_section.dart';
 import 'package:verily_flutter/l10n/l10n.dart';
 import 'package:verily_flutter/testing/verily_test_keys.dart';
 
@@ -130,14 +132,16 @@ class RequirementCard extends StatelessWidget {
         _MoreChecks(form: form, requirement: requirement),
       ],
       ProofKind.video || ProofKind.audio => [
-        _VerifierPromptField(form: form, requirement: requirement),
+        _VerifierPromptField(requirement: requirement),
+        QuickCheckSection(form: form, requirement: requirement),
         const SizedBox(height: editorStackGap),
         _DurationFields(requirement: requirement),
         _SpokenChallengeRow(form: form, requirement: requirement),
         _MoreChecks(form: form, requirement: requirement),
       ],
       ProofKind.photo => [
-        _VerifierPromptField(form: form, requirement: requirement),
+        _VerifierPromptField(requirement: requirement),
+        QuickCheckSection(form: form, requirement: requirement),
         _MoreChecks(form: form, requirement: requirement),
       ],
       ProofKind.appConfirmation => [
@@ -152,9 +156,8 @@ String? _required(AppLocalizations l10n, String? text) =>
 
 /// What Verily should check in a photo, video, or audio proof.
 class _VerifierPromptField extends StatelessWidget {
-  const _VerifierPromptField({required this.form, required this.requirement});
+  const _VerifierPromptField({required this.requirement});
 
-  final EditorForm form;
   final RequirementForm requirement;
 
   @override
@@ -173,19 +176,15 @@ class _VerifierPromptField extends StatelessWidget {
       ],
       decoration: InputDecoration(
         labelText: l10n.editorVerifierPromptLabel,
-        helperText: requirement.promptNeedsRewrite
-            ? l10n.editorVerifierPromptRewrite
+        helperText: requirement.promptOptional
+            ? l10n.editorQuickCheckPromptHelp
             : l10n.editorVerifierPromptHelp,
         helperMaxLines: 4,
       ),
-      onChanged: (text) {
-        if (requirement.promptNeedsRewrite && text.trim().isNotEmpty) {
-          requirement.promptNeedsRewrite = false;
-          form.touch();
-        }
-      },
       validator: (text) {
         final length = (text ?? '').trim().length;
+        // With a quick check the prompt may be left empty.
+        if (length == 0 && requirement.promptOptional) return null;
         return length < EditorLimits.minVerificationPromptLength
             ? l10n.editorVerifierPromptInvalid
             : null;
@@ -268,7 +267,9 @@ class _SpokenChallengeRow extends StatelessWidget {
       child: EditorSwitchRow(
         key: VerilyTestKeys.editorSpokenChallenge(requirement.requirementKey),
         label: l10n.editorSpokenChallenge,
-        help: l10n.editorSpokenChallengeHelp,
+        help: requirement.localCheck == null
+            ? l10n.editorSpokenChallengeHelp
+            : l10n.editorQuickCheckSpokenHelp,
         value: requirement.spokenChallenge,
         onChanged: (value) {
           requirement.spokenChallenge = value;
@@ -564,6 +565,15 @@ class _AppPicker extends ConsumerWidget {
           EditorNote(
             text: l10n.editorAppTrust(appName),
             icon: VerilyIcons.shieldCheck,
+          ),
+          const SizedBox(height: editorStackGap),
+          AppVerificationModeField(
+            form: form,
+            requirement: requirement,
+            appName: appName,
+            app: apps.value
+                ?.where((app) => app.id == requirement.appId)
+                .firstOrNull,
           ),
         ],
         FormField<void>(

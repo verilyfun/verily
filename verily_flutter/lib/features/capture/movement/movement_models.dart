@@ -1,9 +1,11 @@
-/// A MediaPipe model the app downloads once, verifies, and caches.
+import 'package:verily_flutter/features/capture/models/pinned_model.dart';
+
+/// A MediaPipe model live movement tracking runs.
 ///
 /// URLs are immutable, versioned paths in Google's public model bucket. The
 /// SHA-256 digest is the trust anchor: bytes that do not match are discarded,
 /// never loaded.
-enum MovementModel {
+enum MovementModel implements PinnedModel {
   /// BlazePose GHUM lite: 33 body landmarks per frame, about 5.8 MB.
   pose(
     url:
@@ -28,20 +30,12 @@ enum MovementModel {
     required this.byteLength,
   });
 
+  @override
   final String url;
+  @override
   final String sha256;
 
   /// Exact size of the pinned file, used to bound the download.
-  final int byteLength;
-}
-
-/// The pinned model could not be fetched or did not match its digest.
-class MovementModelException implements Exception {
-  const MovementModelException(this.model, this.reason);
-
-  final MovementModel model;
-  final String reason;
-
   @override
-  String toString() => 'MovementModelException(${model.name}): $reason';
+  final int byteLength;
 }

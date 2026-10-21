@@ -78,7 +78,12 @@ void main() {
         expect(draft.verificationPolicy, isNull, reason: '$kind');
         expect(draft.minConfidence, isNull, reason: '$kind');
         expect(draft.spokenChallengeRequired, isNull, reason: '$kind');
-        expect(draft.appVerificationMode, isNull, reason: '$kind');
+        // Only App proof says how its App confirms.
+        expect(
+          draft.appVerificationMode,
+          kind == ProofKind.appConfirmation ? AppVerificationMode.push : isNull,
+          reason: '$kind',
+        );
       }
     });
 

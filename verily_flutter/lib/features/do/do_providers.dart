@@ -83,28 +83,18 @@ nearbyActionsProvider = FutureProvider.autoDispose.family(
       .listNearby(latitude: fix.latitude, longitude: fix.longitude),
 );
 
-/// One action, resolved for its page.
-///
-/// There is no participant endpoint for a single action yet, so the page
-/// looks in the caller's live actions first and then asks for the creator's
-/// own view, which only the creator can open. Returns null when neither has
-/// it (ended, removed, not live, or a malformed link).
+/// One action, resolved for its page. Returns null when there is no such
+/// action for this person (ended and removed, someone else's draft, a private
+/// verification request, under a safety hold, or a malformed link); any other
+/// failure, such as a lapsed session or the network, surfaces as one.
 final FutureProviderFamily<ActionOpportunity?, String> actionDetailProvider =
     FutureProvider.autoDispose.family((ref, actionId) async {
       if (!UuidValidation.isValidUUIDFormat(fromString: actionId)) return null;
-      final id = UuidValue.fromString(actionId);
-      final repository = ref.watch(actionRepositoryProvider);
-      final available = await repository.listAvailable();
-      for (final action in available) {
-        if (action.id == id) return action;
-      }
       try {
-        return await repository.preview(id);
-      } on ServerpodClientInternalServerError {
-        // previewAction refuses another creator's action with an untyped
-        // error, which arrives as a 500. The live feed it was missing from
-        // just loaded, so this means "not here", not an outage. Any other
-        // failure (a lapsed session, the network) surfaces as one.
+        return await ref
+            .watch(actionRepositoryProvider)
+            .getAction(UuidValue.fromString(actionId));
+      } on ResourceNotFoundException {
         return null;
       }
     });

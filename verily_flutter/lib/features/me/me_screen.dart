@@ -116,7 +116,11 @@ class MeScreen extends ConsumerWidget {
                     error: (error, _) => [
                       _SectionProblem(
                         error: error,
-                        onRetry: () => ref.invalidate(myAttemptsProvider),
+                        // Attempts show what they won, so a failed payout
+                        // load is retried with them.
+                        onRetry: () => ref
+                          ..invalidate(myPayoutsProvider)
+                          ..invalidate(myAttemptsProvider),
                       ),
                     ],
                     data: (items) => items.isEmpty

@@ -21,6 +21,7 @@ import 'package:verily_flutter/features/review/widgets/decision_note_dialog.dart
 import 'package:verily_flutter/features/review/widgets/evidence_media_view.dart';
 import 'package:verily_flutter/l10n/l10n.dart';
 import 'package:verily_flutter/testing/verily_test_keys.dart';
+import 'package:verily_flutter/features/evidence/proof_reasons.dart';
 
 final FutureProvider<List<EvidenceReviewQueueItem>> reviewQueueProvider =
     FutureProvider.autoDispose(
@@ -249,8 +250,15 @@ class _ReviewCard extends ConsumerWidget {
             ),
             style: theme.textTheme.bodySmall?.copyWith(color: palette.mutedInk),
           ),
+          const SizedBox(height: 12),
+          Text(
+            l10n.reviewReasonLabel(
+              reviewReasonLabel(l10n, item.reviewReasonCode),
+            ),
+            style: theme.textTheme.labelLarge?.copyWith(color: palette.ink),
+          ),
           if (item.reviewSummary.trim().isNotEmpty) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 4),
             Text(
               item.reviewSummary,
               style: theme.textTheme.bodyMedium?.copyWith(color: palette.ink),

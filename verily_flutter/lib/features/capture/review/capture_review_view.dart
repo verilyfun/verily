@@ -108,6 +108,15 @@ class CaptureReviewView extends ConsumerWidget {
                       ),
                     ),
                   ],
+                  if (requirement.localCheck != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.localCheckReviewNote,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: palette.mutedInk,
+                      ),
+                    ),
+                  ],
                   if (tooShort || tooLong) ...[
                     const SizedBox(height: 12),
                     Text(
