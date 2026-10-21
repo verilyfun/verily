@@ -16,7 +16,7 @@ void main() {
   testWidgets('paints the pen outline over its fill, not under the child', (
     tester,
   ) async {
-    const fill = VerilyColors.movementJoint;
+    const fill = VerilyColors.movementHudWash;
     const outline = VerilyColors.shadow;
     await tester.pumpWidget(
       host(

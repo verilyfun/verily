@@ -149,7 +149,7 @@ void main() {
     }
     final result = await replayer.replay(
       check: check,
-      model: LocalCheckModel.forTask(check.task),
+      model: check.task.model,
       media: media,
       mimeType: mimeType,
     );
@@ -295,7 +295,7 @@ void main() {
 
         final result = await refusing.replay(
           check: _check(LocalCheckTask.gesture, 'Thumb_Up'),
-          model: LocalCheckModel.forTask(LocalCheckTask.gesture),
+          model: LocalCheckTask.gesture.model,
           media: Uint8List(8),
           mimeType: 'image/jpeg',
         );
@@ -315,7 +315,7 @@ void main() {
       expect(
         () => MpLocalCheckReplayer(models: _RefusingModels()).replay(
           check: _check(LocalCheckTask.sound, 'Clapping'),
-          model: LocalCheckModel.forTask(LocalCheckTask.gesture),
+          model: LocalCheckTask.gesture.model,
           media: Uint8List(8),
           mimeType: 'audio/mp4',
         ),

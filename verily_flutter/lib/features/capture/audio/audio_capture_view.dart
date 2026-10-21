@@ -273,7 +273,7 @@ class AudioCaptureView extends HookConsumerWidget {
                         l10n.captureMinimumHint(minimum.inSeconds),
                         textAlign: TextAlign.center,
                         style: theme.textTheme.labelLarge?.copyWith(
-                          color: VerilyColors.movementHudAccent,
+                          color: VerilyColors.movementHudInk,
                         ),
                       ),
                     ],
@@ -283,7 +283,6 @@ class AudioCaptureView extends HookConsumerWidget {
                         key: VerilyTestKeys.captureRecordStop,
                         label: l10n.captureRecordStop,
                         icon: VerilyIcons.stop,
-                        emphasis: false,
                         onPressed: busy.value ? null : () => unawaited(stop()),
                       )
                     else
@@ -324,7 +323,7 @@ class _Microphone extends StatelessWidget {
           alignment: Alignment.center,
           decoration: VerilyRoughDecoration(
             color: recording
-                ? VerilyColors.movementHudAccent
+                ? VerilyColors.movementHudInk
                 : VerilyColors.movementScrim,
             outline: VerilyColors.movementHudInk,
             radius: 66,
@@ -355,7 +354,7 @@ class _Microphone extends StatelessWidget {
             child: WiredThemeScope(
               data: WiredTheme.of(context).copyWith(
                 borderColor: VerilyColors.movementHudInk,
-                markerColor: VerilyColors.movementHudAccent,
+                markerColor: VerilyColors.movementHudInk,
               ),
               child: WiredProgress(
                 key: VerilyTestKeys.captureAudioLevel,

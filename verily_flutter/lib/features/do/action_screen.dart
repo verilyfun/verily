@@ -169,7 +169,13 @@ class _ActionPage extends HookConsumerWidget {
     AppPullPhase pullPhaseOf(ActionRequirementView requirement) {
       if (accepted.contains(requirement.id)) return AppPullPhase.accepted;
       final result = pullResults.value[requirement.id];
-      if (result == null) return AppPullPhase.ready;
+      if (result == null) {
+        // Until the page reads the check, a turned-down attempt still says
+        // so rather than offering to ask again.
+        return attempt.value?.status == ActionAttemptStatus.rejected
+            ? AppPullPhase.rejected
+            : AppPullPhase.ready;
+      }
       final phase = appPullPhaseOf(result);
       final status = attempt.value?.status;
       if (phase.isOpen &&
@@ -184,11 +190,47 @@ class _ActionPage extends HookConsumerWidget {
       return phase;
     }
 
-    final pullOpen = appRequirements.any(
-      (requirement) =>
-          requirement.appVerificationMode == AppVerificationMode.pull &&
-          pullPhaseOf(requirement).isOpen,
+    final pullRequirements = [
+      for (final requirement in appRequirements)
+        if (requirement.appVerificationMode == AppVerificationMode.pull)
+          requirement,
+    ];
+    final pullOpen = pullRequirements.any(
+      (requirement) => pullPhaseOf(requirement).isOpen,
     );
+
+    /// Reads where each "I did it" stands on the server, so a page opened
+    /// later, or left open while the App decides, shows the App's answer
+    /// instead of starting over. [openOnly] skips checks already settled.
+    Future<void> readPullChecks({bool openOnly = false}) async {
+      final current = attempt.value;
+      if (current == null || action.viewerIsCreator) return;
+      final repository = ref.read(actionRepositoryProvider);
+      for (final requirement in pullRequirements) {
+        final known = pullResults.value[requirement.id];
+        if (openOnly && (known == null || !appPullPhaseOf(known).isOpen)) {
+          continue;
+        }
+        try {
+          final result = await repository.getAppVerification(
+            attemptId: current.id,
+            requirementId: requirement.id,
+          );
+          if (!context.mounted) return;
+          // An ask under way answers with fresher news than this read.
+          if (result == null || askingApp.value != null) continue;
+          pullResults.value = {...pullResults.value, requirement.id: result};
+        } on Exception catch (error) {
+          // The card keeps what it last knew; the next read tries again.
+          debugPrint('Reading the App check failed: $error');
+        }
+      }
+    }
+
+    useEffect(() {
+      unawaited(readPullChecks());
+      return null;
+    }, const []);
 
     void adopt(ActionAttemptView next) {
       final wasVerified = attempt.value?.status == ActionAttemptStatus.verified;
@@ -259,14 +301,20 @@ class _ActionPage extends HookConsumerWidget {
           final lifecycle = WidgetsBinding.instance.lifecycleState;
           final foreground =
               lifecycle == null || lifecycle == AppLifecycleState.resumed;
-          if (onScreen && foreground) await refreshAttempt();
+          if (onScreen && foreground) {
+            await refreshAttempt();
+            await readPullChecks(openOnly: true);
+          }
           if (!cancelled) schedule();
         });
       }
 
       schedule();
       final lifecycle = AppLifecycleListener(
-        onResume: () => unawaited(refreshAttempt()),
+        onResume: () {
+          unawaited(refreshAttempt());
+          unawaited(readPullChecks(openOnly: true));
+        },
       );
       return () {
         cancelled = true;

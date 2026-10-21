@@ -41,11 +41,13 @@ Future<DoFakes> _pump(
   WidgetTester tester, {
   ActionRequirementView? requirement,
   ActionAttemptView? myAttempt,
+  EvidenceSubmissionResult? check,
   bool viewerIsCreator = false,
 }) async {
   final fakes = DoFakes()
     ..pollInterval = const Duration(seconds: 5)
     ..actions.onBegin = ((_) => _attempt());
+  if (check != null) fakes.actions.appChecks[_pull.id] = check;
   fakes.actions.available = [
     actionFixture(
       id: _actionId,
@@ -253,6 +255,141 @@ void main() {
       findsOneWidget,
     );
     expect(_ask, findsNothing);
+  });
+
+  group('opening the page again', () {
+    testWidgets('while the App decides shows it waiting, not a fresh ask', (
+      tester,
+    ) async {
+      final fakes = await _pump(
+        tester,
+        myAttempt: _attempt(),
+        check: _answer(),
+      );
+
+      expect(fakes.actions.appCheckReads, [_pull.id]);
+      expect(
+        find.text(_l10n.actionPullWaitingTitle('Slopper')),
+        findsOneWidget,
+      );
+      expect(_ask, findsNothing);
+      expect(_reference, findsNothing);
+      expect(fakes.actions.appRequests, isEmpty);
+    });
+
+    testWidgets('after the App said no shows the rejection', (tester) async {
+      await _pump(
+        tester,
+        myAttempt: _attempt(status: ActionAttemptStatus.rejected),
+        check: _answer(
+          status: EvidenceDecisionStatus.rejected,
+          reasonCode: 'app_not_confirmed',
+          attempt: _attempt(status: ActionAttemptStatus.rejected),
+        ),
+      );
+
+      expect(
+        find.text(_l10n.actionPullRejectedTitle('Slopper')),
+        findsOneWidget,
+      );
+      expect(_ask, findsNothing);
+    });
+
+    testWidgets('after the App never answered says so', (tester) async {
+      await _pump(
+        tester,
+        myAttempt: _attempt(status: ActionAttemptStatus.rejected),
+        check: _answer(
+          status: EvidenceDecisionStatus.rejected,
+          reasonCode: 'app_no_answer',
+          attempt: _attempt(status: ActionAttemptStatus.rejected),
+        ),
+      );
+
+      expect(
+        find.text(_l10n.actionPullUnansweredTitle('Slopper')),
+        findsOneWidget,
+      );
+      expect(_ask, findsNothing);
+    });
+
+    testWidgets('after the App confirmed shows it confirmed', (tester) async {
+      await _pump(
+        tester,
+        myAttempt: _attempt(
+          status: ActionAttemptStatus.verified,
+          accepted: true,
+        ),
+        check: _answer(
+          status: EvidenceDecisionStatus.accepted,
+          reasonCode: 'app_confirmed',
+          attempt: _attempt(
+            status: ActionAttemptStatus.verified,
+            accepted: true,
+          ),
+        ),
+      );
+
+      expect(find.byKey(VerilyTestKeys.actionVerifiedOutcome), findsOneWidget);
+      expect(find.text(_l10n.actionAppConfirmed('Slopper')), findsWidgets);
+      expect(_ask, findsNothing);
+    });
+
+    testWidgets('after Verily stopped trying offers to ask again', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        myAttempt: _attempt(),
+        check: _answer(reasonCode: 'app_unreachable'),
+      );
+
+      expect(find.text(_l10n.actionPullFailedTitle('Slopper')), findsOneWidget);
+      expect(find.text(_l10n.actionPullAskAgain), findsOneWidget);
+    });
+
+    testWidgets('a turned-down attempt never offers to ask, even unread', (
+      tester,
+    ) async {
+      // Nothing is on record for the check, as when the read fails.
+      await _pump(
+        tester,
+        myAttempt: _attempt(status: ActionAttemptStatus.rejected),
+      );
+
+      expect(
+        find.text(_l10n.actionPullRejectedTitle('Slopper')),
+        findsOneWidget,
+      );
+      expect(_ask, findsNothing);
+    });
+
+    testWidgets('a waiting check left open picks up what the App did', (
+      tester,
+    ) async {
+      final fakes = await _pump(
+        tester,
+        myAttempt: _attempt(),
+        check: _answer(),
+      );
+
+      fakes.actions.appChecks[_pull.id] = _answer(
+        reasonCode: 'app_unreachable',
+      );
+      await tester.pump(const Duration(seconds: 5));
+      await settle(tester);
+
+      expect(find.text(_l10n.actionPullFailedTitle('Slopper')), findsOneWidget);
+      expect(find.text(_l10n.actionPullAskAgain), findsOneWidget);
+      expect(fakes.actions.appRequests, isEmpty);
+    });
+  });
+
+  testWidgets('nothing is read before there is an attempt', (tester) async {
+    final fakes = await _pump(tester);
+
+    expect(fakes.actions.appCheckReads, isEmpty);
+    expect(_ask, findsOneWidget);
   });
 
   for (final (problem, message) in [

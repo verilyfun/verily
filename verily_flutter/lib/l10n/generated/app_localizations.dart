@@ -5560,6 +5560,12 @@ abstract class AppLocalizations {
   /// **'Skipped. {app} will see your place wasn\'t checked.'**
   String verifyRequestPlaceSkipped(String app);
 
+  /// Returning to the App was refused because the server has no proof for the request yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily hasn\'t got your proof yet, so there\'s nothing to send {app}. Finish the steps above, then try again.'**
+  String verifyRequestProofMissing(String app);
+
   /// The location was sent but did not match the place.
   ///
   /// In en, this message translates to:
@@ -5727,6 +5733,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Each request is for one person. Ask {app} for your own.'**
   String verifyRequestTakenBody(String app);
+
+  /// The person reopened a request they turned down earlier.
+  ///
+  /// In en, this message translates to:
+  /// **'You declined this request'**
+  String get verifyRequestYouDeclinedTitle;
+
+  /// The person reopened a request they turned down earlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was captured or shared with {app}. Ask {app} for a new request if you change your mind.'**
+  String verifyRequestYouDeclinedBody(String app);
 
   /// The request was already answered or declined.
   ///

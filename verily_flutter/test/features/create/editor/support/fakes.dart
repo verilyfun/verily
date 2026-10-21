@@ -407,6 +407,12 @@ class FakeActionRepository implements ActionRepository {
     required UuidValue requirementId,
     String? reference,
   }) => throw UnimplementedError();
+
+  @override
+  Future<EvidenceSubmissionResult?> getAppVerification({
+    required UuidValue attemptId,
+    required UuidValue requirementId,
+  }) => throw UnimplementedError();
 }
 
 /// A [RewardRepository] whose funding answers are set per test.

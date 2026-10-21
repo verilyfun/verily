@@ -637,6 +637,33 @@ class Endpoints extends _is.EndpointDispatch {
                         reference: params['reference'],
                       ),
         ),
+        'getAppVerification': _is.MethodConnector(
+          name: 'getAppVerification',
+          params: {
+            'attemptId': _is.ParameterDescription(
+              name: 'attemptId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'requirementId': _is.ParameterDescription(
+              name: 'requirementId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['actionVerification']
+                          as _il8ja9q3.ActionVerificationEndpoint)
+                      .getAppVerification(
+                        session,
+                        attemptId: params['attemptId'],
+                        requirementId: params['requirementId'],
+                      ),
+        ),
         'completeAttempt': _is.MethodConnector(
           name: 'completeAttempt',
           params: {

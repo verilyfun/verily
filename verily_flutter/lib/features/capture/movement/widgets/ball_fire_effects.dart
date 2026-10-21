@@ -377,7 +377,7 @@ class BallFirePainter extends CustomPainter {
     );
   }
 
-  /// The limb that touched the ball crackles with energy.
+  /// The limb that touched the ball catches the same fire.
   void _paintLimb(
     Canvas canvas,
     Size size,
@@ -390,13 +390,13 @@ class BallFirePainter extends CustomPainter {
     final width = size.shortestSide * 0.035;
     final halo = Paint()
       ..blendMode = BlendMode.plus
-      ..color = VerilyColors.movementPower.withValues(alpha: 0.45 * power)
+      ..color = VerilyColors.movementFlameWarm.withValues(alpha: 0.45 * power)
       ..strokeWidth = width * 4.5
       ..strokeCap = StrokeCap.round
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, width * 2.2);
     final aura = Paint()
       ..blendMode = BlendMode.plus
-      ..color = VerilyColors.movementPower.withValues(alpha: 0.85 * power)
+      ..color = VerilyColors.movementFlameHot.withValues(alpha: 0.85 * power)
       ..strokeWidth = width * 2.2
       ..strokeCap = StrokeCap.round
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, width * 0.8);

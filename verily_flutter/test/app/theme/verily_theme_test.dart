@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:verily_brand/verily_brand.dart';
 
 import 'package:verily_flutter/app/theme/theme_mode_provider.dart';
 import 'package:verily_flutter/app/theme/verily_theme.dart';
@@ -242,17 +243,51 @@ void main() {
       );
       expect(
         verilyContrastRatio(
-          VerilyColors.movementHudAccent,
+          VerilyColors.movementHudMuted,
           VerilyColors.movementScrim,
         ),
         greaterThanOrEqualTo(4.5),
       );
-      // A joint at depth must look different from one that is not.
-      expect(VerilyColors.movementAtDepth, isNot(VerilyColors.movementJoint));
+      // Emphasis is ink on a paper fill.
+      expect(
+        verilyContrastRatio(
+          VerilyColors.movementOutline,
+          VerilyColors.movementHudInk,
+        ),
+        greaterThanOrEqualTo(4.5),
+      );
+      // A resting fill must look different from an emphasised one.
+      expect(VerilyColors.movementHudWash, isNot(VerilyColors.movementHudInk));
       expect(
         VerilyColors.movementBone,
         isNot(VerilyColors.movementOutline),
       );
+    });
+
+    test('the camera HUD never borrows a role colour', () {
+      const roles = [
+        VerilyBrandColors.stamp,
+        VerilyBrandColors.stampOnNight,
+        VerilyBrandColors.place,
+        VerilyBrandColors.placeOnNight,
+        VerilyBrandColors.placeWash,
+        VerilyBrandColors.reward,
+        VerilyBrandColors.rewardOnNight,
+        VerilyBrandColors.rewardWash,
+        VerilyBrandColors.review,
+        VerilyBrandColors.reviewOnNight,
+        VerilyBrandColors.reviewWash,
+      ];
+      for (final hud in [
+        VerilyColors.movementBone,
+        VerilyColors.movementOutline,
+        VerilyColors.movementScrim,
+        VerilyColors.movementHudInk,
+        VerilyColors.movementHudMuted,
+        VerilyColors.movementHudWash,
+      ]) {
+        expect(roles, isNot(contains(hud)));
+      }
     });
   });
 
@@ -281,6 +316,8 @@ void main() {
         expect(scheme.surfaceContainerHighest, palette.highlight);
         expect(scheme.outlineVariant, palette.line);
         expect(theme.scaffoldBackgroundColor, palette.canvas);
+        // Material's default dialog icon is the secondary (place) colour.
+        expect(theme.dialogTheme.iconColor, palette.ink);
 
         for (final (fill, label) in [
           (scheme.primary, scheme.onPrimary),

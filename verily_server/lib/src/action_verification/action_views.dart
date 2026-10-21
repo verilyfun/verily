@@ -354,7 +354,7 @@ ActionRequirementView requirementView(
       _ => null,
     },
     localCheckModel: switch (media?.localCheckTask) {
-      final task? => LocalCheckModel.forTask(task).view,
+      final task? => task.model.view,
       null => null,
     },
   );

@@ -223,6 +223,24 @@ class AppPullCheckService {
       ),
     );
     if (claim != null) await _callAndSettle(session, claim);
+    // Claiming always leaves a check behind.
+    return (await _result(session, target))!;
+  }
+
+  /// Where the participant's "I did it" for one pull requirement stands, so
+  /// a page opened later shows the App's answer; null before they ask.
+  Future<EvidenceSubmissionResult?> currentVerification(
+    Session session, {
+    required UuidValue authUserId,
+    required UuidValue attemptId,
+    required UuidValue requirementId,
+  }) async {
+    final target = await _pullTarget(
+      session,
+      authUserId: authUserId,
+      attemptId: attemptId,
+      requirementId: requirementId,
+    );
     return _result(session, target);
   }
 
@@ -916,19 +934,21 @@ class AppPullCheckService {
     );
   }
 
-  Future<EvidenceSubmissionResult> _result(
+  /// Where [target]'s check stands, or null when nobody has asked yet.
+  Future<EvidenceSubmissionResult?> _result(
     Session session,
     _PullTarget target,
   ) async {
-    final attempt = await ActionAttempt.db.findById(session, target.attemptId);
     final check = await AppPullCheck.db.findFirstRow(
       session,
       where: (table) =>
           table.attemptId.equals(target.attemptId) &
           table.requirementId.equals(target.requirementId),
     );
+    if (check == null) return null;
+    final attempt = await ActionAttempt.db.findById(session, target.attemptId);
     final app = await VerilyApp.db.findById(session, target.appId);
-    if (attempt == null || check == null || app == null) {
+    if (attempt == null || app == null) {
       throw StateError('The action attempt was not found.');
     }
     final (status, reason, summary) = switch (check.status) {

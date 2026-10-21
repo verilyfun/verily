@@ -375,6 +375,7 @@ class VerifyRequestScreen extends HookConsumerWidget {
     ProofNotice.placeNotConfirmed => l10n.verifyRequestPlaceNotConfirmed(
       appName,
     ),
+    ProofNotice.proofMissing => l10n.verifyRequestProofMissing(appName),
     ProofNotice.generic => l10n.errorGeneric,
   };
 }
@@ -549,6 +550,11 @@ class _UnavailablePanel extends StatelessWidget {
       RequestProblem.taken => VerilyStatePanel.empty(
         title: l10n.verifyRequestTakenTitle,
         message: l10n.verifyRequestTakenBody(app),
+        action: backToVerily,
+      ),
+      RequestProblem.declined => VerilyStatePanel.empty(
+        title: l10n.verifyRequestYouDeclinedTitle,
+        message: l10n.verifyRequestYouDeclinedBody(app),
         action: backToVerily,
       ),
       RequestProblem.closed => VerilyStatePanel.empty(

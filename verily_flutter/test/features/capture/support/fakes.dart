@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/misc.dart';
 import 'package:mp_camera/mp_camera.dart';
 import 'package:mp_core/mp_core.dart';
 import 'package:verily_client/verily_client.dart';
+import 'package:verily_evidence/verily_evidence.dart' show LocalCheckModel;
 
 import 'package:verily_flutter/features/actions/action_repository.dart';
 import 'package:verily_flutter/features/capture/audio/capture_recorder.dart';
@@ -89,33 +90,26 @@ XFile memoryCapture(String name, {String? mimeType}) => XFile.fromData(
 );
 
 /// The pinned gesture model the server sends with a gesture check.
-final testGestureModel = LocalCheckModelView(
-  modelId: 'mediapipe/gesture_recognizer/float16/1',
-  url:
-      'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/'
-      'gesture_recognizer/float16/1/gesture_recognizer.task',
-  byteLength: 8373440,
-  sha256: '97952348cf6a6a4915c2ea1496b4b37ebabc50cbbf80571435643c455f2b0482',
+final LocalCheckModelView testGestureModel = _pinView(
+  LocalCheckModel.gestureRecognizer,
 );
 
 /// The pinned object model the server sends with an object check.
-final testObjectModel = LocalCheckModelView(
-  modelId: 'mediapipe/efficientdet_lite0/int8/1',
-  url:
-      'https://storage.googleapis.com/mediapipe-models/object_detector/'
-      'efficientdet_lite0/int8/1/efficientdet_lite0.tflite',
-  byteLength: 4602795,
-  sha256: '0720bf247bd76e6594ea28fa9c6f7c5242be774818997dbbeffc4da460c723bb',
+final LocalCheckModelView testObjectModel = _pinView(
+  LocalCheckModel.objectDetector,
 );
 
 /// The pinned sound model the server sends with a sound check.
-final testSoundModel = LocalCheckModelView(
-  modelId: 'mediapipe/yamnet/float32/1',
-  url:
-      'https://storage.googleapis.com/mediapipe-models/audio_classifier/'
-      'yamnet/float32/1/yamnet.tflite',
-  byteLength: 4126810,
-  sha256: '4d8b4a53282dc83ef04e3e7dbc4fbc98082e34e44ed798e16c3a0cdd4c584faf',
+final LocalCheckModelView testSoundModel = _pinView(
+  LocalCheckModel.audioClassifier,
+);
+
+/// The view the server builds from a shared pin.
+LocalCheckModelView _pinView(LocalCheckModel model) => LocalCheckModelView(
+  modelId: model.modelId,
+  url: model.url,
+  byteLength: model.byteLength,
+  sha256: model.sha256,
 );
 
 /// A thumbs-up check: three matching frames at 0.6.

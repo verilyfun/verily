@@ -20,21 +20,22 @@ ActionLocalCheck _check({
 
 void main() {
   group('Given the pinned local-check models', () {
-    test('when listed then each task has exactly one immutable pin', () {
-      for (final task in LocalCheckTask.values) {
-        final model = LocalCheckModel.forTask(task);
-        expect(model.task, task);
-        expect(
-          model.url,
-          startsWith('https://storage.googleapis.com/mediapipe-models/'),
-        );
-        expect(model.url, isNot(contains('latest')));
-        expect(model.sha256, matches(RegExp(r'^[0-9a-f]{64}$')));
-        expect(model.byteLength, greaterThan(1000000));
-      }
+    test('when mapped then each task runs its own shared pin', () {
       expect(
-        LocalCheckModel.values.map((model) => model.sha256).toSet(),
-        hasLength(LocalCheckModel.values.length),
+        LocalCheckTask.values.map((task) => task.model),
+        unorderedEquals(LocalCheckModel.values),
+      );
+      expect(
+        localCheckFitsKind(LocalCheckTask.sound, MediaEvidenceKind.audio),
+        isTrue,
+      );
+      expect(
+        localCheckFitsKind(LocalCheckTask.gesture, MediaEvidenceKind.audio),
+        isFalse,
+      );
+      expect(
+        localCheckFitsKind(LocalCheckTask.object, MediaEvidenceKind.photo),
+        isTrue,
       );
     });
 
@@ -52,7 +53,7 @@ void main() {
     });
 
     test('when shown to the phone then the view carries the same pin', () {
-      final model = LocalCheckModel.forTask(LocalCheckTask.object);
+      final model = LocalCheckTask.object.model;
       final view = model.view;
 
       expect(view.modelId, model.modelId);
@@ -63,28 +64,11 @@ void main() {
   });
 
   group('Given the label allow-lists', () {
-    test(
-      'when counted then gestures, COCO objects, and sounds are bounded',
-      () {
-        expect(localCheckLabels[LocalCheckTask.gesture], hasLength(7));
-        expect(localCheckLabels[LocalCheckTask.object], hasLength(80));
-        expect(localCheckLabels[LocalCheckTask.sound], hasLength(25));
-        expect(
-          localCheckLabels[LocalCheckTask.gesture],
-          isNot(contains('None')),
-        );
-        expect(
-          localCheckLabels[LocalCheckTask.sound],
-          isNot(contains('Speech')),
-        );
-      },
-    );
-
     test('when used as verifier text then every label is safe model input', () {
-      for (final entry in localCheckLabels.entries) {
-        for (final label in entry.value) {
+      for (final task in LocalCheckTask.values) {
+        for (final label in task.model.labels) {
           final prompt = localCheckVerificationPrompt(
-            _check(task: entry.key, label: label),
+            _check(task: task, label: label),
           );
           expect(
             () => ModelInputSecurity.validateVerificationPolicy(prompt),

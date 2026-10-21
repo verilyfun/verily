@@ -334,6 +334,21 @@ class EndpointActionVerification extends _isc.EndpointRef {
     },
   );
 
+  /// Where the caller's "I did it" on a pull-verified `externalApp`
+  /// requirement stands, in the same shape `requestAppVerification`
+  /// answers; null before they ask. Reading it calls nobody.
+  _ida.Future<_is1oqp1g.EvidenceSubmissionResult?> getAppVerification({
+    required _isc.UuidValue attemptId,
+    required _isc.UuidValue requirementId,
+  }) => caller.callServerEndpoint<_is1oqp1g.EvidenceSubmissionResult?>(
+    'actionVerification',
+    'getAppVerification',
+    {
+      'attemptId': attemptId,
+      'requirementId': requirementId,
+    },
+  );
+
   _ida.Future<_ir431rrk.ActionAttemptView> completeAttempt(
     _isc.UuidValue attemptId,
   ) => caller.callServerEndpoint<_ir431rrk.ActionAttemptView>(
@@ -1157,7 +1172,9 @@ class EndpointVerificationRequest extends _isc.EndpointRef {
   );
 
   /// After the proof is submitted: the App's redirect with a one-time,
-  /// five-minute receipt code.
+  /// five-minute receipt code. Refused with
+  /// `AppPlatformProblem.verificationRequestProofMissing` while the proof
+  /// has not arrived.
   _ida.Future<_iv7cvvng.VerificationRequestRedirect> finish({
     required _isc.UuidValue requestId,
   }) => caller.callServerEndpoint<_iv7cvvng.VerificationRequestRedirect>(

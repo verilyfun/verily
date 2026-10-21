@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:verily_client/verily_client.dart';
 import 'package:verily_evidence/verily_evidence.dart';
@@ -7,64 +5,18 @@ import 'package:verily_evidence/verily_evidence.dart';
 import 'package:verily_flutter/features/local_check/local_check_catalog.dart';
 import 'package:verily_flutter/l10n/generated/app_localizations_en.dart';
 
-/// The server's allow-list, read from its source so the app's copy cannot
-/// drift unnoticed. The server should expose or share this list; until it
-/// does, this test is the contract.
-final _serverCatalog = File(
-  '../verily_server/lib/src/action_verification/local_check/'
-  'local_check_catalog.dart',
-);
-
-Map<LocalCheckTask, Set<String>> _serverLabels() {
-  final source = _serverCatalog.readAsStringSync();
-  final start = source.indexOf('const localCheckLabels');
-  expect(start, isNot(-1), reason: 'the server catalog moved');
-  final block = source.substring(start, source.indexOf('};', start));
-  final sets = <LocalCheckTask, Set<String>>{};
-  for (final match in RegExp(
-    r'LocalCheckTask\.(\w+): \{(.*?)\}',
-    dotAll: true,
-  ).allMatches(block)) {
-    sets[LocalCheckTask.values.byName(match.group(1)!)] = {
-      for (final label in RegExp("'([^']*)'").allMatches(match.group(2)!))
-        label.group(1)!,
-    };
-  }
-  return sets;
-}
-
-double _serverBound(String name) {
-  final match = RegExp(
-    'static const $name = ([0-9.]+);',
-  ).firstMatch(_serverCatalog.readAsStringSync());
-  expect(match, isNotNull, reason: 'the server bound $name moved');
-  return double.parse(match!.group(1)!);
-}
-
 void main() {
-  test('offers exactly the labels the server accepts', () {
-    final server = _serverLabels();
-    expect(server.keys, unorderedEquals(LocalCheckTask.values));
-    for (final task in LocalCheckTask.values) {
-      expect(
-        localCheckLabels[task]!.toSet(),
-        server[task],
-        reason: 'the ${task.name} labels drifted from the server',
-      );
-    }
-  });
-
-  test('uses the server bounds', () {
-    expect(LocalCheckBounds.minScore, _serverBound('minScore'));
-    expect(LocalCheckBounds.maxScore, _serverBound('maxScore'));
-    expect(LocalCheckBounds.minFrames, _serverBound('minFrames'));
-    expect(LocalCheckBounds.maxFrames, _serverBound('maxFrames'));
+  test('every task runs one shared pinned model', () {
+    expect(
+      LocalCheckTask.values.map((task) => task.model),
+      unorderedEquals(LocalCheckModel.values),
+    );
   });
 
   test('names every label for people', () {
     final l10n = AppLocalizationsEn();
     for (final task in LocalCheckTask.values) {
-      for (final label in localCheckLabels[task]!) {
+      for (final label in task.model.labels) {
         expect(
           knownLocalCheckLabelName(l10n, task, label),
           isNotNull,
@@ -85,7 +37,7 @@ void main() {
 
   test('defaults are allowed labels for their task', () {
     for (final task in LocalCheckTask.values) {
-      expect(localCheckLabels[task], contains(defaultLocalCheckLabel(task)));
+      expect(task.model.labels, contains(defaultLocalCheckLabel(task)));
     }
   });
 

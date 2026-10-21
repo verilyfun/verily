@@ -257,7 +257,6 @@ class CameraCaptureView extends HookConsumerWidget {
         key: VerilyTestKeys.captureRecordStop,
         label: l10n.captureRecordStop,
         icon: VerilyIcons.stop,
-        emphasis: false,
         onPressed: busy.value ? null : () => unawaited(stop()),
       );
     } else {
@@ -338,7 +337,7 @@ class CameraCaptureView extends HookConsumerWidget {
                             l10n.captureMinimumHint(minimum.inSeconds),
                             textAlign: TextAlign.center,
                             style: theme.textTheme.labelLarge?.copyWith(
-                              color: VerilyColors.movementHudAccent,
+                              color: VerilyColors.movementHudInk,
                             ),
                           ),
                         ],

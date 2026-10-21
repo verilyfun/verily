@@ -1,4 +1,5 @@
-/// Canonical, privacy-preserving fingerprints for Verily action evidence.
+/// Canonical, privacy-preserving fingerprints for Verily action evidence,
+/// and the pinned local-check models and labels both sides run.
 ///
 /// The app and Serverpod compute these values independently. The server never
 /// trusts a client-computed fingerprint; it recomputes each one from the
@@ -9,6 +10,7 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 
+export 'src/local_check_catalog.dart';
 export 'src/motion_evidence.dart';
 
 final RegExp _sha256Pattern = RegExp(r'^[0-9a-f]{64}$');

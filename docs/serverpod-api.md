@@ -33,6 +33,7 @@ Local ports (see `devenv.nix`): API 8180, Insights 8181, web 8182, Postgres
 | `requestMediaUpload(attemptId:, requirementId:, contentType:, byteLength:)` | Upload description for `FileUploader`                                                                         |
 | `confirmMediaUpload(confirmation)`                                          | Inspect the upload and queue verification                                                                     |
 | `requestAppVerification(attemptId:, requirementId:, reference:)`            | "I did it" on a pull-verified `externalApp` requirement: Verily asks the App (`status` null while waiting)    |
+| `getAppVerification(attemptId:, requirementId:)`                            | Where that "I did it" stands, in the same shape; null before the caller asks. Calls nobody                    |
 | `completeAttempt(attemptId)`                                                | Finish an attempt whose proof is accepted                                                                     |
 | `listMyAttempts(limit:)`                                                    | The caller's attempts                                                                                         |
 
@@ -77,12 +78,12 @@ See [platform](platform.md).
 
 The Verily app's side of `https://verily.fun/r/<id>` and `verily://r/<id>`.
 
-| Method                   | Purpose                                                                       |
-| ------------------------ | ----------------------------------------------------------------------------- |
-| `getRequest(requestId:)` | Who is asking, for what, and what will be shared (`VerificationRequestView`)  |
-| `accept(requestId:)`     | Accept; the view carries the private single-use action to capture against     |
-| `decline(requestId:)`    | The App's redirect with `status=declined`                                     |
-| `finish(requestId:)`     | After the proof is submitted: the App's redirect with a one-time receipt code |
+| Method                   | Purpose                                                                                                                            |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `getRequest(requestId:)` | Who is asking, for what, and what will be shared (`VerificationRequestView`; `declinedByViewer` when the caller turned it down)    |
+| `accept(requestId:)`     | Accept; the view carries the private single-use action to capture against                                                          |
+| `decline(requestId:)`    | The App's redirect with `status=declined`                                                                                          |
+| `finish(requestId:)`     | After the proof is submitted: the App's redirect with a one-time receipt code; `verificationRequestProofMissing` before it arrives |
 
 After `accept`, the app runs the normal flow on `view.action`: `beginAttempt`,
 then location (first, when the request has a place) and media proof, then
@@ -114,7 +115,8 @@ the thing is missing or hidden), `ActionAuthoringException`
 `invalidRedirectUri`, `tooManyRedirectUris`, `linkRequestInvalid`,
 `linkCodeInvalid`, `pullVerificationUnavailable`, `invalidReference`,
 `verificationRequestNotFound`, `verificationRequestExpired`,
-`verificationRequestTaken`, `verificationRequestClosed`, `rateLimited`), and
+`verificationRequestTaken`, `verificationRequestClosed`,
+`verificationRequestProofMissing`, `rateLimited`), and
 `RewardException` (with a `RewardProblem`).
 Anything else becomes a generic error; provider names, routes, and stack traces
 stay in server logs.
@@ -253,3 +255,13 @@ removed or renamed.
   above.
 - The participant pull trigger is `actionVerification.requestAppVerification`
   ("I did it", with an optional `reference` of at most 120 characters).
+- `actionVerification.getAppVerification(attemptId:, requirementId:)` (new)
+  reads where that "I did it" stands, in the `requestAppVerification` shape,
+  so a reopened page shows waiting, confirmed, or rejected; it returns null
+  before the participant asks and never calls the App. A push-verified
+  requirement throws `AppPlatformException(pullVerificationUnavailable)`.
+- `verificationRequest.finish` before the proof arrives now throws
+  `AppPlatformException(verificationRequestProofMissing)` (new problem)
+  instead of a generic error.
+- `VerificationRequestView.declinedByViewer` (new, defaults to false) is true
+  only for the account that declined the request.

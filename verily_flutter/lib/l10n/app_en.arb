@@ -4324,6 +4324,16 @@
       }
     }
   },
+  "verifyRequestProofMissing": "Verily hasn't got your proof yet, so there's nothing to send {app}. Finish the steps above, then try again.",
+  "@verifyRequestProofMissing": {
+    "description": "Returning to the App was refused because the server has no proof for the request yet.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
   "verifyRequestPlaceNotConfirmed": "Verily couldn't confirm you're inside their place. {app} will see that.",
   "@verifyRequestPlaceNotConfirmed": {
     "description": "The location was sent but did not match the place.",
@@ -4501,6 +4511,20 @@
   "verifyRequestTakenBody": "Each request is for one person. Ask {app} for your own.",
   "@verifyRequestTakenBody": {
     "description": "Another account already accepted the request.",
+    "placeholders": {
+      "app": {
+        "type": "String",
+        "example": "Slopper"
+      }
+    }
+  },
+  "verifyRequestYouDeclinedTitle": "You declined this request",
+  "@verifyRequestYouDeclinedTitle": {
+    "description": "The person reopened a request they turned down earlier."
+  },
+  "verifyRequestYouDeclinedBody": "Nothing was captured or shared with {app}. Ask {app} for a new request if you change your mind.",
+  "@verifyRequestYouDeclinedBody": {
+    "description": "The person reopened a request they turned down earlier.",
     "placeholders": {
       "app": {
         "type": "String",

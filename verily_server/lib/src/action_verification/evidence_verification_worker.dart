@@ -164,9 +164,7 @@ class EvidenceVerificationWorker {
     // its own unless a spoken word must also be heard; when it cannot run,
     // the AI policy decides. The phone's own result is never consulted.
     final localCheck = localCheckOf(rule);
-    final localModel = localCheck == null
-        ? null
-        : LocalCheckModel.forTask(localCheck.task);
+    final localModel = localCheck?.task.model;
     final replay = localCheck == null
         ? null
         : await _replayLocalCheck(session, localCheck, localModel!, seal);

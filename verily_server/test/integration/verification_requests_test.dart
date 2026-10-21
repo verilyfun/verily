@@ -302,6 +302,7 @@ void main() {
           expect(view.spokenChallenge, isTrue);
           expect(view.shareEvidence, isTrue);
           expect(view.status, VerificationRequestStatus.open);
+          expect(view.declinedByViewer, isFalse);
           expect(view.action, isNull);
         },
       );
@@ -653,7 +654,7 @@ void main() {
 
         await expectLater(
           endpoints.verificationRequest.finish(participant, requestId: id),
-          throwsStateError,
+          refused(AppPlatformProblem.verificationRequestProofMissing),
         );
         await expectLater(
           endpoints.verificationRequest.finish(other, requestId: id),
@@ -746,6 +747,26 @@ void main() {
           requestId: id,
         );
         expect(again.redirectUrl, redirect.redirectUrl);
+      });
+
+      test('then only the person who declined is told they did', () async {
+        final id = await createId(_requestBody());
+        await endpoints.verificationRequest.decline(participant, requestId: id);
+
+        final own = await endpoints.verificationRequest.getRequest(
+          participant,
+          requestId: id,
+        );
+        expect(own.status, VerificationRequestStatus.declined);
+        expect(own.declinedByViewer, isTrue);
+        expect(own.action, isNull);
+
+        final someoneElse = await endpoints.verificationRequest.getRequest(
+          other,
+          requestId: id,
+        );
+        expect(someoneElse.status, VerificationRequestStatus.declined);
+        expect(someoneElse.declinedByViewer, isFalse);
       });
 
       test(

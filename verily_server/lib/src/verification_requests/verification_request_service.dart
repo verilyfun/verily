@@ -552,7 +552,8 @@ class VerificationRequestService {
 
   /// After the proof is submitted: the App's redirect with a one-time,
   /// five-minute receipt code. Calling it again issues a fresh code and
-  /// invalidates the previous one.
+  /// invalidates the previous one. Before the proof arrives it is refused
+  /// with `verificationRequestProofMissing`.
   Future<VerificationRequestRedirect> finish(
     Session session, {
     required UuidValue authUserId,
@@ -591,7 +592,7 @@ class VerificationRequestService {
         );
         if (attempt == null ||
             attempt.status == ActionAttemptStatus.collectingEvidence) {
-          throw StateError('Submit your proof before returning to the app.');
+          throw _proofMissing();
         }
         return VerificationRequest.db.updateRow(
           session,
@@ -902,6 +903,9 @@ LIMIT @limit;
       spokenChallenge: request.spokenChallenge,
       shareEvidence: request.shareEvidence,
       status: effectiveStatus,
+      declinedByViewer:
+          request.status == VerificationRequestStatus.declined &&
+          request.participantAuthUserId == viewer,
       expiresAt: request.expiresAt,
       action: action == null
           ? null
@@ -1021,6 +1025,11 @@ AppPlatformException _taken() => AppPlatformException(
 AppPlatformException _expired() => AppPlatformException(
   problem: AppPlatformProblem.verificationRequestExpired,
   message: 'This verification request has expired. Ask the app for a new one.',
+);
+
+AppPlatformException _proofMissing() => AppPlatformException(
+  problem: AppPlatformProblem.verificationRequestProofMissing,
+  message: 'Send your proof before returning to the app.',
 );
 
 AppPlatformException _closed(VerificationRequestStatus status) =>

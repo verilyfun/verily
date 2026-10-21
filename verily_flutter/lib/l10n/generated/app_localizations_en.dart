@@ -3430,6 +3430,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String verifyRequestProofMissing(String app) {
+    return 'Verily hasn\'t got your proof yet, so there\'s nothing to send $app. Finish the steps above, then try again.';
+  }
+
+  @override
   String verifyRequestPlaceNotConfirmed(String app) {
     return 'Verily couldn\'t confirm you\'re inside their place. $app will see that.';
   }
@@ -3553,6 +3558,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String verifyRequestTakenBody(String app) {
     return 'Each request is for one person. Ask $app for your own.';
+  }
+
+  @override
+  String get verifyRequestYouDeclinedTitle => 'You declined this request';
+
+  @override
+  String verifyRequestYouDeclinedBody(String app) {
+    return 'Nothing was captured or shared with $app. Ask $app for a new request if you change your mind.';
   }
 
   @override

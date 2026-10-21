@@ -55,23 +55,30 @@ abstract final class VerilyColors {
   /// Modal scrims. Verily draws no shadows.
   static const Color shadow = _Swatch.black;
 
-  // Live movement capture. These draw over camera footage rather than a
-  // themed surface, so they stay fixed in light and dark mode. Vermilion is
-  // kept for the verified stamp, so the HUD uses the night role inks.
+  // The camera HUD. These draw over camera footage rather than a themed
+  // surface, so they stay fixed in light and dark mode. The viewfinder is
+  // night paper, so the HUD inks with paper, fills with dusk, and outlines
+  // with ink, like the night theme. The role colours keep their meaning
+  // here too: nothing on the HUD is a reward, a place, or a verdict, so
+  // none of it is gold, green, or vermilion. Emphasis is a paper fill with
+  // ink on it, the night page's primary action.
   static const Color movementBone = _Swatch.paper;
   static const Color movementOutline = _Swatch.ink;
-  static const Color movementJoint = _Swatch.placeOnNight;
-  static const Color movementAtDepth = _Swatch.rewardOnNight;
   static const Color movementScrim = _Swatch.night;
   static const Color movementHudInk = _Swatch.paper;
-  static const Color movementHudAccent = _Swatch.rewardOnNight;
 
-  // Ball-skill fire effects, hottest first, plus the powered-up limb glow.
+  /// Secondary HUD text, such as a best run.
+  static const Color movementHudMuted = _Swatch.mutedPaper;
+
+  /// Quiet fills on the HUD: a meter before it is full, a resting glow.
+  static const Color movementHudWash = _Swatch.dusk;
+
+  // Ball-skill fire effects, hottest first. The fire is an illustration,
+  // drawn in the only warm tints the brand has.
   static const Color movementFlameCore = _Swatch.paper;
   static const Color movementFlameHot = _Swatch.rewardWash;
   static const Color movementFlameWarm = _Swatch.rewardOnNight;
   static const Color movementFlameEdge = _Swatch.reward;
-  static const Color movementPower = _Swatch.placeOnNight;
 }
 
 /// A meaning Verily gives a colour.
@@ -659,6 +666,9 @@ ThemeData buildVerilyTheme({
     dialogTheme: DialogThemeData(
       backgroundColor: palette.surface,
       surfaceTintColor: VerilyColors.transparent,
+      // Material would draw a dialog's icon in the secondary colour, which
+      // is place green; a dialog icon is flavour, so it is inked.
+      iconColor: palette.ink,
       elevation: 0,
       shape: VerilyRoughBorder(
         side: firmPen,

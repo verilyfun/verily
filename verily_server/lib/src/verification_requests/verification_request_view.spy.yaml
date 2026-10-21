@@ -16,6 +16,9 @@ fields:
   ### Whether the App asks to download the capture.
   shareEvidence: bool
   status: VerificationRequestStatus
+  ### Whether the signed-in person is the one who declined it. Anyone else
+  ### sees a declined request as answered by someone else.
+  declinedByViewer: bool, default=false
   expiresAt: DateTime
   ### The private action to capture against, once accepted by this account.
   action: ActionOpportunity?

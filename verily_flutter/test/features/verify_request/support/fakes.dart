@@ -109,6 +109,7 @@ VerificationRequestView requestViewFixture({
   bool checksPlace = true,
   bool spokenChallenge = true,
   bool shareEvidence = true,
+  bool declinedByViewer = false,
   ActionOpportunity? action,
 }) => VerificationRequestView(
   id: requestId,
@@ -122,6 +123,7 @@ VerificationRequestView requestViewFixture({
   spokenChallenge: spokenChallenge,
   shareEvidence: shareEvidence,
   status: status,
+  declinedByViewer: declinedByViewer,
   expiresAt: requestExpiresAt,
   action: action,
 );
