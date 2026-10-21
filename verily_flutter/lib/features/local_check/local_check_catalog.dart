@@ -3,30 +3,27 @@ import 'package:verily_evidence/verily_evidence.dart';
 
 import 'package:verily_flutter/l10n/l10n.dart';
 
-/// What a quick check may look or listen for, mirroring the server's
-/// allow-list (`local_check_catalog.dart` in `verily_server`).
-///
-/// Each label is the model's own category name, so the phone, the server's
-/// replay, and the editor compare like with like. The server validates every
-/// saved check against its own list; this copy only offers the choices and
-/// names them. A contract test fails when the two lists drift.
-abstract final class LocalCheckBounds {
-  static const minScore = 0.3;
-  static const maxScore = 0.99;
-  static const minFrames = 1;
+export 'package:verily_evidence/verily_evidence.dart'
+    show LocalCheckBounds, LocalCheckModel;
 
-  /// Also the number of frames the server samples from a video to replay.
-  static const maxFrames = 30;
+/// The pinned model, and so the labels, behind each quick check task.
+///
+/// The models, labels, and bounds come from `package:verily_evidence`, the
+/// same catalog the server validates every saved check against, so the
+/// editor offers exactly what the server accepts. This file only orders the
+/// choices and names them for people.
+extension LocalCheckTaskModel on LocalCheckTask {
+  LocalCheckModel get model => switch (this) {
+    LocalCheckTask.gesture => LocalCheckModel.gestureRecognizer,
+    LocalCheckTask.object => LocalCheckModel.objectDetector,
+    LocalCheckTask.sound => LocalCheckModel.audioClassifier,
+  };
 }
 
 /// The task that can run on a proof of [kind]: sound on audio, gesture and
 /// object on photos and video.
 bool localCheckFitsKind(LocalCheckTask task, MediaEvidenceKind kind) =>
-    switch (task) {
-      LocalCheckTask.sound => kind == MediaEvidenceKind.audio,
-      LocalCheckTask.gesture ||
-      LocalCheckTask.object => kind != MediaEvidenceKind.audio,
-    };
+    task.model.media.contains(kind);
 
 /// The tasks a proof of [kind] can carry, in the order the editor offers
 /// them.
@@ -60,128 +57,6 @@ String? knownLocalCheckLabelName(
   LocalCheckTask.gesture => _gestureName(l10n, label),
   LocalCheckTask.object => _objectName(l10n, label),
   LocalCheckTask.sound => _soundName(l10n, label),
-};
-
-/// Labels per task, in the server's order.
-const Map<LocalCheckTask, List<String>> localCheckLabels = {
-  LocalCheckTask.gesture: [
-    'Closed_Fist',
-    'Open_Palm',
-    'Pointing_Up',
-    'Thumb_Down',
-    'Thumb_Up',
-    'Victory',
-    'ILoveYou',
-  ],
-  LocalCheckTask.object: [
-    'person',
-    'bicycle',
-    'car',
-    'motorcycle',
-    'airplane',
-    'bus',
-    'train',
-    'truck',
-    'boat',
-    'traffic light',
-    'fire hydrant',
-    'stop sign',
-    'parking meter',
-    'bench',
-    'bird',
-    'cat',
-    'dog',
-    'horse',
-    'sheep',
-    'cow',
-    'elephant',
-    'bear',
-    'zebra',
-    'giraffe',
-    'backpack',
-    'umbrella',
-    'handbag',
-    'tie',
-    'suitcase',
-    'frisbee',
-    'skis',
-    'snowboard',
-    'sports ball',
-    'kite',
-    'baseball bat',
-    'baseball glove',
-    'skateboard',
-    'surfboard',
-    'tennis racket',
-    'bottle',
-    'wine glass',
-    'cup',
-    'fork',
-    'knife',
-    'spoon',
-    'bowl',
-    'banana',
-    'apple',
-    'sandwich',
-    'orange',
-    'broccoli',
-    'carrot',
-    'hot dog',
-    'pizza',
-    'donut',
-    'cake',
-    'chair',
-    'couch',
-    'potted plant',
-    'bed',
-    'dining table',
-    'toilet',
-    'tv',
-    'laptop',
-    'mouse',
-    'remote',
-    'keyboard',
-    'cell phone',
-    'microwave',
-    'oven',
-    'toaster',
-    'sink',
-    'refrigerator',
-    'book',
-    'clock',
-    'vase',
-    'scissors',
-    'teddy bear',
-    'hair drier',
-    'toothbrush',
-  ],
-  LocalCheckTask.sound: [
-    'Clapping',
-    'Finger snapping',
-    'Whistling',
-    'Applause',
-    'Laughter',
-    'Cough',
-    'Sneeze',
-    'Bell',
-    'Doorbell',
-    'Knock',
-    'Dog',
-    'Bark',
-    'Cat',
-    'Meow',
-    'Bird',
-    'Chirp, tweet',
-    'Crowing, cock-a-doodle-doo',
-    'Siren',
-    'Alarm clock',
-    'Typing',
-    'Water tap, faucet',
-    'Guitar',
-    'Piano',
-    'Drum',
-    'Whistle',
-  ],
 };
 
 String? _gestureName(AppLocalizations l10n, String label) => switch (label) {

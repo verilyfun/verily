@@ -9,7 +9,7 @@ import 'package:verily_server/src/action_verification/local_check/local_check_mo
 import 'package:verily_server/src/generated/protocol.dart';
 
 void main() {
-  final model = LocalCheckModel.forTask(LocalCheckTask.gesture);
+  final model = LocalCheckTask.gesture.model;
   late Directory cache;
 
   setUp(() async {

@@ -210,7 +210,8 @@ server with exactly the same model.
 | `sound`   | audio          | YAMNet, float32 v1 (4.1 MB)             | A reviewed subset of AudioSet sounds    |
 
 - **Rule.** `localCheck: {task, label, minScore, minFrames}` on the media rule:
-  a label from the server allow-list (`local_check_catalog.dart`), a minimum
+  a label from the allow-list (`LocalCheckModel` in `packages/verily_evidence`,
+  shared by the server's validation and the app's editor), a minimum
   score of 0.3 to 0.99, and 1 to 30 matching frames or audio windows (one for a
   photo). Without a creator prompt the server writes the verification text
   from the label, so no creator text reaches a model.

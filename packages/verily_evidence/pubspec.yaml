@@ -1,5 +1,5 @@
 name: verily_evidence
-description: Canonical evidence fingerprints and motion analysis shared by Verily clients and Serverpod.
+description: Canonical evidence fingerprints, motion analysis, and the local-check catalog shared by Verily clients and Serverpod.
 version: 1.0.0
 publish_to: none
 

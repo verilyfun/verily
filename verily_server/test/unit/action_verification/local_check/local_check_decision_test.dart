@@ -5,7 +5,7 @@ import 'package:verily_server/src/action_verification/local_check/local_check_re
 import 'package:verily_server/src/action_verification/media_evidence_verifier.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 
-final LocalCheckModel _model = LocalCheckModel.forTask(LocalCheckTask.gesture);
+final LocalCheckModel _model = LocalCheckTask.gesture.model;
 
 ActionLocalCheck _check({double minScore = 0.6, int minFrames = 3}) =>
     ActionLocalCheck(

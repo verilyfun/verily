@@ -44,7 +44,7 @@ class MpLocalCheckReplayer implements LocalCheckReplayer {
     required Uint8List media,
     required String mimeType,
   }) async {
-    if (model.task != check.task) {
+    if (model != check.task.model) {
       throw ArgumentError.value(model, 'model', 'does not run this task');
     }
     final stopwatch = Stopwatch()..start();

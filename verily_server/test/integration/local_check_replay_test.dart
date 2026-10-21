@@ -201,7 +201,7 @@ void main() {
         final requirement = action.requirements.single;
         expect(requirement.localCheck?.label, 'Thumb_Up');
         expect(requirement.localCheck?.minScore, 0.6);
-        final model = LocalCheckModel.forTask(LocalCheckTask.gesture);
+        final model = LocalCheckTask.gesture.model;
         expect(requirement.localCheckModel?.url, model.url);
         expect(requirement.localCheckModel?.sha256, model.sha256);
         expect(requirement.localCheckModel?.byteLength, model.byteLength);
@@ -294,7 +294,7 @@ void main() {
         expect(result.decision.status, EvidenceDecisionStatus.accepted);
         expect(result.decision.verifierType, mpReplayVerifierType);
         expect(result.decision.reasonCode, LocalCheckReason.matched);
-        final model = LocalCheckModel.forTask(LocalCheckTask.gesture);
+        final model = LocalCheckTask.gesture.model;
         expect(result.decision.modelName, model.modelId);
         expect(result.decision.modelVersion, model.sha256);
         expect(result.decision.confidence, closeTo(0.83, 1e-9));
@@ -319,8 +319,7 @@ void main() {
             action,
             deviceLocalCheck: DeviceLocalCheckResult(
               modelId: 'mediapipe/gesture_recognizer/float16/1',
-              modelSha256: LocalCheckModel.forTask(LocalCheckTask.gesture)
-                  .sha256,
+              modelSha256: LocalCheckTask.gesture.model.sha256,
               label: 'Thumb_Up',
               score: 0.99,
               matchedFrames: 1,

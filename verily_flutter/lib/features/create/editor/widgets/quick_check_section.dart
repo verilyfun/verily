@@ -134,7 +134,7 @@ class QuickCheckSection extends StatelessWidget {
             if (check.task == LocalCheckTask.gesture)
               EditorChoices<String>(
                 label: l10n.editorQuickCheckGestureLabel,
-                values: localCheckLabels[LocalCheckTask.gesture]!,
+                values: LocalCheckTask.gesture.model.labels,
                 selected: check.label,
                 nameOf: (label) =>
                     localCheckLabelName(l10n, LocalCheckTask.gesture, label),
@@ -324,7 +324,7 @@ class _LabelPickerSheet extends HookWidget {
     final named = useMemoized(
       () =>
           [
-            for (final label in localCheckLabels[task]!)
+            for (final label in task.model.labels)
               (label: label, name: localCheckLabelName(l10n, task, label)),
           ]..sort(
             (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),

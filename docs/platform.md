@@ -395,9 +395,10 @@ verified on every load, on the phone and on the server.
 
 A media requirement declares its check as
 `localCheck: {task: gesture|object|sound, label, minScore 0.3–0.99, minFrames 1–30}`
-(always one frame for a photo). Labels come from server allow-lists: the
-gesture recognizer's seven canned gestures, the 80 COCO classes, and a
-reviewed subset of YAMNet sounds. The phone receives the pinned model in
+(always one frame for a photo). Labels come from allow-lists the server and
+the app share through `packages/verily_evidence`: the gesture recognizer's
+seven canned gestures, the 80 COCO classes, and a reviewed subset of YAMNet
+sounds. The phone receives the pinned model in
 `localCheckModel`. Because a model cannot hear a spoken word, the spoken
 challenge is off by default for a local check; when a creator turns it on, the
 replay is recorded as a vote and the AI policy or a person decides. See
