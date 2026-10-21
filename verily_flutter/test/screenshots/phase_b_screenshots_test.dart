@@ -74,8 +74,14 @@ void main() {
 
     group('Do ($theme)', () {
       testWidgets('feed and map', (tester) async {
+        final feed = _feed();
+        // Each card shows its own words, so a review can tell them apart.
+        expect(
+          feed.map((action) => action.description).toSet(),
+          hasLength(feed.length),
+        );
         final fakes = doing.DoFakes(
-          actions: doing.FakeActionRepository(available: _feed()),
+          actions: doing.FakeActionRepository(available: feed),
         );
         await _pumpApp(
           tester,
@@ -350,10 +356,15 @@ void main() {
 
 /// A feed with one action of each proof kind, one of them already checking.
 List<ActionOpportunity> _feed() => [
-  doing.actionFixture(id: 1, reward: doing.rewardFixture()),
+  doing.actionFixture(
+    id: 1,
+    description: 'Check in on the bridge before the sun comes up.',
+    reward: doing.rewardFixture(),
+  ),
   doing.actionFixture(
     id: 2,
     title: 'Twenty squats',
+    description: 'Twenty full squats on camera, counted as you go.',
     creator: 'Park Run Club',
     requirements: [
       doing.videoRequirement(
@@ -366,17 +377,20 @@ List<ActionOpportunity> _feed() => [
   doing.actionFixture(
     id: 3,
     title: 'Visit the bar',
+    description: 'Scan the code behind the bar on your next visit.',
     requirements: [doing.venueCodeRequirement()],
   ),
   doing.actionFixture(
     id: 4,
     title: 'Bake a loaf',
+    description: 'Bake a sourdough loaf and log it in Slopper.',
     creator: 'Slopper',
     requirements: [doing.appRequirement()],
   ),
   doing.actionFixture(
     id: 5,
     title: 'Spin around',
+    description: 'Hold your phone out and turn a full circle.',
     requirements: [doing.motionRequirement()],
     myAttempt: doing.attemptFixture(
       actionId: 5,
