@@ -571,6 +571,87 @@ void main() {
       );
     });
 
+    group('when the participant opens the page again', () {
+      Future<EvidenceSubmissionResult?> reopen({UuidValue? as}) =>
+          endpoints.actionVerification.getAppVerification(
+            as == null ? participant : signedIn(sessionBuilder, as),
+            attemptId: attempt.id,
+            requirementId: requirementId(),
+          );
+
+      test('then nothing stands before they ask', () async {
+        expect(await reopen(), isNull);
+        expect(await AppPullCheck.db.count(sessionBuilder.build()), 0);
+      });
+
+      test('then a check the App is deciding reads as waiting, and reading '
+          'calls nobody', () async {
+        final sender = _ScriptedSender([
+          _answer({'verdict': 'pending'}),
+        ]);
+        await request(sender);
+
+        final waiting = (await reopen())!;
+
+        expect(waiting.status, isNull);
+        expect(waiting.reasonCode, 'app_checking');
+        expect(waiting.requirementId, requirementId());
+        expect(waiting.attempt.id, attempt.id);
+        expect(waiting.attempt.status, ActionAttemptStatus.collectingEvidence);
+        expect(sender.calls, hasLength(1));
+        expect((await check()).callCount, 1);
+      });
+
+      test('then the App confirming reads back as confirmed', () async {
+        await request(
+          _ScriptedSender([
+            _answer({'verdict': 'accepted'}),
+          ]),
+        );
+
+        final confirmed = (await reopen())!;
+
+        expect(confirmed.status, EvidenceDecisionStatus.accepted);
+        expect(confirmed.reasonCode, 'app_confirmed');
+        expect(confirmed.attempt.status, ActionAttemptStatus.verified);
+      });
+
+      test('then the App saying no reads back as rejected', () async {
+        await request(
+          _ScriptedSender([
+            _answer({'verdict': 'rejected', 'reason': 'steps_not_found'}),
+          ]),
+        );
+
+        final rejected = (await reopen())!;
+
+        expect(rejected.status, EvidenceDecisionStatus.rejected);
+        expect(rejected.reasonCode, 'app_not_confirmed');
+        expect(rejected.attempt.status, ActionAttemptStatus.rejected);
+      });
+
+      test('then a check whose calls ran out says the App was unreachable, '
+          'so the person can ask again', () async {
+        await request(_ScriptedSender([_timeout]));
+        await AppPullCheck.db.updateRow(
+          sessionBuilder.build(),
+          (await check()).copyWith(status: AppPullCheckStatus.failed),
+        );
+
+        final failed = (await reopen())!;
+
+        expect(failed.status, isNull);
+        expect(failed.reasonCode, 'app_unreachable');
+      });
+
+      test('then nobody else can read it', () async {
+        await request(_ScriptedSender([_timeout]));
+        await insertAccounts(sessionBuilder.build(), {testId(0x303): 'Linus'});
+
+        await expectLater(reopen(as: testId(0x303)), throwsStateError);
+      });
+    });
+
     group('when verification cannot run', () {
       Matcher refused(AppPlatformProblem problem) => throwsA(
         isA<AppPlatformException>().having(
@@ -595,6 +676,14 @@ void main() {
 
           await expectLater(
             endpoints.actionVerification.requestAppVerification(
+              participant,
+              attemptId: pushAttempt.id,
+              requirementId: pushAction.requirements.single.id,
+            ),
+            refused(AppPlatformProblem.pullVerificationUnavailable),
+          );
+          await expectLater(
+            endpoints.actionVerification.getAppVerification(
               participant,
               attemptId: pushAttempt.id,
               requirementId: pushAction.requirements.single.id,

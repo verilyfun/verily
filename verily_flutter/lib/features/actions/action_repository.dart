@@ -68,6 +68,14 @@ abstract interface class ActionRepository {
     required UuidValue requirementId,
     String? reference,
   });
+
+  /// Where the caller's "I did it" on a pull-verified App proof stands, in
+  /// the shape [requestAppVerification] answers; null before they ask.
+  /// Reading it never calls the App.
+  Future<EvidenceSubmissionResult?> getAppVerification({
+    required UuidValue attemptId,
+    required UuidValue requirementId,
+  });
 }
 
 class ServerpodActionRepository implements ActionRepository {
@@ -180,6 +188,15 @@ class ServerpodActionRepository implements ActionRepository {
     attemptId: attemptId,
     requirementId: requirementId,
     reference: reference,
+  );
+
+  @override
+  Future<EvidenceSubmissionResult?> getAppVerification({
+    required UuidValue attemptId,
+    required UuidValue requirementId,
+  }) => _actions.getAppVerification(
+    attemptId: attemptId,
+    requirementId: requirementId,
   );
 }
 

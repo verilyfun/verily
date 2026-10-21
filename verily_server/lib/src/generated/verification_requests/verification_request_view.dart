@@ -34,9 +34,10 @@ abstract class VerificationRequestView
     required this.spokenChallenge,
     required this.shareEvidence,
     required this.status,
+    bool? declinedByViewer,
     required this.expiresAt,
     this.action,
-  });
+  }) : declinedByViewer = declinedByViewer ?? false;
 
   factory VerificationRequestView({
     required _is.UuidValue id,
@@ -50,6 +51,7 @@ abstract class VerificationRequestView
     required bool spokenChallenge,
     required bool shareEvidence,
     required _icvl19bi.VerificationRequestStatus status,
+    bool? declinedByViewer,
     required DateTime expiresAt,
     _iwflznil.ActionOpportunity? action,
   }) = _VerificationRequestViewImpl;
@@ -81,6 +83,11 @@ abstract class VerificationRequestView
       status: _icvl19bi.VerificationRequestStatus.fromJson(
         (jsonSerialization['status'] as String),
       ),
+      declinedByViewer: jsonSerialization['declinedByViewer'] == null
+          ? null
+          : _is.BoolJsonExtension.fromJson(
+              jsonSerialization['declinedByViewer'],
+            ),
       expiresAt: _is.DateTimeJsonExtension.fromJson(
         jsonSerialization['expiresAt'],
       ),
@@ -117,6 +124,10 @@ abstract class VerificationRequestView
 
   _icvl19bi.VerificationRequestStatus status;
 
+  /// Whether the signed-in person is the one who declined it. Anyone else
+  /// sees a declined request as answered by someone else.
+  bool declinedByViewer;
+
   DateTime expiresAt;
 
   /// The private action to capture against, once accepted by this account.
@@ -137,6 +148,7 @@ abstract class VerificationRequestView
     bool? spokenChallenge,
     bool? shareEvidence,
     _icvl19bi.VerificationRequestStatus? status,
+    bool? declinedByViewer,
     DateTime? expiresAt,
     _iwflznil.ActionOpportunity? action,
   });
@@ -155,6 +167,7 @@ abstract class VerificationRequestView
       'spokenChallenge': spokenChallenge,
       'shareEvidence': shareEvidence,
       'status': status.toJson(),
+      'declinedByViewer': declinedByViewer,
       'expiresAt': expiresAt.toJson(),
       if (action != null) 'action': action?.toJson(),
     };
@@ -175,6 +188,7 @@ abstract class VerificationRequestView
       'spokenChallenge': spokenChallenge,
       'shareEvidence': shareEvidence,
       'status': status.toJson(),
+      'declinedByViewer': declinedByViewer,
       'expiresAt': expiresAt.toJson(),
       if (action != null) 'action': action?.toJsonForProtocol(),
     };
@@ -201,6 +215,7 @@ class _VerificationRequestViewImpl extends VerificationRequestView {
     required bool spokenChallenge,
     required bool shareEvidence,
     required _icvl19bi.VerificationRequestStatus status,
+    bool? declinedByViewer,
     required DateTime expiresAt,
     _iwflznil.ActionOpportunity? action,
   }) : super._(
@@ -215,6 +230,7 @@ class _VerificationRequestViewImpl extends VerificationRequestView {
          spokenChallenge: spokenChallenge,
          shareEvidence: shareEvidence,
          status: status,
+         declinedByViewer: declinedByViewer,
          expiresAt: expiresAt,
          action: action,
        );
@@ -235,6 +251,7 @@ class _VerificationRequestViewImpl extends VerificationRequestView {
     bool? spokenChallenge,
     bool? shareEvidence,
     _icvl19bi.VerificationRequestStatus? status,
+    bool? declinedByViewer,
     DateTime? expiresAt,
     Object? action = _Undefined,
   }) {
@@ -252,6 +269,7 @@ class _VerificationRequestViewImpl extends VerificationRequestView {
       spokenChallenge: spokenChallenge ?? this.spokenChallenge,
       shareEvidence: shareEvidence ?? this.shareEvidence,
       status: status ?? this.status,
+      declinedByViewer: declinedByViewer ?? this.declinedByViewer,
       expiresAt: expiresAt ?? this.expiresAt,
       action: action is _iwflznil.ActionOpportunity?
           ? action

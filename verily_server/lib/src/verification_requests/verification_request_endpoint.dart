@@ -57,7 +57,9 @@ class VerificationRequestEndpoint extends Endpoint {
   }
 
   /// After the proof is submitted: the App's redirect with a one-time,
-  /// five-minute receipt code.
+  /// five-minute receipt code. Refused with
+  /// `AppPlatformProblem.verificationRequestProofMissing` while the proof
+  /// has not arrived.
   Future<VerificationRequestRedirect> finish(
     Session session, {
     required UuidValue requestId,

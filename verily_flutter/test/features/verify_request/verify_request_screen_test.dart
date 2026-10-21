@@ -496,6 +496,53 @@ void main() {
       expect(fakes.launcher.launched, hasLength(1));
     });
 
+    testWidgets('proof the server never got reopens the steps it needs', (
+      tester,
+    ) async {
+      final fakes = DeepLinkFakes(
+        requests: FakeVerificationRequestRepository(
+          view: requestViewFixture(
+            status: VerificationRequestStatus.accepted,
+            action: requestActionFixture(
+              attempt: requestAttemptFixture(
+                status: ActionAttemptStatus.verifying,
+              ),
+            ),
+          ),
+        ),
+      );
+      await pumpDeepLink(tester, fakes, location: _location);
+      expect(find.text('Your proof is in'), findsOneWidget);
+
+      // The server has only the place; the capture never reached it.
+      fakes.requests
+        ..finishError = AppPlatformException(
+          problem: AppPlatformProblem.verificationRequestProofMissing,
+          message: 'server words',
+        )
+        ..view = requestViewFixture(
+          status: VerificationRequestStatus.accepted,
+          action: requestActionFixture(
+            attempt: requestAttemptFixture(accepted: [doUuid(0x901)]),
+          ),
+        );
+      await tapDeepLink(tester, find.byKey(VerilyTestKeys.verifyRequestReturn));
+
+      expect(fakes.requests.calls, ['get', 'finish', 'get']);
+      expect(fakes.launcher.launched, isEmpty);
+      expect(find.text('Your proof is in'), findsNothing);
+      expect(find.text('Location sent'), findsOneWidget);
+      expect(find.byKey(VerilyTestKeys.verifyRequestCapture), findsOneWidget);
+      expect(
+        find.text(
+          "Verily hasn't got your proof yet, so there's nothing to send "
+          'Slopper. Finish the steps above, then try again.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('server words'), findsNothing);
+    });
+
     testWidgets('signing in shows the request where the link opened it', (
       tester,
     ) async {
@@ -557,7 +604,11 @@ void main() {
 
     for (final (status, title) in [
       (VerificationRequestStatus.expired, 'This request has expired'),
-      (VerificationRequestStatus.declined, 'This request is closed'),
+      // Declined by someone else: it was answered, not by this person.
+      (
+        VerificationRequestStatus.declined,
+        'Someone else answered this request',
+      ),
       // Accepted by someone else: only their view carries the action.
       (
         VerificationRequestStatus.accepted,
@@ -576,6 +627,32 @@ void main() {
         expect(find.textContaining('Slopper'), findsWidgets);
       });
     }
+
+    testWidgets('a request this person declined says they did', (
+      tester,
+    ) async {
+      final fakes = DeepLinkFakes(
+        requests: FakeVerificationRequestRepository(
+          view: requestViewFixture(
+            status: VerificationRequestStatus.declined,
+            declinedByViewer: true,
+          ),
+        ),
+      );
+      await pumpDeepLink(tester, fakes, location: _location);
+
+      expect(find.text('You declined this request'), findsOneWidget);
+      expect(
+        find.text(
+          'Nothing was captured or shared with Slopper. Ask Slopper for a '
+          'new request if you change your mind.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('This request is closed'), findsNothing);
+      expect(find.byKey(VerilyTestKeys.verifyRequestAccept), findsNothing);
+      expect(find.text('Back to Verily'), findsOneWidget);
+    });
 
     testWidgets('a malformed link is not found without a server call', (
       tester,

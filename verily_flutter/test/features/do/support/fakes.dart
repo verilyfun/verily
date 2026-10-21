@@ -329,6 +329,22 @@ class FakeActionRepository extends Fake implements ActionRepository {
     if (answer == null) throw StateError('No App answer for $requirementId');
     return answer(requirementId);
   }
+
+  /// Where each pull check stands on the server, by requirement; absent
+  /// means nobody asked yet.
+  final Map<UuidValue, EvidenceSubmissionResult> appChecks = {};
+
+  /// Every read of a pull check, in order.
+  final List<UuidValue> appCheckReads = [];
+
+  @override
+  Future<EvidenceSubmissionResult?> getAppVerification({
+    required UuidValue attemptId,
+    required UuidValue requirementId,
+  }) async {
+    appCheckReads.add(requirementId);
+    return appChecks[requirementId];
+  }
 }
 
 /// Positions and failures chosen by the test.

@@ -14,4 +14,6 @@ values:
   - verificationRequestExpired
   - verificationRequestTaken
   - verificationRequestClosed
+  ### The person has not sent the proof the request asks for yet.
+  - verificationRequestProofMissing
   - rateLimited

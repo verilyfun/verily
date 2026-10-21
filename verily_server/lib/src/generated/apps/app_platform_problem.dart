@@ -26,6 +26,9 @@ enum AppPlatformProblem implements _is.SerializableModel {
   verificationRequestExpired,
   verificationRequestTaken,
   verificationRequestClosed,
+
+  /// The person has not sent the proof the request asks for yet.
+  verificationRequestProofMissing,
   rateLimited;
 
   static AppPlatformProblem fromJson(String name) {
@@ -54,6 +57,8 @@ enum AppPlatformProblem implements _is.SerializableModel {
         return AppPlatformProblem.verificationRequestTaken;
       case 'verificationRequestClosed':
         return AppPlatformProblem.verificationRequestClosed;
+      case 'verificationRequestProofMissing':
+        return AppPlatformProblem.verificationRequestProofMissing;
       case 'rateLimited':
         return AppPlatformProblem.rateLimited;
       default:

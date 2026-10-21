@@ -305,6 +305,22 @@ class ActionVerificationEndpoint extends Endpoint {
     );
   }
 
+  /// Where the caller's "I did it" on a pull-verified `externalApp`
+  /// requirement stands, in the same shape `requestAppVerification`
+  /// answers; null before they ask. Reading it calls nobody.
+  Future<EvidenceSubmissionResult?> getAppVerification(
+    Session session, {
+    required UuidValue attemptId,
+    required UuidValue requirementId,
+  }) {
+    return pullChecks.currentVerification(
+      session,
+      authUserId: _caller(session),
+      attemptId: attemptId,
+      requirementId: requirementId,
+    );
+  }
+
   Future<ActionAttemptView> completeAttempt(
     Session session,
     UuidValue attemptId,

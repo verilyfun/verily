@@ -19,6 +19,9 @@ enum RequestProblem {
   /// Another account already answered it.
   taken,
 
+  /// This account turned it down.
+  declined,
+
   /// It was answered, declined, or closed already.
   closed,
 
@@ -46,6 +49,10 @@ enum ProofNotice {
   /// Verily could not confirm the person was inside the App's place (too
   /// far, or the fix was not precise enough).
   placeNotConfirmed,
+
+  /// Verily has not got the proof yet, so there is nothing to return with.
+  /// The steps show what it still needs.
+  proofMissing,
   generic,
 }
 
@@ -260,7 +267,10 @@ class VerifyRequestFlow extends ChangeNotifier {
     }
   }
 
-  Future<void> _show(VerificationRequestView view) async {
+  Future<void> _show(
+    VerificationRequestView view, {
+    ProofNotice? notice,
+  }) async {
     final action = view.action;
     switch (view.status) {
       case VerificationRequestStatus.open:
@@ -268,7 +278,7 @@ class VerifyRequestFlow extends ChangeNotifier {
       case VerificationRequestStatus.accepted ||
               VerificationRequestStatus.completed
           when action != null:
-        await _startProof(view, action);
+        await _startProof(view, action, notice: notice);
       case VerificationRequestStatus.accepted ||
           VerificationRequestStatus.completed:
         // Someone else answered it; only their own view carries the action.
@@ -286,9 +296,13 @@ class VerifyRequestFlow extends ChangeNotifier {
           ),
         );
       case VerificationRequestStatus.declined:
+        // Only the person who turned it down hears that they did; to anyone
+        // else it was answered by someone.
         _emit(
           VerifyRequestUnavailable(
-            RequestProblem.closed,
+            view.declinedByViewer
+                ? RequestProblem.declined
+                : RequestProblem.taken,
             appName: view.appName,
           ),
         );
@@ -362,8 +376,9 @@ class VerifyRequestFlow extends ChangeNotifier {
 
   Future<void> _startProof(
     VerificationRequestView view,
-    ActionOpportunity action,
-  ) async {
+    ActionOpportunity action, {
+    ProofNotice? notice,
+  }) async {
     final attempt = action.myAttempt ?? await _actions.beginAttempt(action.id);
     ActionRequirementView? place;
     ActionRequirementView? media;
@@ -396,6 +411,7 @@ class VerifyRequestFlow extends ChangeNotifier {
         media: media,
         placeDone: submitted || place == null || accepted.contains(place.id),
         mediaDone: submitted || media == null || accepted.contains(media.id),
+        notice: notice,
       ),
     );
   }
@@ -511,6 +527,26 @@ class VerifyRequestFlow extends ChangeNotifier {
           outcome: _outcomeFor(proof),
         ),
       );
+    } on AppPlatformException catch (error) {
+      if (error.problem == AppPlatformProblem.verificationRequestProofMissing) {
+        await _resume(id, proof, notice: ProofNotice.proofMissing);
+      } else {
+        _proofFailed(proof, error);
+      }
+    } on Exception catch (error) {
+      _proofFailed(proof, error);
+    }
+  }
+
+  /// Picks the steps up from what the server has, for when it disagrees
+  /// with this page about which proof is in.
+  Future<void> _resume(
+    UuidValue id,
+    VerifyRequestProof proof, {
+    required ProofNotice notice,
+  }) async {
+    try {
+      await _show(await _requests.get(id), notice: notice);
     } on Exception catch (error) {
       _proofFailed(proof, error);
     }

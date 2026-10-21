@@ -20,6 +20,7 @@ actionVerification:
   - requestMediaUpload:
   - confirmMediaUpload:
   - requestAppVerification:
+  - getAppVerification:
   - completeAttempt:
   - listMyAttempts:
 evidenceAppeal:

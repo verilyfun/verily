@@ -292,6 +292,8 @@ exactly what will be shared, for example: "Slopper wants a live video of:
 'show your finished sourdough'. Verily will share whether it passed, when it
 was captured, and whether you were inside their place. Slopper will not see
 your location." The person can decline, which returns `status=declined`.
+If they open the link again, Verily tells them they declined it; anyone else
+who opens it is told someone already answered.
 
 ### Receipt
 
