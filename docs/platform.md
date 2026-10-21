@@ -16,14 +16,14 @@ ways, all through one concept, a **Verily App**:
 
 Any creator can register an App from the Create tab or the API.
 
-| Field             | Notes                                                                                             |
-| ----------------- | ------------------------------------------------------------------------------------------------- |
-| Name, website     | Shown to participants wherever the App appears                                                    |
-| API keys          | `vly_<16 hex keyId>.<43 base64url secret>`, shown once, SHA-256 stored, at most two active        |
-| Webhook URL       | HTTPS only; receives signed events and verification calls                                         |
-| Webhook secret    | `whsec_…`, used to sign outbound requests; rotatable, shown once                                  |
-| Redirect URIs     | Exact-match list for deep-link returns (`https://…` or a registered custom scheme)                |
-| Status            | `active` or `revoked`; revoking an App revokes its keys and pauses its actions                    |
+| Field          | Notes                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------ |
+| Name, website  | Shown to participants wherever the App appears                                             |
+| API keys       | `vly_<16 hex keyId>.<43 base64url secret>`, shown once, SHA-256 stored, at most two active |
+| Webhook URL    | HTTPS only; receives signed events and verification calls                                  |
+| Webhook secret | `whsec_…`, used to sign outbound requests; rotatable, shown once                           |
+| Redirect URIs  | Exact-match list for deep-link returns (`https://…` or a registered custom scheme)         |
+| Status         | `active` or `revoked`; revoking an App revokes its keys and pauses its actions             |
 
 An App belongs to one creator account. Everything it does is attributed to
 that creator, including rewards it attaches to actions.
@@ -32,10 +32,10 @@ that creator, including rewards it attaches to actions.
 
 Participants always see who vouches for an action.
 
-| Tier                       | Label on the card               | What Verily vouches for                                                                    |
-| -------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------ |
-| Phone-verified (built-in)  | **Verified on your phone**      | The proof was captured live in Verily, signed by the device, and checked by Verily         |
-| Third-party                | **Confirmed by \<App\>**        | The App, authenticated by its key, said it happened. Verily does not check the act itself  |
+| Tier                      | Label on the card          | What Verily vouches for                                                                   |
+| ------------------------- | -------------------------- | ----------------------------------------------------------------------------------------- |
+| Phone-verified (built-in) | **Verified on your phone** | The proof was captured live in Verily, signed by the device, and checked by Verily        |
+| Third-party               | **Confirmed by \<App\>**   | The App, authenticated by its key, said it happened. Verily does not check the act itself |
 
 A v1 action is one or the other, never both. A third-party action can still
 carry an escrowed reward: the creator is trusting their own App.
@@ -140,17 +140,17 @@ sequenceDiagram
 
 ### Request
 
-| Field              | Notes                                                                                          |
-| ------------------ | ---------------------------------------------------------------------------------------------- |
-| `kind`             | `video`, `photo`, `audio`, or `location`                                                       |
-| `instructions`     | Optional, at most 280 characters, shown to the person; passes `ModelInputSecurity`             |
-| `check`            | `captureOnly` (provenance only) or `content` (Verily also checks the instructions were met)    |
-| `place`            | Optional `{latitude, longitude, radiusMeters}`; the receipt says inside or outside, not where  |
-| `liveChallenge`    | `spokenWord` (default for video and audio) or `none`                                           |
-| `shareEvidence`    | Whether the App may download the capture; the person sees this before consenting               |
-| `redirectUri`      | Must exactly match one of the App's registered redirect URIs                                   |
-| `state`            | Opaque, at most 256 characters, returned unchanged                                             |
-| `expiresInSeconds` | 60 to 3600                                                                                     |
+| Field              | Notes                                                                                         |
+| ------------------ | --------------------------------------------------------------------------------------------- |
+| `kind`             | `video`, `photo`, `audio`, or `location`                                                      |
+| `instructions`     | Optional, at most 280 characters, shown to the person; passes `ModelInputSecurity`            |
+| `check`            | `captureOnly` (provenance only) or `content` (Verily also checks the instructions were met)   |
+| `place`            | Optional `{latitude, longitude, radiusMeters}`; the receipt says inside or outside, not where |
+| `liveChallenge`    | `spokenWord` (default for video and audio) or `none`                                          |
+| `shareEvidence`    | Whether the App may download the capture; the person sees this before consenting              |
+| `redirectUri`      | Must exactly match one of the App's registered redirect URIs                                  |
+| `state`            | Opaque, at most 256 characters, returned unchanged                                            |
+| `expiresInSeconds` | 60 to 3600                                                                                    |
 
 The deep link carries only the request id. The Verily app loads everything
 else from the server, so a forged link can only point at a real request.
@@ -208,16 +208,16 @@ carries no reward in v1.
 These action kinds can only be verified by Verily on a phone. They are the
 heart of the product and the reason Apps send people here.
 
-| Kind                  | Proof                                                       | How it is checked                                      |
-| --------------------- | ----------------------------------------------------------- | ------------------------------------------------------ |
-| Place check-in        | A fresh, accurate location fix                              | PostGIS radius, freshness, travel plausibility         |
-| Venue or event code   | A QR code that only exists at the place, rotating           | Server-issued, single-use, short-lived codes           |
-| Show a gesture        | Photo or short video: thumbs up, victory, open palm, …      | MP gesture recognizer on the phone, replayed on server |
-| Show a thing          | Photo or short video of an object (bicycle, dog, cup, …)    | MP object detector, replayed on server                 |
-| Make a sound          | Audio: clapping, whistling, a bell, a dog barking, …        | MP audio classifier, replayed on server                |
-| Do the reps           | Video of squats, press-ups, kick-ups, and nine more         | MP pose (and ball) tracking live, AI or person checks  |
-| Move the phone        | Toss and catch, spins, shakes, a steady hand                | Sensor trace recomputed on the server                  |
-| Describe it on camera | Video or photo with free-form instructions                  | AI verifier or council, people for the hard cases      |
+| Kind                  | Proof                                                    | How it is checked                                      |
+| --------------------- | -------------------------------------------------------- | ------------------------------------------------------ |
+| Place check-in        | A fresh, accurate location fix                           | PostGIS radius, freshness, travel plausibility         |
+| Venue or event code   | A QR code that only exists at the place, rotating        | Server-issued, single-use, short-lived codes           |
+| Show a gesture        | Photo or short video: thumbs up, victory, open palm, …   | MP gesture recognizer on the phone, replayed on server |
+| Show a thing          | Photo or short video of an object (bicycle, dog, cup, …) | MP object detector, replayed on server                 |
+| Make a sound          | Audio: clapping, whistling, a bell, a dog barking, …     | MP audio classifier, replayed on server                |
+| Do the reps           | Video of squats, press-ups, kick-ups, and nine more      | MP pose (and ball) tracking live, AI or person checks  |
+| Move the phone        | Toss and catch, spins, shakes, a steady hand             | Sensor trace recomputed on the server                  |
+| Describe it on camera | Video or photo with free-form instructions               | AI verifier or council, people for the hard cases      |
 
 Every media proof can add the **spoken challenge**: a word from Verily's own
 list that the person says while recording, so a pre-recorded or generated clip

@@ -23,14 +23,14 @@ provenance work.
 
 ## Stack
 
-| Piece         | Choice                                                         |
-| ------------- | -------------------------------------------------------------- |
-| App           | Flutter (Android first), Riverpod, Flutter Hooks, Skribble     |
-| Server        | Serverpod 4, PostgreSQL 16 + PostGIS                           |
-| Evidence      | Private Backblaze B2 (S3), version-pinned, short retention     |
-| Verification  | Rules + Play Integrity + device signatures + OpenRouter models |
-| Rewards       | `verily_escrow`, a [Pina](https://github.com/pina-rs/pina) program on Solana |
-| Toolchain     | devenv (Nix), FVM, Monosecret                                  |
+| Piece        | Choice                                                                       |
+| ------------ | ---------------------------------------------------------------------------- |
+| App          | Flutter (Android first), Riverpod, Flutter Hooks, Skribble                   |
+| Server       | Serverpod 4, PostgreSQL 16 + PostGIS                                         |
+| Evidence     | Private Backblaze B2 (S3), version-pinned, short retention                   |
+| Verification | Rules + Play Integrity + device signatures + OpenRouter models               |
+| Rewards      | `verily_escrow`, a [Pina](https://github.com/pina-rs/pina) program on Solana |
+| Toolchain    | devenv (Nix), FVM, Monosecret                                                |
 
 ## Getting started
 
