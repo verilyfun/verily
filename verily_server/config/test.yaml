@@ -1,0 +1,41 @@
+# Test configuration. Ports are zero so test servers pick free ports, and each
+# `withServerpod` group gets its own ephemeral database on this postmaster.
+# Test-only secrets are public defaults in ../monosecret.toml.
+
+apiServer:
+  port: 0
+  publicHost: localhost
+  publicPort: 0
+  publicScheme: http
+
+insightsServer:
+  port: 0
+  publicHost: localhost
+  publicPort: 0
+  publicScheme: http
+
+webServer:
+  port: 0
+  publicHost: localhost
+  publicPort: 0
+  publicScheme: http
+
+database:
+  host: localhost
+  port: 8191
+  name: verily_test
+  user: postgres
+
+redis:
+  enabled: false
+  host: localhost
+  port: 6379
+
+maxRequestSize: 1048576
+
+# Tests invoke future calls directly so scheduling never races an assertion.
+futureCallExecutionEnabled: false
+
+sessionLogs:
+  persistentEnabled: true
+  consoleEnabled: true

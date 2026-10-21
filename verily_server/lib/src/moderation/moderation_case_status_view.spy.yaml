@@ -1,0 +1,9 @@
+class: ModerationCaseStatusView
+fields:
+  caseId: UuidValue
+  actionDefinitionId: UuidValue
+  category: String
+  status: String
+  pauseActive: bool
+  createdAt: DateTime
+  canAppeal: bool

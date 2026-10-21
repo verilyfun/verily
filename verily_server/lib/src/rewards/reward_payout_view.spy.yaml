@@ -1,0 +1,16 @@
+class: RewardPayoutView
+fields:
+  id: UuidValue
+  attemptId: UuidValue
+  actionTitle: String
+  cluster: RewardCluster
+  tokenSymbol: String
+  decimals: int
+  amount: int
+  status: RewardPayoutStatus
+  recipientWallet: String?
+  releaseSignature: String?
+  createdAt: DateTime
+  updatedAt: DateTime
+  ### After this instant an unreleased payout can no longer be paid.
+  payableUntil: DateTime

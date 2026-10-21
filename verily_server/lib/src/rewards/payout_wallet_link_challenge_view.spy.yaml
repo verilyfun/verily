@@ -1,0 +1,7 @@
+### The exact text the wallet must sign.
+class: PayoutWalletLinkChallengeView
+fields:
+  walletAddress: String
+  message: String
+  nonce: String
+  expiresAt: DateTime

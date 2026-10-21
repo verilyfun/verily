@@ -1,0 +1,16 @@
+### A body or ball movement the app coaches live and verifiers count from video.
+enum: ActionMovementKind
+serialized: byName
+values:
+  - squats
+  - pressUps
+  - sitUps
+  - lunges
+  - starJumps
+  - burpees
+  - highKnees
+  - lateralRaises
+  - bicepsCurls
+  - sideBends
+  - footballKickUps
+  - tableTennisBounces

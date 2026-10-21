@@ -1,0 +1,17 @@
+### The action's public place and its geofence. Participant check-ins are
+### stored on evidence rows, never here.
+class: ActionLocationRule
+serverOnly: true
+table: verily_action_location_rule
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  requirement: ActionRequirement?, relation(onDelete=Cascade)
+  location: GeographyPoint
+  radiusMeters: double
+  maxAccuracyMeters: double
+indexes:
+  verily_action_location_rule_requirement_idx:
+    fields: requirementId
+    unique: true
+  verily_action_location_rule_location_idx:
+    fields: location

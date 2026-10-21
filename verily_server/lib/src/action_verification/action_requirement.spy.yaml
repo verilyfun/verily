@@ -1,0 +1,21 @@
+### Ordered requirement identity shared by proof and rule tables.
+class: ActionRequirement
+serverOnly: true
+table: verily_action_requirement
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  actionDefinition: ActionDefinition?, relation(onDelete=Cascade)
+  requirementKey: String
+  kind: ActionRequirementKind
+  title: String
+  instructions: String
+  position: int
+  isRequired: bool, default=true
+  createdAt: DateTime, defaultModel=now
+indexes:
+  verily_action_requirement_key_idx:
+    fields: actionDefinitionId, requirementKey
+    unique: true
+  verily_action_requirement_position_idx:
+    fields: actionDefinitionId, position
+    unique: true

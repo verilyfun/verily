@@ -1,0 +1,38 @@
+### One fixed payout reserved for one verified attempt, under the pool row
+### lock, so two completions never share an index. The row is also the durable
+### release job: a retry of the same index is safe because the escrow pays each
+### index at most once.
+class: RewardPayout
+serverOnly: true
+table: verily_reward_payout
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  poolId: UuidValue, relation(parent=verily_reward_pool, onDelete=Restrict)
+  attemptId: UuidValue, relation(parent=verily_action_attempt, onDelete=Restrict)
+  recipientAuthUser: module:auth:AuthUser?, relation(onDelete=Restrict)
+  payoutIndex: int
+  amount: int
+  ### Frozen when a release starts; every retry pays the same wallet.
+  recipientWallet: String?
+  status: RewardPayoutStatus
+  releaseSignature: String?
+  attemptCount: int, default=0
+  ### Stable code for operators; never raw provider text.
+  lastErrorCode: String?
+  releaseStartedAt: DateTime?
+  releasedAt: DateTime?
+  createdAt: DateTime, defaultModel=now
+  updatedAt: DateTime, defaultModel=now
+indexes:
+  verily_reward_payout_attempt_idx:
+    fields: attemptId
+    unique: true
+  verily_reward_payout_pool_index_idx:
+    fields: poolId, payoutIndex
+    unique: true
+  verily_reward_payout_pool_recipient_idx:
+    fields: poolId, recipientAuthUserId
+  verily_reward_payout_recipient_idx:
+    fields: recipientAuthUserId, createdAt
+  verily_reward_payout_status_idx:
+    fields: status, updatedAt

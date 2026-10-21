@@ -1,0 +1,15 @@
+### reserved: queued for release. awaitingWallet: the winner has not linked a
+### payout wallet yet. heldForReview: a person must look before release.
+### releasing: a release is in flight to the frozen recipient wallet.
+### released: paid on chain. failed: release stopped and needs an operator.
+### expired: the refund window closed before the payout could be released.
+enum: RewardPayoutStatus
+serialized: byName
+values:
+  - reserved
+  - awaitingWallet
+  - heldForReview
+  - releasing
+  - released
+  - failed
+  - expired

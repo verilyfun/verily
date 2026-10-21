@@ -1,0 +1,7 @@
+class: ActionCaptureChallengeView
+fields:
+  id: UuidValue
+  requestHash: String
+  expiresAt: DateTime
+  integrityRequired: bool
+  signatureRequired: bool, default=false

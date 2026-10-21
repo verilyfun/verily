@@ -1,0 +1,17 @@
+### Bounded AI-work reservation used to enforce quotas before external compute.
+class: AiUsageRequest
+serverOnly: true
+table: verily_ai_usage_request
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  authUserId: UuidValue, relation(parent=serverpod_auth_core_user, onDelete=Restrict)
+  operation: String
+  status: AiUsageStatus, default=reserved
+  costUnits: int, default=1
+  createdAt: DateTime, default=now
+  completedAt: DateTime?
+indexes:
+  verily_ai_usage_user_operation_created_idx:
+    fields: authUserId, operation, createdAt
+  verily_ai_usage_active_idx:
+    fields: authUserId, operation, status, createdAt

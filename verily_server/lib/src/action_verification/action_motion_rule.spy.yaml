@@ -1,0 +1,23 @@
+### Deterministic server-owned motion thresholds; no model can override a failed trace.
+class: ActionMotionRule
+serverOnly: true
+table: verily_action_motion_rule
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  requirementId: UuidValue, relation(parent=verily_action_requirement, onDelete=Cascade)
+  motionType: ActionMotionType
+  axis: ActionMotionAxis
+  targetRepetitions: int
+  minDurationSeconds: int
+  maxDurationSeconds: int
+  minAngularSpeedRadiansPerSecond: double
+  maxAngularSpeedRadiansPerSecond: double
+  minAxisDominance: double
+  minFreeFallMilliseconds: int
+  maxFreeFallMilliseconds: int
+  minPeakAccelerationMetersPerSecondSquared: double
+  maxPeakAccelerationMetersPerSecondSquared: double
+indexes:
+  verily_action_motion_rule_requirement_idx:
+    fields: requirementId
+    unique: true

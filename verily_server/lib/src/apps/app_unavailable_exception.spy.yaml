@@ -1,0 +1,5 @@
+### The action's App was revoked, so it cannot start or be linked.
+exception: AppUnavailableException
+fields:
+  appName: String
+  message: String

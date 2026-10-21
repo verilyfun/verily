@@ -1,0 +1,37 @@
+# Staging mirrors production. Replace the placeholder hosts with the deployed
+# staging origins before the first staging release.
+
+apiServer:
+  port: 8180
+  publicHost: api-staging.verily.fun
+  publicPort: 443
+  publicScheme: https
+
+insightsServer:
+  port: 8181
+  publicHost: insights-staging.verily.fun
+  publicPort: 443
+  publicScheme: https
+
+webServer:
+  port: 8182
+  publicHost: app-staging.verily.fun
+  publicPort: 443
+  publicScheme: https
+
+database:
+  host: database.private-staging.verily.fun
+  port: 5432
+  name: verily
+  user: postgres
+  requireSsl: true
+
+redis:
+  enabled: false
+  host: redis.private-staging.verily.fun
+  port: 6379
+
+maxRequestSize: 1048576
+
+sessionLogs:
+  consoleEnabled: true

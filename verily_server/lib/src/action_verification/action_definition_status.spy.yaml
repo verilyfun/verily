@@ -1,0 +1,7 @@
+enum: ActionDefinitionStatus
+serialized: byName
+values:
+  - draft
+  - active
+  - paused
+  - completed

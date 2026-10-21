@@ -1,0 +1,10 @@
+name: _
+publish_to: none
+
+environment:
+  sdk: "^3.13.0"
+
+workspace:
+  - verily_client
+  - verily_server
+  - packages/verily_evidence

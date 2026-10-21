@@ -1,0 +1,7 @@
+### A participant's own subject for one App, to paste into that App.
+class: VerilyAppLinkView
+fields:
+  appId: UuidValue
+  appName: String
+  subject: String
+  createdAt: DateTime

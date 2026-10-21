@@ -1,0 +1,11 @@
+### Creator-facing delivery log row. The participant subject is deliberately omitted.
+class: AppConfirmationView
+fields:
+  id: UuidValue
+  eventId: String
+  actionKey: String
+  outcome: AppConfirmationOutcome
+  reasonCode: String
+  occurredAt: DateTime
+  receivedAt: DateTime
+  attemptStatus: ActionAttemptStatus?

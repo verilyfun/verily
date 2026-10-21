@@ -1,0 +1,39 @@
+class: ActionRequirementView
+fields:
+  id: UuidValue
+  requirementKey: String
+  kind: ActionRequirementKind
+  title: String
+  instructions: String
+  position: int
+  isRequired: bool
+  ### The action's public place, for location requirements.
+  latitude: double?
+  longitude: double?
+  radiusMeters: double?
+  maxAccuracyMeters: double?
+  minDurationSeconds: int?
+  maxDurationSeconds: int?
+  verificationPolicy: ActionVerificationPolicy?
+  ### Whether the app must fetch a challenge word before recording.
+  spokenChallengeRequired: bool, default=false
+  ### Media types and size the upload flow accepts for this proof.
+  acceptedContentTypes: List<String>?
+  maxByteLength: int?
+  movementKind: ActionMovementKind?
+  motionType: ActionMotionType?
+  motionAxis: ActionMotionAxis?
+  targetRepetitions: int?
+  minAngularSpeedRadiansPerSecond: double?
+  maxAngularSpeedRadiansPerSecond: double?
+  minAxisDominance: double?
+  minFreeFallMilliseconds: int?
+  maxFreeFallMilliseconds: int?
+  minPeakAccelerationMetersPerSecondSquared: double?
+  maxPeakAccelerationMetersPerSecondSquared: double?
+  ### The App that confirms an `external` requirement, shown as
+  ### "Confirmed by <App>".
+  appId: UuidValue?
+  appName: String?
+  ### Whether the App is still active; false blocks new attempts.
+  appAvailable: bool?

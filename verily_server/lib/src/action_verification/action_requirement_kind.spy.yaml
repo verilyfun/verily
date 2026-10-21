@@ -1,0 +1,15 @@
+### Evidence families. Media kinds (video, photo, audio) are captured in the
+### app and uploaded privately; the rest are verified deterministically.
+enum: ActionRequirementKind
+serialized: byName
+values:
+  - video
+  - photo
+  - audio
+  - location
+  - qrCode
+  - motion
+  ### Confirmed by the creator's Verily App over its API (platform.md calls
+  ### this `external`, a reserved word in Dart); Verily does not check the act
+  ### itself.
+  - externalApp

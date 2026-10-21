@@ -1,0 +1,13 @@
+class: CreateActionDefinitionRequest
+fields:
+  actionKey: String
+  title: String
+  description: String
+  recurrence: ActionRecurrence
+  timeZone: String
+  maxVerifiedCompletions: int?
+  opensAt: DateTime?
+  closesAt: DateTime?
+  requirements: List<ActionRequirementDraft>
+  ### Optional escrowed reward. Terms can change only until funding starts.
+  reward: RewardTermsDraft?

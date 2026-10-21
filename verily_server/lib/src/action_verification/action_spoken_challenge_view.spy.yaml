@@ -1,0 +1,6 @@
+### What the app shows before recording: "Say 'pelican' while you record".
+class: ActionSpokenChallengeView
+fields:
+  id: UuidValue
+  word: String
+  expiresAt: DateTime

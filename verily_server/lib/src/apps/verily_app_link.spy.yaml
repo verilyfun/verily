@@ -1,0 +1,18 @@
+### Maps a Verily-issued, App-scoped subject to one participant account. The
+### subject is opaque and differs per App, so two Apps cannot correlate people.
+class: VerilyAppLink
+serverOnly: true
+table: verily_app_link
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  appId: UuidValue, relation(parent=verily_app, onDelete=Cascade)
+  authUser: module:auth:AuthUser?, relation(onDelete=Cascade)
+  subject: String
+  createdAt: DateTime, defaultModel=now
+indexes:
+  verily_app_link_subject_idx:
+    fields: appId, subject
+    unique: true
+  verily_app_link_account_idx:
+    fields: appId, authUserId
+    unique: true

@@ -1,0 +1,28 @@
+### Individual model signals and cost diagnostics; no vote independently grants a payout.
+class: EvidenceVerificationVote
+serverOnly: true
+table: verily_evidence_verification_vote
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  decisionId: UuidValue, relation(parent=verily_evidence_decision, onDelete=Cascade)
+  evidenceId: UuidValue, relation(parent=verily_action_evidence, onDelete=Cascade)
+  modelId: String
+  resolvedModelId: String?
+  providerName: String?
+  responseId: String?
+  verdict: String
+  ### heard, notHeard, unclear, or abstained; null when no word was asked.
+  spokenChallengeVerdict: String?
+  confidence: double?
+  latencyMilliseconds: int
+  inputTokens: int?
+  outputTokens: int?
+  costCredits: double?
+  errorCode: String?
+  createdAt: DateTime, defaultModel=now
+indexes:
+  verily_evidence_verification_vote_decision_model_idx:
+    fields: decisionId, modelId
+    unique: true
+  verily_evidence_verification_vote_evidence_created_idx:
+    fields: evidenceId, createdAt

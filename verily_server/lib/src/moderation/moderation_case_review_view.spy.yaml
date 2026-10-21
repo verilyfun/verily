@@ -1,0 +1,6 @@
+class: ModerationCaseReviewView
+fields:
+  status: ModerationCaseStatusView
+  details: String
+  appealReason: String?
+  audit: List<ModerationAuditView>

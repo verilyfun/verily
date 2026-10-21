@@ -1,0 +1,4 @@
+class: ActionQrChallengeView
+fields:
+  code: String
+  expiresAt: DateTime

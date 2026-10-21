@@ -1,0 +1,40 @@
+### Bounded immutable evidence-upload binding; retention indexes drive private-media cleanup.
+class: EvidenceUploadReservation
+serverOnly: true
+table: verily_evidence_upload_reservation
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  authUser: module:auth:AuthUser?, relation(onDelete=Cascade)
+  attemptId: UuidValue, relation(parent=verily_action_attempt, onDelete=Cascade)
+  requirementId: UuidValue, relation(parent=verily_action_requirement, onDelete=Restrict)
+  kind: ActionRequirementKind
+  storagePath: String
+  contentType: String
+  byteLength: int
+  status: EvidenceUploadStatus
+  ### The live word bound to this recording when its rule requires one.
+  spokenChallengeId: UuidValue?, relation(parent=verily_action_spoken_challenge, onDelete=SetNull)
+  requestCount: int, default=1
+  confirmationAttemptCount: int, default=0
+  reservedAt: DateTime, defaultModel=now
+  lastSignedAt: DateTime, defaultModel=now
+  uploadExpiresAt: DateTime
+  retainUntil: DateTime
+  confirmationStartedAt: DateTime?
+  confirmedAt: DateTime?
+  storageVersionId: String?
+indexes:
+  verily_evidence_upload_attempt_requirement_idx:
+    fields: attemptId, requirementId
+    unique: true
+  verily_evidence_upload_storage_path_idx:
+    fields: storagePath
+    unique: true
+  verily_evidence_upload_user_quota_idx:
+    fields: authUserId, reservedAt
+  verily_evidence_upload_cleanup_idx:
+    fields: status, retainUntil
+  verily_evidence_upload_requirement_fk_idx:
+    fields: requirementId
+  verily_evidence_upload_spoken_challenge_idx:
+    fields: spokenChallengeId

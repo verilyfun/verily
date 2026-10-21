@@ -1,0 +1,7 @@
+class: ModerationAuditView
+fields:
+  actorAuthUserId: UuidValue?
+  event: String
+  note: String
+  pauseActive: bool
+  createdAt: DateTime

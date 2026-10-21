@@ -1,0 +1,22 @@
+### A live, server-chosen word the participant says while recording one video
+### or audio proof. It is issued before recording and bound to the upload, so a
+### recording made earlier cannot contain it. The word never comes from a
+### client or creator.
+class: ActionSpokenChallenge
+serverOnly: true
+table: verily_action_spoken_challenge
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  attemptId: UuidValue, relation(parent=verily_action_attempt, onDelete=Cascade)
+  requirementId: UuidValue, relation(parent=verily_action_requirement, onDelete=Cascade)
+  participantAuthUser: module:auth:AuthUser?, relation(onDelete=Cascade)
+  word: String
+  issuedAt: DateTime
+  expiresAt: DateTime
+  ### Set when an upload reservation binds this word to a recording.
+  boundAt: DateTime?
+indexes:
+  verily_action_spoken_challenge_attempt_requirement_idx:
+    fields: attemptId, requirementId, issuedAt
+  verily_action_spoken_challenge_expiry_idx:
+    fields: expiresAt

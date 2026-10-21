@@ -1,0 +1,46 @@
+# Local development configuration. Verily runs beside other local Serverpod
+# projects, so it avoids the default 8080-8082 and 8091 ports.
+#
+# Runtime secrets are declared in ../monosecret.toml. Development values come
+# from the ignored repository-root .env first, then the 1Password Development
+# vault. No secret belongs in this file.
+
+apiServer:
+  port: 8180
+  publicHost: localhost
+  publicPort: 8180
+  publicScheme: http
+
+insightsServer:
+  port: 8181
+  publicHost: localhost
+  publicPort: 8181
+  publicScheme: http
+
+webServer:
+  port: 8182
+  publicHost: localhost
+  publicPort: 8182
+  publicScheme: http
+
+database:
+  host: localhost
+  port: 8191
+  name: verily
+  user: postgres
+
+redis:
+  enabled: false
+  host: localhost
+  port: 6379
+
+# Endpoint calls carry small JSON payloads. Evidence never travels through an
+# endpoint call: B2 receives it directly, and local development storage
+# accepts it through Serverpod's upload route, which enforces its own
+# per-upload limit.
+maxRequestSize: 1048576
+
+sessionLogs:
+  persistentEnabled: true
+  consoleEnabled: true
+  consoleLogFormat: text

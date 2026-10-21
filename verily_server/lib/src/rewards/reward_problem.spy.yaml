@@ -1,0 +1,17 @@
+enum: RewardProblem
+serialized: byName
+values:
+  ### Escrowed rewards are not available on this server.
+  - rewardsUnavailable
+  ### The action has no reward.
+  - poolNotFound
+  ### Link a payout wallet first; funding and refunds use it.
+  - payoutWalletRequired
+  ### Funding is not in a state that allows this step.
+  - poolNotAwaitingFunding
+  ### The escrow is not on chain yet, or not finalized.
+  - escrowNotFound
+  ### The escrow on chain does not match the reward terms.
+  - escrowMismatch
+  ### The pool has already ended.
+  - poolEnded

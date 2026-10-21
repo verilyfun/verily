@@ -1,0 +1,21 @@
+### What the app reports after uploading a recording or photo. The server
+### re-derives the bytes, digest, and pinned version from storage; only the
+### capture time, duration, and integrity material come from the device.
+class: MediaUploadConfirmation
+fields:
+  attemptId: UuidValue
+  requirementId: UuidValue
+  contentType: String
+  byteLength: int
+  ### Recording length; null for a photo.
+  durationSeconds: int?
+  capturedAt: DateTime
+  deviceRepetitionCount: int?
+  deviceTrackerVersion: String?
+  captureChallengeId: UuidValue?
+  deviceIntegrityToken: String?
+  captureManifest: String?
+  captureSignature: String?
+  capturePublicKey: String?
+  captureKeyId: String?
+  captureKeyStorage: String?

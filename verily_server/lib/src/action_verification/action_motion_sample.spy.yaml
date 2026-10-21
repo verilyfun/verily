@@ -1,0 +1,10 @@
+### Private, bounded inertial observation. The server never trusts client summaries.
+class: ActionMotionSample
+fields:
+  elapsedMicroseconds: int
+  gyroscopeX: double
+  gyroscopeY: double
+  gyroscopeZ: double
+  accelerationX: double
+  accelerationY: double
+  accelerationZ: double

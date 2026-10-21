@@ -1,0 +1,14 @@
+### Binds one `external` requirement to the creator's App that may confirm it.
+class: ActionExternalRule
+serverOnly: true
+table: verily_action_external_rule
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  requirementId: UuidValue, relation(parent=verily_action_requirement, onDelete=Cascade)
+  appId: UuidValue, relation(parent=verily_app, onDelete=Restrict)
+indexes:
+  verily_action_external_rule_requirement_idx:
+    fields: requirementId
+    unique: true
+  verily_action_external_rule_app_idx:
+    fields: appId

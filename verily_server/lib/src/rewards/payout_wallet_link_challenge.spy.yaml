@@ -1,0 +1,21 @@
+### Expiring, single-use message an account's wallet signs to prove ownership.
+class: PayoutWalletLinkChallenge
+serverOnly: true
+table: verily_payout_wallet_link_challenge
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  authUser: module:auth:AuthUser?, relation(onDelete=Cascade)
+  walletAddress: String
+  nonce: String
+  message: String
+  createdAt: DateTime
+  expiresAt: DateTime
+  usedAt: DateTime?
+indexes:
+  verily_payout_wallet_link_nonce_idx:
+    fields: nonce
+    unique: true
+  verily_payout_wallet_link_user_created_idx:
+    fields: authUserId, createdAt
+  verily_payout_wallet_link_expiry_idx:
+    fields: expiresAt

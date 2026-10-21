@@ -1,0 +1,23 @@
+class: ActionAttemptView
+fields:
+  id: UuidValue
+  actionDefinitionId: UuidValue
+  periodKey: String
+  status: ActionAttemptStatus
+  verificationScore: double?
+  verifiedRank: int?
+  rejectionCode: String?
+  startedAt: DateTime
+  submittedAt: DateTime?
+  verifiedAt: DateTime?
+  updatedAt: DateTime
+  ### Whether the verified attempt won a payout, or why not; null when the
+  ### action carries no reward.
+  rewardOutcome: RewardOutcome?
+  ### The won payout's state, when there is one.
+  payoutStatus: RewardPayoutStatus?
+  ### Requirements whose latest proof was accepted; null when not loaded.
+  acceptedRequirementIds: List<UuidValue>?
+  ### Whether a person checks this attempt because its payout is above the
+  ### automatic-release threshold. The payout is reserved after that check.
+  rewardValueReview: bool, default=false

@@ -1,0 +1,16 @@
+name: verily_evidence
+description: Canonical evidence fingerprints and motion analysis shared by Verily clients and Serverpod.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: "^3.13.0"
+
+resolution: workspace
+
+dependencies:
+  crypto: ^3.0.6
+
+dev_dependencies:
+  test: ^1.25.0
+  very_good_analysis: ^10.2.0

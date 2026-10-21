@@ -1,0 +1,31 @@
+### Versioned, creator-owned proof contract. Published revisions are immutable;
+### historical attempts stay tied to the rules they accepted.
+class: ActionDefinition
+serverOnly: true
+table: verily_action_definition
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  creatorAuthUser: module:auth:AuthUser?, relation(onDelete=Restrict)
+  actionKey: String
+  revision: int, default=1
+  title: String
+  description: String
+  status: ActionDefinitionStatus
+  recurrence: ActionRecurrence
+  timeZone: String
+  maxVerifiedCompletions: int?
+  verifiedCompletions: int, default=0
+  opensAt: DateTime?
+  closesAt: DateTime?
+  publishedAt: DateTime?
+  pausedAt: DateTime?
+  createdAt: DateTime, defaultModel=now
+  updatedAt: DateTime, defaultModel=now
+indexes:
+  verily_action_definition_creator_key_idx:
+    fields: creatorAuthUserId, actionKey, revision
+    unique: true
+  verily_action_definition_creator_updated_idx:
+    fields: creatorAuthUserId, updatedAt
+  verily_action_definition_status_created_idx:
+    fields: status, createdAt

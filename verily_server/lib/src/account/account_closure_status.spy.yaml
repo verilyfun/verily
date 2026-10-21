@@ -1,0 +1,4 @@
+enum: AccountClosureStatus
+serialized: byName
+values:
+  - closed

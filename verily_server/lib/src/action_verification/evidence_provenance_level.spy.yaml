@@ -1,0 +1,6 @@
+enum: EvidenceProvenanceLevel
+serialized: byName
+values:
+  - basic
+  - appAttested
+  - deviceSigned

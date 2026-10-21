@@ -1,0 +1,18 @@
+### The one Solana wallet an account is paid to, proven by a signed message.
+### Re-linking replaces it; payouts already releasing keep their frozen wallet.
+class: PayoutWallet
+serverOnly: true
+table: verily_payout_wallet
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  authUser: module:auth:AuthUser?, relation(onDelete=Cascade)
+  walletAddress: String
+  linkedAt: DateTime
+  updatedAt: DateTime
+indexes:
+  verily_payout_wallet_user_idx:
+    fields: authUserId
+    unique: true
+  verily_payout_wallet_address_idx:
+    fields: walletAddress
+    unique: true
