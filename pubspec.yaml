@@ -12,3 +12,6 @@ workspace:
   - packages/verily_escrow_client
   - packages/verily_evidence
   - packages/verily_lints
+
+dev_dependencies:
+  test: ^1.25.0

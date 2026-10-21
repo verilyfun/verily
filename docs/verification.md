@@ -248,7 +248,10 @@ server with exactly the same model.
   MediaPipe runtime. It is published for macOS arm64 and Linux x64 only; the
   replay was verified on macOS arm64 (a thumbs-up photo scores 0.73 for
   `Thumb_Up`, cat and dog 0.82 and 0.89). The image installs `ffmpeg` and
-  `libstdc++6`; the Linux path has not been run yet.
+  `libstdc++6`. Its bundled Linux libraries need glibc 2.39 and the
+  libstdc++ of GCC 13 or newer, which Debian trixie provides.
+  `devenv shell test:server-image` replays the same fixtures inside the image
+  ([local CI](local-ci.md)); the Linux path has not been run yet.
 
 ## Review, appeals, and moderation
 

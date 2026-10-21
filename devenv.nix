@@ -624,19 +624,31 @@ in
     "test:all" = {
       exec = ''
         set -e
+        test:tools
         test:lints
         test:escrow
         test:flutter
         test:server
       '';
-      description = "Run lint-rule, escrow program, Flutter, and Serverpod tests.";
+      description = "Run tooling, lint-rule, escrow program, Flutter, and Serverpod tests.";
       binary = "bash";
       packages = [
+        config.scripts."test:tools".scriptPackage
         config.scripts."test:lints".scriptPackage
         config.scripts."test:escrow".scriptPackage
         config.scripts."test:flutter".scriptPackage
         config.scripts."test:server".scriptPackage
       ];
+    };
+    "test:tools" = {
+      exec = ''
+        set -e
+        cd "$DEVENV_ROOT"
+        dart test test/tool
+      '';
+      description = "Run the repository tooling tests, such as local CI's lane table.";
+      binary = "bash";
+      packages = [ config.scripts.dart.scriptPackage ];
     };
     "test:lints" = {
       exec = ''
