@@ -6,8 +6,7 @@ publish_to: none
 environment:
   sdk: ^3.13.0
 
-# Standalone until the root workspace pubspec lands; then this package joins
-# it with `resolution: workspace`.
+resolution: workspace
 
 dependencies:
   analysis_server_plugin: 0.3.14

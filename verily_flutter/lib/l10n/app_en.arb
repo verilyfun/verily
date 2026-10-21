@@ -1,5 +1,3827 @@
 {
   "@@locale": "en",
+  "@@x-section-shell": "App shell, navigation, shared labels. Owned by the shell.",
+  "tabDo": "Do",
+  "@tabDo": {
+    "description": "Bottom navigation: find and do actions."
+  },
+  "tabCreate": "Create",
+  "@tabCreate": {
+    "description": "Bottom navigation: post actions and manage Apps."
+  },
+  "tabMe": "Me",
+  "@tabMe": {
+    "description": "Bottom navigation: your attempts, payouts, and settings."
+  },
+  "navigationPrimaryLabel": "Main sections",
+  "@navigationPrimaryLabel": {
+    "description": "Accessible label of the main navigation."
+  },
+  "navigationRailHeading": "Your spaces",
+  "@navigationRailHeading": {
+    "description": "Heading above the navigation rail on wide screens."
+  },
+  "errorGeneric": "Something went wrong. Try again in a moment.",
+  "@errorGeneric": {
+    "description": "Fallback message for an unexpected failure. Never shows technical detail."
+  },
+  "errorNotFound": "We couldn't find that. It may have ended or been removed.",
+  "@errorNotFound": {
+    "description": "Shown when an action, App, or link no longer exists."
+  },
+  "comingSoonVerificationTitle": "Verify with Verily is almost here",
+  "@comingSoonVerificationTitle": {
+    "description": "Title shown when another app opens a verification request link."
+  },
+  "comingSoonVerificationBody": "An app asked you to prove something with Verily. Requests like this will open right here soon. Nothing was captured or shared.",
+  "@comingSoonVerificationBody": {
+    "description": "Body shown for a verification request link before the feature exists."
+  },
+  "comingSoonLinkTitle": "Linking apps is almost here",
+  "@comingSoonLinkTitle": {
+    "description": "Title shown when another app opens an account-linking link."
+  },
+  "comingSoonLinkBody": "An app asked to link with your Verily account. Soon you'll confirm that here. Until then, copy your link code from the action the app shared.",
+  "@comingSoonLinkBody": {
+    "description": "Body shown for an App linking link before the feature exists."
+  },
+  "comingSoonGoToDo": "Find actions",
+  "@comingSoonGoToDo": {
+    "description": "Button that leaves a coming-soon page for the Do tab."
+  },
+  "trustVerifiedOnPhone": "Verified on your phone",
+  "@trustVerifiedOnPhone": {
+    "description": "Trust label for actions whose proof is captured live and checked by Verily."
+  },
+  "trustConfirmedByApp": "Confirmed by {appName}",
+  "@trustConfirmedByApp": {
+    "description": "Trust label for actions a third-party App confirms. Verily does not check the act itself.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardInEscrow": "{amount} · in escrow",
+  "@rewardInEscrow": {
+    "description": "Reward chip: the payout per completion, locked in escrow. Amount includes the token, such as '5 USDC'.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardRemaining": "{count, plural, =0{No rewards left} =1{1 reward left} other{{count} rewards left}}",
+  "@rewardRemaining": {
+    "description": "How many payouts remain in an action's escrow.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "attemptStatusCollectingEvidence": "In progress",
+  "@attemptStatusCollectingEvidence": {
+    "description": "Attempt status: proof still being gathered."
+  },
+  "attemptStatusVerifying": "Checking your proof",
+  "@attemptStatusVerifying": {
+    "description": "Attempt status: the proof is being checked."
+  },
+  "attemptStatusPendingReview": "With a reviewer",
+  "@attemptStatusPendingReview": {
+    "description": "Attempt status: a person is looking at the proof."
+  },
+  "attemptStatusVerified": "Verified",
+  "@attemptStatusVerified": {
+    "description": "Attempt status: the proof passed."
+  },
+  "attemptStatusRejected": "Not accepted",
+  "@attemptStatusRejected": {
+    "description": "Attempt status: the proof was not accepted."
+  },
+  "attemptStatusCapacityReached": "This action is full",
+  "@attemptStatusCapacityReached": {
+    "description": "Attempt status: the action reached its limit before this attempt finished."
+  },
+  "payoutOnItsWay": "{amount} on its way",
+  "@payoutOnItsWay": {
+    "description": "Payout status: reserved or being sent.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "payoutAwaitingWallet": "Add a wallet to receive {amount}",
+  "@payoutAwaitingWallet": {
+    "description": "Payout status: waiting for the participant to link a payout wallet.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "payoutHeldForReview": "{amount} held for a quick check",
+  "@payoutHeldForReview": {
+    "description": "Payout status: a person checks valuable payouts before release.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "payoutReleased": "{amount} paid",
+  "@payoutReleased": {
+    "description": "Payout status: sent to the participant's wallet.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "payoutFailed": "Sending {amount} didn't work yet. We'll keep trying.",
+  "@payoutFailed": {
+    "description": "Payout status: release failed and will be retried.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "payoutExpired": "{amount} expired before it could be sent",
+  "@payoutExpired": {
+    "description": "Payout status: the escrow's payout window closed.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardOutcomePoolEmpty": "Every reward for this action has been claimed",
+  "@rewardOutcomePoolEmpty": {
+    "description": "Shown on a verified attempt when no payout was left."
+  },
+  "rewardOutcomeAccountLimit": "You've earned the most this action allows",
+  "@rewardOutcomeAccountLimit": {
+    "description": "Shown when the participant reached the action's per-account limit."
+  },
+  "rewardOutcomePoolEnded": "The reward period had ended",
+  "@rewardOutcomePoolEnded": {
+    "description": "Shown when the escrow's payout period closed before this completion."
+  },
+  "@@x-section-create-editor": "Action editor: authoring, requirements, place picker, venue codes, reward terms, funding.",
+  "editorMapUnavailable": "The map isn't available here. Enter the place's coordinates instead.",
+  "@editorMapUnavailable": {
+    "description": "Shown instead of the place picker map when it cannot load or the platform has no map."
+  },
+  "editorVerifierPromptInvalid": "Say what Verily should check in at least 10 characters.",
+  "@editorVerifierPromptInvalid": {
+    "description": "Validation for the verification prompt."
+  },
+  "venueCodeNew": "Show a new code",
+  "@venueCodeNew": {
+    "description": "Button that replaces the shown venue code with a fresh one, for example after someone scanned it."
+  },
+  "editorNewTitle": "New action",
+  "@editorNewTitle": {
+    "description": "Editor page title when creating an action."
+  },
+  "editorEditTitle": "Edit action",
+  "@editorEditTitle": {
+    "description": "Editor page title when editing an action."
+  },
+  "editorNewSubtitle": "A place, a proof, and an optional reward",
+  "@editorNewSubtitle": {
+    "description": "Breadcrumb under the new-action title."
+  },
+  "editorEditSubtitle": "Saving a live action starts its next version",
+  "@editorEditSubtitle": {
+    "description": "Breadcrumb under the edit-action title. Live actions keep their rules for attempts already started."
+  },
+  "editorLoading": "Opening your action…",
+  "@editorLoading": {
+    "description": "Shown while a saved action loads in the editor."
+  },
+  "editorLoadFailed": "We couldn't open this action",
+  "@editorLoadFailed": {
+    "description": "Title shown when a saved action fails to load."
+  },
+  "editorStartHeading": "How do you want to start?",
+  "@editorStartHeading": {
+    "description": "Heading above the ways to start a new action."
+  },
+  "editorPromptLabel": "Describe the action",
+  "@editorPromptLabel": {
+    "description": "Label of the field for describing an action to draft with AI."
+  },
+  "editorPromptHint": "e.g. Ten squats in the park before 9am, filmed in one go",
+  "@editorPromptHint": {
+    "description": "Example shown in the describe-the-action field."
+  },
+  "editorPromptHelp": "Verily drafts the place, the proof, and the wording. You check every field before anything goes live.",
+  "@editorPromptHelp": {
+    "description": "Explains AI drafting under the describe field."
+  },
+  "editorPromptAction": "Draft it for me",
+  "@editorPromptAction": {
+    "description": "Button that drafts an action from the description."
+  },
+  "editorPromptTooShort": "Say a little more: at least 20 characters.",
+  "@editorPromptTooShort": {
+    "description": "Shown when the description is too short to draft from."
+  },
+  "editorTemplatesHeading": "Or start from a template",
+  "@editorTemplatesHeading": {
+    "description": "Heading above the action templates."
+  },
+  "editorTemplatesLoading": "Loading templates…",
+  "@editorTemplatesLoading": {
+    "description": "Shown while templates load."
+  },
+  "editorTemplatesFailed": "Templates didn't load.",
+  "@editorTemplatesFailed": {
+    "description": "Shown when templates fail to load."
+  },
+  "editorStartBlank": "Start from scratch",
+  "@editorStartBlank": {
+    "description": "Button that starts an empty action."
+  },
+  "editorStartOver": "Start over",
+  "@editorStartOver": {
+    "description": "Button that discards the unsaved draft and returns to the starting choices."
+  },
+  "editorDraftReady": "Draft ready. Check every field before you save.",
+  "@editorDraftReady": {
+    "description": "Shown when a template or AI draft fills the editor."
+  },
+  "editorSafetyHeading": "Before you publish",
+  "@editorSafetyHeading": {
+    "description": "Heading above safety notes that came with a draft."
+  },
+  "editorBasicsHeading": "The action",
+  "@editorBasicsHeading": {
+    "description": "Section heading for the title and description."
+  },
+  "editorTitleLabel": "Title",
+  "@editorTitleLabel": {
+    "description": "Label of the action title field."
+  },
+  "editorDescriptionLabel": "What people do",
+  "@editorDescriptionLabel": {
+    "description": "Label of the action description field."
+  },
+  "editorFieldRequired": "Fill this in.",
+  "@editorFieldRequired": {
+    "description": "Validation message for an empty required field."
+  },
+  "editorFixErrors": "A few fields need a look before saving.",
+  "@editorFixErrors": {
+    "description": "Shown when saving finds invalid fields."
+  },
+  "editorProofHeading": "Proof",
+  "@editorProofHeading": {
+    "description": "Section heading for an action's requirements."
+  },
+  "editorProofHelp": "Up to five. Every proof is captured live in Verily, or confirmed by one of your Apps.",
+  "@editorProofHelp": {
+    "description": "Explains the proof section."
+  },
+  "editorProofNone": "Add at least one proof.",
+  "@editorProofNone": {
+    "description": "Shown when an action has no requirements."
+  },
+  "editorAddProof": "Add proof",
+  "@editorAddProof": {
+    "description": "Button that opens the list of proof kinds."
+  },
+  "editorAddProofSheetTitle": "What should people prove?",
+  "@editorAddProofSheetTitle": {
+    "description": "Title of the sheet listing proof kinds."
+  },
+  "editorRemoveProof": "Remove {title}",
+  "@editorRemoveProof": {
+    "description": "Accessible label of the button that removes a proof.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "editorProofTitleLabel": "What to call it",
+  "@editorProofTitleLabel": {
+    "description": "Label of a proof's title field."
+  },
+  "editorProofInstructionsLabel": "What people do for it",
+  "@editorProofInstructionsLabel": {
+    "description": "Label of a proof's instructions field."
+  },
+  "editorProofMaxReached": "An action can ask for five proofs at most.",
+  "@editorProofMaxReached": {
+    "description": "Shown when five proofs already exist."
+  },
+  "editorProofAppOnly": "An App's confirmation is the only proof on its action. Remove it to add phone proof.",
+  "@editorProofAppOnly": {
+    "description": "Explains why phone proof cannot be added next to App confirmation."
+  },
+  "editorProofPhoneOnly": "App confirmation can't be mixed with phone proof. Remove the other proofs to use it.",
+  "@editorProofPhoneOnly": {
+    "description": "Explains why App confirmation cannot be added next to phone proof."
+  },
+  "editorKindLocation": "Be at a place",
+  "@editorKindLocation": {
+    "description": "Name of the 'Be at a place' proof kind."
+  },
+  "editorKindLocationHelp": "A pin and a radius. People share a fresh location from inside it.",
+  "@editorKindLocationHelp": {
+    "description": "One-line explanation of the 'Be at a place' proof kind."
+  },
+  "editorKindLocationDefaultTitle": "Check in at the place",
+  "@editorKindLocationDefaultTitle": {
+    "description": "Starting title of a new 'Be at a place' proof."
+  },
+  "editorKindLocationDefaultInstructions": "Share a fresh location while you're there.",
+  "@editorKindLocationDefaultInstructions": {
+    "description": "Starting instructions of a new 'Be at a place' proof."
+  },
+  "editorKindVenueCode": "Scan a venue code",
+  "@editorKindVenueCode": {
+    "description": "Name of the 'Scan a venue code' proof kind."
+  },
+  "editorKindVenueCodeHelp": "You show a code at the venue that changes every few minutes.",
+  "@editorKindVenueCodeHelp": {
+    "description": "One-line explanation of the 'Scan a venue code' proof kind."
+  },
+  "editorKindVenueCodeDefaultTitle": "Scan the venue code",
+  "@editorKindVenueCodeDefaultTitle": {
+    "description": "Starting title of a new 'Scan a venue code' proof."
+  },
+  "editorKindVenueCodeDefaultInstructions": "Scan the code on display right now.",
+  "@editorKindVenueCodeDefaultInstructions": {
+    "description": "Starting instructions of a new 'Scan a venue code' proof."
+  },
+  "editorKindMotion": "Move the phone",
+  "@editorKindMotion": {
+    "description": "Name of the 'Move the phone' proof kind."
+  },
+  "editorKindMotionHelp": "Spins, flips, shakes, a gentle toss, or holding still, felt by the phone.",
+  "@editorKindMotionHelp": {
+    "description": "One-line explanation of the 'Move the phone' proof kind."
+  },
+  "editorKindMotionDefaultTitle": "Move the phone",
+  "@editorKindMotionDefaultTitle": {
+    "description": "Starting title of a new 'Move the phone' proof."
+  },
+  "editorKindMotionDefaultInstructions": "Hold the phone securely and do the movement once you start.",
+  "@editorKindMotionDefaultInstructions": {
+    "description": "Starting instructions of a new 'Move the phone' proof."
+  },
+  "editorKindMovementReps": "Count reps",
+  "@editorKindMovementReps": {
+    "description": "Name of the 'Count reps' proof kind."
+  },
+  "editorKindMovementRepsHelp": "Squats, press-ups and more, counted live by the camera and checked from the video.",
+  "@editorKindMovementRepsHelp": {
+    "description": "One-line explanation of the 'Count reps' proof kind."
+  },
+  "editorKindMovementRepsDefaultTitle": "Do the reps",
+  "@editorKindMovementRepsDefaultTitle": {
+    "description": "Starting title of a new 'Count reps' proof."
+  },
+  "editorKindMovementRepsDefaultInstructions": "Prop your phone up, step back so your whole body is in frame, and keep going until the counter reaches the target.",
+  "@editorKindMovementRepsDefaultInstructions": {
+    "description": "Starting instructions of a new 'Count reps' proof."
+  },
+  "editorKindVideo": "Record a video",
+  "@editorKindVideo": {
+    "description": "Name of the 'Record a video' proof kind."
+  },
+  "editorKindVideoHelp": "Filmed live in Verily, never uploaded.",
+  "@editorKindVideoHelp": {
+    "description": "One-line explanation of the 'Record a video' proof kind."
+  },
+  "editorKindVideoDefaultTitle": "Record it",
+  "@editorKindVideoDefaultTitle": {
+    "description": "Starting title of a new 'Record a video' proof."
+  },
+  "editorKindVideoDefaultInstructions": "Film one continuous take that shows it happening.",
+  "@editorKindVideoDefaultInstructions": {
+    "description": "Starting instructions of a new 'Record a video' proof."
+  },
+  "editorKindPhoto": "Take a photo",
+  "@editorKindPhoto": {
+    "description": "Name of the 'Take a photo' proof kind."
+  },
+  "editorKindPhotoHelp": "Taken live in Verily, never picked from the gallery.",
+  "@editorKindPhotoHelp": {
+    "description": "One-line explanation of the 'Take a photo' proof kind."
+  },
+  "editorKindPhotoDefaultTitle": "Take the photo",
+  "@editorKindPhotoDefaultTitle": {
+    "description": "Starting title of a new 'Take a photo' proof."
+  },
+  "editorKindPhotoDefaultInstructions": "Take one clear photo that shows it.",
+  "@editorKindPhotoDefaultInstructions": {
+    "description": "Starting instructions of a new 'Take a photo' proof."
+  },
+  "editorKindAudio": "Record audio",
+  "@editorKindAudio": {
+    "description": "Name of the 'Record audio' proof kind."
+  },
+  "editorKindAudioHelp": "Recorded live in Verily.",
+  "@editorKindAudioHelp": {
+    "description": "One-line explanation of the 'Record audio' proof kind."
+  },
+  "editorKindAudioDefaultTitle": "Record it",
+  "@editorKindAudioDefaultTitle": {
+    "description": "Starting title of a new 'Record audio' proof."
+  },
+  "editorKindAudioDefaultInstructions": "Record one continuous clip.",
+  "@editorKindAudioDefaultInstructions": {
+    "description": "Starting instructions of a new 'Record audio' proof."
+  },
+  "editorKindApp": "Confirmed by your App",
+  "@editorKindApp": {
+    "description": "Name of the 'Confirmed by your App' proof kind."
+  },
+  "editorKindAppHelp": "One of your Verily Apps tells Verily it happened. Verily doesn't check the act itself.",
+  "@editorKindAppHelp": {
+    "description": "One-line explanation of the 'Confirmed by your App' proof kind."
+  },
+  "editorKindAppDefaultTitle": "Confirmed by your App",
+  "@editorKindAppDefaultTitle": {
+    "description": "Starting title of a new 'Confirmed by your App' proof."
+  },
+  "editorKindAppDefaultInstructions": "Do it in the App. It confirms with Verily for you.",
+  "@editorKindAppDefaultInstructions": {
+    "description": "Starting instructions of a new 'Confirmed by your App' proof."
+  },
+  "editorPlaceTapHint": "Tap the map to move the pin. The hatched circle is where proof counts.",
+  "@editorPlaceTapHint": {
+    "description": "Hint under the place picker map."
+  },
+  "editorUseMyLocation": "Use my location",
+  "@editorUseMyLocation": {
+    "description": "Button that moves the pin to the creator's position."
+  },
+  "editorLocationFailed": "We couldn't find your location. Tap the map or enter the coordinates.",
+  "@editorLocationFailed": {
+    "description": "Shown when the device position could not be read."
+  },
+  "editorLocationOff": "Location is off for Verily. Tap the map or enter the coordinates.",
+  "@editorLocationOff": {
+    "description": "Shown when location permission is denied or services are off."
+  },
+  "editorRadius": "Radius: {meters} m",
+  "@editorRadius": {
+    "description": "The place's radius in metres.",
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
+  },
+  "editorRadiusSemantic": "Radius around the place",
+  "@editorRadiusSemantic": {
+    "description": "Accessible label of the radius slider."
+  },
+  "editorCoordinates": "Enter coordinates",
+  "@editorCoordinates": {
+    "description": "Expands the latitude and longitude fields."
+  },
+  "editorLatitudeLabel": "Latitude",
+  "@editorLatitudeLabel": {
+    "description": "Label of the latitude field."
+  },
+  "editorLongitudeLabel": "Longitude",
+  "@editorLongitudeLabel": {
+    "description": "Label of the longitude field."
+  },
+  "editorCoordinatesInvalid": "Latitude runs from -90 to 90 and longitude from -180 to 180.",
+  "@editorCoordinatesInvalid": {
+    "description": "Shown for out-of-range coordinates."
+  },
+  "editorPlaceMissing": "Pick a place on the map or enter its coordinates.",
+  "@editorPlaceMissing": {
+    "description": "Shown when a place proof has no place yet."
+  },
+  "editorMapLabel": "Map for choosing where the action happens",
+  "@editorMapLabel": {
+    "description": "Accessible label of the place picker map."
+  },
+  "editorPlacePin": "Where the action happens",
+  "@editorPlacePin": {
+    "description": "Accessible label of the place pin."
+  },
+  "editorVenueCodeExplainer": "Participants scan a code that only exists at the venue. After you publish, open the action and show its venue code there. It changes every few minutes, so a photo of it won't work later.",
+  "@editorVenueCodeExplainer": {
+    "description": "Explains how venue codes work in the editor."
+  },
+  "editorVerifierPromptLabel": "What Verily should check",
+  "@editorVerifierPromptLabel": {
+    "description": "Label of the field describing what the proof must show."
+  },
+  "editorVerifierPromptHelp": "Say plainly what the proof must show. Everything in the recording is treated as evidence, never as instructions.",
+  "@editorVerifierPromptHelp": {
+    "description": "Helper under the verification prompt field."
+  },
+  "editorVerifierPromptRewrite": "Write this again: saved actions don't send it back to the app.",
+  "@editorVerifierPromptRewrite": {
+    "description": "Shown when editing a saved media proof whose check text is not returned by the server."
+  },
+  "editorMinSecondsLabel": "Shortest (seconds)",
+  "@editorMinSecondsLabel": {
+    "description": "Label of the minimum recording length field."
+  },
+  "editorMaxSecondsLabel": "Longest (seconds)",
+  "@editorMaxSecondsLabel": {
+    "description": "Label of the maximum recording length field."
+  },
+  "editorSecondsInvalid": "Between 3 and 300 seconds, and the longest can't be shorter than the shortest.",
+  "@editorSecondsInvalid": {
+    "description": "Validation for recording lengths."
+  },
+  "editorMotionSecondsInvalid": "Between 1 and {max} seconds, and the longest can't be shorter than the shortest.",
+  "@editorMotionSecondsInvalid": {
+    "description": "Validation for motion durations.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "editorSpokenChallenge": "Ask for a spoken word",
+  "@editorSpokenChallenge": {
+    "description": "Toggle for the live spoken challenge on recordings."
+  },
+  "editorSpokenChallengeHelp": "Verily gives each person a fresh word to say while recording, so an old or generated clip can't pass.",
+  "@editorSpokenChallengeHelp": {
+    "description": "Explains the spoken challenge."
+  },
+  "editorMoreChecks": "More checking options",
+  "@editorMoreChecks": {
+    "description": "Expands advanced verification settings."
+  },
+  "editorPolicyLabel": "How it's checked",
+  "@editorPolicyLabel": {
+    "description": "Label of the verification policy picker."
+  },
+  "editorPolicySingle": "One careful check",
+  "@editorPolicySingle": {
+    "description": "Single-model verification policy."
+  },
+  "editorPolicyCouncil": "Several independent checks (stricter)",
+  "@editorPolicyCouncil": {
+    "description": "Model-council verification policy."
+  },
+  "editorConfidence": "How sure the check must be: {percent}%",
+  "@editorConfidence": {
+    "description": "Minimum confidence for automatic acceptance.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "editorConfidenceSemantic": "How sure the check must be",
+  "@editorConfidenceSemantic": {
+    "description": "Accessible label of the confidence slider."
+  },
+  "editorMovementLabel": "Movement",
+  "@editorMovementLabel": {
+    "description": "Label of the movement picker."
+  },
+  "editorMovementTargetLabel": "How many",
+  "@editorMovementTargetLabel": {
+    "description": "Label of the repetition target field."
+  },
+  "editorMovementTargetInvalid": "Between 1 and 1,000.",
+  "@editorMovementTargetInvalid": {
+    "description": "Validation for repetition targets."
+  },
+  "editorMovementSquats": "Squats",
+  "@editorMovementSquats": {
+    "description": "Name of the squats movement."
+  },
+  "editorMovementPressUps": "Press-ups",
+  "@editorMovementPressUps": {
+    "description": "Name of the press-ups movement."
+  },
+  "editorMovementSitUps": "Sit-ups",
+  "@editorMovementSitUps": {
+    "description": "Name of the sit-ups movement."
+  },
+  "editorMovementLunges": "Lunges",
+  "@editorMovementLunges": {
+    "description": "Name of the lunges movement."
+  },
+  "editorMovementStarJumps": "Star jumps",
+  "@editorMovementStarJumps": {
+    "description": "Name of the star jumps movement."
+  },
+  "editorMovementBurpees": "Burpees",
+  "@editorMovementBurpees": {
+    "description": "Name of the burpees movement."
+  },
+  "editorMovementHighKnees": "High knees",
+  "@editorMovementHighKnees": {
+    "description": "Name of the high knees movement."
+  },
+  "editorMovementLateralRaises": "Lateral raises",
+  "@editorMovementLateralRaises": {
+    "description": "Name of the lateral raises movement."
+  },
+  "editorMovementBicepsCurls": "Biceps curls",
+  "@editorMovementBicepsCurls": {
+    "description": "Name of the biceps curls movement."
+  },
+  "editorMovementSideBends": "Side bends",
+  "@editorMovementSideBends": {
+    "description": "Name of the side bends movement."
+  },
+  "editorMovementFootballKickUps": "Football kick-ups",
+  "@editorMovementFootballKickUps": {
+    "description": "Name of the football kick-ups movement."
+  },
+  "editorMovementTableTennisBounces": "Table tennis bounces",
+  "@editorMovementTableTennisBounces": {
+    "description": "Name of the table tennis bounces movement."
+  },
+  "editorMotionTypeLabel": "Movement",
+  "@editorMotionTypeLabel": {
+    "description": "Label of the phone-motion picker."
+  },
+  "editorMotionToss": "Gentle toss",
+  "@editorMotionToss": {
+    "description": "Phone motion: a low toss and catch."
+  },
+  "editorMotionRotation": "Full turns",
+  "@editorMotionRotation": {
+    "description": "Phone motion: full rotations."
+  },
+  "editorMotionShake": "Shakes",
+  "@editorMotionShake": {
+    "description": "Phone motion: back-and-forth shakes."
+  },
+  "editorMotionStillness": "Hold still",
+  "@editorMotionStillness": {
+    "description": "Phone motion: holding the phone still."
+  },
+  "editorMotionAxisLabel": "Direction",
+  "@editorMotionAxisLabel": {
+    "description": "Label of the motion direction picker."
+  },
+  "editorMotionAxisYaw": "Spin with the screen facing you",
+  "@editorMotionAxisYaw": {
+    "description": "Rotation around the vertical axis."
+  },
+  "editorMotionAxisPitch": "Flip forward",
+  "@editorMotionAxisPitch": {
+    "description": "Rotation end over end."
+  },
+  "editorMotionAxisRoll": "Roll side over side",
+  "@editorMotionAxisRoll": {
+    "description": "Rotation side over side."
+  },
+  "editorMotionAxisAny": "Any direction",
+  "@editorMotionAxisAny": {
+    "description": "Motion in any direction."
+  },
+  "editorMotionRepetitionsLabel": "How many times",
+  "@editorMotionRepetitionsLabel": {
+    "description": "Label of the motion repetition field."
+  },
+  "editorMotionRepetitionsInvalid": "Between 1 and {max}.",
+  "@editorMotionRepetitionsInvalid": {
+    "description": "Validation for motion repetitions.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "editorMotionTossSafety": "Ask for a low toss over something soft, caught with both hands. Never ask anyone to throw a phone.",
+  "@editorMotionTossSafety": {
+    "description": "Safety note shown for the toss motion."
+  },
+  "editorAppPickerLabel": "Your App",
+  "@editorAppPickerLabel": {
+    "description": "Label of the App picker for App-confirmed proof."
+  },
+  "editorAppNone": "You have no active Apps yet. Create one under Apps first.",
+  "@editorAppNone": {
+    "description": "Shown when the creator has no active Apps."
+  },
+  "editorAppsLoading": "Loading your Apps…",
+  "@editorAppsLoading": {
+    "description": "Shown while the creator's Apps load."
+  },
+  "editorAppsFailed": "Your Apps didn't load.",
+  "@editorAppsFailed": {
+    "description": "Shown when the creator's Apps fail to load."
+  },
+  "editorAppMissing": "Choose the App that confirms this.",
+  "@editorAppMissing": {
+    "description": "Validation when no App is chosen."
+  },
+  "editorAppTrust": "People will see “Confirmed by {appName}”.",
+  "@editorAppTrust": {
+    "description": "Explains the trust label participants see.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "editorTimingHeading": "When",
+  "@editorTimingHeading": {
+    "description": "Section heading for schedule settings."
+  },
+  "editorOnce": "Once",
+  "@editorOnce": {
+    "description": "Recurrence: each person does it once."
+  },
+  "editorDaily": "Every day",
+  "@editorDaily": {
+    "description": "Recurrence: each person can do it once a day."
+  },
+  "editorTimeZoneLabel": "Time zone for daily resets",
+  "@editorTimeZoneLabel": {
+    "description": "Label of the time zone field."
+  },
+  "editorTimeZoneHelp": "An IANA name, such as Europe/London or America/New_York.",
+  "@editorTimeZoneHelp": {
+    "description": "Helper for the time zone field."
+  },
+  "editorOpensLabel": "Opens",
+  "@editorOpensLabel": {
+    "description": "Label of the opening date."
+  },
+  "editorClosesLabel": "Closes",
+  "@editorClosesLabel": {
+    "description": "Label of the closing date."
+  },
+  "editorDateAnyTime": "Any time",
+  "@editorDateAnyTime": {
+    "description": "Shown when no date is set."
+  },
+  "editorDateClear": "Clear {label}",
+  "@editorDateClear": {
+    "description": "Accessible label of the button that clears a date.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "editorClosesBeforeOpens": "It has to close after it opens.",
+  "@editorClosesBeforeOpens": {
+    "description": "Validation for dates."
+  },
+  "editorMaxCompletionsLabel": "Most completions (optional)",
+  "@editorMaxCompletionsLabel": {
+    "description": "Label of the completion limit field."
+  },
+  "editorWholeNumberInvalid": "A whole number above zero.",
+  "@editorWholeNumberInvalid": {
+    "description": "Validation for whole numbers."
+  },
+  "editorRewardHeading": "Reward",
+  "@editorRewardHeading": {
+    "description": "Section heading for the escrowed reward."
+  },
+  "editorRewardToggle": "Pay people who do it",
+  "@editorRewardToggle": {
+    "description": "Toggle that adds an escrowed reward."
+  },
+  "editorRewardHelp": "Rewards are paid in USDC from an escrow you fund before publishing. Nobody works for a promise.",
+  "@editorRewardHelp": {
+    "description": "Explains rewards in the editor."
+  },
+  "editorRewardAmountLabel": "Per completion (USDC)",
+  "@editorRewardAmountLabel": {
+    "description": "Label of the payout amount field."
+  },
+  "editorRewardMaxPayoutsLabel": "Number of payouts",
+  "@editorRewardMaxPayoutsLabel": {
+    "description": "Label of the payout count field."
+  },
+  "editorRewardMaxWinsLabel": "Most payouts one person can earn",
+  "@editorRewardMaxWinsLabel": {
+    "description": "Label of the per-person limit field."
+  },
+  "editorRewardEndsLabel": "Payouts end",
+  "@editorRewardEndsLabel": {
+    "description": "Label of the reward end date."
+  },
+  "editorRewardRefundDelay": "Unused funds come back {days} days after it ends",
+  "@editorRewardRefundDelay": {
+    "description": "The refund delay in days.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "editorRewardRefundDelayHelp": "Time for checks and appeals to finish before the escrow can close.",
+  "@editorRewardRefundDelayHelp": {
+    "description": "Explains the refund delay."
+  },
+  "editorRewardRefundSemantic": "Days until unused funds come back",
+  "@editorRewardRefundSemantic": {
+    "description": "Accessible label of the refund delay slider."
+  },
+  "editorRewardBudget": "You lock {total} in escrow",
+  "@editorRewardBudget": {
+    "description": "The total budget the creator funds, such as '50 USDC'.",
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "editorRewardBudgetIncomplete": "Enter an amount and the number of payouts to see the total.",
+  "@editorRewardBudgetIncomplete": {
+    "description": "Shown before the budget can be computed."
+  },
+  "editorRewardAmountInvalid": "Enter an amount above zero with at most 6 decimal places.",
+  "@editorRewardAmountInvalid": {
+    "description": "Validation for the payout amount."
+  },
+  "editorRewardAmountTooLarge": "One payout can be at most 1,000,000 USDC.",
+  "@editorRewardAmountTooLarge": {
+    "description": "Validation for a too-large payout."
+  },
+  "editorRewardMaxPayoutsInvalid": "Between 1 and 2,048 payouts.",
+  "@editorRewardMaxPayoutsInvalid": {
+    "description": "Validation for the payout count."
+  },
+  "editorRewardMaxWinsInvalid": "Between 1 and {max}.",
+  "@editorRewardMaxWinsInvalid": {
+    "description": "Validation for the per-person limit.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "editorRewardEndTooSoon": "Give it at least an hour.",
+  "@editorRewardEndTooSoon": {
+    "description": "Validation for a reward ending too soon."
+  },
+  "editorRewardEndTooLate": "A reward can stay open for a year at most.",
+  "@editorRewardEndTooLate": {
+    "description": "Validation for a reward ending too late."
+  },
+  "editorRewardLocked": "Funding has started, so these terms are fixed.",
+  "@editorRewardLocked": {
+    "description": "Shown when reward terms can no longer change."
+  },
+  "editorRewardStatusAwaiting": "Waiting for escrow",
+  "@editorRewardStatusAwaiting": {
+    "description": "Reward pool status: funding prepared, not confirmed."
+  },
+  "editorRewardStatusFunded": "Locked in escrow",
+  "@editorRewardStatusFunded": {
+    "description": "Reward pool status: escrow verified by the server."
+  },
+  "editorRewardStatusEnded": "Payouts ended",
+  "@editorRewardStatusEnded": {
+    "description": "Reward pool status: ended."
+  },
+  "editorRewardStatusClosed": "Escrow closed",
+  "@editorRewardStatusClosed": {
+    "description": "Reward pool status: closed."
+  },
+  "editorSave": "Save draft",
+  "@editorSave": {
+    "description": "Button that saves the action as a private draft."
+  },
+  "editorPreview": "Preview",
+  "@editorPreview": {
+    "description": "Button that saves the draft and opens it as participants see it."
+  },
+  "editorPublish": "Publish",
+  "@editorPublish": {
+    "description": "Button that publishes the action."
+  },
+  "editorFundAndPublish": "Fund and publish",
+  "@editorFundAndPublish": {
+    "description": "Button that funds the reward and then publishes."
+  },
+  "editorPublishConfirmTitle": "Publish “{title}”?",
+  "@editorPublishConfirmTitle": {
+    "description": "Title of the publish confirmation dialog.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "editorPublishConfirmBody": "It goes live for everyone right away. You can pause it later.",
+  "@editorPublishConfirmBody": {
+    "description": "Body of the publish confirmation dialog."
+  },
+  "editorPublishConfirm": "Publish now",
+  "@editorPublishConfirm": {
+    "description": "Confirms publishing."
+  },
+  "editorSaved": "Draft saved.",
+  "@editorSaved": {
+    "description": "Shown after saving a draft."
+  },
+  "editorPublished": "It's live.",
+  "@editorPublished": {
+    "description": "Shown after publishing."
+  },
+  "editorFundFirst": "Fund the reward to publish this action.",
+  "@editorFundFirst": {
+    "description": "Shown when publishing stops because the reward is not funded."
+  },
+  "editorStatusDraft": "Draft",
+  "@editorStatusDraft": {
+    "description": "Action status: draft."
+  },
+  "editorStatusLive": "Live",
+  "@editorStatusLive": {
+    "description": "Action status: live."
+  },
+  "editorStatusPaused": "Paused",
+  "@editorStatusPaused": {
+    "description": "Action status: paused."
+  },
+  "editorStatusCompleted": "Ended",
+  "@editorStatusCompleted": {
+    "description": "Action status: ended."
+  },
+  "venueCodeTitle": "Venue code",
+  "@venueCodeTitle": {
+    "description": "Title of the venue code sheet."
+  },
+  "venueCodeBody": "Keep this open at the venue. People scan it with Verily, and it changes every few minutes.",
+  "@venueCodeBody": {
+    "description": "Explains the venue code to the creator."
+  },
+  "venueCodeChangesIn": "Changes in {time}",
+  "@venueCodeChangesIn": {
+    "description": "Countdown until the venue code changes, such as '4:32'.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "venueCodeRefreshing": "Getting a fresh code…",
+  "@venueCodeRefreshing": {
+    "description": "Shown while a new venue code loads."
+  },
+  "venueCodeFailed": "We couldn't get a venue code.",
+  "@venueCodeFailed": {
+    "description": "Shown when a venue code fails to load."
+  },
+  "venueCodeImageLabel": "Venue code for {title}",
+  "@venueCodeImageLabel": {
+    "description": "Accessible label of the QR code image.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "fundingTitle": "Lock the reward in escrow",
+  "@fundingTitle": {
+    "description": "Title of the reward funding sheet."
+  },
+  "fundingIntro": "Before anyone starts, the whole reward goes into an escrow that only verified proof can release. Unused funds come back to you after the action ends.",
+  "@fundingIntro": {
+    "description": "Explains escrow funding."
+  },
+  "fundingWalletHeading": "Your payout wallet",
+  "@fundingWalletHeading": {
+    "description": "Heading for the creator's linked wallet."
+  },
+  "fundingWalletNeeded": "Link the Solana wallet you'll fund the reward from. Refunds come back to it too.",
+  "@fundingWalletNeeded": {
+    "description": "Shown when no payout wallet is linked."
+  },
+  "fundingLinkWallet": "Link a wallet",
+  "@fundingLinkWallet": {
+    "description": "Button that links a wallet through Mobile Wallet Adapter."
+  },
+  "fundingWalletLinked": "Linked wallet {address}",
+  "@fundingWalletLinked": {
+    "description": "Shows the linked wallet's shortened address.",
+    "placeholders": {
+      "address": {
+        "type": "String"
+      }
+    }
+  },
+  "fundingNeedsAndroid": "Funding needs the Verily Android app and a Solana wallet, such as Phantom or Solflare, on the same phone.",
+  "@fundingNeedsAndroid": {
+    "description": "Shown on platforms that cannot sign the funding transaction."
+  },
+  "fundingLoading": "Checking your wallet…",
+  "@fundingLoading": {
+    "description": "Shown while the linked wallet loads."
+  },
+  "fundingPreparing": "Preparing the escrow…",
+  "@fundingPreparing": {
+    "description": "Shown while the server prepares funding."
+  },
+  "fundingPerCompletion": "Per completion",
+  "@fundingPerCompletion": {
+    "description": "Escrow summary row: payout amount."
+  },
+  "fundingPayouts": "Payouts",
+  "@fundingPayouts": {
+    "description": "Escrow summary row: number of payouts."
+  },
+  "fundingTotal": "Total locked",
+  "@fundingTotal": {
+    "description": "Escrow summary row: total budget."
+  },
+  "fundingEnds": "Payouts end",
+  "@fundingEnds": {
+    "description": "Escrow summary row: end of payouts."
+  },
+  "fundingRefundFrom": "Refund available from",
+  "@fundingRefundFrom": {
+    "description": "Escrow summary row: when unused funds can be reclaimed."
+  },
+  "fundingApprove": "Approve in your wallet",
+  "@fundingApprove": {
+    "description": "Button that opens the wallet to sign and send the escrow transaction."
+  },
+  "fundingConfirming": "Checking the escrow…",
+  "@fundingConfirming": {
+    "description": "Shown while the server verifies the escrow from chain state."
+  },
+  "fundingFunded": "Locked in escrow",
+  "@fundingFunded": {
+    "description": "Shown when the server reports the reward funded."
+  },
+  "fundingFundedBody": "{total} is in escrow. You can publish the action now.",
+  "@fundingFundedBody": {
+    "description": "Shown after funding succeeds.",
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "fundingNotYet": "The escrow isn't confirmed yet. Try again in a moment.",
+  "@fundingNotYet": {
+    "description": "Shown when the server has not verified the escrow."
+  },
+  "fundingSentNotVisible": "Your wallet sent the escrow, but it isn't visible yet. Check again in a moment; there's no need to approve it twice.",
+  "@fundingSentNotVisible": {
+    "description": "Shown when the wallet sent the funding transaction but the server can't see the escrow on chain yet."
+  },
+  "fundingCheckAgain": "Check the escrow again",
+  "@fundingCheckAgain": {
+    "description": "Button that asks the server to look for an escrow the wallet already sent, without signing again."
+  },
+  "fundingDevHeading": "Development escrow (developer only)",
+  "@fundingDevHeading": {
+    "description": "Heading of the debug-only local development funding step."
+  },
+  "fundingDevBody": "This server uses a local development escrow with no blockchain. Confirming records a development signature, and no money moves.",
+  "@fundingDevBody": {
+    "description": "Explains the debug-only development escrow."
+  },
+  "fundingDevConfirm": "Confirm development escrow",
+  "@fundingDevConfirm": {
+    "description": "Debug-only button that confirms a development escrow."
+  },
+  "fundingUnavailable": "Rewards aren't available on this server yet.",
+  "@fundingUnavailable": {
+    "description": "Shown in release builds when the server has no real escrow."
+  },
+  "fundingWalletUnavailable": "No Solana wallet answered. Install one that supports Mobile Wallet Adapter and try again.",
+  "@fundingWalletUnavailable": {
+    "description": "Wallet failure: no wallet available."
+  },
+  "fundingWalletCancelled": "You declined in your wallet. Nothing was sent.",
+  "@fundingWalletCancelled": {
+    "description": "Wallet failure: declined."
+  },
+  "fundingWalletTimedOut": "Your wallet didn't answer in time. Try again.",
+  "@fundingWalletTimedOut": {
+    "description": "Wallet failure: timeout."
+  },
+  "fundingWalletWrongAccount": "That's a different wallet account. Approve with the wallet you linked.",
+  "@fundingWalletWrongAccount": {
+    "description": "Wallet failure: wrong account."
+  },
+  "fundingWalletInvalid": "Your wallet sent back something we couldn't use. Try again.",
+  "@fundingWalletInvalid": {
+    "description": "Wallet failure: unusable response."
+  },
+  "fundingWalletFailed": "The wallet request didn't finish. Try again.",
+  "@fundingWalletFailed": {
+    "description": "Wallet failure: other."
+  },
+  "@@x-section-create-hub": "Create tab hub and Verily Apps.",
+  "hubTitle": "Create",
+  "@hubTitle": {
+    "description": "Title of the Create tab."
+  },
+  "hubSubtitle": "Post actions people do in real places.",
+  "@hubSubtitle": {
+    "description": "Subtitle of the Create tab."
+  },
+  "hubPostAction": "Post an action",
+  "@hubPostAction": {
+    "description": "Primary button that starts a new action."
+  },
+  "hubActionsHeading": "Your actions",
+  "@hubActionsHeading": {
+    "description": "Heading above the creator's actions."
+  },
+  "hubLoading": "Loading your actions…",
+  "@hubLoading": {
+    "description": "Shown while the creator's actions load."
+  },
+  "hubLoadFailedTitle": "We couldn't load your actions",
+  "@hubLoadFailedTitle": {
+    "description": "Problem title when the creator's actions fail to load."
+  },
+  "hubEmptyTitle": "Post your first action",
+  "@hubEmptyTitle": {
+    "description": "Empty state title before the creator has any actions."
+  },
+  "hubEmptyBody": "Pick a place, choose the proof, and add a reward if you like. People can start as soon as it's live.",
+  "@hubEmptyBody": {
+    "description": "Empty state body before the creator has any actions."
+  },
+  "hubStatusDraft": "Draft",
+  "@hubStatusDraft": {
+    "description": "Action status: not published yet."
+  },
+  "hubStatusLive": "Live",
+  "@hubStatusLive": {
+    "description": "Action status: published and open to participants."
+  },
+  "hubStatusPaused": "Paused",
+  "@hubStatusPaused": {
+    "description": "Action status: no new attempts until published again."
+  },
+  "hubStatusCompleted": "Completed",
+  "@hubStatusCompleted": {
+    "description": "Action status: finished."
+  },
+  "hubVerifiedCount": "{count, plural, =0{No verified completions yet} =1{1 verified completion} other{{count} verified completions}}",
+  "@hubVerifiedCount": {
+    "description": "How many people completed the action with verified proof.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hubRewardNeedsFunding": "The reward needs funding before this action can go live.",
+  "@hubRewardNeedsFunding": {
+    "description": "Shown on an action whose escrowed reward has not been funded."
+  },
+  "hubRewardEnded": "The reward has ended. Anything unclaimed returns to you after the refund delay.",
+  "@hubRewardEnded": {
+    "description": "Shown on an action whose reward period ended."
+  },
+  "hubRewardClosed": "The reward is closed.",
+  "@hubRewardClosed": {
+    "description": "Shown on an action whose escrow has been closed."
+  },
+  "hubRewardFunded": "Your reward is in escrow.",
+  "@hubRewardFunded": {
+    "description": "Confirmation after the server verified the reward's escrow."
+  },
+  "hubFund": "Fund reward",
+  "@hubFund": {
+    "description": "Button that locks an action's reward in escrow."
+  },
+  "hubPublish": "Publish",
+  "@hubPublish": {
+    "description": "Button that makes a draft or paused action live."
+  },
+  "hubPause": "Pause",
+  "@hubPause": {
+    "description": "Button that stops new attempts on a live action."
+  },
+  "hubVenueCode": "Show venue code",
+  "@hubVenueCode": {
+    "description": "Button that shows the QR code people scan at the venue."
+  },
+  "hubEdit": "Edit",
+  "@hubEdit": {
+    "description": "Button that opens the action editor."
+  },
+  "hubView": "View as a participant",
+  "@hubView": {
+    "description": "Button that opens the action as participants see it."
+  },
+  "hubPublished": "{title} is live.",
+  "@hubPublished": {
+    "description": "Confirmation after publishing an action.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "hubPaused": "{title} is paused. No one can start it until you publish it again.",
+  "@hubPaused": {
+    "description": "Confirmation after pausing an action.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "hubAppsHeading": "Your Apps",
+  "@hubAppsHeading": {
+    "description": "Heading of the Verily Apps summary on the Create tab."
+  },
+  "hubAppsIntro": "Let your own software confirm actions for you.",
+  "@hubAppsIntro": {
+    "description": "Apps summary shown before the creator's Apps load."
+  },
+  "hubAppsBody": "{count, plural, =0{Register an App to confirm actions from your own software.} =1{1 App confirms actions for you.} other{{count} Apps confirm actions for you.}}",
+  "@hubAppsBody": {
+    "description": "How many active Verily Apps the creator has.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hubAppsOpen": "Manage Apps",
+  "@hubAppsOpen": {
+    "description": "Button that opens the Verily Apps page."
+  },
+  "hubAppealsHeading": "Appeals on your actions",
+  "@hubAppealsHeading": {
+    "description": "Heading of the appeals link on the Create tab."
+  },
+  "hubAppealsBody": "When someone contests a rejected proof on one of your actions, you decide here.",
+  "@hubAppealsBody": {
+    "description": "Explains the appeals page."
+  },
+  "hubAppealsOpen": "Open appeals",
+  "@hubAppealsOpen": {
+    "description": "Button that opens the appeals page."
+  },
+  "appsTitle": "Your Apps",
+  "@appsTitle": {
+    "description": "Title of the Verily Apps page."
+  },
+  "appsSubtitle": "Software that confirms actions for you",
+  "@appsSubtitle": {
+    "description": "Subtitle of the Verily Apps page."
+  },
+  "appsLoading": "Loading your Apps…",
+  "@appsLoading": {
+    "description": "Shown while the creator's Apps load."
+  },
+  "appsLoadFailedTitle": "We couldn't load your Apps",
+  "@appsLoadFailedTitle": {
+    "description": "Problem title when Apps fail to load."
+  },
+  "appsListHeading": "Registered Apps",
+  "@appsListHeading": {
+    "description": "Heading above the list of Apps."
+  },
+  "appsEmptyTitle": "No Apps yet",
+  "@appsEmptyTitle": {
+    "description": "Empty state title before any App is registered."
+  },
+  "appsEmptyBody": "Register one above to get its key.",
+  "@appsEmptyBody": {
+    "description": "Empty state body before any App is registered."
+  },
+  "appsIntroTitle": "What's a Verily App?",
+  "@appsIntroTitle": {
+    "description": "Heading that introduces Verily Apps."
+  },
+  "appsIntroBody": "An App is your own software, like a booking system or a game, that tells Verily when someone did an action. Participants see that your App confirmed it: Verily takes your App's word and doesn't check the act itself.",
+  "@appsIntroBody": {
+    "description": "Explains what a Verily App is and how participants see it."
+  },
+  "appsRegisterHeading": "Register an App",
+  "@appsRegisterHeading": {
+    "description": "Heading of the form that registers an App."
+  },
+  "appsNameLabel": "App name",
+  "@appsNameLabel": {
+    "description": "Label of the App name field."
+  },
+  "appsNameHint": "e.g. Sunrise Run Club",
+  "@appsNameHint": {
+    "description": "Example App name."
+  },
+  "appsNameRequired": "Name your App.",
+  "@appsNameRequired": {
+    "description": "Validation message when the App name is empty."
+  },
+  "appsNameTooLong": "Keep the name to 80 characters or fewer.",
+  "@appsNameTooLong": {
+    "description": "Validation message when the App name is too long."
+  },
+  "appsWebsiteLabel": "Website (optional)",
+  "@appsWebsiteLabel": {
+    "description": "Label of the App website field."
+  },
+  "appsWebsiteHint": "https://example.com",
+  "@appsWebsiteHint": {
+    "description": "Example App website."
+  },
+  "appsWebsiteInvalid": "Use a full https:// address.",
+  "@appsWebsiteInvalid": {
+    "description": "Validation message for an invalid App website."
+  },
+  "appsRegister": "Register App",
+  "@appsRegister": {
+    "description": "Button that registers a new App."
+  },
+  "appsRegisterFailed": "We couldn't register that App. Check you don't already have an active App with that name, then try again.",
+  "@appsRegisterFailed": {
+    "description": "Shown when registering an App fails."
+  },
+  "appsStatusActive": "Active",
+  "@appsStatusActive": {
+    "description": "App status: its keys work."
+  },
+  "appsStatusRevoked": "Revoked",
+  "@appsStatusRevoked": {
+    "description": "App status: its keys no longer work."
+  },
+  "appsBoundActions": "{count, plural, =0{No actions use it yet} =1{1 action uses it} other{{count} actions use it}}",
+  "@appsBoundActions": {
+    "description": "How many actions an App confirms.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appsActiveKeys": "{count, plural, =0{No active keys} =1{1 active key} other{{count} active keys}}",
+  "@appsActiveKeys": {
+    "description": "How many of an App's keys still work.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appsKeyTitle": "Save your App key",
+  "@appsKeyTitle": {
+    "description": "Title of the dialog that shows a new App key once."
+  },
+  "appsKeyBody": "{appName} uses this key to confirm actions. Keep it on your server, never in an app people download.",
+  "@appsKeyBody": {
+    "description": "Explains a new App key.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "appsKeyWarning": "Verily shows this key only once. If you lose it, make a new key and revoke this one.",
+  "@appsKeyWarning": {
+    "description": "Warns that a new key is shown once."
+  },
+  "appsKeyLabel": "App key",
+  "@appsKeyLabel": {
+    "description": "Label above the new App key."
+  },
+  "appsKeyCopy": "Copy key",
+  "@appsKeyCopy": {
+    "description": "Button that copies the new App key."
+  },
+  "appsKeyCopied": "Copied",
+  "@appsKeyCopied": {
+    "description": "Shown after the new App key was copied."
+  },
+  "appsKeySaved": "I've saved it",
+  "@appsKeySaved": {
+    "description": "Button that closes the new key dialog."
+  },
+  "appsBackToApps": "Back to your Apps",
+  "@appsBackToApps": {
+    "description": "Button that returns to the Apps list."
+  },
+  "appsRevokedNotice": "This App is revoked. Its keys no longer work and its actions are paused.",
+  "@appsRevokedNotice": {
+    "description": "Shown on a revoked App's page."
+  },
+  "appsKeysHeading": "Keys",
+  "@appsKeysHeading": {
+    "description": "Heading of an App's keys."
+  },
+  "appsNewKey": "New key",
+  "@appsNewKey": {
+    "description": "Button that issues another key for an App."
+  },
+  "appsKeyLimit": "An App can have two working keys. Revoke one to make another.",
+  "@appsKeyLimit": {
+    "description": "Explains why a new key cannot be made."
+  },
+  "appsKeyCreated": "Made {date}",
+  "@appsKeyCreated": {
+    "description": "When an App key was made.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appsKeyLastUsed": "Last used {date}",
+  "@appsKeyLastUsed": {
+    "description": "When an App key was last used.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appsKeyNeverUsed": "Not used yet",
+  "@appsKeyNeverUsed": {
+    "description": "Shown for an App key that has never been used."
+  },
+  "appsKeyRevokedOn": "Revoked {date}",
+  "@appsKeyRevokedOn": {
+    "description": "When an App key was revoked.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appsRevokeKeyTooltip": "Revoke {key}",
+  "@appsRevokeKeyTooltip": {
+    "description": "Accessible label of the button that revokes one key.",
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "appsRevokeKeyTitle": "Revoke this key?",
+  "@appsRevokeKeyTitle": {
+    "description": "Title of the dialog that confirms revoking a key."
+  },
+  "appsRevokeKeyBody": "Requests sent with {key} stop working right away. Any other key keeps working.",
+  "@appsRevokeKeyBody": {
+    "description": "Explains revoking a key.",
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "appsRevokeConfirm": "Revoke",
+  "@appsRevokeConfirm": {
+    "description": "Confirms revoking a key or an App."
+  },
+  "appsRevokeApp": "Revoke this App",
+  "@appsRevokeApp": {
+    "description": "Button that revokes an App."
+  },
+  "appsRevokeAppTitle": "Revoke {appName}?",
+  "@appsRevokeAppTitle": {
+    "description": "Title of the dialog that confirms revoking an App.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "appsRevokeAppBody": "Its keys stop working right away, and every action it confirms is paused. This can't be undone.",
+  "@appsRevokeAppBody": {
+    "description": "Explains revoking an App."
+  },
+  "appsGuideHeading": "Send a confirmation",
+  "@appsGuideHeading": {
+    "description": "Heading of the example request."
+  },
+  "appsGuideBody": "When someone does the action in your App, send this from your server. The subject is the link code the participant copies from the action in Verily.",
+  "@appsGuideBody": {
+    "description": "Explains the example confirmation request."
+  },
+  "appsGuideResponses": "Verily answers accepted, duplicate, or rejected with a reason. Sending the same eventId again is safe.",
+  "@appsGuideResponses": {
+    "description": "Explains the responses to a confirmation."
+  },
+  "appsGuideCopy": "Copy example",
+  "@appsGuideCopy": {
+    "description": "Button that copies the example request."
+  },
+  "appsGuideCopied": "Example copied",
+  "@appsGuideCopied": {
+    "description": "Shown after the example request was copied."
+  },
+  "appsConfirmationsHeading": "Confirmations",
+  "@appsConfirmationsHeading": {
+    "description": "Heading of an App's confirmation log."
+  },
+  "appsConfirmationsLoading": "Loading confirmations…",
+  "@appsConfirmationsLoading": {
+    "description": "Shown while confirmations load."
+  },
+  "appsConfirmationsFailed": "We couldn't load confirmations",
+  "@appsConfirmationsFailed": {
+    "description": "Shown when confirmations fail to load."
+  },
+  "appsConfirmationsEmpty": "No confirmations yet. They show up here as your App sends them.",
+  "@appsConfirmationsEmpty": {
+    "description": "Shown when an App has sent no confirmations."
+  },
+  "appsConfirmationsMore": "Load older",
+  "@appsConfirmationsMore": {
+    "description": "Button that loads older confirmations."
+  },
+  "appsConfirmationAccepted": "Accepted",
+  "@appsConfirmationAccepted": {
+    "description": "Confirmation outcome: Verily counted it."
+  },
+  "appsConfirmationRejected": "Rejected",
+  "@appsConfirmationRejected": {
+    "description": "Confirmation outcome: Verily did not count it."
+  },
+  "appsConfirmationEvent": "Event {eventId} for {actionKey}",
+  "@appsConfirmationEvent": {
+    "description": "The confirmation's event id and action key.",
+    "placeholders": {
+      "eventId": {
+        "type": "String"
+      },
+      "actionKey": {
+        "type": "String"
+      }
+    }
+  },
+  "appsConfirmationReceived": "Received {date}",
+  "@appsConfirmationReceived": {
+    "description": "When Verily received a confirmation.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appsConfirmationAttempt": "Attempt: {status}",
+  "@appsConfirmationAttempt": {
+    "description": "The participant's attempt status after a confirmation.",
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "appsConfirmationCode": "Response code {code}",
+  "@appsConfirmationCode": {
+    "description": "The machine-readable reason the App's server received, for developers matching logs.",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "appsReasonConfirmed": "Counted toward the attempt",
+  "@appsReasonConfirmed": {
+    "description": "Reason: the confirmation counted."
+  },
+  "appsReasonAlreadyComplete": "Already counted for this period",
+  "@appsReasonAlreadyComplete": {
+    "description": "Reason: the attempt for this period was already finished."
+  },
+  "appsReasonUnknownAction": "No live action has that key",
+  "@appsReasonUnknownAction": {
+    "description": "Reason: the action key matched no live action."
+  },
+  "appsReasonUnknownSubject": "No participant has that link code",
+  "@appsReasonUnknownSubject": {
+    "description": "Reason: the subject matched no linked participant."
+  },
+  "appsReasonOutOfRange": "The time was too far from now",
+  "@appsReasonOutOfRange": {
+    "description": "Reason: occurredAt was outside the accepted range."
+  },
+  "appsReasonOutsideWindow": "It happened outside the action's dates",
+  "@appsReasonOutsideWindow": {
+    "description": "Reason: occurredAt was outside the action's open dates."
+  },
+  "appsReasonOutsidePeriod": "It happened outside the current period",
+  "@appsReasonOutsidePeriod": {
+    "description": "Reason: occurredAt was outside the current daily period."
+  },
+  "appsReasonUnavailable": "The action isn't taking proof right now",
+  "@appsReasonUnavailable": {
+    "description": "Reason: the action is paused, full, or held."
+  },
+  "appsReasonOther": "Not counted",
+  "@appsReasonOther": {
+    "description": "Reason fallback for a code the app does not know."
+  },
+  "@@x-section-do": "Do tab, action page, location, venue code, and App-confirmed proof.",
+  "doTitle": "Things to do",
+  "@doTitle": {
+    "description": "Title of the Do tab."
+  },
+  "doSubtitle": "Real actions in real places. Prove them on your phone.",
+  "@doSubtitle": {
+    "description": "Subtitle of the Do tab."
+  },
+  "doViewList": "List",
+  "@doViewList": {
+    "description": "Do tab toggle: show actions as a list."
+  },
+  "doViewMap": "Map",
+  "@doViewMap": {
+    "description": "Do tab toggle: show actions on a map."
+  },
+  "doFilterAll": "All",
+  "@doFilterAll": {
+    "description": "Do filter: every live action."
+  },
+  "doFilterNearby": "Nearby",
+  "@doFilterNearby": {
+    "description": "Do filter: actions with a place near you."
+  },
+  "doFilterPlace": "Places",
+  "@doFilterPlace": {
+    "description": "Do filter: actions you prove by being somewhere."
+  },
+  "doFilterMovement": "Movement",
+  "@doFilterMovement": {
+    "description": "Do filter: phone motion or reps counted on camera."
+  },
+  "doFilterVenueCode": "Venue codes",
+  "@doFilterVenueCode": {
+    "description": "Do filter: actions you prove with a code at the venue."
+  },
+  "doFilterApps": "Apps",
+  "@doFilterApps": {
+    "description": "Do filter: actions a Verily App confirms."
+  },
+  "doProofPlace": "Be there",
+  "@doProofPlace": {
+    "description": "Proof kind: be at the action's place."
+  },
+  "doProofVenueCode": "Venue code",
+  "@doProofVenueCode": {
+    "description": "Proof kind: scan the code the venue shows."
+  },
+  "doProofVideo": "Video",
+  "@doProofVideo": {
+    "description": "Proof kind: a live video."
+  },
+  "doProofMovement": "Reps on camera",
+  "@doProofMovement": {
+    "description": "Proof kind: a video where the phone counts repetitions."
+  },
+  "doProofPhoto": "Photo",
+  "@doProofPhoto": {
+    "description": "Proof kind: a live photo."
+  },
+  "doProofAudio": "Audio",
+  "@doProofAudio": {
+    "description": "Proof kind: a live audio recording."
+  },
+  "doProofMotion": "Phone motion",
+  "@doProofMotion": {
+    "description": "Proof kind: moving the phone in a pattern."
+  },
+  "doProofApp": "App confirms",
+  "@doProofApp": {
+    "description": "Proof kind: a Verily App confirms the action."
+  },
+  "doCreatorBy": "by {name}",
+  "@doCreatorBy": {
+    "description": "Who posted an action. Name is their public display name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "doYourAttempt": "You: {status}",
+  "@doYourAttempt": {
+    "description": "Your attempt's status on an action card, such as 'You: Checking your proof'.",
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "doDistanceMeters": "{meters} m away",
+  "@doDistanceMeters": {
+    "description": "Distance to an action's place, under a kilometre.",
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
+  },
+  "doDistanceKilometers": "{km} km away",
+  "@doDistanceKilometers": {
+    "description": "Distance to an action's place in kilometres, already formatted.",
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "doLoading": "Finding actions…",
+  "@doLoading": {
+    "description": "Shown while the Do feed loads."
+  },
+  "doLoadFailedTitle": "We couldn't load actions",
+  "@doLoadFailedTitle": {
+    "description": "Title when the Do feed fails to load."
+  },
+  "doEmptyTitle": "Nothing to do here yet",
+  "@doEmptyTitle": {
+    "description": "Title when there are no live actions."
+  },
+  "doEmptyBody": "When someone posts an action, it shows up here. You could post the first one.",
+  "@doEmptyBody": {
+    "description": "Body when there are no live actions."
+  },
+  "doPostAction": "Post an action",
+  "@doPostAction": {
+    "description": "Button from an empty Do feed to the action editor."
+  },
+  "doFilterEmptyTitle": "Nothing matches that yet",
+  "@doFilterEmptyTitle": {
+    "description": "Title when a filter hides every action."
+  },
+  "doFilterEmptyBody": "Try another filter, or see everything.",
+  "@doFilterEmptyBody": {
+    "description": "Body when a filter hides every action."
+  },
+  "doShowAll": "Show all actions",
+  "@doShowAll": {
+    "description": "Button that clears the Do filter."
+  },
+  "doNearbyEmptyTitle": "Nothing nearby yet",
+  "@doNearbyEmptyTitle": {
+    "description": "Title when no live actions have a place near the person."
+  },
+  "doNearbyEmptyBody": "No live actions have a place near you right now.",
+  "@doNearbyEmptyBody": {
+    "description": "Body when no live actions have a place near the person."
+  },
+  "doNearbyExplainTitle": "Find actions near you",
+  "@doNearbyExplainTitle": {
+    "description": "Title of the explanation shown before reading the location."
+  },
+  "doNearbyExplainBody": "We use your approximate location once to find actions near you. Verily rounds it and never stores it.",
+  "@doNearbyExplainBody": {
+    "description": "Explains why Nearby reads the location and what happens to it."
+  },
+  "doNearbyNotNow": "Not now",
+  "@doNearbyNotNow": {
+    "description": "Declines sharing the location for Nearby."
+  },
+  "doNearbyContinue": "Continue",
+  "@doNearbyContinue": {
+    "description": "Agrees to share the approximate location for Nearby."
+  },
+  "doNearbyUseLocation": "Use my location",
+  "@doNearbyUseLocation": {
+    "description": "Reads the approximate location for Nearby."
+  },
+  "doNearbyLocating": "Finding where you are…",
+  "@doNearbyLocating": {
+    "description": "Shown while the approximate location is read."
+  },
+  "doNearbyDeclinedTitle": "Nearby needs your location",
+  "@doNearbyDeclinedTitle": {
+    "description": "Title after the person chose not to share their location."
+  },
+  "doNearbyDeclinedBody": "Share your approximate location to see actions close to you. Everything else works without it.",
+  "@doNearbyDeclinedBody": {
+    "description": "Body after the person chose not to share their location."
+  },
+  "doNearbyBlockedTitle": "Location is off for Verily",
+  "@doNearbyBlockedTitle": {
+    "description": "Title when location permission was permanently denied."
+  },
+  "doNearbyBlockedBody": "Turn location on for Verily in your phone's settings to see nearby actions.",
+  "@doNearbyBlockedBody": {
+    "description": "Body when location permission was permanently denied."
+  },
+  "doOpenSettings": "Open settings",
+  "@doOpenSettings": {
+    "description": "Opens the system settings for Verily."
+  },
+  "doNearbyServicesOffTitle": "Location services are off",
+  "@doNearbyServicesOffTitle": {
+    "description": "Title when the device's location services are off."
+  },
+  "doNearbyServicesOffBody": "Turn on location services, then try again.",
+  "@doNearbyServicesOffBody": {
+    "description": "Body when the device's location services are off."
+  },
+  "doNearbyDeniedTitle": "Location wasn't allowed",
+  "@doNearbyDeniedTitle": {
+    "description": "Title when location permission was denied this time."
+  },
+  "doNearbyDeniedBody": "Allow location when your phone asks to see actions near you.",
+  "@doNearbyDeniedBody": {
+    "description": "Body when location permission was denied this time."
+  },
+  "doNearbyTimedOutTitle": "We couldn't find you",
+  "@doNearbyTimedOutTitle": {
+    "description": "Title when no location arrived in time."
+  },
+  "doNearbyTimedOutBody": "Your phone didn't share a location in time. Try again, ideally near a window.",
+  "@doNearbyTimedOutBody": {
+    "description": "Body when no location arrived in time."
+  },
+  "doMapEmptyTitle": "No places to show",
+  "@doMapEmptyTitle": {
+    "description": "Title when none of the shown actions has a place."
+  },
+  "doMapEmptyBody": "None of these actions has a place on the map. Switch to the list to see them.",
+  "@doMapEmptyBody": {
+    "description": "Body when none of the shown actions has a place."
+  },
+  "doMapLabel": "Map of actions with a place",
+  "@doMapLabel": {
+    "description": "Accessible label of the Do map."
+  },
+  "actionPlaceMapLabel": "Map of {place}",
+  "@actionPlaceMapLabel": {
+    "description": "Accessible label of an action's place map.",
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "actionPlaceRadiusLabel": "The {meters} m area around the pin",
+  "@actionPlaceRadiusLabel": {
+    "description": "Accessible label of the hatched radius on the place map.",
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
+  },
+  "actionPlaceRadius": "Be within {meters} m of the pin",
+  "@actionPlaceRadius": {
+    "description": "How close the participant must be to the place.",
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
+  },
+  "actionScanTitle": "Scan the venue code",
+  "@actionScanTitle": {
+    "description": "Title of the venue code scanner."
+  },
+  "actionScanHint": "Point the camera at the code the venue shows. It changes every few minutes.",
+  "@actionScanHint": {
+    "description": "Hint under the venue code scanner."
+  },
+  "actionScanCameraDenied": "Verily needs the camera to read the venue code. Allow it in your phone's settings.",
+  "@actionScanCameraDenied": {
+    "description": "Shown when camera permission is denied in the scanner."
+  },
+  "actionScanUnavailable": "The camera isn't available right now. Try again in a moment.",
+  "@actionScanUnavailable": {
+    "description": "Shown when the scanner's camera cannot start."
+  },
+  "actionProofReps": "{count, plural, =1{1 rep} other{{count} reps}}",
+  "@actionProofReps": {
+    "description": "How many repetitions a movement step needs.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "actionProofOptional": "Optional",
+  "@actionProofOptional": {
+    "description": "Marks a step that is not required."
+  },
+  "actionProofStateOpen": "Not done yet",
+  "@actionProofStateOpen": {
+    "description": "Accessible state of a step with no proof yet."
+  },
+  "actionProofStateWorking": "Sending",
+  "@actionProofStateWorking": {
+    "description": "Accessible state of a step being captured or sent."
+  },
+  "actionProofStateAccepted": "Done",
+  "@actionProofStateAccepted": {
+    "description": "Accessible state of a step whose proof was accepted."
+  },
+  "actionVerifiedTitle": "Verified",
+  "@actionVerifiedTitle": {
+    "description": "Title of a verified attempt."
+  },
+  "actionVerifiedBody": "Verily checked your proof and it passed.",
+  "@actionVerifiedBody": {
+    "description": "Body of a verified attempt. Never claims the proof shows something is real."
+  },
+  "actionAddWallet": "Add a wallet",
+  "@actionAddWallet": {
+    "description": "Button to Me, where a payout wallet can be linked."
+  },
+  "actionPayoutHeldBody": "Bigger rewards get a quick look from a person before they're sent.",
+  "@actionPayoutHeldBody": {
+    "description": "Explains a payout held for review."
+  },
+  "actionAppUnnamed": "the App",
+  "@actionAppUnnamed": {
+    "description": "Fallback name for a Verily App with no name."
+  },
+  "actionAppConfirmed": "{appName} confirmed this",
+  "@actionAppConfirmed": {
+    "description": "Shown when the App confirmed the participant's step.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "actionAppBody": "{appName} confirms this step itself. Give it your link code so it knows it's you. Verily doesn't check the act, only that {appName} said so.",
+  "@actionAppBody": {
+    "description": "Explains an App-confirmed step and what Verily does and does not check.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "actionAppUnavailable": "{appName} isn't confirming actions any more, so this one can't be done right now.",
+  "@actionAppUnavailable": {
+    "description": "Shown when the confirming App was revoked.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "actionLinkCodeShow": "Show my link code",
+  "@actionLinkCodeShow": {
+    "description": "Opens the participant's link code for an App."
+  },
+  "actionLinkCodeTitle": "Your code for {appName}",
+  "@actionLinkCodeTitle": {
+    "description": "Title of the link code dialog.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "actionLinkCodeBody": "Paste this into {appName} so it can confirm you.",
+  "@actionLinkCodeBody": {
+    "description": "Explains what to do with the link code.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "actionLinkCodeCopy": "Copy code",
+  "@actionLinkCodeCopy": {
+    "description": "Copies the link code."
+  },
+  "actionLinkCodeCopied": "Copied",
+  "@actionLinkCodeCopied": {
+    "description": "Confirms the link code was copied."
+  },
+  "actionLinkCodePrivacy": "Each App gets a different code, so Apps can't compare notes about you. {appName} never sees your account.",
+  "@actionLinkCodePrivacy": {
+    "description": "Explains the privacy of pairwise link codes.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "actionRejectedBody": "This proof wasn't accepted.",
+  "@actionRejectedBody": {
+    "description": "Fallback body of a rejected attempt."
+  },
+  "actionAppealInvite": "Think this was a mistake? You can ask for a second look once. A person reads it.",
+  "@actionAppealInvite": {
+    "description": "Invites a participant to appeal a rejection."
+  },
+  "actionAppealOpen": "Ask for a second look",
+  "@actionAppealOpen": {
+    "description": "Opens the appeal form."
+  },
+  "actionAppealTitle": "Ask for a second look",
+  "@actionAppealTitle": {
+    "description": "Title of the appeal form."
+  },
+  "actionAppealBody": "Tell the action's creator what happened. Be specific; you can do this once.",
+  "@actionAppealBody": {
+    "description": "Explains the appeal form."
+  },
+  "actionAppealReasonLabel": "What happened?",
+  "@actionAppealReasonLabel": {
+    "description": "Label of the appeal reason field."
+  },
+  "actionAppealReasonHint": "At least 10 characters",
+  "@actionAppealReasonHint": {
+    "description": "Hint for the appeal reason field."
+  },
+  "actionAppealSubmit": "Send",
+  "@actionAppealSubmit": {
+    "description": "Sends the appeal."
+  },
+  "actionAppealPending": "You asked for a second look. A person will read it.",
+  "@actionAppealPending": {
+    "description": "Status of a pending appeal."
+  },
+  "actionAppealAccepted": "Your appeal was accepted.",
+  "@actionAppealAccepted": {
+    "description": "Status of an accepted appeal."
+  },
+  "actionAppealRejected": "Your appeal was read and the decision stands.",
+  "@actionAppealRejected": {
+    "description": "Status of a rejected appeal."
+  },
+  "actionLoading": "Opening the action…",
+  "@actionLoading": {
+    "description": "Shown while an action page loads."
+  },
+  "actionLoadFailedTitle": "We couldn't open this action",
+  "@actionLoadFailedTitle": {
+    "description": "Title when an action page fails to load."
+  },
+  "actionNotFoundTitle": "This action isn't here",
+  "@actionNotFoundTitle": {
+    "description": "Title when a linked action cannot be found."
+  },
+  "actionBack": "Back",
+  "@actionBack": {
+    "description": "Accessible label of the back button."
+  },
+  "actionIntegrityUnavailable": "This phone couldn't vouch for the capture. Check your phone is up to date, then try again.",
+  "@actionIntegrityUnavailable": {
+    "description": "Shown when the device could not produce the integrity proof the server requires."
+  },
+  "actionSignatureUnavailable": "This phone couldn't sign the capture. Try again; if it keeps happening, this phone can't be used for this action.",
+  "@actionSignatureUnavailable": {
+    "description": "Shown when the device could not sign the capture."
+  },
+  "actionUploadFailed": "Your proof didn't finish uploading. It's still on your phone; try again.",
+  "@actionUploadFailed": {
+    "description": "Shown when a media upload failed."
+  },
+  "actionNotLiveTitle": "This action isn't live",
+  "@actionNotLiveTitle": {
+    "description": "Title when an action is paused, finished, or unpublished."
+  },
+  "actionNotLiveBody": "It's paused, finished, or not published yet, so it can't be started.",
+  "@actionNotLiveBody": {
+    "description": "Body when an action is paused, finished, or unpublished."
+  },
+  "actionProofHeading": "What you'll prove",
+  "@actionProofHeading": {
+    "description": "Heading of the requirement checklist before starting."
+  },
+  "actionYourProof": "Your proof",
+  "@actionYourProof": {
+    "description": "Heading of the requirement checklist after starting."
+  },
+  "actionProofIntro": "Every step is captured live on your phone when you do it. There's no upload button.",
+  "@actionProofIntro": {
+    "description": "Explains live capture before starting."
+  },
+  "actionProofTapHint": "Tap a step to do it.",
+  "@actionProofTapHint": {
+    "description": "Tells the participant how to work through the checklist."
+  },
+  "actionStart": "Start",
+  "@actionStart": {
+    "description": "Starts an attempt."
+  },
+  "actionFinish": "Finish",
+  "@actionFinish": {
+    "description": "Finishes an attempt whose proof is all accepted."
+  },
+  "actionFinishing": "Wrapping up…",
+  "@actionFinishing": {
+    "description": "Shown while an attempt is being finished."
+  },
+  "actionCheckingBody": "This usually takes a minute or two. You can leave this page; Verily keeps checking and updates your attempt.",
+  "@actionCheckingBody": {
+    "description": "Explains that media proof is being checked."
+  },
+  "actionReviewBody": "A person will look at your proof. You'll see the result here and in Me.",
+  "@actionReviewBody": {
+    "description": "Explains review by a person."
+  },
+  "actionReviewValueBody": "Bigger rewards get a quick look from a person. You'll see the result here and in Me.",
+  "@actionReviewValueBody": {
+    "description": "Explains a value review by a person."
+  },
+  "actionCapacityBody": "Everyone this action could take has already finished it.",
+  "@actionCapacityBody": {
+    "description": "Explains that the action reached its limit."
+  },
+  "actionProofAccepted": "Got it. That step is done.",
+  "@actionProofAccepted": {
+    "description": "Shown when a step's proof was accepted."
+  },
+  "actionProofWithReviewer": "A person will check that step.",
+  "@actionProofWithReviewer": {
+    "description": "Shown when a step's proof went to a person."
+  },
+  "actionProofNotAccepted": "That proof wasn't accepted.",
+  "@actionProofNotAccepted": {
+    "description": "Fallback when a step's proof was rejected."
+  },
+  "actionProofSent": "Sent. Verily is checking it now.",
+  "@actionProofSent": {
+    "description": "Shown when media proof was uploaded and queued for checking."
+  },
+  "actionLocationServicesOff": "Turn on location services so Verily can check you're at the place.",
+  "@actionLocationServicesOff": {
+    "description": "Shown when location services are off during a place step."
+  },
+  "actionLocationDenied": "Verily needs your location for this step. Allow it when asked and try again.",
+  "@actionLocationDenied": {
+    "description": "Shown when location was denied during a place step."
+  },
+  "actionLocationBlocked": "Location is off for Verily. Turn it on in Settings to do this step.",
+  "@actionLocationBlocked": {
+    "description": "Shown when location is permanently denied during a place step."
+  },
+  "actionLocationTimedOut": "We couldn't get a precise location. Step outside or near a window and try again.",
+  "@actionLocationTimedOut": {
+    "description": "Shown when no precise location arrived in time."
+  },
+  "actionRewardCapReached": "You've earned the most this action allows",
+  "@actionRewardCapReached": {
+    "description": "Shown when the participant reached the per-person limit."
+  },
+  "actionRewardPerPerson": "{count, plural, =1{One reward per person} other{Up to {count} per person}}",
+  "@actionRewardPerPerson": {
+    "description": "How many rewards one person can earn.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "actionCreatorTitle": "This is your action",
+  "@actionCreatorTitle": {
+    "description": "Title of the creator's panel on their own action."
+  },
+  "actionCreatorDraft": "It's a draft, so nobody can see it yet.",
+  "@actionCreatorDraft": {
+    "description": "Creator panel: draft status."
+  },
+  "actionCreatorLive": "It's live. This is what people see.",
+  "@actionCreatorLive": {
+    "description": "Creator panel: live status."
+  },
+  "actionCreatorPaused": "It's paused, so nobody can start it.",
+  "@actionCreatorPaused": {
+    "description": "Creator panel: paused status."
+  },
+  "actionCreatorCompleted": "It's finished.",
+  "@actionCreatorCompleted": {
+    "description": "Creator panel: completed status."
+  },
+  "actionCreatorEdit": "Edit",
+  "@actionCreatorEdit": {
+    "description": "Opens the action editor."
+  },
+  "actionCreatorShowVenueCode": "Show venue code",
+  "@actionCreatorShowVenueCode": {
+    "description": "Shows the rotating venue code people scan."
+  },
+  "actionCreatorShowVenueCodeFor": "Show code for {title}",
+  "@actionCreatorShowVenueCodeFor": {
+    "description": "Shows one venue code when an action has several.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@@x-section-capture": "Camera, microphone, motion, and movement capture.",
+  "captureReviewTooLong": "This recording runs past the {limit} limit. Retake a shorter one.",
+  "@captureReviewTooLong": {
+    "description": "Shown on the proof review when the recording is longer than the action allows; sending is disabled.",
+    "placeholders": {
+      "limit": {
+        "type": "String",
+        "example": "1:00"
+      }
+    }
+  },
+  "captureMotionSending": "Sending your motion…",
+  "@captureMotionSending": {
+    "description": "Live status while a recorded phone-motion trace is being sent."
+  },
+  "movementNameSquats": "Squats",
+  "@movementNameSquats": {
+    "description": "Name of the squats movement."
+  },
+  "movementTargetSquats": "{count, plural, =1{1 squat} other{{count} squats}}",
+  "@movementTargetSquats": {
+    "description": "A counted squats target, such as \"10 squats\".",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "movementGuideSquats": "Side view · keep your hips, knees and ankles in frame",
+  "@movementGuideSquats": {
+    "description": "Where to put the phone so the camera can count squats."
+  },
+  "movementCueSquats": "Bend your knees",
+  "@movementCueSquats": {
+    "description": "Live instruction while doing squats."
+  },
+  "movementNamePressUps": "Press-ups",
+  "@movementNamePressUps": {
+    "description": "Name of the press ups movement."
+  },
+  "movementTargetPressUps": "{count, plural, =1{1 press-up} other{{count} press-ups}}",
+  "@movementTargetPressUps": {
+    "description": "A counted press ups target, such as \"10 squats\".",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "movementGuidePressUps": "Side view · set the phone low, near the floor",
+  "@movementGuidePressUps": {
+    "description": "Where to put the phone so the camera can count press ups."
+  },
+  "movementCuePressUps": "Lower your chest",
+  "@movementCuePressUps": {
+    "description": "Live instruction while doing press ups."
+  },
+  "movementNameSitUps": "Sit-ups",
+  "@movementNameSitUps": {
+    "description": "Name of the sit ups movement."
+  },
+  "movementTargetSitUps": "{count, plural, =1{1 sit-up} other{{count} sit-ups}}",
+  "@movementTargetSitUps": {
+    "description": "A counted sit ups target, such as \"10 squats\".",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "movementGuideSitUps": "Side view · set the phone low and lie with knees bent",
+  "@movementGuideSitUps": {
+    "description": "Where to put the phone so the camera can count sit ups."
+  },
+  "movementCueSitUps": "Lift your torso",
+  "@movementCueSitUps": {
+    "description": "Live instruction while doing sit ups."
+  },
+  "movementNameLunges": "Lunges",
+  "@movementNameLunges": {
+    "description": "Name of the lunges movement."
+  },
+  "movementTargetLunges": "{count, plural, =1{1 lunge} other{{count} lunges}}",
+  "@movementTargetLunges": {
+    "description": "A counted lunges target, such as \"10 squats\".",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "movementGuideLunges": "Side view · step back so both legs are in frame",
+  "@movementGuideLunges": {
+    "description": "Where to put the phone so the camera can count lunges."
+  },
+  "movementCueLunges": "Lower your back knee",
+  "@movementCueLunges": {
+    "description": "Live instruction while doing lunges."
+  },
+  "movementNameStarJumps": "Star jumps",
+  "@movementNameStarJumps": {
+    "description": "Name of the star jumps movement."
+  },
+  "movementTargetStarJumps": "{count, plural, =1{1 star jump} other{{count} star jumps}}",
+  "@movementTargetStarJumps": {
+    "description": "A counted star jumps target, such as \"10 squats\".",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "movementGuideStarJumps": "Front view · leave room above and beside you",
+  "@movementGuideStarJumps": {
+    "description": "Where to put the phone so the camera can count star jumps."
+  },
+  "movementCueStarJumps": "Jump wide, arms up",
+  "@movementCueStarJumps": {
+    "description": "Live instruction while doing star jumps."
+  },
+  "movementNameBurpees": "Burpees",
+  "@movementNameBurpees": {
+    "description": "Name of the burpees movement."
+  },
+  "movementTargetBurpees": "{count, plural, =1{1 burpee} other{{count} burpees}}",
+  "@movementTargetBurpees": {
+    "description": "A counted burpees target, such as \"10 squats\".",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "movementGuideBurpees": "Side view · keep your whole body and the floor in frame",
+  "@movementGuideBurpees": {
+    "description": "Where to put the phone so the camera can count burpees."
+  },
+  "movementCueBurpees": "Crouch down",
+  "@movementCueBurpees": {
+    "description": "Live instruction while doing burpees."
+  },
+  "movementNameHighKnees": "High knees",
+  "@movementNameHighKnees": {
+    "description": "Name of the high knees movement."
+  },
+  "movementTargetHighKnees": "{count, plural, =1{1 high knee} other{{count} high knees}}",
+  "@movementTargetHighKnees": {
+    "description": "A counted high knees target, such as \"10 squats\".",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "movementGuideHighKnees": "Side view · stand tall and keep both legs in frame",
+  "@movementGuideHighKnees": {
+    "description": "Where to put the phone so the camera can count high knees."
+  },
+  "movementCueHighKnees": "Knee up to hip height",
+  "@movementCueHighKnees": {
+    "description": "Live instruction while doing high knees."
+  },
+  "movementNameLateralRaises": "Lateral raises",
+  "@movementNameLateralRaises": {
+    "description": "Name of the lateral raises movement."
+  },
+  "movementTargetLateralRaises": "{count, plural, =1{1 lateral raise} other{{count} lateral raises}}",
+  "@movementTargetLateralRaises": {
+    "description": "A counted lateral raises target, such as \"10 squats\".",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "movementGuideLateralRaises": "Front view · keep your whole arm span in frame",
+  "@movementGuideLateralRaises": {
+    "description": "Where to put the phone so the camera can count lateral raises."
+  },
+  "movementCueLateralRaises": "Raise both arms",
+  "@movementCueLateralRaises": {
+    "description": "Live instruction while doing lateral raises."
+  },
+  "movementNameBicepsCurls": "Biceps curls",
+  "@movementNameBicepsCurls": {
+    "description": "Name of the biceps curls movement."
+  },
+  "movementTargetBicepsCurls": "{count, plural, =1{1 biceps curl} other{{count} biceps curls}}",
+  "@movementTargetBicepsCurls": {
+    "description": "A counted biceps curls target, such as \"10 squats\".",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "movementGuideBicepsCurls": "Front view · keep shoulders, elbows and wrists in frame",
+  "@movementGuideBicepsCurls": {
+    "description": "Where to put the phone so the camera can count biceps curls."
+  },
+  "movementCueBicepsCurls": "Curl your hands up",
+  "@movementCueBicepsCurls": {
+    "description": "Live instruction while doing biceps curls."
+  },
+  "movementNameSideBends": "Side bends",
+  "@movementNameSideBends": {
+    "description": "Name of the side bends movement."
+  },
+  "movementTargetSideBends": "{count, plural, =1{1 side bend} other{{count} side bends}}",
+  "@movementTargetSideBends": {
+    "description": "A counted side bends target, such as \"10 squats\".",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "movementGuideSideBends": "Front view · keep your hips still",
+  "@movementGuideSideBends": {
+    "description": "Where to put the phone so the camera can count side bends."
+  },
+  "movementCueSideBends": "Lean to one side",
+  "@movementCueSideBends": {
+    "description": "Live instruction while doing side bends."
+  },
+  "movementNameFootballKickUps": "Football kick-ups",
+  "@movementNameFootballKickUps": {
+    "description": "Name of the football kick ups movement."
+  },
+  "movementTargetFootballKickUps": "{count, plural, =1{1 kick-up} other{{count} kick-ups}}",
+  "@movementTargetFootballKickUps": {
+    "description": "A counted football kick ups target, such as \"10 squats\".",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "movementGuideFootballKickUps": "Step back so your whole body and the ball stay in frame",
+  "@movementGuideFootballKickUps": {
+    "description": "Where to put the phone so the camera can count football kick ups."
+  },
+  "movementCueFootballKickUps": "Keep the ball up",
+  "@movementCueFootballKickUps": {
+    "description": "Live instruction while doing football kick ups."
+  },
+  "movementNameTableTennisBounces": "Table tennis bounces",
+  "@movementNameTableTennisBounces": {
+    "description": "Name of the table tennis bounces movement."
+  },
+  "movementTargetTableTennisBounces": "{count, plural, =1{1 bat bounce} other{{count} bat bounces}}",
+  "@movementTargetTableTennisBounces": {
+    "description": "A counted table tennis bounces target, such as \"10 squats\".",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "movementGuideTableTennisBounces": "Keep the bat, the ball and your upper body in frame",
+  "@movementGuideTableTennisBounces": {
+    "description": "Where to put the phone so the camera can count table tennis bounces."
+  },
+  "movementCueTableTennisBounces": "Keep the ball up",
+  "@movementCueTableTennisBounces": {
+    "description": "Live instruction while doing table tennis bounces."
+  },
+  "movementCueStepIntoFrame": "Step into frame",
+  "@movementCueStepIntoFrame": {
+    "description": "Live cue: the person is not in the camera frame yet."
+  },
+  "movementCueGetIntoPosition": "Get into your starting position",
+  "@movementCueGetIntoPosition": {
+    "description": "Live cue: get into the starting position."
+  },
+  "movementCueReturnToStart": "Back to the start to count it",
+  "@movementCueReturnToStart": {
+    "description": "Live cue: return to the start so the repetition counts."
+  },
+  "movementCueCrouch": "Crouch down",
+  "@movementCueCrouch": {
+    "description": "Live cue during a burpee: crouch."
+  },
+  "movementCuePlank": "Kick back to a plank",
+  "@movementCuePlank": {
+    "description": "Live cue during a burpee: kick back to a plank."
+  },
+  "movementCueFeetForward": "Bring your feet back in",
+  "@movementCueFeetForward": {
+    "description": "Live cue during a burpee: bring the feet back in."
+  },
+  "movementCueJump": "Jump!",
+  "@movementCueJump": {
+    "description": "Live cue during a burpee: jump."
+  },
+  "movementCueLand": "Land on your feet",
+  "@movementCueLand": {
+    "description": "Live cue: land after a jump."
+  },
+  "movementCaptureTitle": "Movement challenge",
+  "@movementCaptureTitle": {
+    "description": "Title of the movement capture screen."
+  },
+  "movementCaptureClose": "Close the camera",
+  "@movementCaptureClose": {
+    "description": "Tooltip of the button that closes the camera."
+  },
+  "movementCaptureFlip": "Switch camera",
+  "@movementCaptureFlip": {
+    "description": "Tooltip of the button that switches between cameras."
+  },
+  "movementCaptureOpening": "Starting the camera…",
+  "@movementCaptureOpening": {
+    "description": "Shown while the camera starts."
+  },
+  "movementCaptureCoachLoading": "Getting your live counter ready…",
+  "@movementCaptureCoachLoading": {
+    "description": "Shown while the live counter loads."
+  },
+  "movementCaptureCoachUnavailable": "Live counting isn't available here. Record your set and it will be checked after you submit.",
+  "@movementCaptureCoachUnavailable": {
+    "description": "Shown when live counting cannot run on this device."
+  },
+  "movementCaptureAdvisory": "The live count helps you pace yourself. Your recording is what gets checked after you submit.",
+  "@movementCaptureAdvisory": {
+    "description": "Explains that the live count is a guide and the recording is what gets checked."
+  },
+  "movementCaptureStart": "Start recording",
+  "@movementCaptureStart": {
+    "description": "Button that starts the hands-free countdown and recording."
+  },
+  "movementCaptureStop": "Stop recording",
+  "@movementCaptureStop": {
+    "description": "Button that stops recording."
+  },
+  "movementCaptureKeepGoing": "Keep recording",
+  "@movementCaptureKeepGoing": {
+    "description": "Disabled stop button before the minimum length is reached."
+  },
+  "movementCaptureSaving": "Saving your recording…",
+  "@movementCaptureSaving": {
+    "description": "Shown while the recording is saved."
+  },
+  "movementCaptureTargetReached": "Target reached!",
+  "@movementCaptureTargetReached": {
+    "description": "Celebration when the live count reaches the target."
+  },
+  "movementCaptureStepBack": "Step back into frame",
+  "@movementCaptureStepBack": {
+    "description": "Shown under the countdown: step back into frame."
+  },
+  "movementCaptureCountdown": "{count}",
+  "@movementCaptureCountdown": {
+    "description": "The countdown number before recording starts.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "movementCaptureCount": "{count}",
+  "@movementCaptureCount": {
+    "description": "The live repetition count.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "movementCaptureRemaining": "{count, plural, =0{Target reached} =1{of {target} · 1 to go} other{of {target} · {count} to go}}",
+  "@movementCaptureRemaining": {
+    "description": "How many repetitions are left of the target.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "movementCaptureCountSemantics": "{count} of {target} counted",
+  "@movementCaptureCountSemantics": {
+    "description": "Screen reader text for the live count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "movementCaptureElapsed": "{elapsed} of {limit}",
+  "@movementCaptureElapsed": {
+    "description": "Recording time out of the limit, such as 0:12 of 2:00.",
+    "placeholders": {
+      "elapsed": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "movementCaptureDepthSemantics": "Movement depth {percent}%",
+  "@movementCaptureDepthSemantics": {
+    "description": "Screen reader value of the movement depth gauge.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "movementCapturePermissionDenied": "Camera access is off",
+  "@movementCapturePermissionDenied": {
+    "description": "Title when camera access is off."
+  },
+  "movementCapturePermissionDeniedBody": "Allow camera access for Verily in your phone's settings, then try again. Proof can only be captured live.",
+  "@movementCapturePermissionDeniedBody": {
+    "description": "Explains how to turn camera access back on."
+  },
+  "movementCaptureNoCamera": "No camera found",
+  "@movementCaptureNoCamera": {
+    "description": "Title when the device has no usable camera."
+  },
+  "movementCaptureNoCameraBody": "This device doesn't have a camera Verily can use.",
+  "@movementCaptureNoCameraBody": {
+    "description": "Explains that this device has no usable camera."
+  },
+  "movementCaptureUnavailable": "The camera couldn't start",
+  "@movementCaptureUnavailable": {
+    "description": "Title when the camera cannot start."
+  },
+  "movementCaptureUnavailableBody": "Close any other app using the camera, then try again.",
+  "@movementCaptureUnavailableBody": {
+    "description": "What to do when the camera cannot start."
+  },
+  "movementCaptureRecordingFailed": "The recording couldn't be saved",
+  "@movementCaptureRecordingFailed": {
+    "description": "Title when the recording could not be saved."
+  },
+  "movementCaptureRecordingFailedBody": "Nothing was submitted. Try recording again.",
+  "@movementCaptureRecordingFailedBody": {
+    "description": "Reassures that nothing was submitted and suggests recording again."
+  },
+  "movementCaptureInterrupted": "Recording stopped when you left the app. Start again when you're ready.",
+  "@movementCaptureInterrupted": {
+    "description": "Shown after leaving the app stopped a recording."
+  },
+  "movementCaptureTryAgain": "Try again",
+  "@movementCaptureTryAgain": {
+    "description": "Button that retries opening the camera."
+  },
+  "movementCueShowBall": "Show the ball to the camera",
+  "@movementCueShowBall": {
+    "description": "Live cue for ball skills: show the ball to the camera."
+  },
+  "movementCueDropped": "Dropped! Go again",
+  "@movementCueDropped": {
+    "description": "Live cue for ball skills: the ball dropped; start a new run."
+  },
+  "movementCaptureBest": "Best run: {count}",
+  "@movementCaptureBest": {
+    "description": "The longest ball-skill run so far.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "captureMotionTitle": "Capture device motion",
+  "@captureMotionTitle": {
+    "description": "Motion capture (phone sensors): title."
+  },
+  "captureMotionReady": "Find a clear space",
+  "@captureMotionReady": {
+    "description": "Motion capture (phone sensors): ready."
+  },
+  "captureMotionReadyBody": "Hold your phone securely. Verily starts after a three-second countdown and records only the short motion trace needed for this action.",
+  "@captureMotionReadyBody": {
+    "description": "Motion capture (phone sensors): ready body."
+  },
+  "captureMotionBegin": "Start countdown",
+  "@captureMotionBegin": {
+    "description": "Motion capture (phone sensors): begin."
+  },
+  "captureMotionCountdown": "Starting in {count}",
+  "@captureMotionCountdown": {
+    "description": "Motion capture (phone sensors): countdown.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "captureMotionCountdownBody": "Get into position and keep a secure grip.",
+  "@captureMotionCountdownBody": {
+    "description": "Motion capture (phone sensors): countdown body."
+  },
+  "captureMotionCountdownNumber": "{count}",
+  "@captureMotionCountdownNumber": {
+    "description": "Motion capture (phone sensors): countdown number.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "captureMotionRecording": "Motion capture in progress",
+  "@captureMotionRecording": {
+    "description": "Motion capture (phone sensors): recording."
+  },
+  "captureMotionProgress": "{percent}% of the capture complete",
+  "@captureMotionProgress": {
+    "description": "Motion capture (phone sensors): progress.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "captureMotionMatched": "Movement matched",
+  "@captureMotionMatched": {
+    "description": "Motion capture (phone sensors): matched."
+  },
+  "captureMotionMatchedBody": "Verily detected {count, plural, =0{the required movement} =1{one complete movement} other{{count} complete movements}}. It will be checked again after you submit.",
+  "@captureMotionMatchedBody": {
+    "description": "Motion capture (phone sensors): matched body.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "captureMotionNotMatched": "Not quite",
+  "@captureMotionNotMatched": {
+    "description": "Motion capture (phone sensors): not matched."
+  },
+  "captureMotionRetry": "Capture again",
+  "@captureMotionRetry": {
+    "description": "Motion capture (phone sensors): retry."
+  },
+  "captureMotionUseProof": "Use this motion proof",
+  "@captureMotionUseProof": {
+    "description": "Motion capture (phone sensors): use proof."
+  },
+  "captureMotionPrivacy": "Only a short sensor trace is collected. Motion capture does not record video, audio, or continuous location.",
+  "@captureMotionPrivacy": {
+    "description": "Motion capture (phone sensors): privacy."
+  },
+  "captureMotionNoSensor": "Motion sensors unavailable",
+  "@captureMotionNoSensor": {
+    "description": "Motion capture (phone sensors): no sensor."
+  },
+  "captureMotionNoSensorBody": "Verily couldn’t read this device’s motion sensors. Check motion access in your device settings, then try again.",
+  "@captureMotionNoSensorBody": {
+    "description": "Motion capture (phone sensors): no sensor body."
+  },
+  "captureMotionUnavailable": "This motion action is unavailable",
+  "@captureMotionUnavailable": {
+    "description": "Motion capture (phone sensors): unavailable."
+  },
+  "captureMotionUnavailableBody": "Its movement settings are incomplete, so Verily will not guess what counts. Ask the creator to update the action.",
+  "@captureMotionUnavailableBody": {
+    "description": "Motion capture (phone sensors): unavailable body."
+  },
+  "captureMotionInterrupted": "Capture interrupted",
+  "@captureMotionInterrupted": {
+    "description": "Motion capture (phone sensors): interrupted."
+  },
+  "captureMotionInterruptedBody": "Motion recording stopped early. Keep Verily open and try again.",
+  "@captureMotionInterruptedBody": {
+    "description": "Motion capture (phone sensors): interrupted body."
+  },
+  "captureMotionTossSafetyTitle": "Protect yourself and your phone",
+  "@captureMotionTossSafetyTitle": {
+    "description": "Motion capture (phone sensors): toss safety title."
+  },
+  "captureMotionTossSafetyBody": "Use both hands over a soft, clear surface. Keep the toss below eye level. Do not attempt this near people, traffic, water, edges, or hard ground.",
+  "@captureMotionTossSafetyBody": {
+    "description": "Motion capture (phone sensors): toss safety body."
+  },
+  "captureMotionFailureTooFast": "That rotation exceeded the safe speed set for this action. Slow down and keep control of the phone.",
+  "@captureMotionFailureTooFast": {
+    "description": "Motion capture (phone sensors): failure too fast."
+  },
+  "captureMotionFailureWrongAxis": "The phone turned the wrong way. Follow the direction shown above and try again.",
+  "@captureMotionFailureWrongAxis": {
+    "description": "Motion capture (phone sensors): failure wrong axis."
+  },
+  "captureMotionFailureTooSlow": "The rotation was too small or too slow to count clearly. Make deliberate, complete turns.",
+  "@captureMotionFailureTooSlow": {
+    "description": "Motion capture (phone sensors): failure too slow."
+  },
+  "captureMotionFailureCount": "Verily did not detect enough complete movements. Reset your grip and try the full count again.",
+  "@captureMotionFailureCount": {
+    "description": "Motion capture (phone sensors): failure count."
+  },
+  "captureMotionFailureImpact": "The movement was too forceful for this action. Stop if the phone or your surroundings could be damaged.",
+  "@captureMotionFailureImpact": {
+    "description": "Motion capture (phone sensors): failure impact."
+  },
+  "captureMotionFailureAirTime": "We didn’t detect a low, controlled toss. Toss gently, just above your hands, and try again.",
+  "@captureMotionFailureAirTime": {
+    "description": "Motion capture (phone sensors): failure air time."
+  },
+  "captureMotionFailureToss": "We couldn’t detect a full toss and catch. Try one gentle toss and catch it with both hands.",
+  "@captureMotionFailureToss": {
+    "description": "Motion capture (phone sensors): failure toss."
+  },
+  "captureMotionFailureStillness": "The phone moved more than this action allows. Rest your arms and try holding it steady again.",
+  "@captureMotionFailureStillness": {
+    "description": "Motion capture (phone sensors): failure stillness."
+  },
+  "captureMotionFailureDuration": "The capture was too short or too long for this action. Try again.",
+  "@captureMotionFailureDuration": {
+    "description": "Motion capture (phone sensors): failure duration."
+  },
+  "captureMotionFailureGeneric": "The movement didn’t match the action. Check the target and try again.",
+  "@captureMotionFailureGeneric": {
+    "description": "Motion capture (phone sensors): failure generic."
+  },
+  "captureMotionTargetLabel": "Motion target",
+  "@captureMotionTargetLabel": {
+    "description": "Motion capture (phone sensors): target label."
+  },
+  "captureMotionTargetToss": "One low, controlled toss and two-handed catch",
+  "@captureMotionTargetToss": {
+    "description": "Motion capture (phone sensors): target toss."
+  },
+  "captureMotionTargetRotation": "{count, plural, =1{1 complete {axis} rotation} other{{count} complete {axis} rotations}}",
+  "@captureMotionTargetRotation": {
+    "description": "Motion capture (phone sensors): target rotation.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "axis": {
+        "type": "String"
+      }
+    }
+  },
+  "captureMotionTargetShake": "{count, plural, =1{1 controlled back-and-forth shake} other{{count} controlled back-and-forth shakes}}",
+  "@captureMotionTargetShake": {
+    "description": "Motion capture (phone sensors): target shake.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "captureMotionTargetStillness": "Hold the phone steady for {seconds} seconds",
+  "@captureMotionTargetStillness": {
+    "description": "Motion capture (phone sensors): target stillness.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "captureMotionTargetUnavailable": "The creator needs to finish the motion settings",
+  "@captureMotionTargetUnavailable": {
+    "description": "Motion capture (phone sensors): target unavailable."
+  },
+  "captureMotionTypePhoneToss": "Gentle phone toss",
+  "@captureMotionTypePhoneToss": {
+    "description": "Motion capture (phone sensors): type phone toss."
+  },
+  "captureMotionTypeRotation": "Counted rotation",
+  "@captureMotionTypeRotation": {
+    "description": "Motion capture (phone sensors): type rotation."
+  },
+  "captureMotionTypeShake": "Controlled shake",
+  "@captureMotionTypeShake": {
+    "description": "Motion capture (phone sensors): type shake."
+  },
+  "captureMotionTypeStillness": "Hold still",
+  "@captureMotionTypeStillness": {
+    "description": "Motion capture (phone sensors): type stillness."
+  },
+  "captureMotionAxisYaw": "steering-wheel",
+  "@captureMotionAxisYaw": {
+    "description": "Motion capture (phone sensors): axis yaw."
+  },
+  "captureMotionAxisPitch": "forward-flip",
+  "@captureMotionAxisPitch": {
+    "description": "Motion capture (phone sensors): axis pitch."
+  },
+  "captureMotionAxisRoll": "sideways",
+  "@captureMotionAxisRoll": {
+    "description": "Motion capture (phone sensors): axis roll."
+  },
+  "captureMotionAxisAny": "any axis",
+  "@captureMotionAxisAny": {
+    "description": "Motion capture (phone sensors): axis any."
+  },
+  "captureReviewDeviceCount": "{count, plural, =0{Your phone didn't count any repetitions. The recording is still checked after you submit.} =1{Your phone counted 1 repetition. The recording is checked after you submit.} other{Your phone counted {count} repetitions. The recording is checked after you submit.}}",
+  "@captureReviewDeviceCount": {
+    "description": "What live counting counted while recording; advisory only.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "movementPreviewResult": "Counted {count} · {version}",
+  "@movementPreviewResult": {
+    "description": "Developer preview result: what the tracker counted and its version.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "captureClose": "Close without sending",
+  "@captureClose": {
+    "description": "Tooltip of the button that leaves a capture without sending anything."
+  },
+  "captureFlipCamera": "Switch camera",
+  "@captureFlipCamera": {
+    "description": "Tooltip of the button that switches between front and back cameras."
+  },
+  "captureLive": "Live",
+  "@captureLive": {
+    "description": "Label on the camera viewfinder: proof is captured live, never uploaded."
+  },
+  "captureChallengeLoading": "Getting your word…",
+  "@captureChallengeLoading": {
+    "description": "Shown while Verily fetches the word to say while recording."
+  },
+  "captureChallengeIntro": "When you record, say this word clearly",
+  "@captureChallengeIntro": {
+    "description": "Shown above the spoken challenge word before recording starts."
+  },
+  "captureChallengeSay": "Say “{word}”",
+  "@captureChallengeSay": {
+    "description": "The spoken challenge, shown big while recording.",
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "captureChallengeSemantics": "Say the word {word} while you record",
+  "@captureChallengeSemantics": {
+    "description": "Screen reader text for the spoken challenge.",
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "captureChallengeFailedTitle": "We couldn't get your word",
+  "@captureChallengeFailedTitle": {
+    "description": "Title when the spoken challenge could not be fetched; recording cannot start without it."
+  },
+  "captureChallengeFailedBody": "Each recording needs a fresh word from Verily so it is clearly live. Check your connection and try again.",
+  "@captureChallengeFailedBody": {
+    "description": "Explains why recording waits for the word."
+  },
+  "captureRecordStart": "Start recording",
+  "@captureRecordStart": {
+    "description": "Button that starts a video or audio recording."
+  },
+  "captureRecordStop": "Stop recording",
+  "@captureRecordStop": {
+    "description": "Button that stops a recording."
+  },
+  "captureTakePhoto": "Take photo",
+  "@captureTakePhoto": {
+    "description": "Shutter button for photo proof."
+  },
+  "captureElapsed": "{elapsed} of {limit}",
+  "@captureElapsed": {
+    "description": "Recording time out of the limit, such as 0:12 of 2:00.",
+    "placeholders": {
+      "elapsed": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "captureMinimumHint": "{seconds, plural, =1{Record at least 1 second} other{Record at least {seconds} seconds}}",
+  "@captureMinimumHint": {
+    "description": "Shown while a recording is shorter than the action allows.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "captureLimitReached": "Stopped at the {limit} limit",
+  "@captureLimitReached": {
+    "description": "Shown when a recording stopped itself at the maximum length.",
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "captureCameraPermissionTitle": "Camera access is off",
+  "@captureCameraPermissionTitle": {
+    "description": "Title when camera access is off."
+  },
+  "captureCameraPermissionBody": "Allow camera access for Verily in your phone's settings. Proof can only be captured live, here in the app.",
+  "@captureCameraPermissionBody": {
+    "description": "Explains how to turn camera access back on."
+  },
+  "captureMicrophonePermissionTitle": "Microphone access is off",
+  "@captureMicrophonePermissionTitle": {
+    "description": "Title when microphone access is off."
+  },
+  "captureMicrophonePermissionBody": "Allow microphone access for Verily in your phone's settings. Your recording needs sound for this action.",
+  "@captureMicrophonePermissionBody": {
+    "description": "Explains how to turn microphone access back on."
+  },
+  "captureOpenSettings": "Open settings",
+  "@captureOpenSettings": {
+    "description": "Button that opens this app's system settings."
+  },
+  "captureAudioTitle": "Record audio",
+  "@captureAudioTitle": {
+    "description": "Title of the audio capture screen."
+  },
+  "captureAudioHint": "Hold your phone close and speak clearly.",
+  "@captureAudioHint": {
+    "description": "Guidance before recording audio proof."
+  },
+  "captureAudioLevelSemantics": "Sound level {percent}%",
+  "@captureAudioLevelSemantics": {
+    "description": "Screen reader value of the microphone level meter.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "captureAudioRecording": "Recording",
+  "@captureAudioRecording": {
+    "description": "Shown while audio is being recorded."
+  },
+  "captureReviewTitle": "Check your proof",
+  "@captureReviewTitle": {
+    "description": "Title of the review step after capturing."
+  },
+  "captureReviewPhotoBody": "Make sure the photo shows the action clearly.",
+  "@captureReviewPhotoBody": {
+    "description": "Guidance for reviewing a photo."
+  },
+  "captureReviewRecordingBody": "Play it back and make sure the action is clear.",
+  "@captureReviewRecordingBody": {
+    "description": "Guidance for reviewing a recording."
+  },
+  "captureReviewWordCheck": "Did you say “{word}”? It needs to be heard in the recording.",
+  "@captureReviewWordCheck": {
+    "description": "Reminds the person of the spoken challenge before sending.",
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "captureReviewDuration": "{seconds, plural, =1{1 second recorded} other{{seconds} seconds recorded}}",
+  "@captureReviewDuration": {
+    "description": "How long the recording is.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "captureReviewRetake": "Retake",
+  "@captureReviewRetake": {
+    "description": "Discards the capture and returns to the camera or microphone."
+  },
+  "captureReviewSend": "Send proof",
+  "@captureReviewSend": {
+    "description": "Sends the capture to Verily to be checked."
+  },
+  "captureReviewPrivacy": "Your proof stays private: only Verily's checks and the people reviewing this action see it.",
+  "@captureReviewPrivacy": {
+    "description": "Privacy note on the review step."
+  },
+  "captureReviewPlay": "Play",
+  "@captureReviewPlay": {
+    "description": "Tooltip of the play button in the capture preview."
+  },
+  "captureReviewPause": "Pause",
+  "@captureReviewPause": {
+    "description": "Tooltip of the pause button in the capture preview."
+  },
+  "captureReviewPreviewUnavailable": "This preview can't play here. You can still send it.",
+  "@captureReviewPreviewUnavailable": {
+    "description": "Shown when the capture cannot be played back on this device."
+  },
+  "captureSending": "Sending your proof…",
+  "@captureSending": {
+    "description": "Shown while the capture uploads."
+  },
+  "captureSendFailedTitle": "Your proof didn't send",
+  "@captureSendFailedTitle": {
+    "description": "Title when the upload failed."
+  },
+  "captureSendFailedBody": "It is still on this phone. Check your connection and send it again.",
+  "@captureSendFailedBody": {
+    "description": "Reassures that the capture was kept."
+  },
+  "captureSendAgain": "Send again",
+  "@captureSendAgain": {
+    "description": "Retries sending the kept capture."
+  },
+  "captureIntegrityTitle": "This phone couldn't vouch for the capture",
+  "@captureIntegrityTitle": {
+    "description": "Title when the device could not sign or attest the capture."
+  },
+  "captureIntegrityBody": "This action needs proof from a phone that can confirm it captured it live. Try again, or use another phone.",
+  "@captureIntegrityBody": {
+    "description": "Explains the device check in plain words."
+  },
+  "captureUnsupportedFormatTitle": "This action can't take what this phone recorded",
+  "@captureUnsupportedFormatTitle": {
+    "description": "Title when the capture format is not accepted."
+  },
+  "captureUnsupportedFormatBody": "Nothing was sent. Try again; if it keeps happening, this action may not work on this phone.",
+  "@captureUnsupportedFormatBody": {
+    "description": "Explains the format problem without technical detail."
+  },
+  "captureTooLargeTitle": "That capture is too large",
+  "@captureTooLargeTitle": {
+    "description": "Title when the capture exceeds the size the action accepts."
+  },
+  "captureTooLargeBody": "Nothing was sent. Record a shorter clip and try again.",
+  "@captureTooLargeBody": {
+    "description": "Explains the size problem."
+  },
+  "captureProblemTitle": "That didn't work",
+  "@captureProblemTitle": {
+    "description": "Title for an unexpected capture problem."
+  },
+  "@@x-section-me": "Welcome, sign-in, Me tab, payouts and wallet, settings, review, and appeals.",
+  "appealsRequirement": "{requirement} · {kind}",
+  "@appealsRequirement": {
+    "description": "Which proof an appeal is about, and its kind.",
+    "placeholders": {
+      "requirement": {
+        "type": "String"
+      },
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "welcomeTitle": "Do it. Prove it. Get paid.",
+  "@welcomeTitle": {
+    "description": "Display line on the front door."
+  },
+  "welcomeBody": "Real actions in real places. Your phone captures the proof as it happens, Verily checks it, and the reward is already waiting.",
+  "@welcomeBody": {
+    "description": "The pitch under the display line on the front door."
+  },
+  "welcomePromiseHeading": "Every action is a small promise",
+  "@welcomePromiseHeading": {
+    "description": "Heading above the three parts of an action on the front door."
+  },
+  "welcomePromisePlaceTitle": "A place",
+  "@welcomePromisePlaceTitle": {
+    "description": "First part of an action: where it happens."
+  },
+  "welcomePromisePlaceBody": "A pin on a map or a code at the venue. Being there is part of it.",
+  "@welcomePromisePlaceBody": {
+    "description": "Explains the place part of an action."
+  },
+  "welcomePromiseProofTitle": "Proof, captured live",
+  "@welcomePromiseProofTitle": {
+    "description": "Second part of an action: the proof."
+  },
+  "welcomePromiseProofBody": "Video, a photo, sound, or motion, recorded in the app. There's no upload button.",
+  "@welcomePromiseProofBody": {
+    "description": "Explains that proof is captured live, never uploaded."
+  },
+  "welcomePromiseRewardTitle": "A reward, locked first",
+  "@welcomePromiseRewardTitle": {
+    "description": "Third part of an action: the optional reward."
+  },
+  "welcomePromiseRewardBody": "Rewards sit in escrow before anyone starts, so nobody works for a promise.",
+  "@welcomePromiseRewardBody": {
+    "description": "Explains that rewards are escrowed before work begins."
+  },
+  "welcomeGetStarted": "Get started",
+  "@welcomeGetStarted": {
+    "description": "Primary action on the front door. Leads to sign-in."
+  },
+  "welcomeHaveAccount": "I already have an account",
+  "@welcomeHaveAccount": {
+    "description": "Quiet action on the front door. Leads to sign-in."
+  },
+  "signInTitle": "Sign in to Verily",
+  "@signInTitle": {
+    "description": "Sign-in heading when there is no particular reason."
+  },
+  "signInTitleDoAction": "Sign in to do this action",
+  "@signInTitleDoAction": {
+    "description": "Sign-in heading when someone tried to start or open an action."
+  },
+  "signInTitleCreateAction": "Sign in to post an action",
+  "@signInTitleCreateAction": {
+    "description": "Sign-in heading when someone tried to create or fund an action."
+  },
+  "signInTitlePrivateHistory": "Sign in to see your proof and payouts",
+  "@signInTitlePrivateHistory": {
+    "description": "Sign-in heading when someone opened their attempts, payouts, or appeals."
+  },
+  "signInTitleManageApps": "Sign in to manage your Verily Apps",
+  "@signInTitleManageApps": {
+    "description": "Sign-in heading when someone opened their Verily Apps."
+  },
+  "signInSubtitle": "Your proof stays private to you and the people who check it.",
+  "@signInSubtitle": {
+    "description": "Reassurance under the sign-in heading."
+  },
+  "signInEmailTitle": "Sign in with email",
+  "@signInEmailTitle": {
+    "description": "Heading of the email sign-in form for someone who already has an account."
+  },
+  "signInEmailSignUpTitle": "Sign up with email",
+  "@signInEmailSignUpTitle": {
+    "description": "Heading of the email form that starts a new account."
+  },
+  "signInVerificationPrompt": "Enter the 8-digit code we emailed you.",
+  "@signInVerificationPrompt": {
+    "description": "Shown while verifying an email address during sign-up."
+  },
+  "signInPasswordMinLength": "{length}+ characters",
+  "@signInPasswordMinLength": {
+    "description": "Password rule: the minimum length. The sign-in kit fills in {length}; pass the literal text {length}.",
+    "placeholders": {
+      "length": {
+        "type": "String"
+      }
+    }
+  },
+  "signInPasswordMaxLength": "Up to {length} characters",
+  "@signInPasswordMaxLength": {
+    "description": "Password rule: the maximum length. The sign-in kit fills in {length}; pass the literal text {length}.",
+    "placeholders": {
+      "length": {
+        "type": "String"
+      }
+    }
+  },
+  "signInPasswordLowercase": "One lowercase letter",
+  "@signInPasswordLowercase": {
+    "description": "Password rule."
+  },
+  "signInPasswordUppercase": "One uppercase letter",
+  "@signInPasswordUppercase": {
+    "description": "Password rule."
+  },
+  "signInPasswordNumber": "One number",
+  "@signInPasswordNumber": {
+    "description": "Password rule."
+  },
+  "signInPasswordSymbol": "One symbol",
+  "@signInPasswordSymbol": {
+    "description": "Password rule."
+  },
+  "signInFailed": "We couldn't sign you in. Try again.",
+  "@signInFailed": {
+    "description": "Shown when sign-in fails. Never shows technical detail."
+  },
+  "signInUnavailable": "Sign-in isn't available in this build.",
+  "@signInUnavailable": {
+    "description": "Shown when no sign-in method is configured."
+  },
+  "signInIntentKept": "Your place is saved. Sign in when you're ready and we'll bring you back.",
+  "@signInIntentKept": {
+    "description": "Shown above the button that leaves sign-in without an account."
+  },
+  "signInNotNow": "Not now",
+  "@signInNotNow": {
+    "description": "Leaves the sign-in page without an account."
+  },
+  "signInHaveAccountPrompt": "Have an account?",
+  "@signInHaveAccountPrompt": {
+    "description": "Short prompt beside the link from creating an account to signing in. Kept short so it fits one line beside the link on a narrow phone."
+  },
+  "signInNewHerePrompt": "New here?",
+  "@signInNewHerePrompt": {
+    "description": "Short prompt beside the link from signing in to creating an account. Kept short so it fits one line beside the link on a narrow phone."
+  },
+  "meTitle": "Your proof and payouts",
+  "@meTitle": {
+    "description": "Title of the Me tab."
+  },
+  "meSubtitle": "Attempts, rewards, and where they go",
+  "@meSubtitle": {
+    "description": "Breadcrumb under the Me tab title."
+  },
+  "meWalletTitle": "Payout wallet",
+  "@meWalletTitle": {
+    "description": "Heading of the payout wallet card."
+  },
+  "meWalletLinkedBody": "Rewards you earn are sent to this wallet.",
+  "@meWalletLinkedBody": {
+    "description": "Shown when a payout wallet is linked."
+  },
+  "meWalletAddressLabel": "Wallet address {address}",
+  "@meWalletAddressLabel": {
+    "description": "Accessible label of the shortened wallet address.",
+    "placeholders": {
+      "address": {
+        "type": "String"
+      }
+    }
+  },
+  "meWalletCopy": "Copy wallet address",
+  "@meWalletCopy": {
+    "description": "Tooltip of the button that copies the payout wallet address."
+  },
+  "meWalletCopied": "Wallet address copied",
+  "@meWalletCopied": {
+    "description": "Confirms the wallet address was copied."
+  },
+  "meWalletChange": "Use a different wallet",
+  "@meWalletChange": {
+    "description": "Links a different payout wallet."
+  },
+  "meWalletUnlinkedTitle": "Link a wallet to get paid",
+  "@meWalletUnlinkedTitle": {
+    "description": "Heading when no payout wallet is linked."
+  },
+  "meWalletUnlinkedBody": "Rewards are paid in USDC on Solana. Link your wallet once, and anything waiting for you is sent as soon as it's linked.",
+  "@meWalletUnlinkedBody": {
+    "description": "Explains why to link a payout wallet."
+  },
+  "meWalletLink": "Link a wallet",
+  "@meWalletLink": {
+    "description": "Starts linking a payout wallet."
+  },
+  "meWalletLinking": "Waiting for your wallet…",
+  "@meWalletLinking": {
+    "description": "Shown while the wallet app is open."
+  },
+  "meWalletUnsupported": "Linking a wallet needs Verily on Android with a Solana wallet app installed.",
+  "@meWalletUnsupported": {
+    "description": "Shown where wallets can't be reached, such as the web or iOS."
+  },
+  "meWalletLinked": "Wallet linked. Payouts go there now.",
+  "@meWalletLinked": {
+    "description": "Confirms a payout wallet was linked."
+  },
+  "meWalletFailureUnavailable": "No Solana wallet app answered. Install one, then try again.",
+  "@meWalletFailureUnavailable": {
+    "description": "Wallet linking failed: no wallet app."
+  },
+  "meWalletFailureCancelled": "Linking was cancelled in your wallet.",
+  "@meWalletFailureCancelled": {
+    "description": "Wallet linking failed: declined in the wallet."
+  },
+  "meWalletFailureTimedOut": "Your wallet didn't answer in time. Try again.",
+  "@meWalletFailureTimedOut": {
+    "description": "Wallet linking failed: timed out."
+  },
+  "meWalletFailureWrongAccount": "Your wallet offered a different account. Choose the one you want paid, then try again.",
+  "@meWalletFailureWrongAccount": {
+    "description": "Wallet linking failed: a different account was authorized."
+  },
+  "meWalletFailureInvalidResponse": "Your wallet sent back something we couldn't use. Try again.",
+  "@meWalletFailureInvalidResponse": {
+    "description": "Wallet linking failed: unusable response."
+  },
+  "meWalletFailureFailed": "We couldn't link your wallet. Try again.",
+  "@meWalletFailureFailed": {
+    "description": "Wallet linking failed for another reason."
+  },
+  "mePayoutsTitle": "Payouts",
+  "@mePayoutsTitle": {
+    "description": "Heading of the payouts list."
+  },
+  "mePayoutsEmpty": "Nothing paid yet. Rewards you earn show up here.",
+  "@mePayoutsEmpty": {
+    "description": "Shown when there are no payouts."
+  },
+  "mePayoutPayableUntil": "Link a wallet by {date} to receive it.",
+  "@mePayoutPayableUntil": {
+    "description": "Deadline for a payout waiting for a wallet.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "meAttemptsTitle": "Your attempts",
+  "@meAttemptsTitle": {
+    "description": "Heading of the attempts list."
+  },
+  "meAttemptsEmpty": "You haven't tried an action yet. Find one in Do.",
+  "@meAttemptsEmpty": {
+    "description": "Shown when there are no attempts."
+  },
+  "meAttemptUnknownAction": "An action you tried",
+  "@meAttemptUnknownAction": {
+    "description": "Stands in for an attempt's action title when the action is no longer listed."
+  },
+  "meAttemptStarted": "Started {date}",
+  "@meAttemptStarted": {
+    "description": "When an attempt began.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "meAppeal": "Appeal",
+  "@meAppeal": {
+    "description": "Opens the appeal form for a rejected attempt."
+  },
+  "meAppealTitle": "Appeal this decision",
+  "@meAppealTitle": {
+    "description": "Title of the appeal form."
+  },
+  "meAppealBody": "Tell the action's creator what your proof shows. You can appeal once.",
+  "@meAppealBody": {
+    "description": "Explains the appeal form."
+  },
+  "meAppealReasonLabel": "What should they know?",
+  "@meAppealReasonLabel": {
+    "description": "Label of the appeal reason field."
+  },
+  "meAppealReasonHint": "For example: all ten squats are in the second half of the video.",
+  "@meAppealReasonHint": {
+    "description": "Example appeal reason."
+  },
+  "meAppealReasonHelper": "At least 10 characters.",
+  "@meAppealReasonHelper": {
+    "description": "Explains the appeal reason's minimum length."
+  },
+  "meAppealSend": "Send appeal",
+  "@meAppealSend": {
+    "description": "Sends the appeal."
+  },
+  "meAppealSent": "Appeal sent.",
+  "@meAppealSent": {
+    "description": "Confirms the appeal was sent."
+  },
+  "meAppealPending": "Appeal sent · waiting for the creator",
+  "@meAppealPending": {
+    "description": "An appeal waiting for a decision."
+  },
+  "meAppealAccepted": "Appeal accepted",
+  "@meAppealAccepted": {
+    "description": "An appeal the creator accepted."
+  },
+  "meAppealRejected": "Appeal not accepted",
+  "@meAppealRejected": {
+    "description": "An appeal the creator turned down."
+  },
+  "meLoadFailedTitle": "We couldn't load this",
+  "@meLoadFailedTitle": {
+    "description": "Title when a Me section fails to load."
+  },
+  "meLoadingAttempts": "Loading your attempts…",
+  "@meLoadingAttempts": {
+    "description": "Shown while attempts load."
+  },
+  "meLoadingPayouts": "Loading your payouts…",
+  "@meLoadingPayouts": {
+    "description": "Shown while payouts load."
+  },
+  "meLinkReview": "Review proof",
+  "@meLinkReview": {
+    "description": "Opens the review queue. Only for reviewers."
+  },
+  "meLinkAppeals": "Appeals on your actions",
+  "@meLinkAppeals": {
+    "description": "Opens appeals on the person's own actions."
+  },
+  "settingsSubtitle": "How Verily looks, and your account",
+  "@settingsSubtitle": {
+    "description": "Breadcrumb under the settings title."
+  },
+  "settingsAccountTitle": "Your account",
+  "@settingsAccountTitle": {
+    "description": "Heading of the account section."
+  },
+  "settingsSignOut": "Sign out",
+  "@settingsSignOut": {
+    "description": "Signs out of this device."
+  },
+  "settingsSigningOut": "Signing out…",
+  "@settingsSigningOut": {
+    "description": "Announced while signing out."
+  },
+  "settingsSignOutSubtitle": "You can sign back in any time. Nothing you've done is lost.",
+  "@settingsSignOutSubtitle": {
+    "description": "Explains signing out."
+  },
+  "settingsSignOutDialogTitle": "Sign out of Verily?",
+  "@settingsSignOutDialogTitle": {
+    "description": "Title of the sign-out confirmation."
+  },
+  "settingsSignOutDialogBody": "You'll need to sign in again to do actions or see your payouts.",
+  "@settingsSignOutDialogBody": {
+    "description": "Body of the sign-out confirmation."
+  },
+  "settingsSignOutFailed": "We couldn't sign you out. Try again.",
+  "@settingsSignOutFailed": {
+    "description": "Shown when signing out fails."
+  },
+  "settingsCloseAccount": "Close account",
+  "@settingsCloseAccount": {
+    "description": "Starts closing the account."
+  },
+  "settingsCloseAccountSubtitle": "Remove your sign-in details and end every session.",
+  "@settingsCloseAccountSubtitle": {
+    "description": "Explains closing the account."
+  },
+  "settingsCloseAccountDialogTitle": "Close your account?",
+  "@settingsCloseAccountDialogTitle": {
+    "description": "Title of the close-account confirmation."
+  },
+  "settingsCloseAccountDialogBody": "Your sign-in details are removed, every session ends, and your live actions are paused. Rewards already sent stay in the wallets they went to.",
+  "@settingsCloseAccountDialogBody": {
+    "description": "Says plainly what closing the account does."
+  },
+  "settingsCloseAccountConfirmationLabel": "Type DELETE to confirm",
+  "@settingsCloseAccountConfirmationLabel": {
+    "description": "Label of the field that confirms closing the account. Keep the word DELETE in English: the server expects it."
+  },
+  "settingsCloseAccountConfirm": "Close account",
+  "@settingsCloseAccountConfirm": {
+    "description": "Confirms closing the account."
+  },
+  "settingsClosingAccount": "Closing account…",
+  "@settingsClosingAccount": {
+    "description": "Announced while closing the account."
+  },
+  "settingsCloseAccountFailed": "We couldn't close your account. Try again.",
+  "@settingsCloseAccountFailed": {
+    "description": "Shown when closing the account fails."
+  },
+  "reviewTitle": "Proof to review",
+  "@reviewTitle": {
+    "description": "Title of the review queue."
+  },
+  "reviewNotReviewerTitle": "Reviewing is for Verily's reviewers",
+  "@reviewNotReviewerTitle": {
+    "description": "Shown to accounts without review access."
+  },
+  "reviewNotReviewerBody": "People with review access decide proof that needs a person. Your own proof is in Me.",
+  "@reviewNotReviewerBody": {
+    "description": "Explains the review queue to accounts without access."
+  },
+  "reviewLoading": "Loading proof to review…",
+  "@reviewLoading": {
+    "description": "Shown while the queue loads."
+  },
+  "reviewEmptyTitle": "Nothing to review",
+  "@reviewEmptyTitle": {
+    "description": "Shown when the queue is empty."
+  },
+  "reviewEmptyBody": "Proof that needs a person shows up here.",
+  "@reviewEmptyBody": {
+    "description": "Explains an empty review queue."
+  },
+  "reviewLoadFailedTitle": "We couldn't load the queue",
+  "@reviewLoadFailedTitle": {
+    "description": "Shown when the review queue fails to load."
+  },
+  "reviewContext": "{creator} · {requirement}",
+  "@reviewContext": {
+    "description": "Who posted the action and which proof this is.",
+    "placeholders": {
+      "creator": {
+        "type": "String"
+      },
+      "requirement": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewKindVideo": "Video proof",
+  "@reviewKindVideo": {
+    "description": "Kind of proof."
+  },
+  "reviewKindPhoto": "Photo proof",
+  "@reviewKindPhoto": {
+    "description": "Kind of proof."
+  },
+  "reviewKindAudio": "Audio proof",
+  "@reviewKindAudio": {
+    "description": "Kind of proof."
+  },
+  "reviewKindLocation": "Location proof",
+  "@reviewKindLocation": {
+    "description": "Kind of proof."
+  },
+  "reviewKindQrCode": "Venue code proof",
+  "@reviewKindQrCode": {
+    "description": "Kind of proof."
+  },
+  "reviewKindMotion": "Motion proof",
+  "@reviewKindMotion": {
+    "description": "Kind of proof."
+  },
+  "reviewKindExternalApp": "App confirmation",
+  "@reviewKindExternalApp": {
+    "description": "Kind of proof."
+  },
+  "reviewKindWithDuration": "{kind} · {seconds, plural, =1{1 second} other{{seconds} seconds}}",
+  "@reviewKindWithDuration": {
+    "description": "A kind of proof with its length.",
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewTimes": "Captured {captured} · sent {submitted}",
+  "@reviewTimes": {
+    "description": "When the proof was captured and sent.",
+    "placeholders": {
+      "captured": {
+        "type": "String"
+      },
+      "submitted": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewListenFor": "Listen for “{word}”",
+  "@reviewListenFor": {
+    "description": "The word the participant was asked to say while recording.",
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewPayout": "Pays {amount}, above the {threshold} review threshold",
+  "@reviewPayout": {
+    "description": "Why a valuable payout waits for a person.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "threshold": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewMediaExpires": "Private link. It expires five minutes after loading.",
+  "@reviewMediaExpires": {
+    "description": "Explains that evidence links are short-lived."
+  },
+  "reviewMediaReload": "Reload proof",
+  "@reviewMediaReload": {
+    "description": "Fetches fresh private links."
+  },
+  "reviewMediaUnavailable": "This proof can't play here. Reload to get a fresh link.",
+  "@reviewMediaUnavailable": {
+    "description": "Shown when evidence media can't load."
+  },
+  "reviewMediaLoading": "Loading proof…",
+  "@reviewMediaLoading": {
+    "description": "Shown while evidence media loads."
+  },
+  "reviewPlay": "Play",
+  "@reviewPlay": {
+    "description": "Plays evidence media."
+  },
+  "reviewPause": "Pause",
+  "@reviewPause": {
+    "description": "Pauses evidence media."
+  },
+  "reviewPlaybackPosition": "Playback position",
+  "@reviewPlaybackPosition": {
+    "description": "Accessible label of the playback position."
+  },
+  "reviewPhotoLabel": "Photo proof for {action}",
+  "@reviewPhotoLabel": {
+    "description": "Accessible label of a photo being reviewed.",
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewAccept": "Accept",
+  "@reviewAccept": {
+    "description": "Accepts the proof."
+  },
+  "reviewReject": "Reject",
+  "@reviewReject": {
+    "description": "Rejects the proof."
+  },
+  "reviewAcceptTitle": "Accept this proof?",
+  "@reviewAcceptTitle": {
+    "description": "Title of the accept confirmation."
+  },
+  "reviewRejectTitle": "Reject this proof?",
+  "@reviewRejectTitle": {
+    "description": "Title of the reject confirmation."
+  },
+  "reviewNoteLabel": "Note for the record",
+  "@reviewNoteLabel": {
+    "description": "Label of the review note."
+  },
+  "reviewNoteHint": "What you saw, in a sentence.",
+  "@reviewNoteHint": {
+    "description": "Hint for the review note."
+  },
+  "reviewSaved": "Decision saved.",
+  "@reviewSaved": {
+    "description": "Confirms a review decision."
+  },
+  "reviewSaveFailed": "We couldn't save that decision. Try again.",
+  "@reviewSaveFailed": {
+    "description": "Shown when a review decision fails."
+  },
+  "appealsTitle": "Appeals on your actions",
+  "@appealsTitle": {
+    "description": "Title of the creator's appeals list."
+  },
+  "appealsLoading": "Loading appeals…",
+  "@appealsLoading": {
+    "description": "Shown while appeals load."
+  },
+  "appealsEmptyTitle": "No appeals",
+  "@appealsEmptyTitle": {
+    "description": "Shown when there are no appeals."
+  },
+  "appealsEmptyBody": "When someone contests a rejection on one of your actions, it shows up here.",
+  "@appealsEmptyBody": {
+    "description": "Explains an empty appeals list."
+  },
+  "appealsLoadFailedTitle": "We couldn't load appeals",
+  "@appealsLoadFailedTitle": {
+    "description": "Shown when appeals fail to load."
+  },
+  "appealsReasonHeading": "Their words",
+  "@appealsReasonHeading": {
+    "description": "Heading above the participant's appeal reason."
+  },
+  "appealsStatusPending": "Waiting for you",
+  "@appealsStatusPending": {
+    "description": "An appeal waiting for the creator."
+  },
+  "appealsStatusAccepted": "You accepted this appeal",
+  "@appealsStatusAccepted": {
+    "description": "An appeal the creator accepted."
+  },
+  "appealsStatusRejected": "You turned this appeal down",
+  "@appealsStatusRejected": {
+    "description": "An appeal the creator turned down."
+  },
+  "appealsAccept": "Accept",
+  "@appealsAccept": {
+    "description": "Accepts an appeal."
+  },
+  "appealsReject": "Reject",
+  "@appealsReject": {
+    "description": "Rejects an appeal."
+  },
+  "appealsAcceptTitle": "Accept this appeal?",
+  "@appealsAcceptTitle": {
+    "description": "Title of the accept confirmation."
+  },
+  "appealsAcceptBody": "Accepting counts the proof as verified.",
+  "@appealsAcceptBody": {
+    "description": "Explains accepting an appeal."
+  },
+  "appealsRejectTitle": "Reject this appeal?",
+  "@appealsRejectTitle": {
+    "description": "Title of the reject confirmation."
+  },
+  "appealsRejectBody": "Rejecting keeps the original decision.",
+  "@appealsRejectBody": {
+    "description": "Explains rejecting an appeal."
+  },
+  "appealsNoteLabel": "Your answer",
+  "@appealsNoteLabel": {
+    "description": "Label of the appeal resolution note."
+  },
+  "appealsNoteHint": "Why, in a sentence. They'll see this.",
+  "@appealsNoteHint": {
+    "description": "Hint for the resolution note, which the participant sees."
+  },
+  "appealsSaved": "Appeal decided.",
+  "@appealsSaved": {
+    "description": "Confirms an appeal decision."
+  },
+  "appealsSaveFailed": "We couldn't save that. Try again.",
+  "@appealsSaveFailed": {
+    "description": "Shown when an appeal decision fails."
+  },
   "appTitle": "Verily",
   "@appTitle": {
     "description": "The app's name, shown in the task switcher and page headers."
@@ -8,13 +3830,9 @@
   "@appTagline": {
     "description": "The one-line promise of the product."
   },
-  "placeholderTitle": "Do it. Prove it. Get paid.",
-  "@placeholderTitle": {
-    "description": "Headline of the welcome card shown before actions are available."
-  },
-  "placeholderBody": "Real actions in real places, proof captured live on your phone, and rewards locked away before anyone starts. The first actions are on their way.",
-  "@placeholderBody": {
-    "description": "Supporting copy of the welcome card shown before actions are available."
+  "skribblePreviewBodySample": "Real actions in real places, proof captured live on your phone, and rewards locked away before anyone starts. The first actions are on their way.",
+  "@skribblePreviewBodySample": {
+    "description": "A paragraph showing the body type role in the component gallery."
   },
   "dialogCancel": "Cancel",
   "@dialogCancel": {
@@ -123,6 +3941,14 @@
   "developerSkribblePreviewSubtitle": "Hand-drawn components in the active Verily theme. Developer preview only.",
   "@developerSkribblePreviewSubtitle": {
     "description": "Explains the component gallery."
+  },
+  "developerMovementPreview": "Movement tracking preview",
+  "@developerMovementPreview": {
+    "description": "Development menu entry for live pose tracking."
+  },
+  "developerMovementPreviewSubtitle": "Try live pose tracking for any movement without an action. Developer preview only.",
+  "@developerMovementPreviewSubtitle": {
+    "description": "Explains the movement tracking preview."
   },
   "developerHotReload": "Hot reload",
   "@developerHotReload": {

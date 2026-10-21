@@ -40,11 +40,26 @@ abstract final class VerilyIcons {
   /// Dismiss or clear.
   static const close = SkribbleGlyphs.close;
 
+  /// Show more.
+  static const chevronDown = SkribbleGlyphs.chevronDown;
+
+  /// Search.
+  static const search = SkribbleGlyphs.search;
+
+  /// Share outside the app.
+  static const share = SkribbleGlyphs.share;
+
+  /// A link or a linked account.
+  static const link = SkribbleGlyphs.link;
+
   /// Done, selected, or confirmed.
   static const check = SkribbleGlyphs.check;
 
   /// Add something new.
   static const plus = SkribbleGlyphs.plus;
+
+  /// Take one away, or zoom out.
+  static const minus = SkribbleGlyphs.minus;
 
   /// Load again or sync.
   static const refresh = SkribbleGlyphs.refresh;
@@ -232,6 +247,46 @@ abstract final class VerilyIcons {
     ],
   );
 
+  /// Microphone unavailable.
+  static const microphoneOff = WiredSvgIconData(
+    width: 24,
+    height: 24,
+    primitives: <WiredSvgPrimitive>[
+      WiredSvgPrimitive.path(
+        'M12.000 19.000C11.625 20.000 12.375 21.000 12.000 22.000M15.000 9.340C15.543 7.893 14.457 6.447 15.000 5.000C15.234 3.420 13.792 2.606 12.684 2.097C11.203 1.501 10.074 2.712 9.320 3.670M16.950 16.950C14.870 18.560 12.015 19.944 9.321 18.468C7.038 17.162 4.667 15.054 5.000 12.000C5.250 11.333 4.750 10.667 5.000 10.000M18.890 13.230C19.065 12.833 18.897 12.403 19.000 12.000C19.250 11.333 18.750 10.667 19.000 10.000M2.000 2.000C8.172 9.162 15.828 14.838 22.000 22.000',
+        fillRule: WiredSvgFillRule.nonZero,
+        strokeColor: 'currentColor',
+        strokeWidth: 2,
+      ),
+      WiredSvgPrimitive.path(
+        'M9.000 9.000C8.625 10.000 9.375 11.000 9.000 12.000C8.770 13.367 9.963 14.151 10.852 14.769C12.027 15.505 13.208 14.705 14.120 14.120',
+        fillRule: WiredSvgFillRule.nonZero,
+        strokeColor: 'currentColor',
+        strokeWidth: 2,
+      ),
+    ],
+  );
+
+  /// Time left to record.
+  static const timer = WiredSvgIconData(
+    width: 24,
+    height: 24,
+    primitives: <WiredSvgPrimitive>[
+      WiredSvgPrimitive.path(
+        'M10.000 2.000C11.333 2.500 12.667 1.500 14.000 2.000M12.000 14.000C13.375 13.375 13.625 11.625 15.000 11.000',
+        fillRule: WiredSvgFillRule.nonZero,
+        strokeColor: 'currentColor',
+        strokeWidth: 2,
+      ),
+      WiredSvgPrimitive.path(
+        'M4.000 14.000C3.717 18.701 7.865 21.717 12.000 22.000C16.701 22.283 19.717 18.135 20.000 14.000C20.283 9.299 16.135 6.283 12.000 6.000C7.299 5.717 4.283 9.865 4.000 14.000C4.000 14.000 4.000 14.000 4.000 14.000Z',
+        fillRule: WiredSvgFillRule.nonZero,
+        strokeColor: 'currentColor',
+        strokeWidth: 2,
+      ),
+    ],
+  );
+
   /// Start recording.
   static const record = WiredSvgIconData(
     width: 24,
@@ -411,6 +466,12 @@ abstract final class VerilyIcons {
       ),
     ],
   );
+
+  /// More information.
+  static const info = SkribbleGlyphs.info;
+
+  /// Needs attention before continuing.
+  static const warning = SkribbleGlyphs.warning;
 
   /// Add another.
   static const circlePlus = WiredSvgIconData(
@@ -667,6 +728,12 @@ abstract final class VerilyIcons {
       ),
     ],
   );
+
+  /// You and your account.
+  static const user = SkribbleGlyphs.user;
+
+  /// Email.
+  static const mail = SkribbleGlyphs.mail;
 
   /// Sign out.
   static const logOut = WiredSvgIconData(

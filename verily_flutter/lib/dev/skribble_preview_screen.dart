@@ -266,7 +266,11 @@ class _TypeSample extends StatelessWidget {
       (l10n.skribblePreviewTypeDisplay, text.displayLarge, l10n.appTitle),
       (l10n.skribblePreviewTypeHeadline, text.headlineLarge, l10n.appTitle),
       (l10n.skribblePreviewTypeTitle, text.titleLarge, l10n.appTagline),
-      (l10n.skribblePreviewTypeBody, text.bodyMedium, l10n.placeholderBody),
+      (
+        l10n.skribblePreviewTypeBody,
+        text.bodyMedium,
+        l10n.skribblePreviewBodySample,
+      ),
       (l10n.skribblePreviewTypeLabel, text.labelLarge, l10n.appTagline),
       (l10n.skribblePreviewTypeCaption, text.labelSmall, l10n.appTagline),
     ];

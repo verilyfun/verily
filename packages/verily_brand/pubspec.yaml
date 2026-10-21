@@ -10,6 +10,8 @@ environment:
   sdk: ^3.13.0
   flutter: ">=3.47.0"
 
+resolution: workspace
+
 dependencies:
   flutter:
     sdk: flutter
@@ -21,7 +23,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   skribble_lints: 0.3.1
-  xml: 7.1.0
+  # The workspace shares one resolution, and flutter_svg (through
+  # serverpod_auth_idp_flutter) caps xml at 7.0.1.
+  xml: 7.0.1
 
 flutter:
   uses-material-design: true

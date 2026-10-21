@@ -7,5 +7,8 @@ environment:
 workspace:
   - verily_client
   - verily_server
+  - verily_flutter
+  - packages/verily_brand
   - packages/verily_escrow_client
   - packages/verily_evidence
+  - packages/verily_lints

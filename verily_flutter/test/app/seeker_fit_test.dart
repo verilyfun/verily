@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:verily_flutter/app/screens/placeholder_screen.dart';
+import 'package:verily_flutter/app/screens/coming_soon_screen.dart';
 import 'package:verily_flutter/app/theme/theme_mode_provider.dart';
 import 'package:verily_flutter/app/theme/verily_theme.dart';
 import 'package:verily_flutter/app/widgets/verily_appearance_settings.dart';
@@ -58,19 +58,19 @@ void main() {
     ('compact', _compactPhysicalSize),
   ]) {
     for (final textScale in [1.0, 1.3, 2.0]) {
-      testWidgets('the placeholder fits a $label phone at ${textScale}x text', (
+      testWidgets('a landing page fits a $label phone at ${textScale}x text', (
         tester,
       ) async {
         await _pumpAt(
           tester,
-          const PlaceholderScreen(),
+          const ComingSoonScreen(kind: ComingSoonKind.verificationRequest),
           physicalSize: size,
           textScale: textScale,
         );
 
         expect(tester.takeException(), isNull);
         final width = size.width / _seekerPixelRatio;
-        for (final text in ['Verily', 'Do it. Prove it. Get paid.']) {
+        for (final text in ['Verily', 'Verify with Verily is almost here']) {
           final rect = tester.getRect(find.text(text));
           expect(rect.left, greaterThanOrEqualTo(0));
           expect(rect.right, lessThanOrEqualTo(width));

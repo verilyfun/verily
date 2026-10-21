@@ -1,4 +1,4 @@
-// Renders the placeholder and the theme specimen at the Solana Seeker's
+// Renders the theme specimen at the Solana Seeker's
 // portrait size with the real Skribble face, so layout is checked against
 // true font metrics rather than the test font.
 //
@@ -12,18 +12,14 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:verily_flutter/app/app.dart';
-import 'package:verily_flutter/app/theme/theme_mode_provider.dart';
 import 'package:verily_flutter/app/theme/verily_theme.dart';
 import 'package:verily_flutter/app/widgets/verily_wired_scope.dart';
 import 'package:verily_flutter/dev/skribble_preview_screen.dart';
 import 'package:verily_flutter/l10n/l10n.dart';
 
-import '../support/memory_theme_store.dart';
+import '../support/skribble_faces.dart';
 
 const _writeScreenshots = bool.fromEnvironment('VERILY_SCREENSHOTS');
 const _outputDirectory = '.screenshots/phase-a';
@@ -33,27 +29,6 @@ const _seekerPhysicalSize = Size(1080, 2400);
 const _seekerPixelRatio = 2.625;
 
 const _frameKey = ValueKey<String>('screenshot-frame');
-
-/// Loads the three Skribble faces the theme letters with, at the weights it
-/// uses, under the resolved family names the text theme asks for.
-Future<void> _loadSkribbleFaces() async {
-  const package = 'packages/skribble_font_recursive/assets/fonts';
-  for (final (family, typeface, weights) in [
-    (
-      verilyDisplayFontFamily,
-      verilyDisplayTypeface,
-      ['Regular', 'Bold', 'ExtraBold'],
-    ),
-    (verilyTextFontFamily, verilyTextTypeface, ['Medium', 'Bold']),
-    (verilyNumeralFontFamily, verilyNumeralTypeface, ['SemiBold']),
-  ]) {
-    final loader = FontLoader(family);
-    for (final weight in weights) {
-      loader.addFont(rootBundle.load('$package/$typeface-$weight.ttf'));
-    }
-    await loader.load();
-  }
-}
 
 void _useSeekerView(WidgetTester tester) {
   tester.view.physicalSize = _seekerPhysicalSize;
@@ -92,31 +67,9 @@ Future<void> _capture(WidgetTester tester, String name) async {
 Widget _framed(Widget child) => RepaintBoundary(key: _frameKey, child: child);
 
 void main() {
-  setUpAll(_loadSkribbleFaces);
+  setUpAll(loadSkribbleFaces);
 
-  for (final (mode, saved) in [('light', 'light'), ('dark', 'dark')]) {
-    testWidgets('placeholder, $mode', (tester) async {
-      _useSeekerView(tester);
-      await tester.pumpWidget(
-        _framed(
-          ProviderScope(
-            overrides: [
-              themePreferenceStoreProvider.overrideWithValue(
-                MemoryThemeStore(saved: saved),
-              ),
-            ],
-            child: const VerilyApp(),
-          ),
-        ),
-      );
-      await _letInkDry(tester);
-      await _capture(tester, 'placeholder-$mode');
-
-      await tester.tap(find.byTooltip('Open settings'));
-      await _letInkDry(tester);
-      await _capture(tester, 'placeholder-settings-$mode');
-    });
-
+  for (final mode in ['light', 'dark']) {
     testWidgets('theme specimen, $mode', (tester) async {
       _useSeekerView(tester);
       await tester.pumpWidget(

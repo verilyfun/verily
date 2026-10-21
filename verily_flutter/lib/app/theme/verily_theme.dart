@@ -1,49 +1,43 @@
 import 'package:flutter/material.dart';
 
 import 'package:skribble/skribble.dart';
+import 'package:verily_brand/verily_brand.dart';
 
 import 'package:verily_flutter/app/theme/verily_icons.g.dart';
 import 'package:verily_flutter/app/theme/verily_pen.dart';
 import 'package:verily_flutter/app/theme/verily_rough_border.dart';
 import 'package:verily_flutter/app/theme/verily_rough_decoration.dart';
 
-/// Every raw colour value in the app.
+/// Every colour the theme draws with.
 ///
-/// This block is the single source of the Verily palette in `DESIGN.md`:
-/// Skribble's paper, night, inks, and dusk, the stamp, and the place, reward,
-/// and review roles with their washes and night inks. Every pair that carries
-/// text is checked against WCAG 2.2 AA in the theme tests. The brand package
-/// (`VerilyBrandColors`) will supply these values later; until then nothing
-/// outside this file names a hex value.
+/// Brand colours come from `VerilyBrandColors` in `package:verily_brand`, the
+/// one place they are written down (with their roles and contrast ratios).
+/// The theme adds only what the brand does not define: Skribble's peach wash
+/// for quiet daytime selections, and the scrim black and clear needed by
+/// Material. Every pair that carries text is checked against WCAG 2.2 AA in the
+/// theme tests. Nothing outside this file names a colour value.
 abstract final class _Swatch {
-  // Skribble's paper and night, and the inks drawn on them.
-  static const paper = Color(0xFFFFFAF0);
-  static const night = Color(0xFF292331);
-  static const ink = Color(0xFF34283F);
-  static const mutedInk = Color(0xFF736678);
-  static const mutedPaper = Color(0xFFB9ACBF);
+  static const Color paper = VerilyBrandColors.paper;
+  static const Color night = VerilyBrandColors.night;
+  static const Color ink = VerilyBrandColors.ink;
+  static const Color mutedInk = VerilyBrandColors.mutedInk;
+  static const Color mutedPaper = VerilyBrandColors.mutedPaper;
+  static const Color dusk = VerilyBrandColors.dusk;
+  static const Color stamp = VerilyBrandColors.stamp;
+  static const Color stampOnNight = VerilyBrandColors.stampOnNight;
+  static const Color place = VerilyBrandColors.place;
+  static const Color placeWash = VerilyBrandColors.placeWash;
+  static const Color placeOnNight = VerilyBrandColors.placeOnNight;
+  static const Color reward = VerilyBrandColors.reward;
+  static const Color rewardWash = VerilyBrandColors.rewardWash;
+  static const Color rewardOnNight = VerilyBrandColors.rewardOnNight;
+  static const Color review = VerilyBrandColors.review;
+  static const Color reviewWash = VerilyBrandColors.reviewWash;
+  static const Color reviewOnNight = VerilyBrandColors.reviewOnNight;
 
-  /// Skribble's evening wash: fills and selections on [night].
-  static const dusk = Color(0xFF4A3B5E);
-
-  /// The quiet daytime wash for selections and active tracks.
-  static const peach = Color(0xFFF6DFD5);
-
-  /// The verified stamp and the brand: 4.54:1 on [paper].
-  static const stamp = Color(0xFFD13F22);
-
-  /// The stamp at night: 6.05:1 on [night].
-  static const stampOnNight = Color(0xFFF2856A);
-
-  static const place = Color(0xFF2F6B4F);
-  static const placeWash = Color(0xFFDDEAD9);
-  static const placeOnNight = Color(0xFF86C7A0);
-  static const reward = Color(0xFF9A6A12);
-  static const rewardWash = Color(0xFFF6E8AF);
-  static const rewardOnNight = Color(0xFFE6BC5C);
-  static const review = Color(0xFF6B4FA0);
-  static const reviewWash = Color(0xFFE5DDF4);
-  static const reviewOnNight = Color(0xFFBBA6EC);
+  /// Skribble's peach: the quiet daytime wash for selections and active
+  /// tracks. Not a brand colour, so it is not in `VerilyBrandColors`.
+  static const Color peach = WiredPalette.peach;
 
   static const black = Color(0xFF000000);
   static const clear = Color(0x00000000);

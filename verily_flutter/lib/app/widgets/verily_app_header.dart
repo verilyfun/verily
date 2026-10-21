@@ -13,6 +13,7 @@ class VerilyAppHeader extends StatelessWidget {
   const VerilyAppHeader({
     required this.title,
     this.subtitle,
+    this.leading,
     this.trailing,
     this.bottom,
     super.key,
@@ -22,6 +23,10 @@ class VerilyAppHeader extends StatelessWidget {
 
   /// A short breadcrumb such as "Your actions · Drafts".
   final String? subtitle;
+
+  /// The way back from a page pushed over the tabs, before the title where
+  /// people look for it.
+  final Widget? leading;
 
   /// One action for the page, such as closing a flow or opening settings.
   final Widget? trailing;
@@ -49,6 +54,15 @@ class VerilyAppHeader extends StatelessWidget {
             children: [
               Row(
                 children: [
+                  if (leading case final back?) ...[
+                    // Pulls the 48dp button's padding into the gutter so its
+                    // glyph lines up with the content below.
+                    Transform.translate(
+                      offset: const Offset(-8, 0),
+                      child: back,
+                    ),
+                    const SizedBox(width: 4),
+                  ],
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

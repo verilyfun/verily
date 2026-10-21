@@ -56,10 +56,15 @@ const List<IconEntry> catalog = [
     doc: 'Opens outside the app.',
   ),
   (name: 'close', source: Glyph('close'), doc: 'Dismiss or clear.'),
+  (name: 'chevronDown', source: Glyph('chevronDown'), doc: 'Show more.'),
+  (name: 'search', source: Glyph('search'), doc: 'Search.'),
+  (name: 'share', source: Glyph('share'), doc: 'Share outside the app.'),
+  (name: 'link', source: Glyph('link'), doc: 'A link or a linked account.'),
 
   // Everyday actions.
   (name: 'check', source: Glyph('check'), doc: 'Done, selected, or confirmed.'),
   (name: 'plus', source: Glyph('plus'), doc: 'Add something new.'),
+  (name: 'minus', source: Glyph('minus'), doc: 'Take one away, or zoom out.'),
   (name: 'refresh', source: Glyph('refresh'), doc: 'Load again or sync.'),
   (
     name: 'replay',
@@ -93,6 +98,12 @@ const List<IconEntry> catalog = [
   (name: 'video', source: Lucide('video'), doc: 'Video proof.'),
   (name: 'videoOff', source: Lucide('video-off'), doc: 'Video unavailable.'),
   (name: 'microphone', source: Lucide('mic'), doc: 'Audio proof.'),
+  (
+    name: 'microphoneOff',
+    source: Lucide('mic-off'),
+    doc: 'Microphone unavailable.',
+  ),
+  (name: 'timer', source: Lucide('timer'), doc: 'Time left to record.'),
   (name: 'record', source: Lucide('disc'), doc: 'Start recording.'),
   (name: 'stop', source: Lucide('circle-stop'), doc: 'Stop recording.'),
   (name: 'play', source: Lucide('play'), doc: 'Play.'),
@@ -108,6 +119,12 @@ const List<IconEntry> catalog = [
 
   // Status.
   (name: 'circleCheck', source: Lucide('circle-check'), doc: 'Complete.'),
+  (name: 'info', source: Glyph('info'), doc: 'More information.'),
+  (
+    name: 'warning',
+    source: Glyph('warning'),
+    doc: 'Needs attention before continuing.',
+  ),
   (name: 'circlePlus', source: Lucide('circle-plus'), doc: 'Add another.'),
   (name: 'cloudOff', source: Lucide('cloud-off'), doc: 'Offline.'),
   (name: 'eye', source: Glyph('eye'), doc: 'Show.'),
@@ -143,6 +160,8 @@ const List<IconEntry> catalog = [
 
   // People and places.
   (name: 'users', source: Lucide('users'), doc: 'People taking part.'),
+  (name: 'user', source: Glyph('user'), doc: 'You and your account.'),
+  (name: 'mail', source: Glyph('mail'), doc: 'Email.'),
   (name: 'logOut', source: Lucide('log-out'), doc: 'Sign out.'),
   (name: 'pin', source: Glyph('pin'), doc: 'A place.'),
   (
