@@ -1,0 +1,10 @@
+include: package:verily_lints/analysis_options.yaml
+
+analyzer:
+  errors:
+    # The color plugin is enabled at the Flutter package root so its relative
+    # path works in every checkout. `lint:analyze` runs that analysis directly.
+    plugins_in_inner_options: ignore
+
+formatter:
+  trailing_commas: preserve

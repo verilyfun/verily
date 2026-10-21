@@ -1,0 +1,52 @@
+{
+  "$schema": "https://dprint.dev/schemas/v0.json",
+  "incremental": true,
+  "json": {
+    "indentWidth": 2,
+    "useTabs": false
+  },
+  "markdown": {},
+  "toml": {},
+  "yaml": {
+    "indentWidth": 2
+  },
+  "excludes": [
+    "**/.dart_tool/**",
+    "**/.devenv*/**",
+    "**/.direnv/**",
+    "**/.fvm/**",
+    "**/.git/**",
+    "**/.vscode/**",
+    "**/build/**",
+    "**/Pods/**",
+    "**/*.g.dart",
+    "**/*.freezed.dart",
+    "**/generated/**",
+    "**/generated_protocol/**",
+    "**/migrations/**",
+    "**/protocol/**",
+    "**/test_tools/serverpod_test_tools.dart",
+    "**/pubspec.lock",
+    "pubspec.lock",
+    "**/ios/**/*.pbxproj",
+    "**/ios/**/*.plist",
+    "**/ios/**/*.storyboard",
+    "**/ios/**/*.xib",
+    "**/ios/**/*.xcscheme",
+    "**/ios/**/*.xcworkspacedata",
+    "**/android/.gradle/**",
+    "**/android/captures/**",
+    "**/android/**/*.xml",
+    "**/android/**/*.properties",
+    "**/android/**/GeneratedPluginRegistrant.java",
+    "**/web/flutter_bootstrap.js"
+  ],
+  "typescript": {},
+  "plugins": [
+    "https://plugins.dprint.dev/typescript-0.95.15.wasm",
+    "https://plugins.dprint.dev/json-0.21.1.wasm",
+    "https://plugins.dprint.dev/markdown-0.21.1.wasm",
+    "https://plugins.dprint.dev/toml-0.7.0.wasm",
+    "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.6.0.wasm"
+  ]
+}

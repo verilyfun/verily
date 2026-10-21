@@ -1,0 +1,46 @@
+# Files and directories created by pub
+.dart_tool/
+.packages
+
+# Pubspec overrides
+pubspec_overrides.yaml
+
+# FVM Version Cache
+.fvm/
+
+# Nix/devenv local state
+.devenv/
+.devenv.flake.nix
+.direnv/
+.pre-commit-config.yaml
+
+# Local IDE/agent/runtime state
+.devlogs/
+.DS_Store
+.env
+.env.*
+!.env.example
+!.env.*.example
+.vscode/
+**/node_modules/
+
+# Build outputs
+build/
+**/build/
+target/
+**/target/
+
+# Rendered launch media (share on releases and pull requests; never commit)
+.screenshots/
+
+# Solana program key material
+**/keys/
+**/keypairs/
+**/*-keypair.json
+
+# Serverpod local secrets
+**/config/passwords.yaml
+
+# Local agent session state
+.claude/worktrees/
+.video_agent/

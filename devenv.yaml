@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=https://devenv.sh/devenv.schema.json
+inputs:
+  git-hooks:
+    url: github:cachix/git-hooks.nix
+    inputs:
+      nixpkgs:
+        follows: nixpkgs
+  ifiokjr-nixpkgs:
+    # Monosecret 0.4.3 adds the DigitalOcean Secrets Manager and Convex
+    # providers while keeping the batched 1Password reads from 0.3.4.
+    url: github:ifiokjr/nixpkgs/d19e07259478476c25d70e98caca25b647b2fed9
+    inputs:
+      nixpkgs:
+        follows: nixpkgs
+  ifiokjr-nixpkgs-pina:
+    # Keep Pina's generator and security lints aligned with the framework
+    # version pinned in Cargo.toml (0.23.0; lint driver built for
+    # nightly-2026-09-15, the toolchain this repository pins).
+    url: github:ifiokjr/nixpkgs/d4e9b677fc772fbeea00b646fd431a62c1fe1a9a
+    inputs:
+      nixpkgs:
+        follows: nixpkgs
+  ifiokjr-nixpkgs-monochange:
+    # Monochange 0.15.0 adds release values and version schemes (build
+    # counters, calendar labels) plus the `monochange next` preview, without
+    # upgrading unrelated development tools.
+    url: github:ifiokjr/nixpkgs/c42c05779b3964c0c5ea42a6f3e3d048eeb4f477
+    inputs:
+      nixpkgs:
+        follows: nixpkgs
+  ifiokjr-nixpkgs-serverpod:
+    # Keep code generation aligned with the Serverpod packages in this workspace.
+    url: github:ifiokjr/nixpkgs/bbe950962405d75f052570a33b2b0d4298076b36
+    inputs:
+      nixpkgs:
+        follows: nixpkgs
+  nixpkgs:
+    url: github:NixOS/nixpkgs/nixpkgs-unstable
+  rust-overlay:
+    url: github:oxalica/rust-overlay
+    inputs:
+      nixpkgs:
+        follows: nixpkgs
+    overlays:
+      - default
+allowUnfree: true
