@@ -45,8 +45,12 @@ const spokenChallengeLifetime = Duration(minutes: 15);
 /// made in advance.
 const maxSpokenChallengesPerProof = 5;
 
-/// Clock skew tolerated between the device and the server.
-const _captureClockTolerance = Duration(minutes: 2);
+/// How long a capture window stays open: time on the capture screen, the
+/// longest recording, and its upload.
+const captureChallengeLifetime = Duration(minutes: 30);
+
+/// Capture windows one attempt may open per hour.
+const maxCaptureChallengesPerHour = 10;
 
 /// Participation, proof, and completion for creator-owned actions.
 ///
@@ -500,30 +504,24 @@ class ActionVerificationService {
     );
   }
 
-  /// Binds the next proof submission to a fresh device-integrity request
-  /// that commits to [evidenceBindingHash].
-  Future<ActionCaptureChallengeView> createCaptureChallenge(
+  /// Opens a capture window for one proof before the camera, microphone, or
+  /// sensors start.
+  ///
+  /// The returned nonce is the root of everything the device then vouches
+  /// with: the attestation challenge of a capture key generated for this
+  /// window, and (with the evidence fingerprint) the Play Integrity request
+  /// hash. Proof captured before the window opened is refused.
+  Future<ActionCaptureChallengeView> beginCapture(
     Session session, {
     required UuidValue authUserId,
     required UuidValue attemptId,
     required UuidValue requirementId,
-    required String evidenceBindingHash,
   }) async {
-    final normalizedBindingHash = normalizeEvidenceBindingHash(
-      evidenceBindingHash,
-    );
     final now = clock().toUtc();
     final nonce = base64Url
         .encode(List<int>.generate(32, (_) => _random.nextInt(256)))
         .replaceAll('=', '');
-    final requestHash = captureIntegrityRequestHash(
-      authUserId: authUserId.toString(),
-      attemptId: attemptId.toString(),
-      requirementId: requirementId.toString(),
-      evidenceBindingHash: normalizedBindingHash,
-      nonce: nonce,
-    );
-    final expiresAt = now.add(const Duration(minutes: 15));
+    final expiresAt = now.add(captureChallengeLifetime);
     final challenge = await DatabaseUtil.runInTransactionOrSavepoint(
       session.db,
       null,
@@ -564,7 +562,7 @@ class ActionVerificationService {
               (table.createdAt > now.subtract(const Duration(hours: 1))),
           transaction: transaction,
         );
-        if (recent >= 10) {
+        if (recent >= maxCaptureChallengesPerHour) {
           throw StateError(
             'Please wait before requesting another capture check.',
           );
@@ -575,8 +573,7 @@ class ActionVerificationService {
             attemptId: attemptId,
             requirementId: requirementId,
             participantAuthUserId: authUserId,
-            requestHash: requestHash,
-            evidenceBindingHash: normalizedBindingHash,
+            nonce: nonce,
             expiresAt: expiresAt,
             createdAt: now,
           ),
@@ -586,7 +583,8 @@ class ActionVerificationService {
     );
     return ActionCaptureChallengeView(
       id: challenge.id!,
-      requestHash: requestHash,
+      captureChallenge: nonce,
+      issuedAt: now,
       expiresAt: expiresAt,
       integrityRequired: captureIntegrity.deviceIntegrityRequired,
       signatureRequired: captureIntegrity.captureSignatureRequired,
@@ -636,11 +634,14 @@ class ActionVerificationService {
         deviceIntegrityToken: input.deviceIntegrityToken,
         captureManifest: input.captureManifest,
         captureSignature: input.captureSignature,
-        capturePublicKey: input.capturePublicKey,
-        captureKeyId: input.captureKeyId,
-        captureKeyStorage: input.captureKeyStorage,
+        captureCertificateChain: input.captureCertificateChain,
       ),
       evidenceBindingHash: () => _deterministicBindingHash(requirement, input),
+      capturedAt: input.capturedAt,
+      requireStrongIntegrity: await _requiresStrongIntegrity(
+        session,
+        attempt.actionDefinitionId,
+      ),
     );
     // Location is evaluated under the participant lock below so concurrent
     // check-ins cannot each miss the other's travel.
@@ -844,6 +845,13 @@ class ActionVerificationService {
       throw ArgumentError('A recording needs its duration.');
     }
     final capturedAt = confirmation.capturedAt.toUtc();
+    final reservedAttempt = await ActionAttempt.db.findById(
+      session,
+      reservation.attemptId,
+    );
+    if (reservedAttempt == null) {
+      throw StateError('The action attempt was not found.');
+    }
     final integrity = await captureIntegrity.evaluate(
       session,
       authUserId: authUserId,
@@ -854,9 +862,12 @@ class ActionVerificationService {
         deviceIntegrityToken: confirmation.deviceIntegrityToken,
         captureManifest: confirmation.captureManifest,
         captureSignature: confirmation.captureSignature,
-        capturePublicKey: confirmation.capturePublicKey,
-        captureKeyId: confirmation.captureKeyId,
-        captureKeyStorage: confirmation.captureKeyStorage,
+        captureCertificateChain: confirmation.captureCertificateChain,
+      ),
+      capturedAt: capturedAt,
+      requireStrongIntegrity: await _requiresStrongIntegrity(
+        session,
+        reservedAttempt.actionDefinitionId,
       ),
       evidenceBindingHash: () => mediaEvidenceBindingHash(
         kind: mediaKind,
@@ -940,6 +951,8 @@ class ActionVerificationService {
           capturePublicKey: evaluation.capturePublicKey,
           captureKeyId: evaluation.captureKeyId,
           captureKeyStorage: evaluation.captureKeyStorage,
+          captureCertificateChain: evaluation.captureCertificateChain,
+          captureDeviceKeyId: evaluation.captureDeviceKeyId,
           capturedAt: capturedAt,
           submittedAt: now,
         );
@@ -1036,7 +1049,7 @@ class ActionVerificationService {
     required DateTime now,
     required ActionSpokenChallenge? spokenChallenge,
   }) {
-    if (capturedAt.isAfter(now.add(_captureClockTolerance))) {
+    if (capturedAt.isAfter(now.add(captureClockTolerance))) {
       return const _Evaluation(
         status: EvidenceDecisionStatus.rejected,
         verifierType: 'media-preflight',
@@ -1071,7 +1084,7 @@ class ActionVerificationService {
         );
       }
       if (capturedAt.isBefore(
-        spokenChallenge.issuedAt.subtract(_captureClockTolerance),
+        spokenChallenge.issuedAt.subtract(captureClockTolerance),
       )) {
         return const _Evaluation(
           status: EvidenceDecisionStatus.rejected,
@@ -2216,6 +2229,17 @@ LIMIT 1;
     );
   }
 
+  /// Proof toward a reward above the review threshold must come from a
+  /// device that meets Play's strong integrity.
+  Future<bool> _requiresStrongIntegrity(
+    Session session,
+    UuidValue actionId,
+  ) async {
+    final action = await ActionDefinition.db.findById(session, actionId);
+    return action != null &&
+        await payouts.paysAboveReviewThreshold(session, action);
+  }
+
   Future<void> _consumeCaptureChallenge(
     Session session, {
     required _Evaluation evaluation,
@@ -2245,6 +2269,8 @@ LIMIT 1;
       session,
       challenge.copyWith(
         usedAt: now,
+        requestHash: evaluation.integrityRequestHash,
+        evidenceBindingHash: evaluation.integrityBindingHash,
         provider: evaluation.integrityProvider,
         verdict: evaluation.integrityVerdict,
         tokenHash: evaluation.integrityTokenHash,
@@ -2459,6 +2485,8 @@ ActionEvidence _deterministicEvidence(
     capturePublicKey: evaluation.capturePublicKey,
     captureKeyId: evaluation.captureKeyId,
     captureKeyStorage: evaluation.captureKeyStorage,
+    captureCertificateChain: evaluation.captureCertificateChain,
+    captureDeviceKeyId: evaluation.captureDeviceKeyId,
     capturedAt: input.capturedAt.toUtc(),
     submittedAt: submittedAt,
   );
@@ -2608,21 +2636,40 @@ _Evaluation _withCaptureIntegrity(
       integrityProvider: integrity.provider,
       integrityVerdict: integrity.reasonCode,
       integrityTokenHash: integrity.tokenHash,
+      integrityRequestHash: integrity.requestHash,
+      integrityBindingHash: integrity.evidenceBindingHash,
       provenanceLevel: integrity.provenanceLevel,
       motionAnalysisJson: proof.motionAnalysisJson,
     );
   }
-  return proof.copyWith(
+  final bound = proof.copyWith(
     captureChallengeId: integrity.challengeId,
     integrityProvider: integrity.provider,
     integrityVerdict: integrity.reasonCode,
     integrityTokenHash: integrity.tokenHash,
+    integrityRequestHash: integrity.requestHash,
+    integrityBindingHash: integrity.evidenceBindingHash,
     provenanceLevel: integrity.provenanceLevel,
     captureManifest: integrity.captureManifest,
     captureSignature: integrity.captureSignature,
     capturePublicKey: integrity.capturePublicKey,
     captureKeyId: integrity.captureKeyId,
     captureKeyStorage: integrity.captureKeyStorage,
+    captureCertificateChain: integrity.captureCertificateChain,
+    captureDeviceKeyId: integrity.captureDeviceKeyId,
+  );
+  // A device risk Play reported sends the proof to a person before any
+  // verifier runs; a proof already refused stays refused.
+  final review = integrity.reviewReasonCode;
+  if (review == null || proof.status == EvidenceDecisionStatus.rejected) {
+    return bound;
+  }
+  return bound.copyWith(
+    status: EvidenceDecisionStatus.manualReview,
+    verifierType: integrity.provider,
+    reasonCode: review,
+    summary: needsReviewSummary,
+    confidence: 0,
   );
 }
 
@@ -2640,12 +2687,16 @@ class _Evaluation {
     this.integrityProvider,
     this.integrityVerdict,
     this.integrityTokenHash,
+    this.integrityRequestHash,
+    this.integrityBindingHash,
     this.provenanceLevel = EvidenceProvenanceLevel.basic,
     this.captureManifest,
     this.captureSignature,
     this.capturePublicKey,
     this.captureKeyId,
     this.captureKeyStorage,
+    this.captureCertificateChain,
+    this.captureDeviceKeyId,
     this.motionAnalysisJson,
   });
 
@@ -2662,12 +2713,16 @@ class _Evaluation {
   final String? integrityProvider;
   final String? integrityVerdict;
   final String? integrityTokenHash;
+  final String? integrityRequestHash;
+  final String? integrityBindingHash;
   final EvidenceProvenanceLevel provenanceLevel;
   final String? captureManifest;
   final String? captureSignature;
   final String? capturePublicKey;
   final String? captureKeyId;
   final String? captureKeyStorage;
+  final List<String>? captureCertificateChain;
+  final String? captureDeviceKeyId;
   final String? motionAnalysisJson;
 
   _Evaluation copyWith({
@@ -2680,12 +2735,16 @@ class _Evaluation {
     String? integrityProvider,
     String? integrityVerdict,
     String? integrityTokenHash,
+    String? integrityRequestHash,
+    String? integrityBindingHash,
     EvidenceProvenanceLevel? provenanceLevel,
     String? captureManifest,
     String? captureSignature,
     String? capturePublicKey,
     String? captureKeyId,
     String? captureKeyStorage,
+    List<String>? captureCertificateChain,
+    String? captureDeviceKeyId,
   }) => _Evaluation(
     status: status ?? this.status,
     verifierType: verifierType ?? this.verifierType,
@@ -2699,12 +2758,17 @@ class _Evaluation {
     integrityProvider: integrityProvider ?? this.integrityProvider,
     integrityVerdict: integrityVerdict ?? this.integrityVerdict,
     integrityTokenHash: integrityTokenHash ?? this.integrityTokenHash,
+    integrityRequestHash: integrityRequestHash ?? this.integrityRequestHash,
+    integrityBindingHash: integrityBindingHash ?? this.integrityBindingHash,
     provenanceLevel: provenanceLevel ?? this.provenanceLevel,
     captureManifest: captureManifest ?? this.captureManifest,
     captureSignature: captureSignature ?? this.captureSignature,
     capturePublicKey: capturePublicKey ?? this.capturePublicKey,
     captureKeyId: captureKeyId ?? this.captureKeyId,
     captureKeyStorage: captureKeyStorage ?? this.captureKeyStorage,
+    captureCertificateChain:
+        captureCertificateChain ?? this.captureCertificateChain,
+    captureDeviceKeyId: captureDeviceKeyId ?? this.captureDeviceKeyId,
     motionAnalysisJson: motionAnalysisJson,
   );
 }

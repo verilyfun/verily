@@ -2961,6 +2961,18 @@
   "@captureChallengeFailedBody": {
     "description": "Explains why recording waits for the word."
   },
+  "captureWindowLoading": "Getting ready to capture…",
+  "@captureWindowLoading": {
+    "description": "Shown while Verily opens a fresh capture before the camera, microphone, or sensors start."
+  },
+  "captureWindowFailedTitle": "We couldn't start the capture",
+  "@captureWindowFailedTitle": {
+    "description": "Title when Verily could not open a fresh capture; nothing can be captured without it."
+  },
+  "captureWindowFailedBody": "Verily starts a fresh, live capture for each proof. Check your connection and try again.",
+  "@captureWindowFailedBody": {
+    "description": "Explains why capture waits until Verily has started it."
+  },
   "captureRecordStart": "Start recording",
   "@captureRecordStart": {
     "description": "Button that starts a video or audio recording."

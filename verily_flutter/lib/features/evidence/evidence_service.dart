@@ -36,10 +36,9 @@ class MediaUploadException implements Exception {
 /// The narrow slice of the server the evidence pipeline needs. The Serverpod
 /// client implements it directly; tests fake it.
 abstract interface class EvidenceGateway {
-  Future<ActionCaptureChallengeView> createCaptureChallenge({
+  Future<ActionCaptureChallengeView> beginCapture({
     required UuidValue attemptId,
     required UuidValue requirementId,
-    required String evidenceBindingHash,
   });
   Future<EvidenceSubmissionResult> submitEvidence(ActionEvidenceInput input);
 
@@ -62,14 +61,12 @@ class ServerpodEvidenceGateway implements EvidenceGateway {
   final Client _client;
 
   @override
-  Future<ActionCaptureChallengeView> createCaptureChallenge({
+  Future<ActionCaptureChallengeView> beginCapture({
     required UuidValue attemptId,
     required UuidValue requirementId,
-    required String evidenceBindingHash,
-  }) => _client.actionVerification.createCaptureChallenge(
+  }) => _client.actionVerification.beginCapture(
     attemptId: attemptId,
     requirementId: requirementId,
-    evidenceBindingHash: evidenceBindingHash,
   );
 
   @override
@@ -101,32 +98,82 @@ class ServerpodEvidenceGateway implements EvidenceGateway {
   ) => _client.actionVerification.confirmMediaUpload(confirmation);
 }
 
+/// A capture window the server opened before anything was recorded, and
+/// the fresh device key being generated for it.
+class CaptureSession {
+  const CaptureSession._({
+    required this.attemptId,
+    required this.requirementId,
+    required this.challenge,
+    required this._keyReady,
+  });
+
+  final UuidValue attemptId;
+  final UuidValue requirementId;
+  final ActionCaptureChallengeView challenge;
+  final Future<bool> _keyReady;
+
+  /// Whether the window has closed; proof captured in it can no longer be
+  /// sent, so the person captures again in a new one.
+  bool isExpiredAt(DateTime now) => !challenge.expiresAt.isAfter(now);
+}
+
 /// Sends proof to the server, bound to this device.
 ///
-/// Every submission first asks the server for a capture challenge bound to
-/// the evidence fingerprint, then attaches a Play Integrity token and a
-/// device signature that both commit to that exact fingerprint. A token or
-/// signature for one capture can never vouch for another.
+/// Before anything is captured, [beginCapture] asks the server to open a
+/// capture window and generates a fresh attested key for it. Every
+/// submission then attaches a Play Integrity token and a signature from that
+/// key, both committing to the window and the exact evidence fingerprint. A
+/// token or signature for one capture can never vouch for another, nor for
+/// anything recorded before the window opened.
 class EvidenceService {
   const EvidenceService({
     required this._gateway,
     this._deviceIntegrity = requestPlayIntegrityToken,
-    this._signCapture = signWithAndroidKeystore,
+    this._captureKeys = const AndroidCaptureKeyStore(),
   });
 
   final EvidenceGateway _gateway;
   final DeviceIntegrityTokenSource _deviceIntegrity;
-  final CaptureSigner _signCapture;
+  final CaptureKeyStore _captureKeys;
 
-  /// Proves presence at a location requirement's place with [fix].
+  /// Opens a capture window for [requirement]. Call it before the camera,
+  /// microphone, sensors, or scanner start; the key is generated while they
+  /// warm up.
+  Future<CaptureSession> beginCapture({
+    required ActionAttemptView attempt,
+    required ActionRequirementView requirement,
+  }) async {
+    final challenge = await _gateway.beginCapture(
+      attemptId: attempt.id,
+      requirementId: requirement.id,
+    );
+    return CaptureSession._(
+      attemptId: attempt.id,
+      requirementId: requirement.id,
+      challenge: challenge,
+      keyReady: _captureKeys.prepare(
+        captureId: challenge.id.toString(),
+        attestationChallenge: captureKeyAttestationChallenge(
+          captureChallenge: challenge.captureChallenge,
+          attemptId: attempt.id.toString(),
+        ),
+      ),
+    );
+  }
+
+  /// Proves presence at a location requirement's place with [fix], taken
+  /// inside [session].
   Future<EvidenceSubmissionResult> submitLocation({
     required ActionAttemptView attempt,
     required ActionRequirementView requirement,
+    required CaptureSession session,
     required LocationFix fix,
   }) async {
     final integrity = await _bind(
       attempt,
       requirement,
+      session,
       locationEvidenceBindingHash(
         capturedAt: fix.capturedAt,
         latitude: fix.latitude,
@@ -146,17 +193,16 @@ class EvidenceService {
         deviceIntegrityToken: integrity.token,
         captureManifest: integrity.provenance?.manifest,
         captureSignature: integrity.provenance?.signature,
-        capturePublicKey: integrity.provenance?.publicKey,
-        captureKeyId: integrity.provenance?.keyId,
-        captureKeyStorage: integrity.provenance?.keyStorage,
+        captureCertificateChain: integrity.provenance?.certificateChain,
       ),
     );
   }
 
-  /// Proves a venue visit with the scanned [code].
+  /// Proves a venue visit with the [code] scanned inside [session].
   Future<EvidenceSubmissionResult> submitQrCode({
     required ActionAttemptView attempt,
     required ActionRequirementView requirement,
+    required CaptureSession session,
     required String code,
     DateTime? scannedAt,
   }) async {
@@ -164,6 +210,7 @@ class EvidenceService {
     final integrity = await _bind(
       attempt,
       requirement,
+      session,
       qrEvidenceBindingHash(capturedAt: capturedAt, code: code),
     );
     return _gateway.submitEvidence(
@@ -176,22 +223,23 @@ class EvidenceService {
         deviceIntegrityToken: integrity.token,
         captureManifest: integrity.provenance?.manifest,
         captureSignature: integrity.provenance?.signature,
-        capturePublicKey: integrity.provenance?.publicKey,
-        captureKeyId: integrity.provenance?.keyId,
-        captureKeyStorage: integrity.provenance?.keyStorage,
+        captureCertificateChain: integrity.provenance?.certificateChain,
       ),
     );
   }
 
-  /// Sends a phone-motion trace; the server recomputes the analysis.
+  /// Sends a phone-motion trace measured inside [session]; the server
+  /// recomputes the analysis.
   Future<EvidenceSubmissionResult> submitMotion({
     required ActionAttemptView attempt,
     required ActionRequirementView requirement,
+    required CaptureSession session,
     required CapturedMotion motion,
   }) async {
     final integrity = await _bind(
       attempt,
       requirement,
+      session,
       motionEvidenceBindingHash(
         capturedAt: motion.capturedAt,
         traceSha256: motion.traceSha256,
@@ -220,9 +268,7 @@ class EvidenceService {
         deviceIntegrityToken: integrity.token,
         captureManifest: integrity.provenance?.manifest,
         captureSignature: integrity.provenance?.signature,
-        capturePublicKey: integrity.provenance?.publicKey,
-        captureKeyId: integrity.provenance?.keyId,
-        captureKeyStorage: integrity.provenance?.keyStorage,
+        captureCertificateChain: integrity.provenance?.certificateChain,
       ),
     );
   }
@@ -235,6 +281,7 @@ class EvidenceService {
   Future<EvidenceSubmissionResult> uploadMedia({
     required ActionAttemptView attempt,
     required ActionRequirementView requirement,
+    required CaptureSession session,
     required CapturedMedia media,
   }) async {
     final description = await _gateway.requestMediaUpload(
@@ -249,6 +296,7 @@ class EvidenceService {
     final integrity = await _bind(
       attempt,
       requirement,
+      session,
       mediaEvidenceBindingHash(
         kind: media.kind,
         capturedAt: media.capturedAt,
@@ -279,9 +327,7 @@ class EvidenceService {
         deviceIntegrityToken: integrity.token,
         captureManifest: integrity.provenance?.manifest,
         captureSignature: integrity.provenance?.signature,
-        capturePublicKey: integrity.provenance?.publicKey,
-        captureKeyId: integrity.provenance?.keyId,
-        captureKeyStorage: integrity.provenance?.keyStorage,
+        captureCertificateChain: integrity.provenance?.certificateChain,
       ),
     );
   }
@@ -289,25 +335,41 @@ class EvidenceService {
   Future<_CaptureIntegrity> _bind(
     ActionAttemptView attempt,
     ActionRequirementView requirement,
+    CaptureSession session,
     String evidenceBindingHash,
   ) async {
-    final challenge = await _gateway.createCaptureChallenge(
-      attemptId: attempt.id,
-      requirementId: requirement.id,
+    if (session.attemptId != attempt.id ||
+        session.requirementId != requirement.id) {
+      throw ArgumentError.value(
+        session,
+        'session',
+        'Belongs to another proof.',
+      );
+    }
+    final challenge = session.challenge;
+    final requestHash = captureIntegrityRequestHash(
+      attemptId: attempt.id.toString(),
+      requirementId: requirement.id.toString(),
+      captureChallenge: challenge.captureChallenge,
       evidenceBindingHash: evidenceBindingHash,
     );
-    final token = await _deviceIntegrity(challenge.requestHash);
+    final token = await _deviceIntegrity(requestHash);
     if (challenge.integrityRequired && (token == null || token.isEmpty)) {
       throw const CaptureIntegrityException(
         CaptureIntegrityFailure.integrityUnavailable,
       );
     }
-    final provenance = await _signCapture(
-      attemptId: attempt.id.toString(),
-      requirementId: requirement.id.toString(),
-      requestHash: challenge.requestHash,
-      evidenceBindingHash: evidenceBindingHash,
-    );
+    final provenance = await session._keyReady
+        ? await _captureKeys.sign(
+            captureId: challenge.id.toString(),
+            manifest: captureProvenanceManifest(
+              attemptId: attempt.id.toString(),
+              requirementId: requirement.id.toString(),
+              requestHash: requestHash,
+              evidenceBindingHash: evidenceBindingHash,
+            ),
+          )
+        : null;
     if (challenge.signatureRequired && provenance == null) {
       throw const CaptureIntegrityException(
         CaptureIntegrityFailure.signatureUnavailable,

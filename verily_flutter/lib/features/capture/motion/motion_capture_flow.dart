@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -25,7 +26,8 @@ typedef MotionCaptureDelay = Future<void> Function(Duration duration);
 
 /// Measures a phone movement, then sends the sensor trace.
 ///
-/// The phone's own reading only guides the person: the server recomputes the
+/// Each measurement starts in a capture window the server opens first. The
+/// phone's own reading only guides the person: the server recomputes the
 /// analysis from the trace. Pops with the server's result once the trace is
 /// sent, or null when the person closes.
 class MotionCaptureFlow extends HookConsumerWidget {
@@ -54,6 +56,7 @@ class MotionCaptureFlow extends HookConsumerWidget {
     final failure = useState<MotionCaptureFailure?>(null);
     final sendProblem = useState<(String, String)?>(null);
     final cancellation = useRef<MotionCaptureCancellation?>(null);
+    final window = useRef<CaptureSession?>(null);
     final run = useRef(0);
 
     useEffect(() {
@@ -71,7 +74,29 @@ class MotionCaptureFlow extends HookConsumerWidget {
       failure.value = null;
       sendProblem.value = null;
       progress.value = 0;
+      countdown.value = 3;
       stage.value = _MotionStage.countdown;
+      // The window opens before anything is measured; the phone generates
+      // its capture key during the countdown. A measurement that was never
+      // sent leaves its window open for the next one.
+      try {
+        final open = window.value;
+        if (open == null || open.isExpiredAt(clock.now())) {
+          window.value = await ref
+              .read(evidenceServiceProvider)
+              .beginCapture(attempt: attempt, requirement: requirement);
+        }
+      } on Object catch (error) {
+        debugPrint('Opening the capture failed: $error');
+        if (!context.mounted || run.value != currentRun) return;
+        stage.value = _MotionStage.ready;
+        sendProblem.value = (
+          l10n.captureWindowFailedTitle,
+          l10n.captureWindowFailedBody,
+        );
+        return;
+      }
+      if (!context.mounted || run.value != currentRun) return;
       final wait = delay ?? Future<void>.delayed;
       for (var remaining = 3; remaining >= 1; remaining -= 1) {
         countdown.value = remaining;
@@ -109,7 +134,8 @@ class MotionCaptureFlow extends HookConsumerWidget {
 
     Future<void> send() async {
       final motion = result.value;
-      if (motion == null) return;
+      final session = window.value;
+      if (motion == null || session == null) return;
       stage.value = _MotionStage.sending;
       sendProblem.value = null;
       try {
@@ -118,6 +144,7 @@ class MotionCaptureFlow extends HookConsumerWidget {
             .submitMotion(
               attempt: attempt,
               requirement: requirement,
+              session: session,
               motion: motion,
             );
         if (context.mounted) Navigator.of(context).pop(submitted);

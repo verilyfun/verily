@@ -264,19 +264,18 @@ class EndpointActionVerification extends _isc.EndpointRef {
     },
   );
 
-  /// Binds the next proof to a fresh device-integrity request committing to
-  /// [evidenceBindingHash].
-  _ida.Future<_itq9cig8.ActionCaptureChallengeView> createCaptureChallenge({
+  /// Opens a capture window before the camera, microphone, or sensors
+  /// start. The device generates a fresh attested capture key for it, and
+  /// proof captured before it opened is refused.
+  _ida.Future<_itq9cig8.ActionCaptureChallengeView> beginCapture({
     required _isc.UuidValue attemptId,
     required _isc.UuidValue requirementId,
-    required String evidenceBindingHash,
   }) => caller.callServerEndpoint<_itq9cig8.ActionCaptureChallengeView>(
     'actionVerification',
-    'createCaptureChallenge',
+    'beginCapture',
     {
       'attemptId': attemptId,
       'requirementId': requirementId,
-      'evidenceBindingHash': evidenceBindingHash,
     },
   );
 

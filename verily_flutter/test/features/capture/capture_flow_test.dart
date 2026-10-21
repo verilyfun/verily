@@ -127,6 +127,81 @@ void main() {
     });
   });
 
+  group('capture window', () {
+    testWidgets('opens before the camera and binds the proof sent from it', (
+      tester,
+    ) async {
+      final harness = CaptureHarness();
+      await _open(
+        tester,
+        harness,
+        testRequirement(ActionRequirementKind.photo),
+      );
+
+      expect(harness.gateway.windowsOpened, 1);
+      expect(harness.cameraRequests, hasLength(1));
+
+      await tester.tap(find.byKey(VerilyTestKeys.captureShutter));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(VerilyTestKeys.captureReviewSend));
+      await tester.pumpAndSettle();
+
+      expect(
+        harness.gateway.confirmed.single.captureChallengeId,
+        FakeEvidenceGateway.windowId,
+      );
+      expect(harness.gateway.windowsOpened, 1);
+    });
+
+    testWidgets('never opens the camera while the window cannot open', (
+      tester,
+    ) async {
+      final harness = CaptureHarness(
+        gateway: FakeEvidenceGateway(windowFailures: 1),
+      );
+      await _open(
+        tester,
+        harness,
+        testRequirement(ActionRequirementKind.photo),
+      );
+
+      expect(find.text("We couldn't start the capture"), findsOneWidget);
+      expect(harness.cameraRequests, isEmpty);
+      expect(find.byKey(VerilyTestKeys.captureShutter), findsNothing);
+
+      await tester.tap(find.byKey(VerilyTestKeys.captureChallengeRetry));
+      await tester.pumpAndSettle();
+
+      expect(harness.gateway.windowsOpened, 1);
+      expect(find.byKey(VerilyTestKeys.captureShutter), findsOneWidget);
+    });
+
+    testWidgets('a recording waits for both the window and its word', (
+      tester,
+    ) async {
+      final harness = CaptureHarness(
+        gateway: FakeEvidenceGateway(windowFailures: 1),
+      );
+      await _open(
+        tester,
+        harness,
+        testRequirement(
+          ActionRequirementKind.video,
+          spokenChallengeRequired: true,
+        ),
+      );
+
+      expect(find.text("We couldn't start the capture"), findsOneWidget);
+      expect(harness.cameraRequests, isEmpty);
+
+      await tester.tap(find.byKey(VerilyTestKeys.captureChallengeRetry));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Say “pelican”'), findsOneWidget);
+      expect(harness.actions.requestedFor, hasLength(1));
+    });
+  });
+
   group('photo', () {
     testWidgets('takes a still, reviews it, and sends it', (tester) async {
       final harness = CaptureHarness();

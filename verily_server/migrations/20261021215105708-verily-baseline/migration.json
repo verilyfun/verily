@@ -573,19 +573,27 @@
           },
           {
             "__className__": "serverpod.ColumnDefinition",
-            "name": "requestHash",
-            "fieldName": "requestHash",
+            "name": "nonce",
+            "fieldName": "nonce",
             "columnType": 0,
             "isNullable": false,
             "dartType": "String"
           },
           {
             "__className__": "serverpod.ColumnDefinition",
+            "name": "requestHash",
+            "fieldName": "requestHash",
+            "columnType": 0,
+            "isNullable": true,
+            "dartType": "String?"
+          },
+          {
+            "__className__": "serverpod.ColumnDefinition",
             "name": "evidenceBindingHash",
             "fieldName": "evidenceBindingHash",
             "columnType": 0,
-            "isNullable": false,
-            "dartType": "String"
+            "isNullable": true,
+            "dartType": "String?"
           },
           {
             "__className__": "serverpod.ColumnDefinition",
@@ -681,6 +689,20 @@
           }
         ],
         "indexes": [
+          {
+            "__className__": "serverpod.IndexDefinition",
+            "indexName": "verily_action_capture_challenge_nonce_unique_idx",
+            "elements": [
+              {
+                "__className__": "serverpod.IndexElementDefinition",
+                "type": 0,
+                "definition": "nonce"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": false
+          },
           {
             "__className__": "serverpod.IndexDefinition",
             "indexName": "verily_action_capture_challenge_request_hash_unique_idx",
@@ -1252,6 +1274,22 @@
             "__className__": "serverpod.ColumnDefinition",
             "name": "captureKeyStorage",
             "fieldName": "captureKeyStorage",
+            "columnType": 0,
+            "isNullable": true,
+            "dartType": "String?"
+          },
+          {
+            "__className__": "serverpod.ColumnDefinition",
+            "name": "captureCertificateChain",
+            "fieldName": "captureCertificateChain",
+            "columnType": 8,
+            "isNullable": true,
+            "dartType": "List<String>?"
+          },
+          {
+            "__className__": "serverpod.ColumnDefinition",
+            "name": "captureDeviceKeyId",
+            "fieldName": "captureDeviceKeyId",
             "columnType": 0,
             "isNullable": true,
             "dartType": "String?"

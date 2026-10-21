@@ -1,3 +1,4 @@
+import 'package:verily_server/src/action_verification/device_integrity_verifier.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 
 /// The reason codes the app may show or switch on. They are a small, stable,
@@ -127,7 +128,6 @@ String? _rejectedFamily(String? code) {
   if (code.startsWith('motion_')) return PublicReason.motionNotMatched;
   if (code.startsWith('capture_') ||
       code.startsWith('device_integrity_') ||
-      code == 'evidence_binding_mismatch' ||
       code == 'app_integrity_not_recognised') {
     return PublicReason.captureNotVerified;
   }
@@ -139,7 +139,9 @@ String? _rejectedFamily(String? code) {
 String publicReviewReason(String code) => switch (code) {
   'high_value_payout_review' => 'payout_review',
   'media_security_review_required' ||
-  'media_prompt_injection_detected' => 'security_review',
+  'media_prompt_injection_detected' ||
+  deviceCaptureRiskReviewCode ||
+  deviceActivityRiskReviewCode => 'security_review',
   'spoken_challenge_unverified' => 'challenge_word_unclear',
   'location_travel_needs_review' => 'location_review',
   'abuse_review_required' => 'abuse_review',

@@ -133,14 +133,148 @@ stateDiagram-v2
 
 ### Capture integrity
 
-`createCaptureChallenge` binds the next proof to a fresh nonce that commits to
-the evidence binding hash (`verily-evidence-binding-v1`, from
-`packages/verily_evidence`). The binding covers kind, capture time, SHA-256,
-byte length, duration (zero for photos), and content type, so a signature or
-attestation for one file cannot be reused for another. Device signatures and
-Play Integrity are controlled by `VERILY_CAPTURE_SIGNATURE_MODE`
-(`optional`/`required`) and `VERILY_DEVICE_INTEGRITY_MODE`
-(`disabled`/`required`); production readiness requires both.
+Proof the phone vouches for is captured inside a **capture window** the server
+opens before the camera, microphone, sensors, or scanner start. This is Phase 1
+of [provenance and watermarking](provenance-and-watermarking.md#7-phased-plan).
+
+```mermaid
+sequenceDiagram
+  participant App
+  participant Keystore as Android Keystore
+  participant Server
+  App->>Server: beginCapture(attemptId, requirementId)
+  Server-->>App: captureChallenge (32 bytes), expiresAt; records T0
+  App->>Keystore: fresh P-256 key, attestation challenge SHA-256(captureChallenge ‖ attemptId)
+  Note over App: capture (camera warms up while the key is made)
+  App->>App: binding hash, request hash, manifest
+  App->>Server: proof + Play Integrity token + signature + certificate chain
+  Server->>Server: window, T0, binding, Play Integrity, chain, signature
+```
+
+1. **Open.** `beginCapture(attemptId, requirementId)` records the window's
+   start (`T0`) and returns `captureChallenge`: 32 random bytes, unpadded
+   base64url. A window stays open for 30 minutes (time on the capture screen,
+   the longest recording, and its upload); an attempt may open ten an hour.
+2. **Key.** The app generates a fresh P-256 signing key for this window in
+   the Android Keystore, in StrongBox when the device has it and the Trusted
+   Execution Environment otherwise, with
+   `setAttestationChallenge(SHA-256(captureChallenge ‖ attemptId))` (the
+   challenge's raw bytes, then the attempt id as UTF-8). Generation runs while
+   the camera warms up. Keys from closed windows, and the single long-lived
+   key earlier builds used, are deleted.
+3. **Bind.** After capture the app computes the evidence binding hash
+   (`verily-evidence-binding-v1`, from `packages/verily_evidence`), which
+   covers kind, capture time, SHA-256, byte length, duration (zero for
+   photos), and content type, so nothing vouching for one file can vouch for
+   another. The Play Integrity request hash (`verily-capture-request-v2`)
+   commits to the attempt, requirement, binding, and `captureChallenge`. The
+   app asks Play for a token over that hash and signs the manifest
+   (`verily-capture-manifest-v1`: attempt, requirement, request hash, binding)
+   with the window's key, then sends the token, the manifest, the IEEE P1363
+   signature, and the key's certificate chain (`captureCertificateChain`, DER,
+   leaf first).
+4. **Verify.** The server loads the unused window, refuses proof captured
+   before `T0` (two minutes of clock tolerance; `capture_predates_challenge`),
+   and recomputes the binding and request hash from the evidence it accepted.
+   It then checks Play Integrity, the manifest, the attestation chain, and the
+   signature with the attested key. The window is consumed once and records
+   the request hash, binding, provider, and verdict.
+
+The phone never says where its key lives: the key, its id, and its storage
+level come only from the attestation chain.
+
+#### Android Key Attestation
+
+`key_attestation/` ports the checks in Google's
+[`android/keyattestation`](https://github.com/android/keyattestation) verifier
+and adds Verily's policy. Its unit tests run that project's recorded device
+chains (`test/unit/action_verification/key_attestation/vectors`) and a
+synthetic test authority for every refusal.
+
+- **Chain.** Certificates chain by name and signature to a root pinned in
+  `google_attestation_roots.dart`: the legacy RSA-4096 root and the ECDSA
+  P-384 "Key Attestation CA1" root (signing since 1 February 2026, exclusive
+  for remotely provisioned devices from 10 April 2026). A root is matched by
+  name and key, never by validity, so re-issued and expired versions of the
+  RSA root keep working. Every certificate but the leaf (whose dates the
+  device writes) must be within its validity, except that expiry is ignored on
+  factory-provisioned chains, whose keys cannot rotate.
+- **Revocation.** No serial in the chain may be on Google's status list
+  (`https://android.googleapis.com/attestation/status`), revoked or
+  suspended. The list is cached for its `Cache-Control: max-age` less `Age`
+  (at most a day). A failed refresh keeps the last list for 24 hours; with no
+  usable list, attestation fails closed.
+- **Extension.** Only the leaf may carry the `KeyDescription` extension, the
+  strict form of "parse it from the certificate closest to the root": an
+  attested key cannot extend the chain with a certificate of its own.
+- **Policy.** The attestation challenge is the window's; attestation and
+  KeyMint security levels agree and are TEE or StrongBox, and StrongBox only
+  when the chain itself says StrongBox; verified boot is `Verified` and the
+  bootloader locked; the key was generated on the device, is EC P-256, and can
+  sign; the app is `fun.verily.app` signed with a certificate in
+  `VERILY_ANDROID_SIGNING_CERT_SHA256`; the OS security patch is at most 12
+  months old.
+
+Refusals carry `capture_attestation_*` reason codes, which participants see
+as `capture_not_verified`.
+
+#### Play Integrity
+
+`device_integrity_verifier.dart` requires a verdict for this exact request,
+package, and recognised build from the last two minutes, and
+`MEETS_DEVICE_INTEGRITY`. On top:
+
+- **Strong integrity for large rewards.** Proof toward an action whose funded
+  reward pays above the review threshold
+  (`VERILY_REWARD_REVIEW_THRESHOLD_ATOMS`) needs `MEETS_STRONG_INTEGRITY` (a
+  security patch from the last year on Android 13+), or it is refused with
+  `device_integrity_not_strong`.
+- **Capture risks go to a person.** An unknown app capturing the screen,
+  controlling the device, or drawing overlays (`appAccessRiskVerdict`:
+  `UNKNOWN_CAPTURING`, `UNKNOWN_CONTROLLING`, `UNKNOWN_OVERLAYS`) routes the
+  proof to review as `device_capture_risk`; recent device activity at
+  `LEVEL_3` or `LEVEL_4` routes it as `device_activity_risk`. Reviewers see
+  both as `security_review`. Play-installed apps with those abilities are not
+  flagged. Both signals must be enabled in the Play Console; when absent they
+  flag nothing.
+- **Signing certificate.** With `VERILY_ANDROID_SIGNING_CERT_SHA256` set,
+  `appIntegrity.certificateSha256Digest` must include one of its digests.
+
+#### Provenance levels
+
+Each proof records the strongest level the server verified:
+
+| `EvidenceProvenanceLevel` | Means                                                                                                                       |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `basic`                   | Bound to a capture window only                                                                                              |
+| `appAttested`             | Play Integrity vouched for the app and device                                                                               |
+| `deviceSigned`            | A key signed the capture but its attestation was not trusted (optional mode)                                                |
+| `hardwareAttested`        | A fresh key in the TEE or StrongBox of a locked, verified device running our signed app, created for this window, signed it |
+
+The evidence row keeps the manifest, signature, the attested public key and
+its id, `captureKeyStorage` (`strongBox` or `trustedEnvironment`, from a
+trusted attestation only), the certificate chain (so later revocations can be
+checked against past proof), and `captureDeviceKeyId`: the SHA-256 of the
+remotely provisioned attestation key that certified the capture key. That key
+is hardware-bound and rotates every few weeks, so it is the abuse gate's
+device pseudonym; factory-provisioned keys are shared by a batch of devices
+and give none.
+
+#### Configuration
+
+- `VERILY_CAPTURE_SIGNATURE_MODE`: `optional` (default) or `required`.
+  `required` means every proof carries a manifest signed by a key whose
+  attestation verifies. `optional` records an untrusted attestation (an
+  emulator, a debug build signed with another certificate) as `deviceSigned`;
+  a manifest or signature that does not verify is refused in both modes.
+- `VERILY_DEVICE_INTEGRITY_MODE`: `disabled` (default) or `required`.
+- `VERILY_ANDROID_SIGNING_CERT_SHA256`: hex SHA-256 of the release signing
+  certificate (the Play app-signing certificate for Play builds),
+  comma-separated during a rotation. Without it no attestation is trusted.
+
+A malformed value, or `required` signatures without a signing certificate,
+stops startup. Production readiness (the abuse-resistance gate) requires all
+three.
 
 ### The live spoken challenge
 
@@ -175,19 +309,20 @@ Each decision row records `status` (`accepted`, `rejected`, `manualReview`),
 `verifierType`, a stable `reasonCode`, short product copy, confidence, and
 model provenance. Participants only ever see the product copy.
 
-| `verifierType`                                         | Source                                                     |
-| ------------------------------------------------------ | ---------------------------------------------------------- |
-| `geofence`, `location-risk`                            | Location policy                                            |
-| `qr-digest`                                            | Venue codes                                                |
-| `device-motion-v1`                                     | Motion trace recomputed on the server                      |
-| `media-preflight`, `spoken-challenge`                  | Upload and challenge-word checks before any model runs     |
-| `openrouter-single-model`, `openrouter-model-council`  | [OpenRouter verification](openrouter-verification.md)      |
-| `cloud-ai-media`                                       | [Cloud verifier contract](video-verifier-contract.md)      |
-| `manual-review-fallback`                               | `VERILY_MEDIA_VERIFIER_MODE=manual-review` (the default)   |
-| `human-review`, `appeal-review`, `payout-value-review` | People with the `evidence.review` scope                    |
-| `abuse-risk`                                           | The abuse gate                                             |
-| `verily-app`, `verily-app-pull`                        | A Verily App's push confirmation or pull verdict           |
-| `mp-replay`                                            | A local check replayed on the server with the pinned model |
+| `verifierType`                                         | Source                                                       |
+| ------------------------------------------------------ | ------------------------------------------------------------ |
+| `geofence`, `location-risk`                            | Location policy                                              |
+| `qr-digest`                                            | Venue codes                                                  |
+| `device-motion-v1`                                     | Motion trace recomputed on the server                        |
+| `media-preflight`, `spoken-challenge`                  | Upload and challenge-word checks before any model runs       |
+| `google-play-integrity`, `android-key-attestation`     | [Capture integrity](#capture-integrity) refusals and reviews |
+| `openrouter-single-model`, `openrouter-model-council`  | [OpenRouter verification](openrouter-verification.md)        |
+| `cloud-ai-media`                                       | [Cloud verifier contract](video-verifier-contract.md)        |
+| `manual-review-fallback`                               | `VERILY_MEDIA_VERIFIER_MODE=manual-review` (the default)     |
+| `human-review`, `appeal-review`, `payout-value-review` | People with the `evidence.review` scope                      |
+| `abuse-risk`                                           | The abuse gate                                               |
+| `verily-app`, `verily-app-pull`                        | A Verily App's push confirmation or pull verdict             |
+| `mp-replay`                                            | A local check replayed on the server with the pinned model   |
 
 `VERILY_MEDIA_VERIFIER_MODE` selects `manual-review` (default, needs no
 secret), `openrouter`, or `cloud`. Partial configuration stops startup.
@@ -271,7 +406,8 @@ server with exactly the same model.
 - **Abuse gate** (`VERILY_ABUSE_RUNTIME_MODE`) assesses value-bearing proof
   with rotating HMAC pseudonyms (`verily-abuse-v1`); replays of the same bytes
   across accounts are rejected and flagged completions go to review. Its
-  assessments are append-only.
+  device pseudonym is the attested `captureDeviceKeyId`, never a key the
+  phone chose. Its assessments are append-only.
 
 ## Nearby discovery
 
@@ -325,7 +461,7 @@ after commit, or by the one-minute recovery sweep.
 
 ## Schema contracts
 
-The baseline migration (`verily_server/migrations/20261021141602300-verily-baseline`)
+The baseline migration (`verily_server/migrations/20261021215105708-verily-baseline`)
 is Serverpod's generated schema plus `tool/schema_contracts.sql`, composed by
 `tool/compose_schema_baseline.dart`. The supplement adds only CHECK
 constraints, functions, and triggers (no indexes, foreign keys, or columns), so

@@ -414,20 +414,31 @@ class _ActionPage extends HookConsumerWidget {
         final EvidenceSubmissionResult? result;
         switch (requirement.kind) {
           case ActionRequirementKind.location:
+            final session = await evidence.beginCapture(
+              attempt: current,
+              requirement: requirement,
+            );
             final fix = await ref
                 .read(locationServiceProvider)
                 .precisePosition();
             result = await evidence.submitLocation(
               attempt: current,
               requirement: requirement,
+              session: session,
               fix: fix,
             );
           case ActionRequirementKind.qrCode:
+            final session = await evidence.beginCapture(
+              attempt: current,
+              requirement: requirement,
+            );
+            if (!context.mounted) return;
             final code = await ref.read(venueCodeScannerProvider)(context);
             if (code == null || !context.mounted) return;
             result = await evidence.submitQrCode(
               attempt: current,
               requirement: requirement,
+              session: session,
               code: code,
             );
           case ActionRequirementKind.video ||

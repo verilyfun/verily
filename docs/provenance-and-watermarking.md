@@ -164,7 +164,7 @@ Limits:
 ### Binding attestation to a _live_ capture (protocol)
 
 1. **Before the camera opens:** the app requests `beginCapture(attemptId, requirementId)`. The server returns a 32-byte `captureChallenge`, its expiry, and a **randomized live prompt** (see §6), and records the issue time `T0`.
-2. The app generates a **fresh per-attempt key** with `setAttestationChallenge(SHA256(captureChallenge ‖ attemptId))`, following Pixel's "one-and-done" pattern. It does this in parallel with camera warm-up, because StrongBox key generation can be slow. The capture code ported from KickJump reuses one long-lived key alias with no attestation, and reports `keyStorage` from the client, which is not evidence.
+2. The app generates a **fresh per-attempt key** with `setAttestationChallenge(SHA256(captureChallenge ‖ attemptId))`, following Pixel's "one-and-done" pattern. It does this in parallel with camera warm-up, because StrongBox key generation can be slow. (The capture code ported from KickJump reused one long-lived key alias with no attestation and reported `keyStorage` from the client, which is not evidence; Phase 1 replaced it, see [capture integrity](verification.md#capture-integrity).)
 3. **While recording:** fragment the MP4 (or roll segments every 1–2 s) and keep a hash chain: `h_i = SHA256(h_{i-1} ‖ SHA256(segment_i) ‖ SHA256(imuWindow_i) ‖ t_i)`, where `t_i` is the camera sensor timestamp. In Phase 3, sign `h_i` every few seconds and post it to the server. The server then sees the recording grow in real time, which defeats "file ready before the challenge" attacks.
 4. **On stop:** build a canonical manifest with these fields:
    - `attemptId`, `requirementId` and the challenge hash
@@ -290,6 +290,14 @@ Implementation home: a **Rust provenance worker**, not Python.
 | Perceptual fingerprint registry for duplicate and replay detection (PDQ on sampled keyframes)                                                                                                  | Rust PDQ crate via worker or `dart:ffi`                                   | 3–5 days |
 
 Outcome: the server can state "a hardware key on a locked, genuine device running our app, created after our nonce, signed this exact recording, the scene responded to an unpredictable prompt, and we have not seen this media before." That closes the stated attestation gap and the gallery-upload gap.
+
+**Status (21 October 2026).** The first three rows are built; [capture integrity](verification.md#capture-integrity) describes them as shipped.
+
+- `beginCapture` opens a capture window before recording and records `T0`; proof captured before it is refused. `T1` is bounded by the window's 30-minute life rather than by the requirement's duration.
+- The app generates a fresh StrongBox/TEE key per window with `setAttestationChallenge(SHA-256(captureChallenge ‖ attemptId))` and sends its chain. The Dart verifier in `verily_server/lib/src/action_verification/key_attestation/` is a port, not a sidecar, tested against nine `android/keyattestation` device chains plus a synthetic authority. It treats `SUSPENDED` serials as revoked, which is stricter than upstream. Signature mode `required` now means "attested".
+- Play Integrity requires `MEETS_STRONG_INTEGRITY` above the review threshold, sends unknown capture, control, and overlay apps and `LEVEL_3`/`LEVEL_4` activity to a person, and checks the signing-certificate digest. `appLicensingVerdict` and `deviceRecall` are not read yet.
+
+The randomized live prompt (beyond today's spoken word) and the PDQ registry are still to do.
 
 ### Phase 2: iOS parity and durable provenance (about 4–6 weeks)
 

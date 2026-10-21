@@ -88,6 +88,7 @@ ReceiptProof _proof({
           attemptId: _attemptId,
           requirementId: _requirementId,
           participantAuthUserId: _appId,
+          nonce: 'n' * 43,
           requestHash: 'r' * 64,
           evidenceBindingHash: 'b' * 64,
           expiresAt: _now,
@@ -113,9 +114,9 @@ void main() {
       final checks = receiptChecks(
         request: _request(place: true),
         primary: _proof(
-          provenance: EvidenceProvenanceLevel.deviceSigned,
-          challengeProvider: 'google-play-integrity+android-keystore',
-          challengeVerdict: 'capture_signature_valid',
+          provenance: EvidenceProvenanceLevel.hardwareAttested,
+          challengeProvider: 'google-play-integrity+android-key-attestation',
+          challengeVerdict: 'capture_attestation_valid',
         ),
         place: _placeProof('inside_geofence', EvidenceDecisionStatus.accepted),
       );
@@ -128,6 +129,21 @@ void main() {
         'liveChallenge': 'passed',
         'content': 'passed',
       });
+    });
+
+    test('when the capture key was signed but not attested then the '
+        'signature still passes and Play Integrity is not claimed', () {
+      final checks = receiptChecks(
+        request: _request(),
+        primary: _proof(
+          provenance: EvidenceProvenanceLevel.deviceSigned,
+          challengeProvider: 'android-keystore',
+          challengeVerdict: 'capture_signature_valid',
+        ),
+      );
+
+      expect(checks['captureSignature'], 'passed');
+      expect(checks['deviceIntegrity'], 'notChecked');
     });
 
     test('when the claims are built then they match platform.md and carry no '
@@ -196,10 +212,10 @@ void main() {
         request: _request(),
         primary: _proof(
           decision: EvidenceDecisionStatus.rejected,
-          verifierType: 'android-keystore',
-          reasonCode: 'capture_manifest_mismatch',
-          challengeProvider: 'android-keystore',
-          challengeVerdict: 'capture_manifest_mismatch',
+          verifierType: 'android-key-attestation',
+          reasonCode: 'capture_attestation_boot_untrusted',
+          challengeProvider: 'android-key-attestation',
+          challengeVerdict: 'capture_attestation_boot_untrusted',
         ),
       );
 

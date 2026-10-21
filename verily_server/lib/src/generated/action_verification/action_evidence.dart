@@ -11,6 +11,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _is;
+import 'package:verily_server/src/generated/protocol.dart' as _itf691yl;
 
 import '../action_verification/action_requirement_kind.dart' as _iws572ni;
 import '../action_verification/evidence_provenance_level.dart' as _ijbfcz4y;
@@ -51,6 +52,8 @@ abstract class ActionEvidence
     this.capturePublicKey,
     this.captureKeyId,
     this.captureKeyStorage,
+    this.captureCertificateChain,
+    this.captureDeviceKeyId,
     required this.capturedAt,
     DateTime? submittedAt,
   }) : provenanceLevel =
@@ -90,6 +93,8 @@ abstract class ActionEvidence
     String? capturePublicKey,
     String? captureKeyId,
     String? captureKeyStorage,
+    List<String>? captureCertificateChain,
+    String? captureDeviceKeyId,
     required DateTime capturedAt,
     DateTime? submittedAt,
   }) = _ActionEvidenceImpl;
@@ -155,6 +160,13 @@ abstract class ActionEvidence
       capturePublicKey: jsonSerialization['capturePublicKey'] as String?,
       captureKeyId: jsonSerialization['captureKeyId'] as String?,
       captureKeyStorage: jsonSerialization['captureKeyStorage'] as String?,
+      captureCertificateChain:
+          jsonSerialization['captureCertificateChain'] == null
+          ? null
+          : _itf691yl.Protocol().deserialize<List<String>>(
+              jsonSerialization['captureCertificateChain'],
+            ),
+      captureDeviceKeyId: jsonSerialization['captureDeviceKeyId'] as String?,
       capturedAt: _is.DateTimeJsonExtension.fromJson(
         jsonSerialization['capturedAt'],
       ),
@@ -234,11 +246,21 @@ abstract class ActionEvidence
 
   String? captureSignature;
 
+  /// The signing key and its id, read from the attested leaf certificate.
   String? capturePublicKey;
 
   String? captureKeyId;
 
+  /// `strongBox` or `trustedEnvironment`, from a trusted attestation only.
   String? captureKeyStorage;
+
+  /// The attestation chain as submitted (base64 DER, leaf first), kept so a
+  /// later revocation can be checked against past proof.
+  List<String>? captureCertificateChain;
+
+  /// SHA-256 of the remotely provisioned attestation key behind the capture
+  /// key: a hardware-bound device pseudonym that rotates every few weeks.
+  String? captureDeviceKeyId;
 
   DateTime capturedAt;
 
@@ -283,6 +305,8 @@ abstract class ActionEvidence
     String? capturePublicKey,
     String? captureKeyId,
     String? captureKeyStorage,
+    List<String>? captureCertificateChain,
+    String? captureDeviceKeyId,
     DateTime? capturedAt,
     DateTime? submittedAt,
   });
@@ -332,6 +356,9 @@ abstract class ActionEvidence
       if (capturePublicKey != null) 'capturePublicKey': capturePublicKey,
       if (captureKeyId != null) 'captureKeyId': captureKeyId,
       if (captureKeyStorage != null) 'captureKeyStorage': captureKeyStorage,
+      if (captureCertificateChain != null)
+        'captureCertificateChain': captureCertificateChain?.toJson(),
+      if (captureDeviceKeyId != null) 'captureDeviceKeyId': captureDeviceKeyId,
       'capturedAt': capturedAt.toJson(),
       'submittedAt': submittedAt.toJson(),
     };
@@ -406,6 +433,8 @@ class _ActionEvidenceImpl extends ActionEvidence {
     String? capturePublicKey,
     String? captureKeyId,
     String? captureKeyStorage,
+    List<String>? captureCertificateChain,
+    String? captureDeviceKeyId,
     required DateTime capturedAt,
     DateTime? submittedAt,
   }) : super._(
@@ -441,6 +470,8 @@ class _ActionEvidenceImpl extends ActionEvidence {
          capturePublicKey: capturePublicKey,
          captureKeyId: captureKeyId,
          captureKeyStorage: captureKeyStorage,
+         captureCertificateChain: captureCertificateChain,
+         captureDeviceKeyId: captureDeviceKeyId,
          capturedAt: capturedAt,
          submittedAt: submittedAt,
        );
@@ -482,6 +513,8 @@ class _ActionEvidenceImpl extends ActionEvidence {
     Object? capturePublicKey = _Undefined,
     Object? captureKeyId = _Undefined,
     Object? captureKeyStorage = _Undefined,
+    Object? captureCertificateChain = _Undefined,
+    Object? captureDeviceKeyId = _Undefined,
     DateTime? capturedAt,
     DateTime? submittedAt,
   }) {
@@ -560,6 +593,12 @@ class _ActionEvidenceImpl extends ActionEvidence {
       captureKeyStorage: captureKeyStorage is String?
           ? captureKeyStorage
           : this.captureKeyStorage,
+      captureCertificateChain: captureCertificateChain is List<String>?
+          ? captureCertificateChain
+          : this.captureCertificateChain?.map((e0) => e0).toList(),
+      captureDeviceKeyId: captureDeviceKeyId is String?
+          ? captureDeviceKeyId
+          : this.captureDeviceKeyId,
       capturedAt: capturedAt ?? this.capturedAt,
       submittedAt: submittedAt ?? this.submittedAt,
     );
@@ -760,6 +799,19 @@ class ActionEvidenceUpdateTable extends _is.UpdateTable<ActionEvidenceTable> {
         value,
       );
 
+  _is.ColumnValue<List<String>, List<String>> captureCertificateChain(
+    List<String>? value,
+  ) => _is.ColumnValue(
+    table.captureCertificateChain,
+    value,
+  );
+
+  _is.ColumnValue<String, String> captureDeviceKeyId(String? value) =>
+      _is.ColumnValue(
+        table.captureDeviceKeyId,
+        value,
+      );
+
   _is.ColumnValue<DateTime, DateTime> capturedAt(DateTime value) =>
       _is.ColumnValue(
         table.capturedAt,
@@ -904,6 +956,14 @@ class ActionEvidenceTable extends _is.Table<_is.UuidValue?> {
       'captureKeyStorage',
       this,
     );
+    captureCertificateChain = _is.ColumnSerializable<List<String>>(
+      'captureCertificateChain',
+      this,
+    );
+    captureDeviceKeyId = _is.ColumnString(
+      'captureDeviceKeyId',
+      this,
+    );
     capturedAt = _is.ColumnDateTime(
       'capturedAt',
       this,
@@ -977,11 +1037,21 @@ class ActionEvidenceTable extends _is.Table<_is.UuidValue?> {
 
   late final _is.ColumnString captureSignature;
 
+  /// The signing key and its id, read from the attested leaf certificate.
   late final _is.ColumnString capturePublicKey;
 
   late final _is.ColumnString captureKeyId;
 
+  /// `strongBox` or `trustedEnvironment`, from a trusted attestation only.
   late final _is.ColumnString captureKeyStorage;
+
+  /// The attestation chain as submitted (base64 DER, leaf first), kept so a
+  /// later revocation can be checked against past proof.
+  late final _is.ColumnSerializable<List<String>> captureCertificateChain;
+
+  /// SHA-256 of the remotely provisioned attestation key behind the capture
+  /// key: a hardware-bound device pseudonym that rotates every few weeks.
+  late final _is.ColumnString captureDeviceKeyId;
 
   late final _is.ColumnDateTime capturedAt;
 
@@ -1021,6 +1091,8 @@ class ActionEvidenceTable extends _is.Table<_is.UuidValue?> {
     capturePublicKey,
     captureKeyId,
     captureKeyStorage,
+    captureCertificateChain,
+    captureDeviceKeyId,
     capturedAt,
     submittedAt,
   ];

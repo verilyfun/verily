@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:test/test.dart';
 import 'package:verily_evidence/verily_evidence.dart';
 
@@ -157,21 +158,24 @@ void main() {
     );
   });
 
+  // 32 bytes, unpadded base64url: the shape of a server capture challenge.
+  final challenge = base64Url
+      .encode(List<int>.generate(32, (index) => index))
+      .replaceAll('=', '');
+
   test('Given two bindings when hashed into integrity requests then each '
       'request commits to its own binding', () {
     final first = captureIntegrityRequestHash(
-      authUserId: 'participant',
       attemptId: 'attempt',
       requirementId: 'requirement',
+      captureChallenge: challenge,
       evidenceBindingHash: 'a' * 64,
-      nonce: 'fixed-nonce',
     );
     final second = captureIntegrityRequestHash(
-      authUserId: 'participant',
       attemptId: 'attempt',
       requirementId: 'requirement',
+      captureChallenge: challenge,
       evidenceBindingHash: 'b' * 64,
-      nonce: 'fixed-nonce',
     );
 
     expect(first, hasLength(43));
@@ -179,15 +183,83 @@ void main() {
     expect(second, isNot(first));
   });
 
+  test('Given two capture challenges when hashed into integrity requests then '
+      'each request commits to its own challenge', () {
+    final other = base64Url.encode(List<int>.filled(32, 7)).replaceAll('=', '');
+
+    expect(
+      captureIntegrityRequestHash(
+        attemptId: 'attempt',
+        requirementId: 'requirement',
+        captureChallenge: challenge,
+        evidenceBindingHash: 'a' * 64,
+      ),
+      isNot(
+        captureIntegrityRequestHash(
+          attemptId: 'attempt',
+          requirementId: 'requirement',
+          captureChallenge: other,
+          evidenceBindingHash: 'a' * 64,
+        ),
+      ),
+    );
+  });
+
+  group('Given a capture key attestation challenge', () {
+    test('when derived then it is SHA-256 of the raw challenge and the '
+        'attempt id', () {
+      final derived = captureKeyAttestationChallenge(
+        captureChallenge: challenge,
+        attemptId: 'attempt',
+      );
+
+      expect(
+        derived,
+        sha256.convert([
+          ...List<int>.generate(32, (index) => index),
+          ...utf8.encode('attempt'),
+        ]).bytes,
+      );
+      expect(derived, hasLength(32));
+    });
+
+    test('when the attempt changes then the challenge changes', () {
+      expect(
+        captureKeyAttestationChallenge(
+          captureChallenge: challenge,
+          attemptId: 'attempt',
+        ),
+        isNot(
+          captureKeyAttestationChallenge(
+            captureChallenge: challenge,
+            attemptId: 'other-attempt',
+          ),
+        ),
+      );
+    });
+
+    test('when the capture challenge is malformed then it is refused', () {
+      for (final malformed in ['', 'short', '${challenge}A', '$challenge=']) {
+        expect(
+          () => captureKeyAttestationChallenge(
+            captureChallenge: malformed,
+            attemptId: 'attempt',
+          ),
+          throwsArgumentError,
+          reason: malformed,
+        );
+      }
+    });
+  });
+
   group('Given a capture manifest', () {
     test('when built then it commits one signature to one challenge and '
         'proof', () {
       final requestHash = captureIntegrityRequestHash(
-        authUserId: 'participant',
         attemptId: 'attempt',
         requirementId: 'requirement',
+        captureChallenge: challenge,
         evidenceBindingHash: 'a' * 64,
-        nonce: 'fixed-nonce',
       );
       final manifest = utf8.decode(
         captureProvenanceManifest(

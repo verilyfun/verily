@@ -1,3 +1,4 @@
+import 'package:verily_server/src/action_verification/key_attestation/android_key_attestation_verifier.dart';
 import 'package:verily_server/src/evidence_storage/production_evidence_preflight.dart';
 import 'package:verily_server/src/rewards/reward_configuration.dart';
 
@@ -238,6 +239,17 @@ final class VerilyProductionGate {
     }
     if (_value(environment, 'VERILY_CAPTURE_SIGNATURE_MODE') != 'required') {
       blockers.add('Abuse correlation requires signed device captures.');
+    }
+    if (_value(environment, 'VERILY_DEVICE_INTEGRITY_MODE') != 'required') {
+      blockers.add('Every capture must carry a Play Integrity verdict.');
+    }
+    final signingCertificates = parseSigningCertificateDigests(
+      _value(environment, 'VERILY_ANDROID_SIGNING_CERT_SHA256'),
+    );
+    if (signingCertificates == null || signingCertificates.isEmpty) {
+      blockers.add(
+        'Key attestation needs the release signing certificate digest.',
+      );
     }
     if (_value(environment, 'VERILY_ABUSE_PSEUDONYM_SECRET').length < 32) {
       blockers.add('A strong abuse pseudonym secret is required.');

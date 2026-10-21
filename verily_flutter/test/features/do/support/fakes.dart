@@ -7,6 +7,7 @@ import 'package:verily_flutter/features/actions/action_repository.dart';
 import 'package:verily_flutter/features/appeals/evidence_appeal_repository.dart';
 import 'package:verily_flutter/features/apps/apps_repository.dart';
 import 'package:verily_flutter/features/do/do_providers.dart';
+import 'package:verily_flutter/features/evidence/capture_provenance_service.dart';
 import 'package:verily_flutter/features/evidence/evidence_service.dart';
 import 'package:verily_flutter/features/evidence/location_service.dart';
 import 'package:verily_flutter/features/places/places.dart';
@@ -370,6 +371,9 @@ class FakeLocationService implements LocationService {
   int preciseCalls = 0;
   int openSettingsCalls = 0;
 
+  /// Runs as each precise fix is taken, so tests can check what came first.
+  void Function()? onPrecise;
+
   @override
   Future<LocationFix> approximatePosition() async {
     approximateCalls++;
@@ -382,6 +386,7 @@ class FakeLocationService implements LocationService {
   @override
   Future<LocationFix> precisePosition() async {
     preciseCalls++;
+    onPrecise?.call();
     if (preciseFailure case final failure?) {
       throw LocationException(failure);
     }
@@ -404,18 +409,24 @@ class FakeEvidenceGateway extends Fake implements EvidenceGateway {
 
   final List<ActionEvidenceInput> submitted = [];
 
+  /// Capture windows opened.
+  int windowsOpened = 0;
+
   @override
-  Future<ActionCaptureChallengeView> createCaptureChallenge({
+  Future<ActionCaptureChallengeView> beginCapture({
     required UuidValue attemptId,
     required UuidValue requirementId,
-    required String evidenceBindingHash,
-  }) async => ActionCaptureChallengeView(
-    id: doUuid(700 + submitted.length),
-    requestHash: 'request-$evidenceBindingHash',
-    expiresAt: doFixtureNow.add(const Duration(minutes: 5)),
-    integrityRequired: integrityRequired,
-    signatureRequired: false,
-  );
+  }) async {
+    windowsOpened += 1;
+    return ActionCaptureChallengeView(
+      id: doUuid(700 + windowsOpened),
+      captureChallenge: 'A' * 43,
+      issuedAt: doFixtureNow,
+      expiresAt: doFixtureNow.add(const Duration(minutes: 30)),
+      integrityRequired: integrityRequired,
+      signatureRequired: false,
+    );
+  }
 
   @override
   Future<EvidenceSubmissionResult> submitEvidence(
@@ -436,13 +447,25 @@ EvidenceService fakeEvidenceService(FakeEvidenceGateway gateway) =>
     EvidenceService(
       gateway: gateway,
       deviceIntegrity: (_) async => null,
-      signCapture: ({
-        required attemptId,
-        required requirementId,
-        required requestHash,
-        required evidenceBindingHash,
-      }) async => null,
+      captureKeys: const NoCaptureKeys(),
     );
+
+/// A phone without a capture key store, like iOS today.
+final class NoCaptureKeys implements CaptureKeyStore {
+  const NoCaptureKeys();
+
+  @override
+  Future<bool> prepare({
+    required String captureId,
+    required List<int> attestationChallenge,
+  }) async => false;
+
+  @override
+  Future<CaptureProvenanceProof?> sign({
+    required String captureId,
+    required List<int> manifest,
+  }) async => null;
+}
 
 /// Link codes for Apps.
 class FakeAppsRepository extends Fake implements AppsRepository {
@@ -517,6 +540,9 @@ class DoFakes {
   String? scannedCode = 'venue-code-1';
   int scans = 0;
 
+  /// Capture windows already open when the scanner started, per scan.
+  final List<int> windowsOpenAtScan = [];
+
   /// What the capture flow returns, or null when the person backs out.
   EvidenceSubmissionResult? Function(
     ActionAttemptView attempt,
@@ -536,6 +562,7 @@ class DoFakes {
     evidenceAppealRepositoryProvider.overrideWithValue(appeals),
     venueCodeScannerProvider.overrideWithValue((context) async {
       scans++;
+      windowsOpenAtScan.add(evidence.windowsOpened);
       return scannedCode;
     }),
     evidenceCaptureLauncherProvider.overrideWithValue((

@@ -28,7 +28,7 @@ Local ports (see `devenv.nix`): API 8180, Insights 8181, web 8182, Postgres
 | `listNearbyActions(latitude:, longitude:, radiusKm:, limit:)`               | Live actions with a place within 0.1 to 50 km, nearest first                                                  |
 | `beginAttempt(actionId:, idempotencyKey:)`                                  | Open (or return) the caller's attempt for this period                                                         |
 | `issueSpokenChallenge(attemptId:, requirementId:)`                          | The word to say while recording                                                                               |
-| `createCaptureChallenge(attemptId:, requirementId:, evidenceBindingHash:)`  | Device-integrity nonce bound to one capture                                                                   |
+| `beginCapture(attemptId:, requirementId:)`                                  | Open a capture window before recording: the nonce the phone's fresh capture key attests                       |
 | `submitEvidence(input)`                                                     | Location, venue code, or motion proof                                                                         |
 | `requestMediaUpload(attemptId:, requirementId:, contentType:, byteLength:)` | Upload description for `FileUploader`                                                                         |
 | `confirmMediaUpload(confirmation)`                                          | Inspect the upload and queue verification                                                                     |
@@ -265,3 +265,28 @@ removed or renamed.
   instead of a generic error.
 - `VerificationRequestView.declinedByViewer` (new, defaults to false) is true
   only for the account that declined the request.
+
+## Capture attestation changes (not additive)
+
+Verily is unreleased, so attested capture replaced the old capture challenge
+outright. See [capture integrity](verification.md#capture-integrity).
+
+- `actionVerification.createCaptureChallenge(attemptId:, requirementId:,
+  evidenceBindingHash:)` is gone. `beginCapture(attemptId:, requirementId:)`
+  opens the window before anything is captured.
+- `ActionCaptureChallengeView` drops `requestHash` and adds
+  `captureChallenge` (32 bytes, unpadded base64url) and `issuedAt`. The app
+  derives the Play Integrity request hash itself with
+  `captureIntegrityRequestHash` from `packages/verily_evidence` (domain
+  `verily-capture-request-v2`), and the capture key's attestation challenge
+  with `captureKeyAttestationChallenge`.
+- `ActionEvidenceInput` and `MediaUploadConfirmation` drop
+  `capturePublicKey`, `captureKeyId`, and `captureKeyStorage`, and add
+  `captureCertificateChain` (base64 DER, leaf first). The server reads the
+  key, its id, and its storage level from the attested leaf only.
+- `EvidenceProvenanceLevel.hardwareAttested` (new) is the level of a proof
+  signed by a key whose attestation verified.
+- New internal reason codes (`capture_predates_challenge`,
+  `capture_attestation_*`, `device_integrity_not_strong`) reach participants
+  as `capture_not_verified`; the review reasons `device_capture_risk` and
+  `device_activity_risk` reach reviewers as `security_review`.

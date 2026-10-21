@@ -18,15 +18,33 @@ const List<String> _internalCodes = [
   'app_verification_retrying',
   'app_verification_waiting',
   'appeal_accepted',
+  'capture_attestation_app_mismatch',
+  'capture_attestation_boot_untrusted',
+  'capture_attestation_chain_invalid',
+  'capture_attestation_challenge_mismatch',
+  'capture_attestation_expired',
+  'capture_attestation_extension_invalid',
+  'capture_attestation_key_invalid',
+  'capture_attestation_patch_outdated',
+  'capture_attestation_revoked',
+  'capture_attestation_security_level',
+  'capture_attestation_status_unavailable',
+  'capture_attestation_unconfigured',
+  'capture_attestation_untrusted_root',
+  'capture_attestation_valid',
   'capture_challenge_invalid',
-  'capture_key_mismatch',
   'capture_manifest_mismatch',
+  'capture_predates_challenge',
+  'capture_signature_incomplete',
   'capture_signature_invalid',
   'capture_signature_required',
+  'device_activity_risk',
+  'device_capture_risk',
   'device_integrity_invalid',
   'device_integrity_not_met',
+  'device_integrity_not_strong',
   'device_integrity_required',
-  'evidence_binding_mismatch',
+  'device_integrity_strong',
   'high_value_payout_review',
   'inside_geofence',
   'local_check_matched',
@@ -283,6 +301,9 @@ void main() {
         publicReviewReason(MediaVerificationReason.councilNoConsensus),
         'low_confidence',
       );
+      // Device risks Play reports are a security review, not a verdict.
+      expect(publicReviewReason('device_capture_risk'), 'security_review');
+      expect(publicReviewReason('device_activity_risk'), 'security_review');
     });
   });
 }

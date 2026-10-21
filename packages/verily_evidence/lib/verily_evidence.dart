@@ -15,10 +15,11 @@ export 'src/motion_evidence.dart';
 
 final RegExp _sha256Pattern = RegExp(r'^[0-9a-f]{64}$');
 final RegExp _requestHashPattern = RegExp(r'^[A-Za-z0-9_-]{43}$');
+final RegExp _captureChallengePattern = RegExp(r'^[A-Za-z0-9_-]{43}$');
 
 /// Domain separators. Changing one invalidates every outstanding challenge, so
 /// a change is a protocol version bump on both the app and the server.
-const _requestHashDomain = 'verily-capture-request-v1';
+const _requestHashDomain = 'verily-capture-request-v2';
 const _manifestDomain = 'verily-capture-manifest-v1';
 const _bindingDomain = 'verily-evidence-binding-v1';
 
@@ -30,21 +31,28 @@ Future<String> sha256Stream(Stream<List<int>> chunks) async {
   return (await sha256.bind(chunks).single).toString();
 }
 
-/// Creates the Play Integrity request hash for one evidence-bound challenge.
+/// Creates the Play Integrity request hash for one capture.
+///
+/// [captureChallenge] is the nonce the server issued before capture began and
+/// [evidenceBindingHash] fingerprints what was captured, so a token can only
+/// vouch for this capture. The app computes it to request the token; the
+/// server recomputes it from the challenge it stored and the evidence it
+/// accepted.
 String captureIntegrityRequestHash({
-  required String authUserId,
   required String attemptId,
   required String requirementId,
+  required String captureChallenge,
   required String evidenceBindingHash,
-  required String nonce,
 }) {
   final normalizedBindingHash = normalizeEvidenceBindingHash(
     evidenceBindingHash,
   );
-  final identifiers = [authUserId, attemptId, requirementId, nonce];
-  if (identifiers.any((value) => value.trim().isEmpty)) {
-    throw ArgumentError('Capture challenge identifiers must not be empty.');
-  }
+  final normalizedChallenge = normalizeCaptureChallenge(captureChallenge);
+  final normalizedAttemptId = _canonicalIdentifier(attemptId, 'attemptId');
+  final normalizedRequirementId = _canonicalIdentifier(
+    requirementId,
+    'requirementId',
+  );
   return base64Url
       .encode(
         sha256
@@ -52,17 +60,50 @@ String captureIntegrityRequestHash({
               utf8.encode(
                 [
                   _requestHashDomain,
-                  authUserId,
-                  attemptId,
-                  requirementId,
+                  normalizedAttemptId,
+                  normalizedRequirementId,
                   normalizedBindingHash,
-                  nonce,
+                  normalizedChallenge,
                 ].join('|'),
               ),
             )
             .bytes,
       )
       .replaceAll('=', '');
+}
+
+/// The Android Key Attestation challenge for one capture key:
+/// `SHA-256(captureChallenge ‖ attemptId)`, where `captureChallenge` is the
+/// nonce's 32 raw bytes and `attemptId` its UTF-8 text.
+///
+/// The app generates a fresh key with this challenge before recording starts,
+/// so the key's certificate chain proves it was created after the server
+/// issued [captureChallenge] for this attempt.
+List<int> captureKeyAttestationChallenge({
+  required String captureChallenge,
+  required String attemptId,
+}) {
+  final nonce = base64Url.decode(
+    base64Url.normalize(normalizeCaptureChallenge(captureChallenge)),
+  );
+  return sha256.convert([
+    ...nonce,
+    ...utf8.encode(_canonicalIdentifier(attemptId, 'attemptId')),
+  ]).bytes;
+}
+
+/// Validates a server capture challenge: 32 random bytes, unpadded base64url.
+String normalizeCaptureChallenge(String value) {
+  final normalized = value.trim();
+  // 43 unpadded base64url characters always decode to exactly 32 bytes.
+  if (!_captureChallengePattern.hasMatch(normalized)) {
+    throw ArgumentError.value(
+      value,
+      'captureChallenge',
+      'Must be 32 bytes as unpadded base64url.',
+    );
+  }
+  return normalized;
 }
 
 /// Creates the canonical bytes signed by an app-controlled capture key.

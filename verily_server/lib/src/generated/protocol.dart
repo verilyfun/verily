@@ -772,16 +772,22 @@ class Protocol extends _is.DatabaseSerializationManager {
           dartType: 'UuidValue',
         ),
         _isp.ColumnDefinition(
-          name: 'requestHash',
+          name: 'nonce',
           columnType: _isp.ColumnType.text,
           isNullable: false,
           dartType: 'String',
         ),
         _isp.ColumnDefinition(
+          name: 'requestHash',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
           name: 'evidenceBindingHash',
           columnType: _isp.ColumnType.text,
-          isNullable: false,
-          dartType: 'String',
+          isNullable: true,
+          dartType: 'String?',
         ),
         _isp.ColumnDefinition(
           name: 'expiresAt',
@@ -853,6 +859,19 @@ class Protocol extends _is.DatabaseSerializationManager {
         ),
       ],
       indexes: [
+        _isp.IndexDefinition(
+          indexName: 'verily_action_capture_challenge_nonce_unique_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'nonce',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
         _isp.IndexDefinition(
           indexName: 'verily_action_capture_challenge_request_hash_unique_idx',
           tableSpace: null,
@@ -1298,6 +1317,18 @@ class Protocol extends _is.DatabaseSerializationManager {
         ),
         _isp.ColumnDefinition(
           name: 'captureKeyStorage',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'captureCertificateChain',
+          columnType: _isp.ColumnType.json,
+          isNullable: true,
+          dartType: 'List<String>?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'captureDeviceKeyId',
           columnType: _isp.ColumnType.text,
           isNullable: true,
           dartType: 'String?',
@@ -6898,6 +6929,12 @@ class Protocol extends _is.DatabaseSerializationManager {
               : null)
           as T;
     }
+    if (t == _is.getType<List<String>?>()) {
+      return (data != null
+              ? (data as List).map((e) => deserialize<String>(e)).toList()
+              : null)
+          as T;
+    }
     if (t == List<_irayxhn9.ActionMotionSample>) {
       return (data as List)
               .map((e) => deserialize<_irayxhn9.ActionMotionSample>(e))
@@ -6916,12 +6953,6 @@ class Protocol extends _is.DatabaseSerializationManager {
       return (data as List)
               .map((e) => deserialize<_icsa4634.ActionRequirementView>(e))
               .toList()
-          as T;
-    }
-    if (t == _is.getType<List<String>?>()) {
-      return (data != null
-              ? (data as List).map((e) => deserialize<String>(e)).toList()
-              : null)
           as T;
     }
     if (t == List<_ivobne24.ActionRequirementDraft>) {

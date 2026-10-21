@@ -8,6 +8,7 @@ import 'package:verily_evidence/verily_evidence.dart';
 
 import 'package:verily_flutter/features/evidence/capture_provenance_service.dart';
 import 'package:verily_flutter/features/evidence/captured_media.dart';
+import 'package:verily_flutter/features/evidence/device_integrity_service.dart';
 import 'package:verily_flutter/features/evidence/evidence_service.dart';
 import 'package:verily_flutter/features/evidence/location_service.dart';
 
@@ -18,7 +19,8 @@ final _requirementId = UuidValue.fromString(
 final _challengeId = UuidValue.fromString(
   '00000000-0000-4000-8000-0000000000e1',
 );
-const _requestHash = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+// 32 bytes, unpadded base64url, as the server issues it.
+const _captureChallenge = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 
 ActionAttemptView _attempt() => ActionAttemptView(
   id: _attemptId,
@@ -57,22 +59,20 @@ class _Gateway implements EvidenceGateway {
   final bool signatureRequired;
   bool uploadSucceeds = true;
   final calls = <String>[];
-  final bindingHashes = <String>[];
   ActionEvidenceInput? submitted;
   MediaUploadConfirmation? confirmed;
 
   @override
-  Future<ActionCaptureChallengeView> createCaptureChallenge({
+  Future<ActionCaptureChallengeView> beginCapture({
     required UuidValue attemptId,
     required UuidValue requirementId,
-    required String evidenceBindingHash,
   }) async {
-    calls.add('challenge');
-    bindingHashes.add(evidenceBindingHash);
+    calls.add('begin');
     return ActionCaptureChallengeView(
       id: _challengeId,
-      requestHash: _requestHash,
-      expiresAt: DateTime.utc(2026, 10, 21, 0, 5),
+      captureChallenge: _captureChallenge,
+      issuedAt: DateTime.utc(2026, 10, 21),
+      expiresAt: DateTime.utc(2026, 10, 21, 0, 30),
       integrityRequired: integrityRequired,
       signatureRequired: signatureRequired,
     );
@@ -120,24 +120,44 @@ class _Gateway implements EvidenceGateway {
 const _proof = CaptureProvenanceProof(
   manifest: 'bWFuaWZlc3Q=',
   signature: 'c2lnbmF0dXJl',
-  publicKey: 'cHVibGlj',
-  keyId: 'key-id',
-  keyStorage: 'strongBox',
+  certificateChain: ['bGVhZg==', 'cm9vdA=='],
 );
 
-Future<CaptureProvenanceProof?> _signs({
-  required String attemptId,
-  required String requirementId,
-  required String requestHash,
-  required String evidenceBindingHash,
-}) async => _proof;
+/// A key store that records what it was asked to attest and sign.
+class _Keys implements CaptureKeyStore {
+  _Keys({this.available = true});
 
-Future<CaptureProvenanceProof?> _cannotSign({
-  required String attemptId,
-  required String requirementId,
-  required String requestHash,
-  required String evidenceBindingHash,
-}) async => null;
+  final bool available;
+  final prepared = <String, List<int>>{};
+  final signed = <List<int>>[];
+
+  @override
+  Future<bool> prepare({
+    required String captureId,
+    required List<int> attestationChallenge,
+  }) async {
+    if (!available) return false;
+    prepared[captureId] = attestationChallenge;
+    return true;
+  }
+
+  @override
+  Future<CaptureProvenanceProof?> sign({
+    required String captureId,
+    required List<int> manifest,
+  }) async {
+    if (!prepared.containsKey(captureId)) return null;
+    signed.add(manifest);
+    return _proof;
+  }
+}
+
+String _requestHash(String bindingHash) => captureIntegrityRequestHash(
+  attemptId: _attemptId.toString(),
+  requirementId: _requirementId.toString(),
+  captureChallenge: _captureChallenge,
+  evidenceBindingHash: bindingHash,
+);
 
 void main() {
   final fix = LocationFix(
@@ -147,78 +167,174 @@ void main() {
     capturedAt: DateTime.utc(2026, 10, 21, 9, 30),
   );
 
-  test('a location proof is bound to that exact reading and device', () async {
+  test('a capture window opens before capture and generates a key that '
+      'attests it', () async {
     final gateway = _Gateway();
+    final keys = _Keys();
+    final service = EvidenceService(
+      gateway: gateway,
+      deviceIntegrity: (hash) async => null,
+      captureKeys: keys,
+    );
+
+    final session = await service.beginCapture(
+      attempt: _attempt(),
+      requirement: _requirement(ActionRequirementKind.location),
+    );
+
+    expect(gateway.calls, ['begin']);
+    expect(session.challenge.id, _challengeId);
+    expect(keys.prepared[_challengeId.toString()], [
+      ...captureKeyAttestationChallenge(
+        captureChallenge: _captureChallenge,
+        attemptId: _attemptId.toString(),
+      ),
+    ]);
+    expect(session.isExpiredAt(DateTime.utc(2026, 10, 21, 0, 29)), isFalse);
+    expect(session.isExpiredAt(DateTime.utc(2026, 10, 21, 0, 30)), isTrue);
+  });
+
+  test('a location proof is bound to that exact reading, window, and '
+      'device', () async {
+    final gateway = _Gateway();
+    final keys = _Keys();
     final service = EvidenceService(
       gateway: gateway,
       deviceIntegrity: (hash) async => 'token-for-$hash',
-      signCapture: _signs,
+      captureKeys: keys,
+    );
+    final requirement = _requirement(ActionRequirementKind.location);
+    final session = await service.beginCapture(
+      attempt: _attempt(),
+      requirement: requirement,
     );
 
     await service.submitLocation(
       attempt: _attempt(),
-      requirement: _requirement(ActionRequirementKind.location),
+      requirement: requirement,
+      session: session,
       fix: fix,
     );
 
-    expect(
-      gateway.bindingHashes.single,
-      locationEvidenceBindingHash(
-        capturedAt: fix.capturedAt,
-        latitude: fix.latitude,
-        longitude: fix.longitude,
-        accuracyMeters: fix.accuracyMeters,
-      ),
+    final binding = locationEvidenceBindingHash(
+      capturedAt: fix.capturedAt,
+      latitude: fix.latitude,
+      longitude: fix.longitude,
+      accuracyMeters: fix.accuracyMeters,
     );
     final input = gateway.submitted!;
     expect(input.captureChallengeId, _challengeId);
-    expect(input.deviceIntegrityToken, 'token-for-$_requestHash');
+    expect(input.deviceIntegrityToken, 'token-for-${_requestHash(binding)}');
+    expect(keys.signed.single, [
+      ...captureProvenanceManifest(
+        attemptId: _attemptId.toString(),
+        requirementId: _requirementId.toString(),
+        requestHash: _requestHash(binding),
+        evidenceBindingHash: binding,
+      ),
+    ]);
     expect(input.captureSignature, _proof.signature);
-    expect(input.captureKeyStorage, 'strongBox');
+    expect(input.captureCertificateChain, _proof.certificateChain);
     expect(input.latitude, fix.latitude);
   });
 
-  test('refuses to send when the server needs a token the phone lacks', () {
-    final gateway = _Gateway(integrityRequired: true);
+  test(
+    'refuses to send when the server needs a token the phone lacks',
+    () async {
+      final gateway = _Gateway(integrityRequired: true);
+      final service = EvidenceService(
+        gateway: gateway,
+        deviceIntegrity: (hash) async => null,
+        captureKeys: _Keys(),
+      );
+      final requirement = _requirement(ActionRequirementKind.qrCode);
+      final session = await service.beginCapture(
+        attempt: _attempt(),
+        requirement: requirement,
+      );
+
+      expect(
+        service.submitQrCode(
+          attempt: _attempt(),
+          requirement: requirement,
+          session: session,
+          code: 'verily:v1:abc',
+        ),
+        throwsA(
+          isA<CaptureIntegrityException>().having(
+            (error) => error.failure,
+            'failure',
+            CaptureIntegrityFailure.integrityUnavailable,
+          ),
+        ),
+      );
+    },
+  );
+
+  test('refuses to send when the server needs a signature the phone cannot '
+      'make', () async {
+    final gateway = _Gateway(signatureRequired: true);
     final service = EvidenceService(
       gateway: gateway,
-      deviceIntegrity: (hash) async => null,
-      signCapture: _signs,
+      deviceIntegrity: (hash) async => 'token',
+      captureKeys: _Keys(available: false),
+    );
+    final requirement = _requirement(ActionRequirementKind.qrCode);
+    final session = await service.beginCapture(
+      attempt: _attempt(),
+      requirement: requirement,
     );
 
-    expect(
+    await expectLater(
       service.submitQrCode(
         attempt: _attempt(),
-        requirement: _requirement(ActionRequirementKind.qrCode),
+        requirement: requirement,
+        session: session,
         code: 'verily:v1:abc',
       ),
       throwsA(
         isA<CaptureIntegrityException>().having(
           (error) => error.failure,
           'failure',
-          CaptureIntegrityFailure.integrityUnavailable,
+          CaptureIntegrityFailure.signatureUnavailable,
         ),
       ),
     );
+    expect(gateway.calls, ['begin']);
   });
 
-  test('refuses to send when the server needs a device signature', () async {
-    final gateway = _Gateway(signatureRequired: true);
+  test('refuses a window opened for another proof', () async {
+    final gateway = _Gateway();
     final service = EvidenceService(
       gateway: gateway,
-      deviceIntegrity: (hash) async => 'token',
-      signCapture: _cannotSign,
+      deviceIntegrity: (hash) async => null,
+      captureKeys: _Keys(),
+    );
+    final session = await service.beginCapture(
+      attempt: _attempt(),
+      requirement: _requirement(ActionRequirementKind.qrCode),
+    );
+    final other = ActionRequirementView(
+      id: UuidValue.fromString('00000000-0000-4000-8000-0000000000d2'),
+      requirementKey: 'other',
+      kind: ActionRequirementKind.location,
+      title: 'Other',
+      instructions: 'Somewhere else.',
+      position: 1,
+      isRequired: true,
+      spokenChallengeRequired: false,
     );
 
     await expectLater(
-      service.submitQrCode(
+      service.submitLocation(
         attempt: _attempt(),
-        requirement: _requirement(ActionRequirementKind.qrCode),
-        code: 'verily:v1:abc',
+        requirement: other,
+        session: session,
+        fix: fix,
       ),
-      throwsA(isA<CaptureIntegrityException>()),
+      throwsArgumentError,
     );
-    expect(gateway.calls, ['challenge']);
+    expect(gateway.calls, ['begin']);
   });
 
   group('media', () {
@@ -233,38 +349,52 @@ void main() {
       spokenChallengeWord: 'pelican',
     );
 
-    test('uploads, then binds the challenge to the uploaded bytes', () async {
-      final gateway = _Gateway();
+    Future<(EvidenceService, CaptureSession)> opened(
+      _Gateway gateway,
+      ActionRequirementKind kind, {
+      DeviceIntegrityTokenSource? deviceIntegrity,
+    }) async {
       final service = EvidenceService(
         gateway: gateway,
-        deviceIntegrity: (hash) async => 'token',
-        signCapture: _signs,
+        deviceIntegrity: deviceIntegrity ?? (hash) async => null,
+        captureKeys: _Keys(available: false),
+      );
+      final session = await service.beginCapture(
+        attempt: _attempt(),
+        requirement: _requirement(kind),
+      );
+      return (service, session);
+    }
+
+    test('uploads, then binds the window to the uploaded bytes', () async {
+      final gateway = _Gateway();
+      final (service, session) = await opened(
+        gateway,
+        ActionRequirementKind.audio,
+        deviceIntegrity: (hash) async => 'token-for-$hash',
       );
       final media = await audio();
 
       await service.uploadMedia(
         attempt: _attempt(),
         requirement: _requirement(ActionRequirementKind.audio),
+        session: session,
         media: media,
       );
 
-      expect(gateway.calls, [
-        'request-upload',
-        'upload',
-        'challenge',
-        'confirm',
-      ]);
+      expect(gateway.calls, ['begin', 'request-upload', 'upload', 'confirm']);
       expect(media.sha256Digest, await sha256Stream(Stream.value(bytes)));
+      final binding = mediaEvidenceBindingHash(
+        kind: MediaEvidenceKind.audio,
+        capturedAt: media.capturedAt,
+        sha256Digest: media.sha256Digest,
+        byteLength: bytes.length,
+        durationSeconds: 12,
+        contentType: 'audio/mp4',
+      );
       expect(
-        gateway.bindingHashes.single,
-        mediaEvidenceBindingHash(
-          kind: MediaEvidenceKind.audio,
-          capturedAt: media.capturedAt,
-          sha256Digest: media.sha256Digest,
-          byteLength: bytes.length,
-          durationSeconds: 12,
-          contentType: 'audio/mp4',
-        ),
+        gateway.confirmed!.deviceIntegrityToken,
+        'token-for-${_requestHash(binding)}',
       );
       final confirmation = gateway.confirmed!;
       expect(confirmation.byteLength, bytes.length);
@@ -275,10 +405,9 @@ void main() {
 
     test('a photo carries no duration', () async {
       final gateway = _Gateway();
-      final service = EvidenceService(
-        gateway: gateway,
-        deviceIntegrity: (hash) async => null,
-        signCapture: _cannotSign,
+      final (service, session) = await opened(
+        gateway,
+        ActionRequirementKind.photo,
       );
       final photo = await describeCapturedMedia(
         XFile.fromData(bytes, name: 'proof.jpg', mimeType: 'image/jpeg'),
@@ -291,6 +420,7 @@ void main() {
       await service.uploadMedia(
         attempt: _attempt(),
         requirement: _requirement(ActionRequirementKind.photo),
+        session: session,
         media: photo,
       );
 
@@ -300,21 +430,21 @@ void main() {
 
     test('a failed upload stops before anything is confirmed', () async {
       final gateway = _Gateway()..uploadSucceeds = false;
-      final service = EvidenceService(
-        gateway: gateway,
-        deviceIntegrity: (hash) async => null,
-        signCapture: _cannotSign,
+      final (service, session) = await opened(
+        gateway,
+        ActionRequirementKind.audio,
       );
 
       await expectLater(
         service.uploadMedia(
           attempt: _attempt(),
           requirement: _requirement(ActionRequirementKind.audio),
+          session: session,
           media: await audio(),
         ),
         throwsA(isA<MediaUploadException>()),
       );
-      expect(gateway.calls, ['request-upload', 'upload']);
+      expect(gateway.calls, ['begin', 'request-upload', 'upload']);
     });
   });
 }

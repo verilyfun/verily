@@ -19,6 +19,7 @@ import 'package:verily_flutter/features/capture/movement/exercise_tracking.dart'
 import 'package:verily_flutter/features/capture/movement/movement_capture_controller.dart';
 import 'package:verily_flutter/features/capture/movement/movement_tracking_providers.dart';
 import 'package:verily_flutter/features/evidence/captured_media.dart';
+import 'package:verily_flutter/features/evidence/capture_provenance_service.dart';
 import 'package:verily_flutter/features/evidence/evidence_service.dart';
 import 'package:verily_flutter/features/evidence/motion_capture_service.dart';
 import 'package:verily_flutter/features/local_check/local_check_providers.dart';
@@ -410,8 +411,14 @@ final class FakeActionRepository implements ActionRepository {
 
 /// Records what reached the server and answers like it.
 final class FakeEvidenceGateway implements EvidenceGateway {
-  FakeEvidenceGateway({List<bool>? uploads, this.integrityRequired = false})
-    : uploads = uploads ?? [true];
+  FakeEvidenceGateway({
+    List<bool>? uploads,
+    this.integrityRequired = false,
+    this.windowFailures = 0,
+  }) : uploads = uploads ?? [true];
+
+  /// How many capture windows fail to open before one does.
+  int windowFailures;
 
   /// Whether each upload succeeds, in order; the last answer repeats.
   final List<bool> uploads;
@@ -431,18 +438,34 @@ final class FakeEvidenceGateway implements EvidenceGateway {
     summary: 'Proof received',
   );
 
+  /// Capture windows opened.
+  int windowsOpened = 0;
+
+  /// The id every window this fake opens carries.
+  static final windowId = UuidValue.fromString(
+    '00000000-0000-4000-8000-0000000000e1',
+  );
+
   @override
-  Future<ActionCaptureChallengeView> createCaptureChallenge({
+  Future<ActionCaptureChallengeView> beginCapture({
     required UuidValue attemptId,
     required UuidValue requirementId,
-    required String evidenceBindingHash,
-  }) async => ActionCaptureChallengeView(
-    id: UuidValue.fromString('00000000-0000-4000-8000-0000000000e1'),
-    requestHash: 'request-$evidenceBindingHash',
-    expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 5)),
-    integrityRequired: integrityRequired,
-    signatureRequired: false,
-  );
+  }) async {
+    if (windowFailures > 0) {
+      windowFailures -= 1;
+      throw Exception('offline');
+    }
+    windowsOpened += 1;
+    final now = DateTime.now().toUtc();
+    return ActionCaptureChallengeView(
+      id: windowId,
+      captureChallenge: 'A' * 43,
+      issuedAt: now,
+      expiresAt: now.add(const Duration(minutes: 30)),
+      integrityRequired: integrityRequired,
+      signatureRequired: false,
+    );
+  }
 
   @override
   Future<String> requestMediaUpload({
@@ -486,13 +509,25 @@ EvidenceService fakeEvidenceService(FakeEvidenceGateway gateway) =>
     EvidenceService(
       gateway: gateway,
       deviceIntegrity: (_) async => null,
-      signCapture: ({
-        required attemptId,
-        required requirementId,
-        required requestHash,
-        required evidenceBindingHash,
-      }) async => null,
+      captureKeys: const NoCaptureKeys(),
     );
+
+/// A phone without a capture key store, like iOS today.
+final class NoCaptureKeys implements CaptureKeyStore {
+  const NoCaptureKeys();
+
+  @override
+  Future<bool> prepare({
+    required String captureId,
+    required List<int> attestationChallenge,
+  }) async => false;
+
+  @override
+  Future<CaptureProvenanceProof?> sign({
+    required String captureId,
+    required List<int> manifest,
+  }) async => null;
+}
 
 /// Everything a capture test replaces, with sensible defaults.
 final class CaptureHarness {

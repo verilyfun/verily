@@ -1,5 +1,6 @@
 import 'package:serverpod/serverpod.dart';
 import 'package:verily_server/src/action_verification/action_verification_service.dart';
+import 'package:verily_server/src/action_verification/capture_integrity.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 import 'package:verily_server/src/verification_requests/receipt_signing.dart';
 
@@ -21,10 +22,12 @@ abstract final class ReceiptStatus {
   static const expired = 'expired';
 }
 
-/// Integrity providers that are not Play Integrity: a device signature only,
-/// or a capture challenge with neither attestation.
-const _signatureOnlyProvider = 'android-keystore';
-const _challengeOnlyProvider = 'capture-challenge';
+/// Providers that check a capture-key signature, attested or not.
+const Set<String> _signatureProviders = {
+  CaptureIntegrityProvider.keyAttestation,
+  CaptureIntegrityProvider.unattestedSignature,
+};
+const _playIntegrityProvider = 'google-play-integrity';
 
 /// Verifier types that judge what the capture shows.
 const _contentVerifierPrefixes = [
@@ -70,8 +73,10 @@ final class ReceiptProof {
 ///   challenge was used (notChecked).
 /// - `deviceIntegrity`: Play Integrity attested the capture (passed), its
 ///   verdict was refused (failed), or none was sent (notChecked).
-/// - `captureSignature`: a hardware-backed device key signed the capture
-///   (passed), the signature was refused (failed), or none was sent.
+/// - `captureSignature`: a fresh capture key signed the capture (passed;
+///   with signatures required, its Android Key Attestation must verify
+///   too), the signature or attestation was refused (failed), or none was
+///   sent.
 /// - `place`: inside or outside the App's radius from the location proof's
 ///   geofence decision; notChecked when no place was asked for, no location
 ///   proof arrived, or it was refused for another reason (accuracy, age).
@@ -97,10 +102,11 @@ Map<String, String> receiptChecks({
   String deviceIntegrity() {
     final proof = primary;
     final provider = proof?.captureChallenge?.provider;
+    // A provider is one name, or names joined by `+` when several checks
+    // vouched for the capture.
     if (proof == null ||
         provider == null ||
-        provider == _signatureOnlyProvider ||
-        provider == _challengeOnlyProvider) {
+        !provider.split('+').contains(_playIntegrityProvider)) {
       return ReceiptCheck.notChecked;
     }
     if (proof.integrityFailed) return ReceiptCheck.failed;
@@ -113,11 +119,13 @@ Map<String, String> receiptChecks({
     final proof = primary;
     if (proof == null) return ReceiptCheck.notChecked;
     if (proof.evidence.provenanceLevel ==
-        EvidenceProvenanceLevel.deviceSigned) {
+            EvidenceProvenanceLevel.hardwareAttested ||
+        proof.evidence.provenanceLevel ==
+            EvidenceProvenanceLevel.deviceSigned) {
       return ReceiptCheck.passed;
     }
     if (proof.integrityFailed &&
-        proof.captureChallenge?.provider == _signatureOnlyProvider) {
+        _signatureProviders.contains(proof.captureChallenge?.provider)) {
       return ReceiptCheck.failed;
     }
     return ReceiptCheck.notChecked;

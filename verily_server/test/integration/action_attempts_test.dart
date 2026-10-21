@@ -7,11 +7,13 @@ import 'package:verily_evidence/verily_evidence.dart';
 import 'package:verily_server/src/action_verification/action_period.dart';
 import 'package:verily_server/src/action_verification/action_verification_service.dart';
 import 'package:verily_server/src/action_verification/capture_integrity.dart';
-import 'package:verily_server/src/action_verification/capture_signature_verifier.dart';
 import 'package:verily_server/src/action_verification/device_integrity_verifier.dart';
+import 'package:verily_server/src/action_verification/key_attestation/android_key_attestation_verifier.dart';
+import 'package:verily_server/src/action_verification/key_attestation/attestation_status_list.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 import 'package:verily_server/src/security/secret_digest.dart';
 
+import 'test_tools/key_attestation_test_chain.dart';
 import 'test_tools/serverpod_test_tools.dart';
 import 'test_tools/verily_fixtures.dart';
 
@@ -488,9 +490,10 @@ void main() {
       );
     });
 
-    group('when proof is bound to a capture challenge', () {
+    group('when proof is bound to a capture window', () {
       late _TrustedDeviceIntegrityVerifier integrityVerifier;
       late ActionVerificationService attestedService;
+      final authority = TestAttestationAuthority();
 
       setUp(() {
         integrityVerifier = _TrustedDeviceIntegrityVerifier();
@@ -502,33 +505,81 @@ void main() {
         );
       });
 
+      /// A service that requires an attested capture key, trusting
+      /// [authority]'s root the way production trusts Google's.
+      ActionVerificationService signedService({bool required = true}) =>
+          ActionVerificationService(
+            captureIntegrity: CaptureIntegrityEvaluator(
+              captureSignatureRequired: required,
+              deviceIntegrityVerifier: integrityVerifier,
+              keyAttestationVerifier: AndroidKeyAttestationVerifier(
+                policy: KeyAttestationPolicy(
+                  signingCertificateDigests: {testSigningCertificateDigest},
+                ),
+                trustAnchors: required ? [authority.root] : null,
+                statusSource: _NothingListed(),
+              ),
+            ),
+          );
+
+      /// What the device signs and asks Play to vouch for, once the venue
+      /// code is captured inside [window].
+      ({String bindingHash, String requestHash, List<int> manifest}) bound(
+        ActionAttemptView attempt,
+        ActionCaptureChallengeView window,
+        DateTime capturedAt,
+        String code,
+      ) {
+        final bindingHash = qrEvidenceBindingHash(
+          capturedAt: capturedAt,
+          code: code,
+        );
+        final requestHash = captureIntegrityRequestHash(
+          attemptId: attempt.id.toString(),
+          requirementId: venue.id.toString(),
+          captureChallenge: window.captureChallenge,
+          evidenceBindingHash: bindingHash,
+        );
+        return (
+          bindingHash: bindingHash,
+          requestHash: requestHash,
+          manifest: captureProvenanceManifest(
+            attemptId: attempt.id.toString(),
+            requirementId: venue.id.toString(),
+            requestHash: requestHash,
+            evidenceBindingHash: bindingHash,
+          ),
+        );
+      }
+
+      Future<ActionCaptureChallengeView> open(
+        ActionVerificationService service,
+        ActionAttemptView attempt,
+      ) => service.beginCapture(
+        participant.build(),
+        authUserId: participantId,
+        attemptId: attempt.id,
+        requirementId: venue.id,
+      );
+
       test(
-        'then an attested proof consumes its challenge once',
+        'then a Play-attested proof consumes its window once and records '
+        'what it was bound to',
         () async {
           final attempt = await begin(participant);
           final session = participant.build();
+          final window = await open(attestedService, attempt);
           final capturedAt = DateTime.now().toUtc();
-          // The device binds the live code into the evidence fingerprint, so
-          // the code must exist first.
           final code = await liveCode();
-          final challenge = await attestedService.createCaptureChallenge(
-            session,
-            authUserId: participantId,
-            attemptId: attempt.id,
-            requirementId: venue.id,
-            evidenceBindingHash: qrEvidenceBindingHash(
-              capturedAt: capturedAt,
-              code: code,
-            ),
-          );
-          expect(challenge.integrityRequired, isTrue);
+          final binding = bound(attempt, window, capturedAt, code);
+          expect(window.integrityRequired, isTrue);
           final input = ActionEvidenceInput(
             attemptId: attempt.id,
             requirementId: venue.id,
             capturedAt: capturedAt,
             qrCode: code,
-            captureChallengeId: challenge.id,
-            deviceIntegrityToken: 'trusted-device-token',
+            captureChallengeId: window.id,
+            deviceIntegrityToken: _tokenFor(binding.requestHash),
           );
 
           final result = await attestedService.submitEvidence(
@@ -539,15 +590,21 @@ void main() {
 
           expect(result.status, EvidenceDecisionStatus.accepted);
           expect(result.provenanceLevel, EvidenceProvenanceLevel.appAttested);
-          expect(integrityVerifier.requestHash, challenge.requestHash);
+          expect(integrityVerifier.requestHash, binding.requestHash);
           final stored = await ActionCaptureChallenge.db.findById(
             session,
-            challenge.id,
+            window.id,
           );
           expect(stored!.usedAt, isNotNull);
+          expect(stored.nonce, window.captureChallenge);
+          expect(stored.requestHash, binding.requestHash);
+          expect(stored.evidenceBindingHash, binding.bindingHash);
           expect(stored.provider, integrityVerifier.providerName);
           expect(stored.verdict, 'device_integrity_met');
-          expect(stored.tokenHash, secretSha256Hex('trusted-device-token'));
+          expect(
+            stored.tokenHash,
+            secretSha256Hex(_tokenFor(binding.requestHash)),
+          );
 
           final replay = await attestedService.submitEvidence(
             session,
@@ -560,38 +617,26 @@ void main() {
       );
 
       test(
-        'then a device-signed manifest is verified and kept with the proof',
+        'then a manifest signed by a key attested for the window is '
+        'verified and kept with the proof',
         () async {
-          final signatureVerifier = _TrustedCaptureSignatureVerifier();
-          final signedService = ActionVerificationService(
-            captureIntegrity: CaptureIntegrityEvaluator(
-              captureSignatureRequired: true,
-              captureSignatureVerifier: signatureVerifier,
-            ),
-          );
+          final service = signedService();
           final attempt = await begin(participant);
           final session = participant.build();
+          final window = await open(service, attempt);
+          // The phone generates its capture key as the window opens, with
+          // the window's nonce in the key's attestation.
+          final key = authority.issue(
+            challenge: captureKeyAttestationChallenge(
+              captureChallenge: window.captureChallenge,
+              attemptId: attempt.id.toString(),
+            ),
+          );
           final capturedAt = DateTime.now().toUtc();
           final code = await liveCode();
-          final bindingHash = qrEvidenceBindingHash(
-            capturedAt: capturedAt,
-            code: code,
-          );
-          final challenge = await signedService.createCaptureChallenge(
-            session,
-            authUserId: participantId,
-            attemptId: attempt.id,
-            requirementId: venue.id,
-            evidenceBindingHash: bindingHash,
-          );
-          final manifest = captureProvenanceManifest(
-            attemptId: attempt.id.toString(),
-            requirementId: venue.id.toString(),
-            requestHash: challenge.requestHash,
-            evidenceBindingHash: bindingHash,
-          );
+          final binding = bound(attempt, window, capturedAt, code);
 
-          final result = await signedService.submitEvidence(
+          final result = await service.submitEvidence(
             session,
             authUserId: participantId,
             input: ActionEvidenceInput(
@@ -599,30 +644,175 @@ void main() {
               requirementId: venue.id,
               capturedAt: capturedAt,
               qrCode: code,
-              captureChallengeId: challenge.id,
-              captureManifest: base64Encode(manifest),
-              captureSignature: 'signed-by-device',
-              capturePublicKey: 'public-key',
-              captureKeyId: 'a' * 64,
-              captureKeyStorage: 'strongBox',
+              captureChallengeId: window.id,
+              captureManifest: base64Encode(binding.manifest),
+              captureSignature: key.signP1363(binding.manifest),
+              captureCertificateChain: key.encodedChain,
             ),
           );
 
-          expect(challenge.signatureRequired, isTrue);
+          expect(window.signatureRequired, isTrue);
           expect(result.status, EvidenceDecisionStatus.accepted);
-          expect(result.provenanceLevel, EvidenceProvenanceLevel.deviceSigned);
-          expect(signatureVerifier.manifest, manifest);
+          expect(
+            result.provenanceLevel,
+            EvidenceProvenanceLevel.hardwareAttested,
+          );
           final evidence = await ActionEvidence.db.findFirstRow(
             session,
             where: (table) => table.attemptId.equals(attempt.id),
           );
           expect(
             evidence!.provenanceLevel,
-            EvidenceProvenanceLevel.deviceSigned,
+            EvidenceProvenanceLevel.hardwareAttested,
           );
-          expect(evidence.captureManifest, base64Encode(manifest));
-          expect(evidence.captureSignature, 'signed-by-device');
-          expect(evidence.captureKeyStorage, 'strongBox');
+          expect(evidence.captureManifest, base64Encode(binding.manifest));
+          expect(evidence.capturePublicKey, base64Encode(key.publicKey));
+          expect(evidence.captureKeyId, capturePublicKeyId(key.publicKey));
+          // Read from the attestation, never from the phone's own claim.
+          expect(evidence.captureKeyStorage, 'trustedEnvironment');
+          expect(evidence.captureCertificateChain, key.encodedChain);
+          expect(evidence.captureDeviceKeyId, hasLength(64));
+          final stored = await ActionCaptureChallenge.db.findById(
+            session,
+            window.id,
+          );
+          expect(stored!.provider, CaptureIntegrityProvider.keyAttestation);
+          expect(stored.verdict, KeyAttestationReason.valid);
+        },
+      );
+
+      test(
+        'then a key attested for another window is refused',
+        () async {
+          final service = signedService();
+          final attempt = await begin(participant);
+          final session = participant.build();
+          final earlier = await open(service, attempt);
+          final window = await open(service, attempt);
+          final key = authority.issue(
+            challenge: captureKeyAttestationChallenge(
+              captureChallenge: earlier.captureChallenge,
+              attemptId: attempt.id.toString(),
+            ),
+          );
+          final capturedAt = DateTime.now().toUtc();
+          final code = await liveCode();
+          final binding = bound(attempt, window, capturedAt, code);
+
+          final result = await service.submitEvidence(
+            session,
+            authUserId: participantId,
+            input: ActionEvidenceInput(
+              attemptId: attempt.id,
+              requirementId: venue.id,
+              capturedAt: capturedAt,
+              qrCode: code,
+              captureChallengeId: window.id,
+              captureManifest: base64Encode(binding.manifest),
+              captureSignature: key.signP1363(binding.manifest),
+              captureCertificateChain: key.encodedChain,
+            ),
+          );
+
+          expect(result.status, EvidenceDecisionStatus.rejected);
+          expect(result.reasonCode, 'capture_not_verified');
+          final stored = await ActionCaptureChallenge.db.findById(
+            session,
+            window.id,
+          );
+          expect(stored!.verdict, KeyAttestationReason.challengeMismatch);
+        },
+      );
+
+      test(
+        'then a signature from a key other than the attested one is '
+        'refused',
+        () async {
+          final service = signedService();
+          final attempt = await begin(participant);
+          final session = participant.build();
+          final window = await open(service, attempt);
+          final challenge = captureKeyAttestationChallenge(
+            captureChallenge: window.captureChallenge,
+            attemptId: attempt.id.toString(),
+          );
+          final attested = authority.issue(challenge: challenge);
+          final other = authority.issue(
+            challenge: challenge,
+            keySeed: 'another-key',
+          );
+          final capturedAt = DateTime.now().toUtc();
+          final code = await liveCode();
+          final binding = bound(attempt, window, capturedAt, code);
+
+          final result = await service.submitEvidence(
+            session,
+            authUserId: participantId,
+            input: ActionEvidenceInput(
+              attemptId: attempt.id,
+              requirementId: venue.id,
+              capturedAt: capturedAt,
+              qrCode: code,
+              captureChallengeId: window.id,
+              captureManifest: base64Encode(binding.manifest),
+              captureSignature: other.signP1363(binding.manifest),
+              captureCertificateChain: attested.encodedChain,
+            ),
+          );
+
+          expect(result.status, EvidenceDecisionStatus.rejected);
+          final stored = await ActionCaptureChallenge.db.findById(
+            session,
+            window.id,
+          );
+          expect(stored!.verdict, 'capture_signature_invalid');
+        },
+      );
+
+      test(
+        'then with signatures optional an unattested key is recorded as '
+        'device-signed, without a storage claim',
+        () async {
+          // Production roots only: the test authority is not trusted, as
+          // an emulator's software attestation would not be.
+          final service = signedService(required: false);
+          final attempt = await begin(participant);
+          final session = participant.build();
+          final window = await open(service, attempt);
+          final key = authority.issue(
+            challenge: captureKeyAttestationChallenge(
+              captureChallenge: window.captureChallenge,
+              attemptId: attempt.id.toString(),
+            ),
+          );
+          final capturedAt = DateTime.now().toUtc();
+          final code = await liveCode();
+          final binding = bound(attempt, window, capturedAt, code);
+
+          final result = await service.submitEvidence(
+            session,
+            authUserId: participantId,
+            input: ActionEvidenceInput(
+              attemptId: attempt.id,
+              requirementId: venue.id,
+              capturedAt: capturedAt,
+              qrCode: code,
+              captureChallengeId: window.id,
+              captureManifest: base64Encode(binding.manifest),
+              captureSignature: key.signP1363(binding.manifest),
+              captureCertificateChain: key.encodedChain,
+            ),
+          );
+
+          expect(result.status, EvidenceDecisionStatus.accepted);
+          expect(result.provenanceLevel, EvidenceProvenanceLevel.deviceSigned);
+          final evidence = await ActionEvidence.db.findFirstRow(
+            session,
+            where: (table) => table.attemptId.equals(attempt.id),
+          );
+          expect(evidence!.captureKeyStorage, isNull);
+          expect(evidence.captureDeviceKeyId, isNull);
+          expect(evidence.captureKeyId, capturePublicKeyId(key.publicKey));
         },
       );
 
@@ -631,17 +821,15 @@ void main() {
         () async {
           final attempt = await begin(participant);
           final session = participant.build();
+          final window = await open(attestedService, attempt);
           final capturedAt = DateTime.now().toUtc();
           final code = await liveCode();
-          final challenge = await attestedService.createCaptureChallenge(
-            session,
-            authUserId: participantId,
-            attemptId: attempt.id,
-            requirementId: venue.id,
-            evidenceBindingHash: qrEvidenceBindingHash(
-              capturedAt: capturedAt,
-              code: 'a-different-venue-code',
-            ),
+          // Play vouched for another capture than the one submitted.
+          final elsewhere = bound(
+            attempt,
+            window,
+            capturedAt,
+            'a-different-venue-code',
           );
 
           final result = await attestedService.submitEvidence(
@@ -652,26 +840,98 @@ void main() {
               requirementId: venue.id,
               capturedAt: capturedAt,
               qrCode: code,
-              captureChallengeId: challenge.id,
-              deviceIntegrityToken: 'trusted-device-token',
+              captureChallengeId: window.id,
+              deviceIntegrityToken: _tokenFor(elsewhere.requestHash),
             ),
           );
 
           expect(result.status, EvidenceDecisionStatus.rejected);
           expect(result.reasonCode, 'capture_not_verified');
-          expect(integrityVerifier.requestHash, isNull);
           final stored = await ActionCaptureChallenge.db.findById(
             session,
-            challenge.id,
+            window.id,
           );
           expect(stored!.usedAt, isNotNull);
-          expect(stored.verdict, 'evidence_binding_mismatch');
+          expect(stored.verdict, 'device_integrity_invalid');
           // An untrusted capture never consumes the venue code.
           final qr = await ActionQrChallenge.db.findFirstRow(
             session,
             where: (table) => table.secretHash.equals(secretSha256Hex(code)),
           );
           expect(qr!.usedAt, isNull);
+        },
+      );
+
+      test(
+        'then proof captured before its window opened is rejected',
+        () async {
+          final attempt = await begin(participant);
+          final session = participant.build();
+          final capturedAt = DateTime.now().toUtc().subtract(
+            const Duration(minutes: 10),
+          );
+          final code = await liveCode();
+          final window = await open(attestedService, attempt);
+          final binding = bound(attempt, window, capturedAt, code);
+
+          final result = await attestedService.submitEvidence(
+            session,
+            authUserId: participantId,
+            input: ActionEvidenceInput(
+              attemptId: attempt.id,
+              requirementId: venue.id,
+              capturedAt: capturedAt,
+              qrCode: code,
+              captureChallengeId: window.id,
+              deviceIntegrityToken: _tokenFor(binding.requestHash),
+            ),
+          );
+
+          expect(result.status, EvidenceDecisionStatus.rejected);
+          final stored = await ActionCaptureChallenge.db.findById(
+            session,
+            window.id,
+          );
+          expect(stored!.verdict, 'capture_predates_challenge');
+        },
+      );
+
+      test(
+        'then a device risk Play reports sends the proof to a person',
+        () async {
+          integrityVerifier.reviewReasonCode = deviceCaptureRiskReviewCode;
+          final attempt = await begin(participant);
+          final session = participant.build();
+          final window = await open(attestedService, attempt);
+          final capturedAt = DateTime.now().toUtc();
+          final code = await liveCode();
+          final binding = bound(attempt, window, capturedAt, code);
+
+          final result = await attestedService.submitEvidence(
+            session,
+            authUserId: participantId,
+            input: ActionEvidenceInput(
+              attemptId: attempt.id,
+              requirementId: venue.id,
+              capturedAt: capturedAt,
+              qrCode: code,
+              captureChallengeId: window.id,
+              deviceIntegrityToken: _tokenFor(binding.requestHash),
+            ),
+          );
+
+          expect(result.status, EvidenceDecisionStatus.manualReview);
+          expect(result.reasonCode, 'needs_review');
+          final evidence = await ActionEvidence.db.findFirstRow(
+            session,
+            where: (table) => table.attemptId.equals(attempt.id),
+          );
+          final decision = await EvidenceDecision.db.findFirstRow(
+            session,
+            where: (table) => table.evidenceId.equals(evidence!.id),
+          );
+          expect(decision!.reasonCode, deviceCaptureRiskReviewCode);
+          expect(decision.verifierType, integrityVerifier.providerName);
         },
       );
 
@@ -694,42 +954,38 @@ void main() {
       });
 
       test(
-        'then challenges are rate limited and need a valid fingerprint',
+        'then windows open with a fresh nonce, are rate limited, and belong '
+        'to the participant',
         () async {
           final attempt = await begin(participant);
-          await expectLater(
-            endpoints.actionVerification.createCaptureChallenge(
+          final nonces = <String>{};
+          for (var index = 0; index < maxCaptureChallengesPerHour; index += 1) {
+            final window = await endpoints.actionVerification.beginCapture(
               participant,
               attemptId: attempt.id,
               requirementId: venue.id,
-              evidenceBindingHash: 'not-a-fingerprint',
-            ),
-            throwsArgumentError,
-          );
-          for (var index = 0; index < 10; index += 1) {
-            await endpoints.actionVerification.createCaptureChallenge(
-              participant,
-              attemptId: attempt.id,
-              requirementId: venue.id,
-              evidenceBindingHash: 'a' * 64,
+            );
+            nonces.add(window.captureChallenge);
+            expect(
+              window.expiresAt.difference(window.issuedAt),
+              captureChallengeLifetime,
             );
           }
+          expect(nonces, hasLength(maxCaptureChallengesPerHour));
 
           await expectLater(
-            endpoints.actionVerification.createCaptureChallenge(
+            endpoints.actionVerification.beginCapture(
               participant,
               attemptId: attempt.id,
               requirementId: venue.id,
-              evidenceBindingHash: 'a' * 64,
             ),
             throwsStateError,
           );
           await expectLater(
-            endpoints.actionVerification.createCaptureChallenge(
+            endpoints.actionVerification.beginCapture(
               other,
               attemptId: attempt.id,
               requirementId: venue.id,
-              evidenceBindingHash: 'a' * 64,
             ),
             throwsStateError,
           );
@@ -1076,15 +1332,13 @@ void main() {
         expect(motion.motionType, ActionMotionType.rotation);
         expect(motion.motionAxis, ActionMotionAxis.yaw);
         expect(motion.targetRepetitions, 5);
+        final challenge = await endpoints.actionVerification.beginCapture(
+          participant,
+          attemptId: attempt.id,
+          requirementId: motion.id,
+        );
         final capturedAt = DateTime.now().toUtc();
         final samples = _rotationSamples(turns: 5, axis: ActionMotionAxis.yaw);
-        final challenge = await endpoints.actionVerification
-            .createCaptureChallenge(
-              participant,
-              attemptId: attempt.id,
-              requirementId: motion.id,
-              evidenceBindingHash: _motionBinding(capturedAt, samples),
-            );
 
         final motionResult = await endpoints.actionVerification.submitEvidence(
           participant,
@@ -1139,37 +1393,77 @@ void main() {
     );
 
     test(
-      'when the trace changes after its challenge then it is rejected',
+      'when the trace changes after it was signed then it is rejected',
       () async {
+        final authority = TestAttestationAuthority(name: 'motion');
+        final service = ActionVerificationService(
+          captureIntegrity: CaptureIntegrityEvaluator(
+            captureSignatureRequired: true,
+            keyAttestationVerifier: AndroidKeyAttestationVerifier(
+              policy: KeyAttestationPolicy(
+                signingCertificateDigests: {testSigningCertificateDigest},
+              ),
+              trustAnchors: [authority.root],
+              statusSource: _NothingListed(),
+            ),
+          ),
+        );
         final (action, attempt) = await started('binding-mutation');
         final motion = action.requirements.singleWhere(
           (item) => item.kind == ActionRequirementKind.motion,
         );
+        final session = participant.build();
+        final window = await service.beginCapture(
+          session,
+          authUserId: participantId,
+          attemptId: attempt.id,
+          requirementId: motion.id,
+        );
+        final key = authority.issue(
+          challenge: captureKeyAttestationChallenge(
+            captureChallenge: window.captureChallenge,
+            attemptId: attempt.id.toString(),
+          ),
+        );
         final capturedAt = DateTime.now().toUtc();
         final original = _rotationSamples(turns: 5, axis: ActionMotionAxis.yaw);
-        final challenge = await endpoints.actionVerification
-            .createCaptureChallenge(
-              participant,
-              attemptId: attempt.id,
-              requirementId: motion.id,
-              evidenceBindingHash: _motionBinding(capturedAt, original),
-            );
+        final bindingHash = _motionBinding(capturedAt, original);
+        final manifest = captureProvenanceManifest(
+          attemptId: attempt.id.toString(),
+          requirementId: motion.id.toString(),
+          requestHash: captureIntegrityRequestHash(
+            attemptId: attempt.id.toString(),
+            requirementId: motion.id.toString(),
+            captureChallenge: window.captureChallenge,
+            evidenceBindingHash: bindingHash,
+          ),
+          evidenceBindingHash: bindingHash,
+        );
         final mutated = [...original];
         mutated[10] = mutated[10].copyWith(gyroscopeZ: 0.2);
 
-        final result = await endpoints.actionVerification.submitEvidence(
-          participant,
-          ActionEvidenceInput(
+        final result = await service.submitEvidence(
+          session,
+          authUserId: participantId,
+          input: ActionEvidenceInput(
             attemptId: attempt.id,
             requirementId: motion.id,
             capturedAt: capturedAt,
             motionSamples: mutated,
-            captureChallengeId: challenge.id,
+            captureChallengeId: window.id,
+            captureManifest: base64Encode(manifest),
+            captureSignature: key.signP1363(manifest),
+            captureCertificateChain: key.encodedChain,
           ),
         );
 
         expect(result.status, EvidenceDecisionStatus.rejected);
         expect(result.reasonCode, 'capture_not_verified');
+        final stored = await ActionCaptureChallenge.db.findById(
+          session,
+          window.id,
+        );
+        expect(stored!.verdict, 'capture_manifest_mismatch');
       },
     );
 
@@ -1412,8 +1706,13 @@ String _motionBinding(DateTime capturedAt, List<ActionMotionSample> samples) {
   );
 }
 
+/// The token Play would issue for [requestHash]; the fake verifier trusts a
+/// token only for the request it was issued for, as Google's does.
+String _tokenFor(String requestHash) => 'play-token-for:$requestHash';
+
 class _TrustedDeviceIntegrityVerifier implements DeviceIntegrityVerifier {
   String? requestHash;
+  String? reviewReasonCode;
 
   @override
   String get providerName => 'test-device-integrity';
@@ -1424,30 +1723,27 @@ class _TrustedDeviceIntegrityVerifier implements DeviceIntegrityVerifier {
     required String token,
     required String requestHash,
     required DateTime now,
+    required bool requireStrongIntegrity,
   }) async {
+    if (token != _tokenFor(requestHash)) {
+      return const DeviceIntegrityVerdict(
+        trusted: false,
+        reasonCode: 'device_integrity_invalid',
+        provider: 'test-device-integrity',
+      );
+    }
     this.requestHash = requestHash;
-    return const DeviceIntegrityVerdict(
+    return DeviceIntegrityVerdict(
       trusted: true,
       reasonCode: 'device_integrity_met',
       provider: 'test-device-integrity',
+      reviewReasonCode: reviewReasonCode,
     );
   }
 }
 
-class _TrustedCaptureSignatureVerifier implements CaptureSignatureVerifier {
-  List<int>? manifest;
-
+class _NothingListed implements AttestationStatusSource {
   @override
-  CaptureSignatureVerdict verify({
-    required List<int> manifest,
-    required String encodedSignature,
-    required String encodedPublicKey,
-    required String keyId,
-  }) {
-    this.manifest = manifest;
-    return const CaptureSignatureVerdict(
-      trusted: true,
-      reasonCode: 'capture_signature_valid',
-    );
-  }
+  Future<AttestationStatusList> statusAt(DateTime now) async =>
+      AttestationStatusList(const []);
 }

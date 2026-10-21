@@ -3832,6 +3832,24 @@ abstract class AppLocalizations {
   /// **'Each recording needs a fresh word from Verily so it is clearly live. Check your connection and try again.'**
   String get captureChallengeFailedBody;
 
+  /// Shown while Verily opens a fresh capture before the camera, microphone, or sensors start.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting ready to capture…'**
+  String get captureWindowLoading;
+
+  /// Title when Verily could not open a fresh capture; nothing can be captured without it.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t start the capture'**
+  String get captureWindowFailedTitle;
+
+  /// Explains why capture waits until Verily has started it.
+  ///
+  /// In en, this message translates to:
+  /// **'Verily starts a fresh, live capture for each proof. Check your connection and try again.'**
+  String get captureWindowFailedBody;
+
   /// Button that starts a video or audio recording.
   ///
   /// In en, this message translates to:

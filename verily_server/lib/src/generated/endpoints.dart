@@ -490,8 +490,8 @@ class Endpoints extends _is.EndpointDispatch {
                         requirementId: params['requirementId'],
                       ),
         ),
-        'createCaptureChallenge': _is.MethodConnector(
-          name: 'createCaptureChallenge',
+        'beginCapture': _is.MethodConnector(
+          name: 'beginCapture',
           params: {
             'attemptId': _is.ParameterDescription(
               name: 'attemptId',
@@ -503,11 +503,6 @@ class Endpoints extends _is.EndpointDispatch {
               type: _is.getType<_is.UuidValue>(),
               nullable: false,
             ),
-            'evidenceBindingHash': _is.ParameterDescription(
-              name: 'evidenceBindingHash',
-              type: _is.getType<String>(),
-              nullable: false,
-            ),
           },
           call:
               (
@@ -516,11 +511,10 @@ class Endpoints extends _is.EndpointDispatch {
               ) async =>
                   (endpoints['actionVerification']
                           as _il8ja9q3.ActionVerificationEndpoint)
-                      .createCaptureChallenge(
+                      .beginCapture(
                         session,
                         attemptId: params['attemptId'],
                         requirementId: params['requirementId'],
-                        evidenceBindingHash: params['evidenceBindingHash'],
                       ),
         ),
         'submitEvidence': _is.MethodConnector(

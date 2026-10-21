@@ -1,12 +1,30 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:serverpod/serverpod.dart';
 import 'package:verily_evidence/verily_evidence.dart';
 import 'package:verily_server/src/action_verification/capture_signature_verifier.dart';
 import 'package:verily_server/src/action_verification/device_integrity_verifier.dart';
+import 'package:verily_server/src/action_verification/key_attestation/android_key_attestation_verifier.dart';
+import 'package:verily_server/src/action_verification/key_attestation/key_description.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 import 'package:verily_server/src/security/secret_digest.dart';
+
+/// Clock skew tolerated between the device and the server.
+const captureClockTolerance = Duration(minutes: 2);
+
+/// Integrity providers recorded on capture challenges and decisions.
+abstract final class CaptureIntegrityProvider {
+  /// A key Google's attestation chain vouches for signed the capture.
+  static const keyAttestation = 'android-key-attestation';
+
+  /// A device key signed the capture, but its attestation was not trusted.
+  static const unattestedSignature = 'android-keystore';
+
+  /// Only the capture challenge bound the proof.
+  static const challengeOnly = 'capture-challenge';
+}
 
 /// Device-side provenance material submitted with one proof.
 final class CaptureIntegrityMaterial {
@@ -15,25 +33,23 @@ final class CaptureIntegrityMaterial {
     this.deviceIntegrityToken,
     this.captureManifest,
     this.captureSignature,
-    this.capturePublicKey,
-    this.captureKeyId,
-    this.captureKeyStorage,
+    this.captureCertificateChain,
   });
 
   final UuidValue? captureChallengeId;
   final String? deviceIntegrityToken;
   final String? captureManifest;
   final String? captureSignature;
-  final String? capturePublicKey;
-  final String? captureKeyId;
-  final String? captureKeyStorage;
 
-  bool get hasSignatureMaterial => [
-    captureManifest,
-    captureSignature,
-    capturePublicKey,
-    captureKeyId,
-  ].any((value) => value?.trim().isNotEmpty ?? false);
+  /// Base64 DER certificates, leaf first.
+  final List<String>? captureCertificateChain;
+
+  bool get hasSignatureMaterial =>
+      [
+        captureManifest,
+        captureSignature,
+      ].any((value) => value?.trim().isNotEmpty ?? false) ||
+      (captureCertificateChain?.isNotEmpty ?? false);
 }
 
 /// The outcome of checking capture provenance for one proof.
@@ -43,44 +59,68 @@ final class CaptureIntegrityResult {
     required this.reasonCode,
     required this.provider,
     this.challengeId,
+    this.requestHash,
+    this.evidenceBindingHash,
     this.tokenHash,
     this.provenanceLevel = EvidenceProvenanceLevel.basic,
+    this.reviewReasonCode,
     this.captureManifest,
     this.captureSignature,
     this.capturePublicKey,
     this.captureKeyId,
     this.captureKeyStorage,
+    this.captureCertificateChain,
+    this.captureDeviceKeyId,
   });
 
   final bool trusted;
   final String reasonCode;
   final String provider;
   final UuidValue? challengeId;
+
+  /// The Play Integrity request hash and evidence fingerprint this proof
+  /// was bound to, recorded on the challenge when it is consumed.
+  final String? requestHash;
+  final String? evidenceBindingHash;
   final String? tokenHash;
   final EvidenceProvenanceLevel provenanceLevel;
+
+  /// Set when a trusted capture carries a device risk a person should weigh
+  /// before the proof is decided.
+  final String? reviewReasonCode;
   final String? captureManifest;
   final String? captureSignature;
   final String? capturePublicKey;
   final String? captureKeyId;
   final String? captureKeyStorage;
+  final List<String>? captureCertificateChain;
+  final String? captureDeviceKeyId;
 }
 
-/// Checks that a proof is bound to one fresh server challenge, and verifies
-/// the Play Integrity verdict and the hardware-backed capture signature that
-/// commit to the exact evidence fingerprint the server recomputed.
+/// Checks that a proof was captured inside one capture window the server
+/// opened before recording, and verifies the Play Integrity verdict and the
+/// attested capture-key signature that commit to the exact evidence
+/// fingerprint the server recomputed.
 class CaptureIntegrityEvaluator {
   CaptureIntegrityEvaluator({
     DeviceIntegrityVerifier? deviceIntegrityVerifier,
     bool? deviceIntegrityRequired,
-    CaptureSignatureVerifier? captureSignatureVerifier,
+    KeyAttestationVerifier? keyAttestationVerifier,
     bool? captureSignatureRequired,
     DateTime Function()? clock,
   }) : deviceIntegrityVerifier =
-           deviceIntegrityVerifier ?? const GooglePlayIntegrityVerifier(),
+           deviceIntegrityVerifier ??
+           GooglePlayIntegrityVerifier(
+             signingCertificateDigests: KeyAttestationPolicy.fromEnvironment()
+                 .signingCertificateDigests,
+           ),
        deviceIntegrityRequired =
            deviceIntegrityRequired ?? deviceIntegrityRequiredFromEnvironment(),
-       captureSignatureVerifier =
-           captureSignatureVerifier ?? const P256CaptureSignatureVerifier(),
+       keyAttestationVerifier =
+           keyAttestationVerifier ??
+           AndroidKeyAttestationVerifier(
+             policy: KeyAttestationPolicy.fromEnvironment(),
+           ),
        captureSignatureRequired =
            captureSignatureRequired ??
            captureSignatureRequiredFromEnvironment(),
@@ -88,14 +128,21 @@ class CaptureIntegrityEvaluator {
 
   final DeviceIntegrityVerifier deviceIntegrityVerifier;
   final bool deviceIntegrityRequired;
-  final CaptureSignatureVerifier captureSignatureVerifier;
+  final KeyAttestationVerifier keyAttestationVerifier;
+
+  /// When true, every proof needs a manifest signed by a key whose
+  /// attestation verifies. When false, an unattested signature is recorded
+  /// as `deviceSigned`, so emulators and debug builds still work.
   final bool captureSignatureRequired;
   final DateTime Function() clock;
 
   /// Returns null when no provenance is required and none was sent.
   ///
   /// [evidenceBindingHash] is the fingerprint the server computed from the
-  /// evidence it accepted, never one the client claims.
+  /// evidence it accepted, never one the client claims. [capturedAt] must
+  /// not precede the capture window. [requireStrongIntegrity] raises the
+  /// Play Integrity bar for proof whose reward is above the review
+  /// threshold.
   Future<CaptureIntegrityResult?> evaluate(
     Session session, {
     required UuidValue authUserId,
@@ -103,6 +150,8 @@ class CaptureIntegrityEvaluator {
     required UuidValue requirementId,
     required CaptureIntegrityMaterial material,
     required String Function() evidenceBindingHash,
+    required DateTime capturedAt,
+    bool requireStrongIntegrity = false,
   }) async {
     final challengeId = material.captureChallengeId;
     final token = material.deviceIntegrityToken?.trim();
@@ -121,12 +170,24 @@ class CaptureIntegrityEvaluator {
             : 'capture_signature_required',
         provider: deviceIntegrityRequired
             ? deviceIntegrityVerifier.providerName
-            : 'android-keystore',
+            : CaptureIntegrityProvider.keyAttestation,
       );
     }
     if (token != null && token.length > 32768) {
       throw ArgumentError('Device integrity proof is too large.');
     }
+    final manifest = material.captureManifest?.trim();
+    final signature = material.captureSignature?.trim();
+    final chain = material.captureCertificateChain;
+    if (manifest != null && manifest.length > 4096) {
+      throw ArgumentError('Capture manifest is too large.');
+    }
+    if (chain != null &&
+        (chain.length > _maxChainCertificates ||
+            chain.any((entry) => entry.length > _maxEncodedCertificate))) {
+      throw ArgumentError('Capture attestation is too large.');
+    }
+
     final now = clock().toUtc();
     final challenge = await ActionCaptureChallenge.db.findFirstRow(
       session,
@@ -148,138 +209,242 @@ class CaptureIntegrityEvaluator {
     final tokenHash = token == null || token.isEmpty
         ? null
         : secretSha256Hex(token);
-    final submittedBindingHash = evidenceBindingHash();
-    if (!constantTimeEquals(
-      challenge.evidenceBindingHash,
-      submittedBindingHash,
+    if (capturedAt.toUtc().isBefore(
+      challenge.createdAt.subtract(captureClockTolerance),
     )) {
       return CaptureIntegrityResult(
         trusted: false,
-        reasonCode: 'evidence_binding_mismatch',
-        provider: deviceIntegrityVerifier.providerName,
+        reasonCode: 'capture_predates_challenge',
+        provider: CaptureIntegrityProvider.challengeOnly,
         challengeId: challenge.id,
         tokenHash: tokenHash,
       );
     }
+    final bindingHash = evidenceBindingHash();
+    final requestHash = captureIntegrityRequestHash(
+      attemptId: attemptId.toString(),
+      requirementId: requirementId.toString(),
+      captureChallenge: challenge.nonce,
+      evidenceBindingHash: bindingHash,
+    );
+    CaptureIntegrityResult failure(String reasonCode, String provider) =>
+        CaptureIntegrityResult(
+          trusted: false,
+          reasonCode: reasonCode,
+          provider: provider,
+          challengeId: challenge.id,
+          requestHash: requestHash,
+          evidenceBindingHash: bindingHash,
+          tokenHash: tokenHash,
+        );
 
     DeviceIntegrityVerdict? integrityVerdict;
     if (token == null || token.isEmpty) {
       if (deviceIntegrityRequired) {
-        return CaptureIntegrityResult(
-          trusted: false,
-          reasonCode: 'device_integrity_required',
-          provider: deviceIntegrityVerifier.providerName,
-          challengeId: challenge.id,
+        return failure(
+          'device_integrity_required',
+          deviceIntegrityVerifier.providerName,
         );
       }
     } else {
       integrityVerdict = await deviceIntegrityVerifier.verify(
         session,
         token: token,
-        requestHash: challenge.requestHash,
+        requestHash: requestHash,
         now: now,
+        requireStrongIntegrity: requireStrongIntegrity,
       );
       if (!integrityVerdict.trusted) {
-        return CaptureIntegrityResult(
-          trusted: false,
-          reasonCode: integrityVerdict.reasonCode,
-          provider: integrityVerdict.provider,
-          challengeId: challenge.id,
-          tokenHash: tokenHash,
-        );
+        return failure(integrityVerdict.reasonCode, integrityVerdict.provider);
       }
     }
 
-    final manifest = material.captureManifest?.trim();
-    final signature = material.captureSignature?.trim();
-    final publicKey = material.capturePublicKey?.trim();
-    final keyId = material.captureKeyId?.trim().toLowerCase();
-    final keyStorage = material.captureKeyStorage?.trim();
-    if (manifest != null && manifest.length > 4096) {
-      throw ArgumentError('Capture manifest is too large.');
-    }
-    CaptureIntegrityResult keystoreFailure(String reasonCode) =>
-        CaptureIntegrityResult(
-          trusted: false,
-          reasonCode: reasonCode,
-          provider: 'android-keystore',
-          challengeId: challenge.id,
-          tokenHash: tokenHash,
-        );
-    if (keyStorage != null &&
-        !const {
-          'strongBox',
-          'trustedEnvironment',
-          'software',
-          'unknown',
-        }.contains(keyStorage)) {
-      return keystoreFailure('capture_key_storage_invalid');
-    }
-    final hasCompleteSignature = [
-      manifest,
-      signature,
-      publicKey,
-      keyId,
-    ].every((value) => value != null && value.isNotEmpty);
+    final hasCompleteSignature =
+        (manifest?.isNotEmpty ?? false) &&
+        (signature?.isNotEmpty ?? false) &&
+        (chain?.isNotEmpty ?? false);
     if (hasSignatureMaterial && !hasCompleteSignature) {
-      return keystoreFailure('capture_signature_incomplete');
+      return failure(
+        'capture_signature_incomplete',
+        CaptureIntegrityProvider.keyAttestation,
+      );
     }
     if (!hasCompleteSignature && captureSignatureRequired) {
-      return keystoreFailure('capture_signature_required');
+      return failure(
+        'capture_signature_required',
+        CaptureIntegrityProvider.keyAttestation,
+      );
     }
 
-    var signatureTrusted = false;
+    _SignedCapture? signed;
     if (hasCompleteSignature) {
-      final expectedManifest = captureProvenanceManifest(
-        attemptId: attemptId.toString(),
-        requirementId: requirementId.toString(),
-        requestHash: challenge.requestHash,
-        evidenceBindingHash: submittedBindingHash,
+      final outcome = await _verifySignedCapture(
+        session,
+        attemptId: attemptId,
+        requirementId: requirementId,
+        nonce: challenge.nonce,
+        requestHash: requestHash,
+        bindingHash: bindingHash,
+        manifest: manifest!,
+        signature: signature!,
+        chain: chain!,
+        now: now,
       );
-      if (!constantTimeEquals(base64Encode(expectedManifest), manifest!)) {
-        return keystoreFailure('capture_manifest_mismatch');
+      switch (outcome) {
+        case _SignatureRefused(:final reasonCode):
+          return failure(reasonCode, CaptureIntegrityProvider.keyAttestation);
+        case final _SignedCapture capture:
+          signed = capture;
       }
-      final signatureVerdict = captureSignatureVerifier.verify(
-        manifest: expectedManifest,
-        encodedSignature: signature!,
-        encodedPublicKey: publicKey!,
-        keyId: keyId!,
-      );
-      if (!signatureVerdict.trusted) {
-        return keystoreFailure(signatureVerdict.reasonCode);
-      }
-      signatureTrusted = true;
     }
 
     final integrityTrusted = integrityVerdict?.trusted ?? false;
-    final provenanceLevel = signatureTrusted
+    final attested = signed?.attestation.trusted ?? false;
+    final provenanceLevel = attested
+        ? EvidenceProvenanceLevel.hardwareAttested
+        : signed != null
         ? EvidenceProvenanceLevel.deviceSigned
         : integrityTrusted
         ? EvidenceProvenanceLevel.appAttested
         : EvidenceProvenanceLevel.basic;
-    final provider = switch ((integrityTrusted, signatureTrusted)) {
-      (true, true) => '${integrityVerdict!.provider}+android-keystore',
-      (true, false) => integrityVerdict!.provider,
-      (false, true) => 'android-keystore',
-      (false, false) => 'capture-challenge',
-    };
+    final providers = [
+      if (integrityTrusted) integrityVerdict!.provider,
+      if (attested)
+        CaptureIntegrityProvider.keyAttestation
+      else if (signed != null)
+        CaptureIntegrityProvider.unattestedSignature,
+    ];
     final reasonCode = switch (provenanceLevel) {
+      EvidenceProvenanceLevel.hardwareAttested => KeyAttestationReason.valid,
       EvidenceProvenanceLevel.deviceSigned => 'capture_signature_valid',
       EvidenceProvenanceLevel.appAttested => integrityVerdict!.reasonCode,
       EvidenceProvenanceLevel.basic => 'capture_challenge_bound',
     };
+    final publicKey = signed?.attestation.publicKey;
     return CaptureIntegrityResult(
       trusted: true,
       reasonCode: reasonCode,
-      provider: provider,
+      provider: providers.isEmpty
+          ? CaptureIntegrityProvider.challengeOnly
+          : providers.join('+'),
       challengeId: challenge.id,
+      requestHash: requestHash,
+      evidenceBindingHash: bindingHash,
       tokenHash: tokenHash,
       provenanceLevel: provenanceLevel,
-      captureManifest: manifest,
-      captureSignature: signature,
-      capturePublicKey: publicKey,
-      captureKeyId: keyId,
-      captureKeyStorage: signatureTrusted ? keyStorage : null,
+      reviewReasonCode: integrityVerdict?.reviewReasonCode,
+      captureManifest: signed == null ? null : manifest,
+      captureSignature: signed == null ? null : signature,
+      capturePublicKey: publicKey == null ? null : base64Encode(publicKey),
+      captureKeyId: publicKey == null ? null : capturePublicKeyId(publicKey),
+      captureKeyStorage: switch (signed?.attestation.securityLevel) {
+        KeySecurityLevel.strongBox => 'strongBox',
+        KeySecurityLevel.trustedEnvironment => 'trustedEnvironment',
+        KeySecurityLevel.software || null => null,
+      },
+      captureCertificateChain: signed == null ? null : chain,
+      captureDeviceKeyId: signed?.attestation.deviceKeyId,
+    );
+  }
+
+  /// Checks the manifest, the attestation of the key that signed it, and
+  /// the signature itself.
+  Future<_SignatureOutcome> _verifySignedCapture(
+    Session session, {
+    required UuidValue attemptId,
+    required UuidValue requirementId,
+    required String nonce,
+    required String requestHash,
+    required String bindingHash,
+    required String manifest,
+    required String signature,
+    required List<String> chain,
+    required DateTime now,
+  }) async {
+    final expectedManifest = captureProvenanceManifest(
+      attemptId: attemptId.toString(),
+      requirementId: requirementId.toString(),
+      requestHash: requestHash,
+      evidenceBindingHash: bindingHash,
+    );
+    if (!constantTimeEquals(base64Encode(expectedManifest), manifest)) {
+      return const _SignatureRefused('capture_manifest_mismatch');
+    }
+    final List<Uint8List> certificates;
+    try {
+      certificates = [for (final entry in chain) base64Decode(entry.trim())];
+    } on FormatException {
+      return const _SignatureRefused(KeyAttestationReason.chainInvalid);
+    }
+    final attestation = await keyAttestationVerifier.verify(
+      chain: certificates,
+      challenge: captureKeyAttestationChallenge(
+        captureChallenge: nonce,
+        attemptId: attemptId.toString(),
+      ),
+      now: now,
+    );
+    final publicKey = attestation.publicKey;
+    if (publicKey == null) {
+      // Without a P-256 leaf there is nothing to check the signature with.
+      return _SignatureRefused(
+        attestation.reasonCode == KeyAttestationReason.chainInvalid
+            ? KeyAttestationReason.chainInvalid
+            : KeyAttestationReason.keyInvalid,
+      );
+    }
+    if (!verifyCaptureSignature(
+      manifest: expectedManifest,
+      encodedSignature: signature,
+      publicKey: publicKey,
+    )) {
+      return const _SignatureRefused('capture_signature_invalid');
+    }
+    if (!attestation.trusted) {
+      if (captureSignatureRequired) {
+        return _SignatureRefused(attestation.reasonCode);
+      }
+      session.log(
+        'Capture key attestation was not trusted '
+        '(${attestation.reasonCode}); recorded as an unattested signature.',
+        level: LogLevel.info,
+      );
+    }
+    return _SignedCapture(attestation);
+  }
+}
+
+sealed class _SignatureOutcome {
+  const _SignatureOutcome();
+}
+
+final class _SignatureRefused extends _SignatureOutcome {
+  const _SignatureRefused(this.reasonCode);
+
+  final String reasonCode;
+}
+
+final class _SignedCapture extends _SignatureOutcome {
+  const _SignedCapture(this.attestation);
+
+  final KeyAttestationVerdict attestation;
+}
+
+// A chain is a handful of certificates of one to two kilobytes each.
+const _maxChainCertificates = 10;
+const _maxEncodedCertificate = 22000;
+
+/// Rejects capture configuration that is malformed or would refuse every
+/// proof: both modes must parse, the signing-certificate digests must be
+/// SHA-256 hex, and required signatures need at least one digest.
+void validateCaptureIntegrityConfiguration(Map<String, String> environment) {
+  deviceIntegrityRequiredFromEnvironment(environment);
+  final policy = KeyAttestationPolicy.fromEnvironment(environment);
+  if (captureSignatureRequiredFromEnvironment(environment) &&
+      policy.signingCertificateDigests.isEmpty) {
+    throw StateError(
+      'VERILY_CAPTURE_SIGNATURE_MODE=required needs '
+      'VERILY_ANDROID_SIGNING_CERT_SHA256.',
     );
   }
 }
@@ -297,6 +462,10 @@ bool deviceIntegrityRequiredFromEnvironment([Map<String, String>? values]) {
 }
 
 /// `VERILY_CAPTURE_SIGNATURE_MODE`: `optional` (default) or `required`.
+///
+/// `required` means every proof carries a manifest signed by a fresh key
+/// whose Android Key Attestation verifies under
+/// `VERILY_ANDROID_SIGNING_CERT_SHA256`.
 bool captureSignatureRequiredFromEnvironment([Map<String, String>? values]) {
   return switch ((values ??
       Platform.environment)['VERILY_CAPTURE_SIGNATURE_MODE']) {
