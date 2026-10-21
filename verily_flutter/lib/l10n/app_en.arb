@@ -1,0 +1,315 @@
+{
+  "@@locale": "en",
+  "appTitle": "Verily",
+  "@appTitle": {
+    "description": "The app's name, shown in the task switcher and page headers."
+  },
+  "appTagline": "Do it, prove it, get paid.",
+  "@appTagline": {
+    "description": "The one-line promise of the product."
+  },
+  "placeholderTitle": "Do it. Prove it. Get paid.",
+  "@placeholderTitle": {
+    "description": "Headline of the welcome card shown before actions are available."
+  },
+  "placeholderBody": "Real actions in real places, proof captured live on your phone, and rewards locked away before anyone starts. The first actions are on their way.",
+  "@placeholderBody": {
+    "description": "Supporting copy of the welcome card shown before actions are available."
+  },
+  "dialogCancel": "Cancel",
+  "@dialogCancel": {
+    "description": "Dismisses a dialog without making a change."
+  },
+  "dialogDone": "Done",
+  "@dialogDone": {
+    "description": "Closes a dialog or sheet after the person has finished."
+  },
+  "dialogRetry": "Try again",
+  "@dialogRetry": {
+    "description": "Repeats a request that did not work."
+  },
+  "dialogClose": "Close",
+  "@dialogClose": {
+    "description": "Closes a sheet, dialog, or page."
+  },
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Title of the settings page or sheet."
+  },
+  "settingsOpenTooltip": "Open settings",
+  "@settingsOpenTooltip": {
+    "description": "Tooltip and accessible label of the settings button."
+  },
+  "appearanceTitle": "Appearance",
+  "@appearanceTitle": {
+    "description": "Heading of the light and dark mode setting."
+  },
+  "appearanceSubtitle": "Paper by day, night after dark, or one of them all the time.",
+  "@appearanceSubtitle": {
+    "description": "Explains the appearance setting. Paper is the light theme and night the dark theme."
+  },
+  "appearanceSystem": "Match device",
+  "@appearanceSystem": {
+    "description": "Appearance choice that follows the device's light or dark setting."
+  },
+  "appearanceSystemSubtitle": "Follows your phone or browser automatically.",
+  "@appearanceSystemSubtitle": {
+    "description": "Describes the selected Match device appearance."
+  },
+  "appearanceLight": "Light",
+  "@appearanceLight": {
+    "description": "Appearance choice that always uses the light paper theme."
+  },
+  "appearanceLightSubtitle": "Always warm paper and plum ink.",
+  "@appearanceLightSubtitle": {
+    "description": "Describes the selected light appearance."
+  },
+  "appearanceDark": "Dark",
+  "@appearanceDark": {
+    "description": "Appearance choice that always uses the dark night theme."
+  },
+  "appearanceDarkSubtitle": "Always deep night with paper ink.",
+  "@appearanceDarkSubtitle": {
+    "description": "Describes the selected dark appearance."
+  },
+  "developerMenuTitle": "Development menu",
+  "@developerMenuTitle": {
+    "description": "Heading of the debug-only development menu."
+  },
+  "developerCloseMenu": "Close development menu",
+  "@developerCloseMenu": {
+    "description": "Accessible label of the button that closes the development menu."
+  },
+  "developerClose": "Close",
+  "@developerClose": {
+    "description": "Closes a debug-only developer surface."
+  },
+  "developerIconTooltip": "Open developer tools",
+  "@developerIconTooltip": {
+    "description": "Accessible label of the floating debug-only launcher."
+  },
+  "developerIconShow": "Show developer icon",
+  "@developerIconShow": {
+    "description": "Development menu entry that reveals the floating launcher."
+  },
+  "developerIconShowSubtitle": "Reveal the draggable launcher without reopening this menu.",
+  "@developerIconShowSubtitle": {
+    "description": "Explains the Show developer icon entry."
+  },
+  "developerRemoveIcon": "Remove icon",
+  "@developerRemoveIcon": {
+    "description": "Drop target that hides the floating developer launcher."
+  },
+  "developerOrientationTitle": "Orientation",
+  "@developerOrientationTitle": {
+    "description": "Label of the screen orientation detail in the development menu."
+  },
+  "developerPortraitOnly": "Portrait only",
+  "@developerPortraitOnly": {
+    "description": "The app's locked screen orientation."
+  },
+  "developerServerTitle": "Server",
+  "@developerServerTitle": {
+    "description": "Label of the server address detail in the development menu."
+  },
+  "developerServerNotConfigured": "Not connected in this build",
+  "@developerServerNotConfigured": {
+    "description": "Shown in the development menu when the build has no server."
+  },
+  "developerSkribblePreview": "Skribble component preview",
+  "@developerSkribblePreview": {
+    "description": "Development menu entry and title of the component gallery."
+  },
+  "developerSkribblePreviewSubtitle": "Hand-drawn components in the active Verily theme. Developer preview only.",
+  "@developerSkribblePreviewSubtitle": {
+    "description": "Explains the component gallery."
+  },
+  "developerHotReload": "Hot reload",
+  "@developerHotReload": {
+    "description": "Development menu entry that reassembles the widget tree."
+  },
+  "developerHotReloadSubtitle": "Reassemble the widget tree without clearing state. New code needs a reload from the terminal.",
+  "@developerHotReloadSubtitle": {
+    "description": "Explains what the in-app hot reload entry does and does not do."
+  },
+  "developerFullReload": "Full reload",
+  "@developerFullReload": {
+    "description": "Development menu entry that rebuilds the app shell."
+  },
+  "developerFullReloadSubtitle": "Rebuild the app shell and return to the start screen.",
+  "@developerFullReloadSubtitle": {
+    "description": "Explains the Full reload entry."
+  },
+  "developerFullRestart": "Full restart",
+  "@developerFullRestart": {
+    "description": "Development menu entry that recreates the app from scratch."
+  },
+  "developerFullRestartSubtitle": "Recreate the provider scope and app from scratch.",
+  "@developerFullRestartSubtitle": {
+    "description": "Explains the Full restart entry."
+  },
+  "developerDebugShortcutsTitle": "Debug shortcuts",
+  "@developerDebugShortcutsTitle": {
+    "description": "Label of the keyboard and gesture shortcut detail in the development menu."
+  },
+  "developerDebugShortcutsValue": "Shake the phone or press ⇧⌘D / Ctrl+Shift+D to open this menu. ⌘D / Ctrl+D reassembles the widget tree. Drag the launcher onto Remove icon to hide it.",
+  "@developerDebugShortcutsValue": {
+    "description": "Lists the debug-only shortcuts."
+  },
+  "developerReassembled": "{source, select, menu{Widget tree reassembled from the development menu.} other{Widget tree reassembled from the keyboard shortcut.}}",
+  "@developerReassembled": {
+    "description": "Confirms a debug reassemble and where it was requested.",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "skribblePreviewColorsHeading": "Colours",
+  "@skribblePreviewColorsHeading": {
+    "description": "Component gallery section showing the colour tones."
+  },
+  "skribblePreviewToneNeutral": "Highlight",
+  "@skribblePreviewToneNeutral": {
+    "description": "Name of the neutral highlight wash used for selections and quiet invitations."
+  },
+  "skribblePreviewToneStamp": "Verified",
+  "@skribblePreviewToneStamp": {
+    "description": "Sample of the vermilion stamp, which marks verified proof only."
+  },
+  "skribblePreviewTonePlace": "Place",
+  "@skribblePreviewTonePlace": {
+    "description": "Name of the place colour tone."
+  },
+  "skribblePreviewToneReward": "Reward",
+  "@skribblePreviewToneReward": {
+    "description": "Name of the reward colour tone."
+  },
+  "skribblePreviewToneReview": "Review",
+  "@skribblePreviewToneReview": {
+    "description": "Name of the review colour tone."
+  },
+  "skribblePreviewTypeHeading": "Type",
+  "@skribblePreviewTypeHeading": {
+    "description": "Component gallery section showing the type scale."
+  },
+  "skribblePreviewTypeDisplay": "Display",
+  "@skribblePreviewTypeDisplay": {
+    "description": "Name of the largest type role."
+  },
+  "skribblePreviewTypeHeadline": "Heading",
+  "@skribblePreviewTypeHeadline": {
+    "description": "Name of the heading type role."
+  },
+  "skribblePreviewTypeTitle": "Title",
+  "@skribblePreviewTypeTitle": {
+    "description": "Name of the title type role."
+  },
+  "skribblePreviewTypeBody": "Body",
+  "@skribblePreviewTypeBody": {
+    "description": "Name of the body type role."
+  },
+  "skribblePreviewTypeLabel": "Label",
+  "@skribblePreviewTypeLabel": {
+    "description": "Name of the label type role."
+  },
+  "skribblePreviewTypeCaption": "Caption",
+  "@skribblePreviewTypeCaption": {
+    "description": "Name of the smallest type role."
+  },
+  "skribblePreviewTypeRole": "{role} · {size}/{lineHeight}",
+  "@skribblePreviewTypeRole": {
+    "description": "Names a type role with its font size and line height in logical pixels, such as 'Body · 16/23'.",
+    "placeholders": {
+      "role": {
+        "type": "String"
+      },
+      "size": {
+        "type": "int"
+      },
+      "lineHeight": {
+        "type": "int"
+      }
+    }
+  },
+  "skribblePreviewActionsHeading": "Actions",
+  "@skribblePreviewActionsHeading": {
+    "description": "Component gallery section showing buttons."
+  },
+  "skribblePreviewPrimaryAction": "Publish action",
+  "@skribblePreviewPrimaryAction": {
+    "description": "Sample primary button label in the component gallery."
+  },
+  "skribblePreviewSecondaryAction": "Maybe later",
+  "@skribblePreviewSecondaryAction": {
+    "description": "Sample secondary button label in the component gallery."
+  },
+  "skribblePreviewDestructiveAction": "Discard draft",
+  "@skribblePreviewDestructiveAction": {
+    "description": "Sample destructive button label in the component gallery."
+  },
+  "skribblePreviewPostcardTitle": "Ten squats at the park",
+  "@skribblePreviewPostcardTitle": {
+    "description": "Sample postcard headline in the component gallery."
+  },
+  "skribblePreviewPostcardBody": "Proof is captured live, then checked against the place.",
+  "@skribblePreviewPostcardBody": {
+    "description": "Sample postcard supporting line in the component gallery."
+  },
+  "skribblePreviewStatesHeading": "States",
+  "@skribblePreviewStatesHeading": {
+    "description": "Component gallery section showing empty, problem, and loading states."
+  },
+  "skribblePreviewEmptyTitle": "No actions nearby yet",
+  "@skribblePreviewEmptyTitle": {
+    "description": "Sample empty-state title in the component gallery."
+  },
+  "skribblePreviewEmptyBody": "Widen the map or post the first one here.",
+  "@skribblePreviewEmptyBody": {
+    "description": "Sample empty-state message in the component gallery."
+  },
+  "skribblePreviewEmptyAction": "Post an action",
+  "@skribblePreviewEmptyAction": {
+    "description": "Sample empty-state action in the component gallery."
+  },
+  "skribblePreviewProblemTitle": "We couldn’t load your proof",
+  "@skribblePreviewProblemTitle": {
+    "description": "Sample problem-state title in the component gallery."
+  },
+  "skribblePreviewProblemBody": "The connection dropped before the upload finished. Reference VER-104.",
+  "@skribblePreviewProblemBody": {
+    "description": "Sample problem-state message in the component gallery."
+  },
+  "skribblePreviewLoading": "Checking your proof…",
+  "@skribblePreviewLoading": {
+    "description": "Sample loading label in the component gallery."
+  },
+  "skribblePreviewFieldsHeading": "Fields",
+  "@skribblePreviewFieldsHeading": {
+    "description": "Component gallery section showing text fields."
+  },
+  "skribblePreviewFieldLabel": "Action title",
+  "@skribblePreviewFieldLabel": {
+    "description": "Sample text field label in the component gallery."
+  },
+  "skribblePreviewFieldHint": "e.g. Ten squats at the park",
+  "@skribblePreviewFieldHint": {
+    "description": "Sample text field hint in the component gallery."
+  },
+  "skribblePreviewSelectionHeading": "Selection",
+  "@skribblePreviewSelectionHeading": {
+    "description": "Component gallery section showing checkboxes, switches, radios, and sliders."
+  },
+  "skribblePreviewNotifyCheckboxLabel": "Tell me when my proof is reviewed",
+  "@skribblePreviewNotifyCheckboxLabel": {
+    "description": "Sample checkbox label in the component gallery."
+  },
+  "skribblePreviewRoughenSwitchLabel": "Roughen the preview",
+  "@skribblePreviewRoughenSwitchLabel": {
+    "description": "Sample switch label in the component gallery."
+  },
+  "skribblePreviewDoodlesHeading": "Doodles and icons",
+  "@skribblePreviewDoodlesHeading": {
+    "description": "Component gallery section showing decorative doodles and icons."
+  }
+}

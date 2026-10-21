@@ -1,0 +1,32 @@
+include: package:verily_lints/analysis_options.yaml
+
+plugins:
+  verily_lints:
+    path: ../packages/verily_lints
+
+analyzer:
+  errors:
+    # The workspace lint command analyzes this package separately so the local
+    # plugin can use a checkout-relative path in local and CI environments.
+    plugins_in_inner_options: ignore
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/generated/**"
+    - ".dart_tool/**"
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+
+linter:
+  rules:
+    public_member_api_docs: false
+    lines_longer_than_80_chars: false
+    directives_ordering: false
+    document_ignores: false
+    prefer_const_constructors: true
+    prefer_int_literals: false
+
+formatter:
+  trailing_commas: preserve
