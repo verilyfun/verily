@@ -1,0 +1,20 @@
+name: verily_lints
+description: Analyzer plugin rules and shared analysis options for Verily.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+resolution: workspace
+
+dependencies:
+  analysis_server_plugin: 0.3.14
+  analyzer: 12.1.0
+  very_good_analysis: 10.3.0
+  yaml: 3.1.4
+
+dev_dependencies:
+  analyzer_testing: 0.2.5
+  test: 1.31.1
+  test_reflective_loader: 0.6.0

@@ -1,0 +1,15 @@
+### Append-only record of each human moderation state transition.
+class: ModerationAuditEntry
+serverOnly: true
+table: verily_moderation_audit_entry
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  caseId: UuidValue, relation(parent=verily_moderation_case, onDelete=Restrict)
+  actorAuthUser: module:auth:AuthUser?, relation(optional, onDelete=SetNull)
+  event: String
+  note: String
+  pauseActive: bool
+  createdAt: DateTime
+indexes:
+  verily_moderation_audit_case_time_idx:
+    fields: caseId, createdAt

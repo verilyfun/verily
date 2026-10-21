@@ -1,0 +1,15 @@
+enum: AppPullCheckStatus
+serialized: byName
+values:
+  ### A verification call is due or running.
+  - calling
+  ### The App answered `pending`; a push confirmation for this attempt settles it.
+  - waiting
+  ### The last call failed; another is scheduled with backoff.
+  - retrying
+  - accepted
+  - rejected
+  ### Calls ran out or the App cannot be reached.
+  - failed
+  ### No answer within 24 hours.
+  - expired

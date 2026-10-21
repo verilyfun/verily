@@ -1,0 +1,29 @@
+### One appeal per evidence item, retaining actor and resolution provenance.
+### [creatorAuthUserId] is denormalized from the action so the creator's
+### pending-appeal queue is one indexed read.
+class: EvidenceAppeal
+serverOnly: true
+table: verily_evidence_appeal
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  evidenceId: UuidValue, relation(parent=verily_action_evidence, onDelete=Cascade)
+  attemptId: UuidValue, relation(parent=verily_action_attempt, onDelete=Cascade)
+  creatorAuthUser: module:auth:AuthUser?, relation(onDelete=Restrict)
+  participantAuthUser: module:auth:AuthUser?, relation(onDelete=Cascade)
+  reason: String
+  status: EvidenceAppealStatus
+  resolutionNote: String?
+  resolvedByAuthUser: module:auth:AuthUser?, relation(optional, onDelete=SetNull)
+  createdAt: DateTime, defaultModel=now
+  updatedAt: DateTime, defaultModel=now
+  resolvedAt: DateTime?
+indexes:
+  verily_evidence_appeal_evidence_unique_idx:
+    fields: evidenceId
+    unique: true
+  verily_evidence_appeal_creator_queue_idx:
+    fields: creatorAuthUserId, status, createdAt
+  verily_evidence_appeal_participant_idx:
+    fields: participantAuthUserId, createdAt
+  verily_evidence_appeal_attempt_idx:
+    fields: attemptId

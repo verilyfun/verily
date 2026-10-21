@@ -1,0 +1,14 @@
+### The creator's reward terms. The token, its decimals, the cluster, and the
+### arbiter come from server configuration, never from this draft.
+class: RewardTermsDraft
+fields:
+  ### Token atoms paid per verified completion.
+  amountPerPayout: int
+  ### How many completions can be paid (1 to 2048).
+  maxPayouts: int
+  ### Most payouts one account can receive (1 to 365).
+  maxWinsPerAccount: int, default=1
+  ### No new completions are paid after this instant.
+  expiresAt: DateTime
+  ### Days after expiry before the creator can reclaim the rest (3 to 30).
+  refundDelayDays: int, default=7

@@ -1,0 +1,22 @@
+class: ActionOpportunity
+fields:
+  id: UuidValue
+  creatorDisplayName: String
+  ### Whether the signed-in account created this action.
+  viewerIsCreator: bool
+  actionKey: String
+  revision: int
+  status: ActionDefinitionStatus
+  title: String
+  description: String
+  recurrence: ActionRecurrence
+  timeZone: String
+  maxVerifiedCompletions: int?
+  verifiedCompletions: int
+  opensAt: DateTime?
+  closesAt: DateTime?
+  publishedAt: DateTime?
+  updatedAt: DateTime
+  requirements: List<ActionRequirementView>
+  myAttempt: ActionAttemptView?
+  reward: RewardSummary?

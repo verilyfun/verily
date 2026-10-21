@@ -1,0 +1,16 @@
+### Creator-facing App summary. Never contains a secret or a secret hash.
+class: VerilyAppView
+fields:
+  id: UuidValue
+  name: String
+  websiteUrl: String?
+  status: VerilyAppStatus
+  keys: List<VerilyAppKeyView>
+  ### Live or draft action revisions whose proof this App confirms.
+  boundActionCount: int
+  webhookUrl: String?
+  ### 0 until a signing secret has been issued.
+  webhookSecretVersion: int, default=0
+  redirectUris: List<String>
+  createdAt: DateTime
+  revokedAt: DateTime?

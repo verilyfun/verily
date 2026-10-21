@@ -1,0 +1,33 @@
+### One participant's "I did it" on a pull-verified `externalApp` requirement,
+### and the App's answer to Verily's `attempt.verify` calls.
+class: AppPullCheck
+serverOnly: true
+table: verily_app_pull_check
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  attemptId: UuidValue, relation(parent=verily_action_attempt, onDelete=Cascade)
+  requirementId: UuidValue, relation(parent=verily_action_requirement, onDelete=Restrict)
+  appId: UuidValue, relation(parent=verily_app, onDelete=Restrict)
+  ### The `vev_` id sent with every call for this check.
+  eventId: String
+  ### Optional text the participant typed, validated server-side.
+  reference: String?
+  status: AppPullCheckStatus
+  callCount: int, default=0
+  nextCallAt: DateTime?
+  leaseExpiresAt: DateTime?
+  lastErrorCode: String?
+  ### The App's short reason code from its last decisive answer.
+  reasonCode: String?
+  expiresAt: DateTime
+  createdAt: DateTime
+  updatedAt: DateTime
+indexes:
+  verily_app_pull_check_requirement_idx:
+    fields: attemptId, requirementId
+    unique: true
+  verily_app_pull_check_event_idx:
+    fields: eventId
+    unique: true
+  verily_app_pull_check_due_idx:
+    fields: status, nextCallAt

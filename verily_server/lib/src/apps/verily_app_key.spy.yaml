@@ -1,0 +1,20 @@
+### Hashed API key. The plaintext credential is shown once and never stored.
+class: VerilyAppKey
+serverOnly: true
+table: verily_app_key
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  appId: UuidValue, relation(parent=verily_app, onDelete=Cascade)
+  ### Public lookup handle embedded in the credential (`vly_<keyId>.<secret>`).
+  keyId: String
+  ### SHA-256 of the complete credential string.
+  secretHash: String
+  createdAt: DateTime, defaultModel=now
+  lastUsedAt: DateTime?
+  revokedAt: DateTime?
+indexes:
+  verily_app_key_id_idx:
+    fields: keyId
+    unique: true
+  verily_app_key_app_idx:
+    fields: appId, createdAt

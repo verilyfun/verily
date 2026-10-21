@@ -1,0 +1,13 @@
+### collectingEvidence: proof still missing. verifying: every required proof
+### arrived and automated verification is still running; the worker completes
+### the attempt without the participant coming back. pendingReview: a person
+### decides. verified, rejected, capacityReached: final.
+enum: ActionAttemptStatus
+serialized: byName
+values:
+  - collectingEvidence
+  - verifying
+  - pendingReview
+  - verified
+  - rejected
+  - capacityReached

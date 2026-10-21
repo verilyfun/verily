@@ -1,0 +1,6 @@
+### Where the Verily app sends the person after they approve or decline.
+class: AppLinkRedirect
+fields:
+  redirectUrl: String
+  ### When the one-time code in the URL stops working; null after a decline.
+  codeExpiresAt: DateTime?

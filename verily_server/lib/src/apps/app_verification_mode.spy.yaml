@@ -1,0 +1,9 @@
+### How an App verifies an `externalApp` requirement.
+enum: AppVerificationMode
+serialized: byName
+values:
+  ### The App confirms on its own through `POST /api/v1/confirmations`.
+  - push
+  ### Verily asks the App's webhook (`attempt.verify`) when the participant
+  ### says they are done.
+  - pull

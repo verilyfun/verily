@@ -1,0 +1,5 @@
+enum: ActionRecurrence
+serialized: byName
+values:
+  - once
+  - daily

@@ -1,0 +1,88 @@
+accountLifecycle:
+  - closeAccount:
+actionVerification:
+  - listTemplates:
+  - draftActionFromPrompt:
+  - createAction:
+  - saveActionDraft:
+  - previewAction:
+  - listOwnedActions:
+  - publishAction:
+  - pauseAction:
+  - createQrChallenge:
+  - listAvailableActions:
+  - getAction:
+  - listNearbyActions:
+  - beginAttempt:
+  - issueSpokenChallenge:
+  - createCaptureChallenge:
+  - submitEvidence:
+  - requestMediaUpload:
+  - confirmMediaUpload:
+  - requestAppVerification:
+  - completeAttempt:
+  - listMyAttempts:
+evidenceAppeal:
+  - submit:
+  - getMine:
+  - listOwned:
+  - resolve:
+evidenceReview:
+  - listQueue:
+  - review:
+verilyApp:
+  - listApps:
+  - getApp:
+  - createApp:
+  - createKey:
+  - revokeKey:
+  - revokeApp:
+  - listConfirmations:
+  - linkApp:
+  - setWebhookUrl:
+  - rotateWebhookSecret:
+  - setRedirectUris:
+  - listWebhookDeliveries:
+  - describeLinkRequest:
+  - approveLink:
+  - declineLink:
+emailIdp:
+  - login:
+  - startRegistration:
+  - verifyRegistrationCode:
+  - finishRegistration:
+  - startPasswordReset:
+  - verifyPasswordResetCode:
+  - finishPasswordReset:
+  - hasAccount:
+googleIdp:
+  - login:
+  - loginWithCode:
+  - hasAccount:
+jwtRefresh:
+  - refreshAccessToken:
+moderation:
+  - report:
+  - getStatus:
+  - listMine:
+  - appeal:
+moderationReview:
+  - listQueue:
+  - getCase:
+  - review:
+  - resolveAppeal:
+payoutWallet:
+  - getMine:
+  - createWalletLinkChallenge:
+  - linkPayoutWallet:
+rewards:
+  - getRewardPool:
+  - prepareRewardFunding:
+  - confirmRewardFunding:
+  - endRewardEarly:
+  - listMyPayouts:
+verificationRequest:
+  - getRequest:
+  - accept:
+  - decline:
+  - finish:

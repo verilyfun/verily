@@ -1,0 +1,34 @@
+### A Verily App: software a creator registers to confirm their own
+### `external` requirements, and the anchor later platform features (API
+### action creation, verification requests, outbound webhooks) attach to.
+### Apps are revoked, never deleted, so confirmation receipts keep their trail.
+class: VerilyApp
+serverOnly: true
+table: verily_app
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  creatorAuthUser: module:auth:AuthUser?, relation(onDelete=Restrict)
+  name: String
+  ### Shown to participants beside the App's name; HTTPS only.
+  websiteUrl: String?
+  status: VerilyAppStatus
+  ### Start of the fixed rate-limit window, advanced under the App row lock.
+  rateWindowStartedAt: DateTime?
+  ### Authenticated deliveries counted in the current rate-limit window.
+  rateWindowCount: int, default=0
+  ### HTTPS endpoint for signed events and pull verification; null until set.
+  webhookUrl: String?
+  ### Version of the current `whsec_` signing secret; 0 means none issued.
+  ### Secrets are derived from the server master key and this version, so no
+  ### secret is stored.
+  webhookSecretVersion: int, default=0
+  ### The version replaced by the last rotation, still signed alongside the
+  ### current one for 24 hours so the App can roll over.
+  previousWebhookSecretVersion: int?
+  webhookSecretRotatedAt: DateTime?
+  createdAt: DateTime, defaultModel=now
+  updatedAt: DateTime, defaultModel=now
+  revokedAt: DateTime?
+indexes:
+  verily_app_creator_idx:
+    fields: creatorAuthUserId, createdAt

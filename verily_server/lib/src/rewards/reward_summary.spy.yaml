@@ -1,0 +1,20 @@
+### The public, checkable facts about an action's reward.
+class: RewardSummary
+fields:
+  cluster: RewardCluster
+  mint: String
+  tokenSymbol: String
+  decimals: int
+  amountPerPayout: int
+  maxPayouts: int
+  payoutsRemaining: int
+  maxWinsPerAccount: int
+  ### Payouts the viewing account already holds from this pool.
+  myWins: int
+  status: RewardPoolStatus
+  expiresAt: DateTime
+  ### Days after expiry before the creator can reclaim the rest, as in the
+  ### terms draft (the pool stores seconds).
+  refundDelayDays: int, default=7
+  ### Anyone can read this escrow on chain; null until funding starts.
+  escrowAddress: String?

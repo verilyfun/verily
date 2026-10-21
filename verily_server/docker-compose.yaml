@@ -1,0 +1,23 @@
+services:
+  postgres:
+    # Official postgis/postgis tags are amd64-only; imresamu publishes the
+    # multi-arch builds so Apple Silicon development and amd64 CI share one
+    # image. Port 8191 matches devenv and config/{development,test}.yaml.
+    image: imresamu/postgis:16-3.6
+    ports:
+      - "127.0.0.1:8191:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: verily
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - verily_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d verily"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  verily_data:

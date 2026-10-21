@@ -1,0 +1,16 @@
+### What the creator's wallet signs to open the escrow.
+class: RewardFundingPlan
+fields:
+  poolId: UuidValue
+  cluster: RewardCluster
+  escrowAddress: String
+  creatorWallet: String
+  arbiterAddress: String
+  mint: String
+  tokenSymbol: String
+  decimals: int
+  totalAtoms: int
+  expiresAt: DateTime
+  refundAfter: DateTime
+  ### Base64 unsigned transaction for the creator's wallet to sign and send.
+  unsignedTransaction: String

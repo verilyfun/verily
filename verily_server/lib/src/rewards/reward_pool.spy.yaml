@@ -1,0 +1,44 @@
+### One escrowed reward per creator and action key, spanning revisions. The
+### id is the on-chain pool id. Terms are immutable once funding starts, and
+### funding is verified from chain state, never from the client.
+class: RewardPool
+serverOnly: true
+table: verily_reward_pool
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  creatorAuthUser: module:auth:AuthUser?, relation(onDelete=Restrict)
+  actionKey: String
+  cluster: RewardCluster
+  mint: String
+  tokenSymbol: String
+  decimals: int
+  ### Token atoms per verified completion.
+  amountPerPayout: int
+  maxPayouts: int
+  maxWinsPerAccount: int, default=1
+  payoutsReserved: int, default=0
+  payoutsReleased: int, default=0
+  ### Frozen when funding starts; refunds return here.
+  creatorWallet: String?
+  escrowAddress: String?
+  arbiterAddress: String?
+  expiresAt: DateTime
+  refundDelaySeconds: int
+  ### expiresAt + refundDelaySeconds; moves earlier when the creator ends early.
+  refundAfter: DateTime
+  status: RewardPoolStatus
+  fundingSignature: String?
+  fundedAt: DateTime?
+  endedAt: DateTime?
+  closedAt: DateTime?
+  createdAt: DateTime, defaultModel=now
+  updatedAt: DateTime, defaultModel=now
+indexes:
+  verily_reward_pool_creator_key_idx:
+    fields: creatorAuthUserId, actionKey
+    unique: true
+  verily_reward_pool_escrow_idx:
+    fields: escrowAddress
+    unique: true
+  verily_reward_pool_status_idx:
+    fields: status, expiresAt

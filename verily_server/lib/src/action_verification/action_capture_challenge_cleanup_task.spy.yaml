@@ -1,0 +1,3 @@
+class: ActionCaptureChallengeCleanupTask
+fields:
+  batchSize: int

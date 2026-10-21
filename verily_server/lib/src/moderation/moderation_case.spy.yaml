@@ -1,0 +1,31 @@
+### Human-reviewed safety report about one action and its pause/appeal state.
+### A hold applies to every revision of the reported action's key.
+class: ModerationCase
+serverOnly: true
+table: verily_moderation_case
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  creatorAuthUser: module:auth:AuthUser?, relation(onDelete=Restrict)
+  actionDefinitionId: UuidValue, relation(parent=verily_action_definition, onDelete=Restrict)
+  reporterAuthUser: module:auth:AuthUser?, relation(optional, onDelete=SetNull)
+  idempotencyKey: String
+  category: String
+  details: String
+  status: String
+  pauseActive: bool
+  createdAt: DateTime
+  reviewedAt: DateTime?
+  reviewedByAuthUser: module:auth:AuthUser?, relation(optional, onDelete=SetNull)
+  appealReason: String?
+  appealedAt: DateTime?
+  appealResolvedAt: DateTime?
+indexes:
+  verily_moderation_case_report_key_idx:
+    fields: reporterAuthUserId, idempotencyKey
+    unique: true
+  verily_moderation_case_creator_pause_idx:
+    fields: creatorAuthUserId, pauseActive
+  verily_moderation_case_action_pause_idx:
+    fields: actionDefinitionId, pauseActive
+  verily_moderation_case_queue_idx:
+    fields: status, createdAt

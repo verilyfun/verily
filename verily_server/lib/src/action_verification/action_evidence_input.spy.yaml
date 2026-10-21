@@ -1,0 +1,19 @@
+### Deterministic proof submitted directly: location, venue code, or motion.
+### Media proof never uses this path; it goes through the private upload flow.
+class: ActionEvidenceInput
+fields:
+  attemptId: UuidValue
+  requirementId: UuidValue
+  capturedAt: DateTime
+  latitude: double?
+  longitude: double?
+  accuracyMeters: double?
+  qrCode: String?
+  motionSamples: List<ActionMotionSample>?
+  captureChallengeId: UuidValue?
+  deviceIntegrityToken: String?
+  captureManifest: String?
+  captureSignature: String?
+  capturePublicKey: String?
+  captureKeyId: String?
+  captureKeyStorage: String?

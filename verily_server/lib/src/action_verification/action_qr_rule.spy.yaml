@@ -1,0 +1,13 @@
+### One hashed static QR rule per requirement; raw QR secrets are never persisted.
+class: ActionQrRule
+serverOnly: true
+table: verily_action_qr_rule
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  requirementId: UuidValue, relation(parent=verily_action_requirement, onDelete=Cascade)
+  secretHash: String
+  createdAt: DateTime, defaultModel=now
+indexes:
+  verily_action_qr_rule_requirement_idx:
+    fields: requirementId
+    unique: true

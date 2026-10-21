@@ -1,0 +1,3 @@
+class: EvidenceVerificationTask
+fields:
+  evidenceId: UuidValue

@@ -1,0 +1,15 @@
+enum: ActionAuthoringProblem
+serialized: byName
+values:
+  ### This creator already uses the action key for another action.
+  - actionKeyTaken
+  ### An external requirement names a revoked App or another creator's App.
+  - appUnavailable
+  ### App confirmations cannot be combined with phone-verified proof in v1.
+  - externalProofMixed
+  ### A rewarded action must be saved as a draft and funded before it goes live.
+  - rewardNeedsDraft
+  ### The reward's escrow is not funded and verified yet.
+  - rewardNotFunded
+  ### Reward terms cannot change once funding has started.
+  - rewardTermsLocked

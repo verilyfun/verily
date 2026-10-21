@@ -1,0 +1,14 @@
+### One outbound webhook call, as the App's creator sees it.
+class: AppWebhookDeliveryView
+fields:
+  id: UuidValue
+  eventId: String
+  eventType: String
+  attemptNumber: int
+  requestedAt: DateTime
+  durationMilliseconds: int
+  statusCode: int?
+  errorCode: String?
+  succeeded: bool
+  ### The event's current state; null for pull verification calls.
+  eventStatus: AppEventStatus?

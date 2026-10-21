@@ -1,0 +1,7 @@
+### An AI-assisted draft. It never carries a reward: money terms are set by
+### the creator, not proposed by a model.
+class: ActionDraftProposal
+fields:
+  action: CreateActionDefinitionRequest
+  safetyNotes: List<String>
+  assumptions: List<String>

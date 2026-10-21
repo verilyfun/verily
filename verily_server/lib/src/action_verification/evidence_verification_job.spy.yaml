@@ -1,0 +1,20 @@
+### Durable verification outbox; unique evidence binding makes worker retries converge.
+class: EvidenceVerificationJob
+serverOnly: true
+table: verily_evidence_verification_job
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  evidenceId: UuidValue, relation(parent=verily_action_evidence, onDelete=Cascade)
+  status: EvidenceVerificationJobStatus, default=queued
+  attemptCount: int, default=0
+  createdAt: DateTime, defaultModel=now
+  updatedAt: DateTime, defaultModel=now
+  startedAt: DateTime?
+  completedAt: DateTime?
+  lastErrorCode: String?
+indexes:
+  verily_evidence_verification_evidence_unique_idx:
+    fields: evidenceId
+    unique: true
+  verily_evidence_verification_queue_idx:
+    fields: status, createdAt

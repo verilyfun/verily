@@ -1,0 +1,43 @@
+[package]
+name = "verily_escrow_mollusk_tests"
+version = "0.0.0"
+edition = "2024"
+publish = false
+description = "Runs the compiled reward escrow program against the real SPL Token and associated token account programs in Mollusk"
+
+# Mollusk's host runtime pulls the Agave validator graph, including crates the
+# repository's dependency audit forbids. Keeping it in its own workspace stops
+# it from leaking into the program's SBF build, its lockfile, or the audit.
+[workspace]
+
+[dev-dependencies]
+base64 = "=0.22.1"
+mollusk-svm = "=0.15.1"
+# The SPL Token and associated token account ELFs Mollusk ships, so every
+# token movement runs the real programs.
+mollusk-svm-programs-token = { version = "=0.15.1", default-features = false, features = ["associated-token", "token"] }
+# The same Pina release the program builds with, for its decoding traits and
+# framework error codes.
+pina = { version = "=0.23.0", default-features = false }
+solana-account = "=4.3.1"
+solana-instruction = "=3.4.0"
+solana-program-error = "=3.0.1"
+solana-program-option = "=3.1.0"
+solana-program-pack = "=3.1.0"
+solana-pubkey = "=4.2.1"
+solana-svm-log-collector = "=4.2.2"
+spl-token-interface = "=2.0.0"
+# The program crate supplies its ID, limits, error codes, and the decoders for
+# its account and events. Instruction data and account lists are encoded by
+# hand from the documented layouts, which pins the wire format clients use.
+verily_escrow = { path = "../.." }
+
+[lints.rust]
+missing_docs = "allow"
+unsafe_code = "deny"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+missing_panics_doc = "allow"
+must_use_candidate = "allow"
+too_many_lines = "allow"

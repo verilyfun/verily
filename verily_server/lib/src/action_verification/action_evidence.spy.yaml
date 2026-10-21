@@ -1,0 +1,56 @@
+### Private proof facts bound to one attempt and requirement; never expose as a public feed.
+class: ActionEvidence
+serverOnly: true
+table: verily_action_evidence
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  attemptId: UuidValue, relation(parent=verily_action_attempt, onDelete=Cascade)
+  requirementId: UuidValue, relation(parent=verily_action_requirement, onDelete=Restrict)
+  kind: ActionRequirementKind
+  storagePath: String?
+  storageVersionId: String?
+  mimeType: String?
+  sha256Digest: String?
+  byteLength: int?
+  durationSeconds: int?
+  location: GeographyPoint?
+  accuracyMeters: double?
+  motionTraceJson: String?
+  motionTraceSha256: String?
+  motionSampleCount: int?
+  motionDurationMilliseconds: int?
+  motionAnalysisJson: String?
+  ### Advisory on-device count shown to the participant; never a decision input.
+  deviceRepetitionCount: int?
+  ### Identifies the on-device tracker and model that produced the count.
+  deviceTrackerVersion: String?
+  ### The live challenge this recording was bound to, and its word, kept with
+  ### the proof so verifiers and reviewers check exactly what was asked.
+  spokenChallengeId: UuidValue?, relation(parent=verily_action_spoken_challenge, onDelete=SetNull)
+  spokenChallengeWord: String?
+  ### The phone's advisory local-check result, kept for calibration only.
+  deviceLocalCheckModelId: String?
+  deviceLocalCheckModelSha256: String?
+  deviceLocalCheckLabel: String?
+  deviceLocalCheckScore: double?
+  deviceLocalCheckMatchedFrames: int?
+  provenanceLevel: EvidenceProvenanceLevel, default=basic
+  captureManifest: String?
+  captureSignature: String?
+  capturePublicKey: String?
+  captureKeyId: String?
+  captureKeyStorage: String?
+  capturedAt: DateTime
+  submittedAt: DateTime, defaultModel=now
+indexes:
+  verily_action_evidence_requirement_idx:
+    fields: attemptId, requirementId
+    unique: true
+  verily_action_evidence_submitted_idx:
+    fields: attemptId, submittedAt
+  verily_action_evidence_requirement_fk_idx:
+    fields: requirementId
+  verily_action_evidence_spoken_challenge_idx:
+    fields: spokenChallengeId
+  verily_action_evidence_location_idx:
+    fields: location

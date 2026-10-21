@@ -1,0 +1,6 @@
+enum: AiUsageStatus
+serialized: byName
+values:
+  - reserved
+  - succeeded
+  - failed

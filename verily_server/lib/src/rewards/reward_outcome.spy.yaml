@@ -1,0 +1,12 @@
+### What a verified completion earned from the action's reward pool.
+enum: RewardOutcome
+serialized: byName
+values:
+  ### A payout index was reserved for this completion.
+  - won
+  ### Every payout in the pool is already reserved.
+  - poolEmpty
+  ### This account already holds the most payouts the pool allows one account.
+  - accountLimitReached
+  ### The pool expired or was ended before this completion.
+  - poolEnded

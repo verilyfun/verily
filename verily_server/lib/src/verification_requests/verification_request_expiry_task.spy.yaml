@@ -1,0 +1,3 @@
+class: VerificationRequestExpiryTask
+fields:
+  batchSize: int

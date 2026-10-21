@@ -160,6 +160,178 @@ sequenceDiagram
 - **Valuable payouts need a person.** A payout above the configured review
   threshold is only released on proof a person accepted.
 
+## Server gateway
+
+The server reaches the program only through the `RewardEscrowGateway`
+interface (`verily_server/lib/src/rewards/reward_escrow_gateway.dart`).
+`VERILY_REWARD_ESCROW_MODE` picks the implementation:
+
+| Mode                | Gateway                                  | Where                               |
+| ------------------- | ---------------------------------------- | ----------------------------------- |
+| `disabled`          | Refuses every call; rewards fail closed  | The default everywhere              |
+| `local-development` | A labelled simulation that moves nothing | Development and test only, devnet   |
+| `solana`            | `SolanaRewardEscrowGateway`              | Devnet; mainnet only as noted below |
+
+`SolanaRewardEscrowGateway` (`solana_reward_escrow_gateway.dart`) is built on
+the generated `verily_escrow_client` codecs, instruction builders, PDA helper,
+error table, and event parser, and on `solana_kit`. Startup
+(`solana_reward_escrow_configuration.dart`) connects it before the server
+accepts traffic; any failure stops startup.
+
+### Keys
+
+Two Verily keys sign, and they must be different keys:
+
+- The **arbiter** signs only `ReleasePayout`. It is recorded in every escrow.
+- The **fee payer** pays transaction fees and the recipient's token-account
+  rent, so a participant never needs SOL to be paid.
+
+Creators sign their own `OpenEscrow` and `EndEarly`: the server builds an
+unsigned v0 transaction with the creator as fee payer and only signer, and
+the app signs and sends it through Mobile Wallet Adapter. Verily's keys never
+appear in a creator's transaction.
+
+| `VERILY_REWARD_SIGNER` | Custody                                                              | Allowed                                                          |
+| ---------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `kms`                  | Cloud KMS Ed25519 key versions; the key bytes never reach the server | Every run mode; the only option for staging, production, mainnet |
+| `local-keypair`        | Solana CLI keypair JSON from Monosecret secrets                      | Development and test, devnet                                     |
+
+Both modes pin each key's public address. A local keypair must be internally
+consistent and match its pinned address. A KMS key must report the pinned
+public key, prove possession by signing a fresh random challenge at startup,
+and every signature KMS returns is verified locally before it is attached.
+
+### Configuration
+
+| Variable                                                                              | Meaning                                                                                                                                                 |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VERILY_REWARD_ESCROW_MODE=solana`                                                    | Selects the Solana gateway.                                                                                                                             |
+| `VERILY_REWARD_CLUSTER`                                                               | `devnet` or `mainnet`.                                                                                                                                  |
+| `VERILY_REWARD_SOLANA_RPC_URL` (secret)                                               | HTTPS without credentials in the authority; plain HTTP only for a loopback validator in development and test. Never logged: providers embed keys in it. |
+| `VERILY_REWARD_ARBITER_ADDRESS`, `VERILY_REWARD_FEE_PAYER_ADDRESS`                    | Pinned public keys.                                                                                                                                     |
+| `VERILY_REWARD_SIGNER`                                                                | `kms` or `local-keypair`.                                                                                                                               |
+| `VERILY_REWARD_ARBITER_KEYPAIR`, `VERILY_REWARD_FEE_PAYER_KEYPAIR` (secrets)          | Local keypairs, development and test only.                                                                                                              |
+| `VERILY_REWARD_KMS_ARBITER_KEY`, `VERILY_REWARD_KMS_FEE_PAYER_KEY`                    | `projects/…/cryptoKeyVersions/N` resource names; different keys.                                                                                        |
+| `VERILY_REWARD_KMS_CREDENTIALS_FILE` or `VERILY_REWARD_KMS_CREDENTIALS_JSON` (secret) | Exactly one service-account source; a file must be `0600`.                                                                                              |
+| `VERILY_REWARD_SOLANA_GENESIS_HASH`                                                   | Development and test only, for a local validator on devnet settings. Otherwise the cluster's pinned genesis hash is required.                           |
+| `VERILY_REWARD_ESCROW_PROGRAM_ID`                                                     | Optional. Anything other than the generated client's program id is refused outside development and test.                                                |
+| `VERILY_REWARD_MAINNET_ENABLED`                                                       | Exactly `true` to allow mainnet, and only in the production run mode with KMS custody.                                                                  |
+
+**Mainnet has not been reviewed for real money.** The program, this gateway,
+and its custody have had no external audit; the mainnet flag exists so that
+enabling it is a reviewed, deliberate deployment change, not a default.
+
+### What is verified from chain
+
+- **At startup**, at `finalized`: the RPC endpoint's genesis hash is the
+  cluster's pinned hash, the escrow program account is executable, and the
+  reward mint is a classic SPL Token mint (owner, exact size, initialized)
+  with the expected decimals. Mints come only from the per-cluster allow-list
+  (devnet and mainnet USDC); a pool for another mint or cluster is refused.
+- **Funding**, at `finalized`, because a published reward cannot be taken back
+  from participants if its funding block were dropped: the escrow is read at
+  the address the server derives itself; its owner must be the program; the
+  data must be exactly 435 bytes with the `RewardEscrow` discriminator and
+  schema version; the address must re-derive from the stored creator and pool
+  id with the stored, canonical bump; and the stored invariants must hold
+  (`released_count ≤ max_payouts`, `refund_after = expires_at + refund_delay`,
+  bounds). The pool service then compares creator, arbiter, mint, pool id,
+  amount, payout count, expiry, refund window, refund delay, and
+  `released_count = 0`, and requires the vault balance to cover the whole
+  budget. The reported balance is what the escrow can actually pay: zero when
+  the vault is missing, is not the escrow's associated token account for its
+  mint, is not an SPL Token account of that mint owned by the escrow, or is
+  frozen.
+- **Release**, against `confirmed` state: the escrow must still be the pool's
+  (same creator, arbiter, mint, vault, pool id, and immutable terms) and must
+  never show fewer releases than the server recorded, which would mean a
+  fresh escrow was opened at the same address after this one closed. An index
+  already set is settled without sending. Otherwise the gateway sends
+  `[CreateIdempotent(recipient ATA, payer = fee payer), ReleasePayout(index)]`
+  signed by the fee payer and the arbiter, with preflight, and reports
+  `RewardReleased` once that signature is `confirmed` without error, within a
+  bounded wait.
+- **The released bitmap** (`isPayoutReleased`) is read at `finalized`, because
+  the payout job marks a payout paid on it without a signature of its own.
+  When the escrow account is gone, the answer is unknown and the call throws:
+  the final bitmap lives only in the `EscrowClosed` event, which the server
+  does not record yet, and the payout job never marks a payout paid on an
+  unknown.
+- Custom error codes are attributed through the logs: the escrow's codes
+  overlap SPL Token's, so a code counts as the escrow's only when the
+  innermost failing program in the logs is the escrow program. Events are
+  decoded only through `parseVerilyEscrowEventsFromLogs` over complete logs,
+  which follows the runtime's invoke frames.
+
+### Release outcomes
+
+`PayoutAlreadyReleased` becomes `RewardAlreadyReleased` only after the
+finalized bitmap confirms the bit. Every other failure is a
+`RewardReleaseFailed` with a stable code and never RPC or provider text. A
+retry always uses the same index.
+
+| Code                                         | Retryable | Meaning                                                                                        |
+| -------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------- |
+| `release_pending_finality`                   | yes       | The bit is set at `confirmed` but not yet at `finalized`.                                      |
+| `release_unconfirmed`                        | yes       | Sent, but not confirmed within the bounded wait. The bitmap makes the retry safe.              |
+| `blockhash_expired`                          | yes       | The transaction can no longer land.                                                            |
+| `fee_payer_underfunded`                      | yes       | The fee payer cannot pay fees or rent.                                                         |
+| `recipient_account_failed`                   | yes       | The recipient's token account could not be created.                                            |
+| `rpc_unavailable`, `rpc_invalid_response`    | yes       | The RPC endpoint failed or answered malformed data.                                            |
+| `signer_unavailable`                         | yes       | KMS (or the local signer) could not sign.                                                      |
+| `escrow_replaced`                            | yes       | Fewer releases on chain than recorded: a fresh escrow, or a lagging RPC node. Never paid from. |
+| `refund_window_reached`                      | no        | `ReleaseWindowClosed`: the refund window opened.                                               |
+| `escrow_closed`                              | no        | The escrow account is gone.                                                                    |
+| `escrow_mismatch`, `arbiter_mismatch`        | no        | The escrow is not this pool's, or not Verily's arbiter's.                                      |
+| `invalid_recipient`                          | no        | The wallet is not an address, or is the escrow itself.                                         |
+| `payout_index_out_of_range`                  | no        | The index is outside the escrow.                                                               |
+| `token_account_frozen`                       | no        | The vault or the recipient's token account is frozen (USDC has a freeze authority).            |
+| `vault_underfunded`, `token_transfer_failed` | no        | SPL Token refused the transfer.                                                                |
+| `release_rejected`                           | varies    | Any other rejection; retryable only for transaction-level errors.                              |
+
+### Testing
+
+- Unit tests (`verily_server/test/unit/rewards/solana_*`, `custody/`) run every
+  method against an in-memory JSON-RPC endpoint behind the real `solana_kit`
+  client, with no network. PDA and vault vectors come from Agave's Rust
+  derivation (`solana find-program-derived-address`), and account and event
+  bytes from the program crate's own `initialize`.
+- `devenv shell test:escrow:e2e` builds the program, starts a throwaway
+  `solana-test-validator` with it at its reviewed address and a test-controlled
+  mint at the devnet USDC address, and runs the server end to end: startup
+  verification, a creator-signed `OpenEscrow` confirmed from finalized state,
+  two releases (one lost and retried, settled from the bitmap without paying
+  twice), event attribution from the real logs, and `EndEarly`. `CloseEscrow`
+  needs at least the three-day refund delay, so it stays in the Mollusk suite.
+
+### Before devnet and before mainnet
+
+Before devnet:
+
+- Deploy the program with `pina deploy` and record the publication.
+- Provision devnet arbiter and fee-payer keys (KMS for any shared
+  deployment), fund the fee payer with devnet SOL, and choose an RPC
+  provider.
+- Wire the app's Mobile Wallet Adapter flow to sign and send the funding and
+  end-early transactions, then call `confirmRewardFunding`.
+
+Before mainnet:
+
+- An external audit of the program, the gateway, and the custody setup.
+- Production KMS keys (HSM protection level) provisioned, pinned, and covered
+  by IAM that only the server's service account holds; the program's upgrade
+  authority held by a reviewed multisig.
+- A watcher that records every `EscrowClosed` final bitmap (so
+  `isPayoutReleased` can settle payouts after a close) and compares every
+  `PayoutReleased` event with the database by escrow address and index,
+  alerting on any release the server did not record.
+- Frozen-account handling: USDC's freeze authority can freeze a vault or a
+  recipient account. Releases then fail with `token_account_frozen` and need an
+  operator flow.
+- Priority fees and compute-budget limits for congested slots, RPC redundancy,
+  and fee-payer balance monitoring.
+- Setting `VERILY_REWARD_MAINNET_ENABLED=true` only after that review.
+
 ## Trust and limits
 
 Escrow protects participants from a creator who never pays, and protects

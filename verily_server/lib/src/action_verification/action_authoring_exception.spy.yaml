@@ -1,0 +1,7 @@
+### An action draft or publication was refused for a reason the creator can
+### fix. Clients show their own localized copy for [reason]; [message] is a
+### developer-facing English summary.
+exception: ActionAuthoringException
+fields:
+  reason: ActionAuthoringProblem
+  message: String

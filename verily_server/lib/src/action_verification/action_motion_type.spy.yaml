@@ -1,0 +1,7 @@
+enum: ActionMotionType
+serialized: byName
+values:
+  - phoneToss
+  - rotation
+  - shake
+  - stillness

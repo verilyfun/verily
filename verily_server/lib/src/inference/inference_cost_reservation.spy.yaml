@@ -1,0 +1,20 @@
+### Append-only cost authorization committed before each external model call.
+### Calls and micro-cost are capped per attempt; an unknown outcome stays
+### charged so retries cannot buy free inference.
+class: InferenceCostReservation
+serverOnly: true
+table: verily_inference_cost_reservation
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  actionAttemptId: UuidValue, relation(parent=verily_action_attempt, onDelete=Restrict)
+  callReference: String
+  modelId: String
+  policyVersion: String
+  reservedMicros: int
+  createdAt: DateTime, defaultModel=now
+indexes:
+  verily_inference_reservation_reference_idx:
+    fields: actionAttemptId, callReference
+    unique: true
+  verily_inference_reservation_created_idx:
+    fields: createdAt

@@ -1,0 +1,16 @@
+class: EvidenceAppealView
+fields:
+  id: UuidValue
+  evidenceId: UuidValue
+  attemptId: UuidValue
+  actionTitle: String
+  requirementTitle: String
+  requirementKind: ActionRequirementKind
+  reason: String
+  status: EvidenceAppealStatus
+  createdAt: DateTime
+  resolutionNote: String?
+  resolvedAt: DateTime?
+  ### Short-lived private playback link, only for the creator resolving it.
+  mediaUrl: String?
+  spokenChallengeWord: String?

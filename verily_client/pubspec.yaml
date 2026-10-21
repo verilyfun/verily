@@ -1,0 +1,16 @@
+name: verily_client
+description: Generated Serverpod client for the Verily backend.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: "^3.13.0"
+
+resolution: workspace
+
+dependencies:
+  serverpod_auth_idp_client: 4.0.4
+  serverpod_client: 4.0.4
+
+dev_dependencies:
+  very_good_analysis: ^10.2.0

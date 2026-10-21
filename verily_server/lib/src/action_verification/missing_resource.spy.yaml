@@ -1,0 +1,6 @@
+### What a typed not-found refers to.
+enum: MissingResource
+serialized: byName
+values:
+  - action
+  - app

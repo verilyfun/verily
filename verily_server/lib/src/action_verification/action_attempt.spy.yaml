@@ -1,0 +1,34 @@
+### One account attempt per action period; retries reuse the same attempt.
+class: ActionAttempt
+serverOnly: true
+table: verily_action_attempt
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  actionDefinitionId: UuidValue, relation(parent=verily_action_definition, onDelete=Restrict)
+  participantAuthUser: module:auth:AuthUser?, relation(onDelete=Cascade)
+  periodKey: String
+  idempotencyKey: String
+  status: ActionAttemptStatus
+  verificationScore: double?
+  verifiedRank: int?
+  rejectionCode: String?
+  ### Set when a verified attempt met an action with a reward pool: whether it
+  ### won a payout, or why not. The proof counts either way.
+  rewardOutcome: RewardOutcome?
+  startedAt: DateTime, defaultModel=now
+  submittedAt: DateTime?
+  verifiedAt: DateTime?
+  updatedAt: DateTime, defaultModel=now
+indexes:
+  verily_action_attempt_verified_window_idx:
+    fields: status, verifiedAt, actionDefinitionId
+  verily_action_attempt_idempotency_idx:
+    fields: participantAuthUserId, idempotencyKey
+    unique: true
+  verily_action_attempt_period_idx:
+    fields: actionDefinitionId, participantAuthUserId, periodKey
+    unique: true
+  verily_action_attempt_participant_idx:
+    fields: participantAuthUserId, updatedAt
+  verily_action_attempt_status_idx:
+    fields: actionDefinitionId, status, updatedAt

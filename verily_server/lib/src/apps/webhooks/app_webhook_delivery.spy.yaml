@@ -1,0 +1,24 @@
+### Append-only log of every outbound call to an App webhook: event deliveries
+### and pull verification calls. The creator sees it on the App page. Response
+### bodies are never stored.
+class: AppWebhookDelivery
+serverOnly: true
+table: verily_app_webhook_delivery
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  appId: UuidValue, relation(parent=verily_app, onDelete=Cascade)
+  eventId: String
+  eventType: String
+  attemptNumber: int
+  requestedAt: DateTime
+  durationMilliseconds: int
+  ### HTTP status, when the App answered at all.
+  statusCode: int?
+  ### Stable failure code, for example `timeout` or `blocked_address`.
+  errorCode: String?
+  succeeded: bool
+indexes:
+  verily_app_webhook_delivery_app_idx:
+    fields: appId, id
+  verily_app_webhook_delivery_event_idx:
+    fields: eventId, attemptNumber

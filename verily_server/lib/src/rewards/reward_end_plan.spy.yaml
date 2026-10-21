@@ -1,0 +1,8 @@
+### The pool stops reserving payouts immediately. The creator's wallet signs
+### the returned transaction to move the on-chain expiry to match.
+class: RewardEndPlan
+fields:
+  poolId: UuidValue
+  expiresAt: DateTime
+  refundAfter: DateTime
+  unsignedTransaction: String

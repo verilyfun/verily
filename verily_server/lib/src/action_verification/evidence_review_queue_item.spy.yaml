@@ -1,0 +1,23 @@
+class: EvidenceReviewQueueItem
+fields:
+  evidenceId: UuidValue
+  attemptId: UuidValue
+  actionDefinitionId: UuidValue
+  creatorDisplayName: String
+  actionTitle: String
+  requirementTitle: String
+  requirementKind: ActionRequirementKind
+  mimeType: String?
+  byteLength: int?
+  durationSeconds: int?
+  capturedAt: DateTime
+  submittedAt: DateTime
+  reviewReasonCode: String
+  reviewSummary: String
+  ### Short-lived private playback link pinned to the immutable version.
+  mediaUrl: String?
+  ### The word the participant was asked to say, when one was issued.
+  spokenChallengeWord: String?
+  ### Set when the proof is held because its payout is above the automatic
+  ### release threshold, rather than because the proof needs a decision.
+  payoutReview: PayoutReviewView?

@@ -1,0 +1,6 @@
+### A reward operation was refused for a reason the app explains in product
+### language. [message] is developer-facing English.
+exception: RewardException
+fields:
+  problem: RewardProblem
+  message: String

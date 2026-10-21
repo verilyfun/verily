@@ -1,0 +1,5 @@
+### AI-assisted drafting is not available right now (no AI key configured,
+### AI paused, or the daily allowance is used). Templates still work.
+exception: ActionDraftingUnavailableException
+fields:
+  message: String

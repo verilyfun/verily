@@ -1,0 +1,6 @@
+class: VerilyAppKeyView
+fields:
+  keyId: String
+  createdAt: DateTime
+  lastUsedAt: DateTime?
+  revokedAt: DateTime?

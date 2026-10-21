@@ -1,0 +1,35 @@
+### Durable outbox for one signed event to one App. The body is stored exactly
+### as first signed, so every retry sends identical bytes with the same id.
+class: AppEvent
+serverOnly: true
+table: verily_app_event
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  appId: UuidValue, relation(parent=verily_app, onDelete=Cascade)
+  ### Public event id (`vev_` + 22 base64url characters), also in the body.
+  eventId: String
+  ### Wire type, for example `attempt.verified`.
+  type: String
+  ### Server-owned idempotency key: one event per fact.
+  dedupeKey: String
+  body: String
+  status: AppEventStatus
+  attemptCount: int, default=0
+  nextAttemptAt: DateTime
+  leaseExpiresAt: DateTime?
+  lastStatusCode: int?
+  lastErrorCode: String?
+  deliveredAt: DateTime?
+  createdAt: DateTime
+  updatedAt: DateTime
+indexes:
+  verily_app_event_id_idx:
+    fields: eventId
+    unique: true
+  verily_app_event_dedupe_idx:
+    fields: appId, dedupeKey
+    unique: true
+  verily_app_event_due_idx:
+    fields: status, nextAttemptAt
+  verily_app_event_app_idx:
+    fields: appId, id

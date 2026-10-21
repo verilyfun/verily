@@ -1,0 +1,29 @@
+### Append-only receipt for one well-formed, authenticated confirmation.
+### The first delivery of an event id decides its outcome; retries replay it.
+class: AppConfirmation
+serverOnly: true
+table: verily_app_confirmation
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  appId: UuidValue, relation(parent=verily_app, onDelete=Restrict)
+  ### Public key id that authenticated the delivery.
+  keyId: String
+  eventId: String
+  ### SHA-256 of the normalized event fields; a reused event id must match it.
+  payloadDigest: String
+  actionKey: String
+  subject: String
+  actionDefinitionId: UuidValue?, relation(parent=verily_action_definition, onDelete=Restrict)
+  attemptId: UuidValue?, relation(parent=verily_action_attempt, onDelete=Restrict)
+  occurredAt: DateTime
+  receivedAt: DateTime
+  outcome: AppConfirmationOutcome
+  reasonCode: String
+indexes:
+  verily_app_confirmation_event_idx:
+    fields: appId, eventId
+    unique: true
+  verily_app_confirmation_received_idx:
+    fields: appId, id
+  verily_app_confirmation_attempt_idx:
+    fields: attemptId

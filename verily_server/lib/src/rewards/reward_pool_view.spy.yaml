@@ -1,0 +1,20 @@
+### The creator's view of their action's reward.
+class: RewardPoolView
+fields:
+  poolId: UuidValue
+  status: RewardPoolStatus
+  cluster: RewardCluster
+  mint: String
+  tokenSymbol: String
+  decimals: int
+  amountPerPayout: int
+  maxPayouts: int
+  maxWinsPerAccount: int
+  payoutsReserved: int
+  payoutsReleased: int
+  expiresAt: DateTime
+  refundAfter: DateTime
+  creatorWallet: String?
+  escrowAddress: String?
+  fundingSignature: String?
+  fundedAt: DateTime?

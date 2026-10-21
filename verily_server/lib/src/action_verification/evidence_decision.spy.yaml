@@ -1,0 +1,21 @@
+### Append-only verdict history; a new review never erases an earlier decision.
+class: EvidenceDecision
+serverOnly: true
+table: verily_evidence_decision
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  evidenceId: UuidValue, relation(parent=verily_action_evidence, onDelete=Cascade)
+  status: EvidenceDecisionStatus
+  verifierType: String
+  modelName: String?
+  modelVersion: String?
+  confidence: double?
+  reasonCode: String
+  summary: String
+  reviewedByAuthUser: module:auth:AuthUser?, relation(optional, onDelete=SetNull)
+  createdAt: DateTime, defaultModel=now
+indexes:
+  verily_evidence_decision_created_idx:
+    fields: evidenceId, createdAt
+  verily_evidence_decision_reviewer_idx:
+    fields: reviewedByAuthUserId, createdAt

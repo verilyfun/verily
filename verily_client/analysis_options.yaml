@@ -1,0 +1,14 @@
+include: package:verily_lints/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - lib/src/protocol/**
+    - lib/src/generated/**
+
+linter:
+  rules:
+    public_member_api_docs: false
+    lines_longer_than_80_chars: false
+
+formatter:
+  trailing_commas: preserve

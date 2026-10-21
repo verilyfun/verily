@@ -1,0 +1,3 @@
+class: AppEventRecoveryTask
+fields:
+  batchSize: int

@@ -1,0 +1,24 @@
+### Append-only, privacy-safe abuse decision recorded before proof acceptance or payout.
+class: AbuseRiskAssessment
+serverOnly: true
+table: verily_abuse_risk_assessment
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  ### Retains the affected action for aggregate monitoring without storing an account or attempt identifier.
+  actionDefinitionId: UuidValue, relation(parent=verily_action_definition, onDelete=Restrict)
+  ### SHA-256 key derived from phase, policy, pseudonymized attempt, and immutable proof identity.
+  assessmentKey: String
+  phase: String
+  policyVersion: String
+  disposition: String
+  tier: String
+  score: int
+  signalCodes: List<String>
+  correlationWindowStartsAt: DateTime
+  createdAt: DateTime
+indexes:
+  verily_abuse_assessment_key_idx:
+    fields: assessmentKey
+    unique: true
+  verily_abuse_assessment_action_time_idx:
+    fields: actionDefinitionId, createdAt

@@ -1,0 +1,21 @@
+### Single-use expiring venue code; atomic consumption prevents replay across attempts.
+class: ActionQrChallenge
+serverOnly: true
+table: verily_action_qr_challenge
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  requirementId: UuidValue, relation(parent=verily_action_requirement, onDelete=Cascade)
+  createdByAuthUser: module:auth:AuthUser?, relation(onDelete=Cascade)
+  secretHash: String
+  expiresAt: DateTime
+  usedAt: DateTime?
+  usedByAttemptId: UuidValue?, relation(parent=verily_action_attempt, onDelete=SetNull)
+  createdAt: DateTime, defaultModel=now
+indexes:
+  verily_action_qr_challenge_secret_unique_idx:
+    fields: secretHash
+    unique: true
+  verily_action_qr_challenge_requirement_expiry_idx:
+    fields: requirementId, expiresAt
+  verily_action_qr_challenge_used_attempt_idx:
+    fields: usedByAttemptId

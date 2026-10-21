@@ -1,0 +1,9 @@
+{
+  "name": "verily-escrow-clients",
+  "private": true,
+  "description": "Pinned Codama renderers used by `pina generate` for the reward escrow program.",
+  "devDependencies": {
+    "codama": "1.11.0",
+    "codama-renderers-dart": "0.5.6"
+  }
+}

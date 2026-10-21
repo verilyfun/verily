@@ -1,0 +1,12 @@
+### draft: terms editable. awaitingFunding: terms frozen, escrow address
+### derived, creator signing. funded: escrow verified on chain, action may
+### publish. ended: no new payouts reserved; reserved ones still release until
+### the refund window. closed: the refund window has passed.
+enum: RewardPoolStatus
+serialized: byName
+values:
+  - draft
+  - awaitingFunding
+  - funded
+  - ended
+  - closed

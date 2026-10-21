@@ -1,0 +1,6 @@
+enum: EvidenceAppealStatus
+serialized: byName
+values:
+  - pending
+  - accepted
+  - rejected

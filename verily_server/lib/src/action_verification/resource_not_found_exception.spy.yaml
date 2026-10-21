@@ -1,0 +1,6 @@
+### The thing asked for does not exist or is not visible to the caller. The
+### message is safe to show; it never says which of the two applies.
+exception: ResourceNotFoundException
+fields:
+  resource: MissingResource
+  message: String

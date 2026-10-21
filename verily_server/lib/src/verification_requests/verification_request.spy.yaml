@@ -1,0 +1,47 @@
+### An App's request that one person prove something with the Verily app.
+### Accepting it creates a private, single-use action with one attempt that
+### runs through the normal capture and verification pipeline.
+class: VerificationRequest
+serverOnly: true
+table: verily_verification_request
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  appId: UuidValue, relation(parent=verily_app, onDelete=Restrict)
+  kind: VerificationRequestKind
+  instructions: String?
+  check: VerificationRequestCheck
+  ### The App's place, private to Verily; receipts say only inside or outside.
+  placeLatitude: double?
+  placeLongitude: double?
+  placeRadiusMeters: double?
+  spokenChallenge: bool
+  shareEvidence: bool
+  redirectUri: String
+  state: String?
+  status: VerificationRequestStatus
+  expiresAt: DateTime
+  participantAuthUser: module:auth:AuthUser?, relation(optional, onDelete=SetNull)
+  ### The participant's pairwise subject for this App, set on acceptance.
+  subject: String?
+  actionDefinitionId: UuidValue?, relation(parent=verily_action_definition, onDelete=Restrict)
+  attemptId: UuidValue?, relation(parent=verily_action_attempt, onDelete=Restrict)
+  acceptedAt: DateTime?
+  ### Whether the person agreed to let the App download the capture.
+  evidenceShared: bool, default=false
+  ### Hash of the one-time receipt code handed to the App's redirect.
+  codeHash: String?
+  codeExpiresAt: DateTime?
+  codeUsedAt: DateTime?
+  completedAt: DateTime?
+  createdAt: DateTime
+  updatedAt: DateTime
+indexes:
+  verily_verification_request_app_idx:
+    fields: appId, createdAt
+  verily_verification_request_status_idx:
+    fields: status, expiresAt
+  verily_verification_request_code_idx:
+    fields: codeHash
+    unique: true
+  verily_verification_request_attempt_idx:
+    fields: attemptId

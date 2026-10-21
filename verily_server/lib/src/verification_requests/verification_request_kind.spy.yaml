@@ -1,0 +1,7 @@
+enum: VerificationRequestKind
+serialized: byName
+values:
+  - video
+  - photo
+  - audio
+  - location

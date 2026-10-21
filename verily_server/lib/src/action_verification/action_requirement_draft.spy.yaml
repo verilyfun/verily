@@ -1,0 +1,36 @@
+class: ActionRequirementDraft
+fields:
+  requirementKey: String
+  kind: ActionRequirementKind
+  title: String
+  instructions: String
+  isRequired: bool
+  latitude: double?
+  longitude: double?
+  radiusMeters: double?
+  maxAccuracyMeters: double?
+  verificationPrompt: String?
+  minDurationSeconds: int?
+  maxDurationSeconds: int?
+  minConfidence: double?
+  verificationPolicy: ActionVerificationPolicy?
+  ### Video and audio only; null keeps the default (on). Photos never have one.
+  spokenChallengeRequired: bool?
+  movementKind: ActionMovementKind?
+  motionType: ActionMotionType?
+  motionAxis: ActionMotionAxis?
+  targetRepetitions: int?
+  minAngularSpeedRadiansPerSecond: double?
+  maxAngularSpeedRadiansPerSecond: double?
+  minAxisDominance: double?
+  minFreeFallMilliseconds: int?
+  maxFreeFallMilliseconds: int?
+  minPeakAccelerationMetersPerSecondSquared: double?
+  maxPeakAccelerationMetersPerSecondSquared: double?
+  qrCode: String?
+  ### The creator's App that confirms an `external` requirement.
+  appId: UuidValue?
+  ### Push (the App confirms) or pull (Verily asks the App); push when null.
+  appVerificationMode: AppVerificationMode?
+  ### Optional phone-only check for video, photo, or audio proof.
+  localCheck: ActionLocalCheck?

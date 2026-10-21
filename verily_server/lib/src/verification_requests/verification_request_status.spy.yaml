@@ -1,0 +1,11 @@
+enum: VerificationRequestStatus
+serialized: byName
+values:
+  ### Waiting for a person to open and accept it.
+  - open
+  ### Accepted; the person is capturing or verification is running.
+  - accepted
+  - declined
+  ### The attempt reached a final verdict (verified or rejected).
+  - completed
+  - expired

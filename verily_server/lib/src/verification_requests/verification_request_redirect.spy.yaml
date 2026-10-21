@@ -1,0 +1,6 @@
+### Where the Verily app returns the person: the App's exact redirect URI with
+### `request_id`, `state`, and either `code` or `status=declined`.
+class: VerificationRequestRedirect
+fields:
+  redirectUrl: String
+  codeExpiresAt: DateTime?

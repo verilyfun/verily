@@ -1,0 +1,27 @@
+### Binds capture integrity to immutable evidence, not merely to a device or session.
+class: ActionCaptureChallenge
+serverOnly: true
+table: verily_action_capture_challenge
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  attemptId: UuidValue, relation(parent=verily_action_attempt, onDelete=Cascade)
+  requirementId: UuidValue, relation(parent=verily_action_requirement, onDelete=Restrict)
+  participantAuthUser: module:auth:AuthUser?, relation(onDelete=Cascade)
+  requestHash: String
+  evidenceBindingHash: String
+  expiresAt: DateTime
+  usedAt: DateTime?
+  provider: String?
+  verdict: String?
+  tokenHash: String?
+  createdAt: DateTime, defaultModel=now
+indexes:
+  verily_action_capture_challenge_request_hash_unique_idx:
+    fields: requestHash
+    unique: true
+  verily_action_capture_challenge_attempt_created_idx:
+    fields: attemptId, createdAt
+  verily_action_capture_challenge_requirement_fk_idx:
+    fields: requirementId
+  verily_action_capture_challenge_expiry_idx:
+    fields: expiresAt

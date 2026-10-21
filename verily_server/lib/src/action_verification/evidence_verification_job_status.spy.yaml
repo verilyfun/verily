@@ -1,0 +1,7 @@
+enum: EvidenceVerificationJobStatus
+serialized: byName
+values:
+  - queued
+  - running
+  - completed
+  - failed

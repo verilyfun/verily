@@ -1,0 +1,11 @@
+class: EvidenceSubmissionResult
+fields:
+  attempt: ActionAttemptView
+  requirementId: UuidValue
+  ### The verdict so far; null while uploaded media waits for automated
+  ### verification, which completes the attempt on its own.
+  status: EvidenceDecisionStatus?
+  confidence: double?
+  reasonCode: String
+  summary: String
+  provenanceLevel: EvidenceProvenanceLevel, default=basic

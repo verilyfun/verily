@@ -1,0 +1,37 @@
+# Production configuration. Traffic arrives through a TLS-terminating load
+# balancer; the container listens on the internal ports below.
+
+apiServer:
+  port: 8180
+  publicHost: api.verily.fun
+  publicPort: 443
+  publicScheme: https
+
+insightsServer:
+  port: 8181
+  publicHost: insights.verily.fun
+  publicPort: 443
+  publicScheme: https
+
+webServer:
+  port: 8182
+  publicHost: app.verily.fun
+  publicPort: 443
+  publicScheme: https
+
+database:
+  host: database.private-production.verily.fun
+  port: 5432
+  name: verily
+  user: postgres
+  requireSsl: true
+
+redis:
+  enabled: false
+  host: redis.private-production.verily.fun
+  port: 6379
+
+maxRequestSize: 1048576
+
+sessionLogs:
+  consoleEnabled: false

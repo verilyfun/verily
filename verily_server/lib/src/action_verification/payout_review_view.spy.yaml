@@ -1,0 +1,7 @@
+### What a reviewer sees about proof held because its payout needs a person.
+class: PayoutReviewView
+fields:
+  amountPerPayout: int
+  tokenSymbol: String
+  decimals: int
+  thresholdAtoms: int

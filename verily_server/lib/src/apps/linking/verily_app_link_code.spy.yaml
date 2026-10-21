@@ -1,0 +1,22 @@
+### A one-time, five-minute code from a deep-link approval, bound to the App,
+### the account, the exact redirect URI, and the App's state. Only its hash is
+### stored.
+class: VerilyAppLinkCode
+serverOnly: true
+table: verily_app_link_code
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  appId: UuidValue, relation(parent=verily_app, onDelete=Cascade)
+  authUser: module:auth:AuthUser?, relation(onDelete=Cascade)
+  codeHash: String
+  redirectUri: String
+  state: String?
+  expiresAt: DateTime
+  usedAt: DateTime?
+  createdAt: DateTime
+indexes:
+  verily_app_link_code_hash_idx:
+    fields: codeHash
+    unique: true
+  verily_app_link_code_expiry_idx:
+    fields: expiresAt

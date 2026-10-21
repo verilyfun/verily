@@ -1,0 +1,3 @@
+class: RewardPayoutTask
+fields:
+  payoutId: UuidValue

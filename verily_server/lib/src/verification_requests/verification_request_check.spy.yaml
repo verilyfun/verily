@@ -1,0 +1,7 @@
+enum: VerificationRequestCheck
+serialized: byName
+values:
+  ### Provenance only: a genuine live capture, without judging what it shows.
+  - captureOnly
+  ### Verily also checks that the capture meets the instructions.
+  - content
