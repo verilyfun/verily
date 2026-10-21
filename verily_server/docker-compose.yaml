@@ -5,7 +5,7 @@ services:
     # image. Port 8191 matches devenv and config/{development,test}.yaml.
     image: imresamu/postgis:16-3.6
     ports:
-      - "127.0.0.1:8191:5432"
+      - "127.0.0.1:${VERILY_POSTGRES_PORT:-8191}:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_DB: verily
@@ -18,6 +18,41 @@ services:
       interval: 2s
       timeout: 5s
       retries: 15
+
+  # The production image in production mode against this database, applying
+  # migrations on start. Opt in with `--profile server`. Like production, it
+  # reads secrets only from the injected environment: export them first
+  # (`devenv shell test:server-image` generates throwaway ones).
+  server:
+    profiles: ["server"]
+    image: verily-server:local
+    platform: linux/amd64
+    build:
+      context: ..
+      dockerfile: verily_server/Dockerfile
+      target: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${VERILY_SERVER_WEB_PORT:-8182}:8182"
+    environment:
+      VERILY_APPLY_MIGRATIONS: "true"
+      SERVERPOD_DATABASE_HOST: postgres
+      SERVERPOD_DATABASE_PORT: "5432"
+      SERVERPOD_DATABASE_REQUIRE_SSL: "false"
+      SERVERPOD_DATABASE_PASSWORD:
+      SERVERPOD_SERVICE_SECRET:
+      SERVERPOD_PASSWORD_emailSecretHashPepper:
+      SERVERPOD_PASSWORD_jwtHmacSha512PrivateKey:
+      SERVERPOD_PASSWORD_jwtRefreshTokenHashPepper:
+      VERILY_EVIDENCE_B2_S3_ENDPOINT:
+      VERILY_EVIDENCE_B2_REGION:
+      VERILY_EVIDENCE_B2_BUCKET_NAME:
+      VERILY_EVIDENCE_B2_KEY_ID:
+      VERILY_EVIDENCE_B2_APPLICATION_KEY:
+      VERILY_WEBHOOK_SIGNING_MASTER_KEY:
+      VERILY_RECEIPT_SIGNING_KEY:
 
 volumes:
   verily_data:

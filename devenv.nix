@@ -700,6 +700,91 @@ in
         config.scripts.dart.scriptPackage
       ];
     };
+    "test:server-image" = {
+      exec = ''
+        set -euo pipefail
+        cd "$DEVENV_ROOT"
+        # The host's Docker engine (Docker, OrbStack, or a podman machine)
+        # builds the image. MediaPipe's runtime is published for Linux x64
+        # only, so the image is linux/amd64 everywhere.
+        if ! docker info >/dev/null 2>&1; then
+          echo "test:server-image needs a running Docker or Podman machine:" \
+            "\`docker info\` cannot reach one. Start it (for example" \
+            "\`podman machine start\`) and run this lane again." >&2
+          exit 69
+        fi
+        build() {
+          docker build --platform linux/amd64 --file verily_server/Dockerfile \
+            --target "$1" --tag "$2" .
+        }
+        build local-check-replay verily-server:local-check-replay
+        build production verily-server:local
+
+        echo "Replaying pinned fixtures on the image's MediaPipe runtime..."
+        docker run --rm --platform linux/amd64 verily-server:local-check-replay
+
+        echo "Booting the production image against PostGIS with migrations..."
+        free_port() {
+          local port="$1"
+          while nc -z 127.0.0.1 "$port" >/dev/null 2>&1; do
+            port=$((port + 1))
+          done
+          echo "$port"
+        }
+        export VERILY_POSTGRES_PORT="$(free_port 18191)"
+        export VERILY_SERVER_WEB_PORT="$(free_port 18182)"
+        # Throwaway values for the secrets production requires. Backblaze is
+        # configured, as production demands, but never contacted.
+        secret() { openssl rand -base64 "$1"; }
+        export SERVERPOD_DATABASE_PASSWORD="$(secret 24)"
+        export SERVERPOD_SERVICE_SECRET="$(secret 48)"
+        export SERVERPOD_PASSWORD_emailSecretHashPepper="$(secret 48)"
+        export SERVERPOD_PASSWORD_jwtHmacSha512PrivateKey="$(secret 64)"
+        export SERVERPOD_PASSWORD_jwtRefreshTokenHashPepper="$(secret 48)"
+        export VERILY_EVIDENCE_B2_S3_ENDPOINT="https://s3.image-check.invalid"
+        export VERILY_EVIDENCE_B2_REGION="image-check"
+        export VERILY_EVIDENCE_B2_BUCKET_NAME="verily-image-check"
+        export VERILY_EVIDENCE_B2_KEY_ID="image-check"
+        export VERILY_EVIDENCE_B2_APPLICATION_KEY="$(secret 24)"
+        export VERILY_WEBHOOK_SIGNING_MASTER_KEY="$(secret 48)"
+        export VERILY_RECEIPT_SIGNING_KEY="$(secret 32)"
+        compose=(docker compose --file verily_server/docker-compose.yaml
+          --project-name verily-image-check --profile server)
+        trap '"''${compose[@]}" down --volumes >/dev/null 2>&1 || true' EXIT
+        "''${compose[@]}" up --detach --no-build server
+        healthy=false
+        for _ in $(seq 1 90); do
+          if curl --fail --silent --show-error \
+            "http://127.0.0.1:$VERILY_SERVER_WEB_PORT/healthz" >/dev/null 2>&1; then
+            healthy=true
+            break
+          fi
+          sleep 2
+        done
+        if [ "$healthy" != true ]; then
+          "''${compose[@]}" logs server >&2
+          echo "The production image did not become healthy." >&2
+          exit 1
+        fi
+        echo "The production image is serving /healthz."
+
+        echo "Checking the migrated schema contracts..."
+        cd "$DEVENV_ROOT/${serverDir}"
+        SERVERPOD_DATABASE_HOST=127.0.0.1 \
+          SERVERPOD_DATABASE_PORT="$VERILY_POSTGRES_PORT" \
+          SERVERPOD_DATABASE_NAME=verily \
+          dart run tool/verify_schema_contracts.dart
+      '';
+      description = "Build the linux/amd64 server image, replay local checks on its MediaPipe runtime, and boot it against PostGIS with migrations.";
+      binary = "bash";
+      packages = [
+        pkgs.curl
+        pkgs.netcat
+        pkgs.openssl
+        pkgs.postgresql_16
+        config.scripts.dart.scriptPackage
+      ];
+    };
     "lint:analyze" = {
       exec = ''
         set -e
