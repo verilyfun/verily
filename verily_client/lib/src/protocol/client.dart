@@ -209,6 +209,16 @@ class EndpointActionVerification extends _isc.EndpointRef {
     {'limit': limit},
   );
 
+  /// One action by id, for a deep-linked action page. Throws
+  /// [ResourceNotFoundException] when it does not exist or is not visible.
+  _ida.Future<_ijjtlylw.ActionOpportunity> getAction({
+    required _isc.UuidValue actionId,
+  }) => caller.callServerEndpoint<_ijjtlylw.ActionOpportunity>(
+    'actionVerification',
+    'getAction',
+    {'actionId': actionId},
+  );
+
   /// Live actions whose public place is within [radiusKm] (clamped to
   /// 0.1-50 km) of the given point, nearest first. The point is coarsened
   /// and never stored.
@@ -442,6 +452,15 @@ class EndpointVerilyApp extends _isc.EndpointRef {
         'listApps',
         {},
       );
+
+  /// One of the caller's Apps, for its detail page.
+  _ida.Future<_in92p10u.VerilyAppView> getApp({
+    required _isc.UuidValue appId,
+  }) => caller.callServerEndpoint<_in92p10u.VerilyAppView>(
+    'verilyApp',
+    'getApp',
+    {'appId': appId},
+  );
 
   /// Registers an App. The returned key is never retrievable again.
   _ida.Future<_i3hnfj5e.VerilyAppCredential> createApp({

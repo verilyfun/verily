@@ -192,6 +192,11 @@ model provenance. Participants only ever see the product copy.
 `VERILY_MEDIA_VERIFIER_MODE` selects `manual-review` (default, needs no
 secret), `openrouter`, or `cloud`. Partial configuration stops startup.
 
+These internal codes are for audit and review. The app only ever sees the
+public codes in [Serverpod API](serverpod-api.md#reason-codes-the-app-sees):
+views map every internal code, including any reason an App sent, onto that
+set.
+
 ### On-device checks replayed on the server (mp-replay)
 
 A video, photo, or audio requirement can carry a **local check**: something a

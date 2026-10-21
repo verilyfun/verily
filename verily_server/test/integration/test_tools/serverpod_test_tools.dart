@@ -726,6 +726,35 @@ class _ActionVerificationEndpoint {
     });
   }
 
+  _ida.Future<_iryxm23q.ActionOpportunity> getAction(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required _is.UuidValue actionId,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'actionVerification',
+            method: 'getAction',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'actionVerification',
+          methodName: 'getAction',
+          parameters: _ist.testObjectToJson({'actionId': actionId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<_iryxm23q.ActionOpportunity>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
   _ida.Future<List<_iryxm23q.ActionOpportunity>> listNearbyActions(
     _ist.TestSessionBuilder sessionBuilder, {
     required double latitude,
@@ -1296,6 +1325,35 @@ class _VerilyAppEndpoint {
           _localUniqueSession,
           _localCallContext.arguments,
         ) as _ida.Future<List<_i4dty38s.VerilyAppView>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_i4dty38s.VerilyAppView> getApp(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required _is.UuidValue appId,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'verilyApp',
+            method: 'getApp',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'verilyApp',
+          methodName: 'getApp',
+          parameters: _ist.testObjectToJson({'appId': appId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<_i4dty38s.VerilyAppView>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

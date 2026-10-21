@@ -2,6 +2,7 @@ import 'package:serverpod/serverpod.dart';
 import 'package:verily_server/src/account/account_access.dart';
 import 'package:verily_server/src/action_verification/action_verification_service.dart';
 import 'package:verily_server/src/action_verification/action_views.dart';
+import 'package:verily_server/src/action_verification/public_reasons.dart';
 import 'package:verily_server/src/evidence_storage/evidence_object_access.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 import 'package:verily_server/src/rewards/reward_configuration.dart';
@@ -120,7 +121,7 @@ class EvidenceReviewService {
           durationSeconds: evidence.durationSeconds,
           capturedAt: evidence.capturedAt,
           submittedAt: evidence.submittedAt,
-          reviewReasonCode: latest.reasonCode,
+          reviewReasonCode: publicReviewReason(latest.reasonCode),
           reviewSummary: latest.summary,
           mediaUrl: await _mediaUrl(session, reviewerStorage, evidence),
           spokenChallengeWord: evidence.spokenChallengeWord,

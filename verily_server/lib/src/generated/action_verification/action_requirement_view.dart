@@ -41,6 +41,9 @@ abstract class ActionRequirementView
     this.minDurationSeconds,
     this.maxDurationSeconds,
     this.verificationPolicy,
+    this.verificationPrompt,
+    this.minConfidence,
+    this.venueCodeConfigured,
     bool? spokenChallengeRequired,
     this.acceptedContentTypes,
     this.maxByteLength,
@@ -78,6 +81,9 @@ abstract class ActionRequirementView
     int? minDurationSeconds,
     int? maxDurationSeconds,
     _i0pk7h0c.ActionVerificationPolicy? verificationPolicy,
+    String? verificationPrompt,
+    double? minConfidence,
+    bool? venueCodeConfigured,
     bool? spokenChallengeRequired,
     List<String>? acceptedContentTypes,
     int? maxByteLength,
@@ -126,6 +132,13 @@ abstract class ActionRequirementView
           ? null
           : _i0pk7h0c.ActionVerificationPolicy.fromJson(
               (jsonSerialization['verificationPolicy'] as String),
+            ),
+      verificationPrompt: jsonSerialization['verificationPrompt'] as String?,
+      minConfidence: (jsonSerialization['minConfidence'] as num?)?.toDouble(),
+      venueCodeConfigured: jsonSerialization['venueCodeConfigured'] == null
+          ? null
+          : _is.BoolJsonExtension.fromJson(
+              jsonSerialization['venueCodeConfigured'],
             ),
       spokenChallengeRequired:
           jsonSerialization['spokenChallengeRequired'] == null
@@ -229,6 +242,17 @@ abstract class ActionRequirementView
 
   _i0pk7h0c.ActionVerificationPolicy? verificationPolicy;
 
+  /// Creator view only: the creator-written verifier text (null when the
+  /// server writes it, for tracked movements and label-only local checks)
+  /// and the confidence threshold, so a draft round-trips unchanged.
+  String? verificationPrompt;
+
+  double? minConfidence;
+
+  /// Creator view only: whether a venue code secret is stored. Saving the
+  /// draft with `qrCode: null` keeps it; sending a new code replaces it.
+  bool? venueCodeConfigured;
+
   /// Whether the app must fetch a challenge word before recording.
   bool spokenChallengeRequired;
 
@@ -293,6 +317,9 @@ abstract class ActionRequirementView
     int? minDurationSeconds,
     int? maxDurationSeconds,
     _i0pk7h0c.ActionVerificationPolicy? verificationPolicy,
+    String? verificationPrompt,
+    double? minConfidence,
+    bool? venueCodeConfigured,
     bool? spokenChallengeRequired,
     List<String>? acceptedContentTypes,
     int? maxByteLength,
@@ -333,6 +360,10 @@ abstract class ActionRequirementView
       if (maxDurationSeconds != null) 'maxDurationSeconds': maxDurationSeconds,
       if (verificationPolicy != null)
         'verificationPolicy': verificationPolicy?.toJson(),
+      if (verificationPrompt != null) 'verificationPrompt': verificationPrompt,
+      if (minConfidence != null) 'minConfidence': minConfidence,
+      if (venueCodeConfigured != null)
+        'venueCodeConfigured': venueCodeConfigured,
       'spokenChallengeRequired': spokenChallengeRequired,
       if (acceptedContentTypes != null)
         'acceptedContentTypes': acceptedContentTypes?.toJson(),
@@ -385,6 +416,10 @@ abstract class ActionRequirementView
       if (maxDurationSeconds != null) 'maxDurationSeconds': maxDurationSeconds,
       if (verificationPolicy != null)
         'verificationPolicy': verificationPolicy?.toJson(),
+      if (verificationPrompt != null) 'verificationPrompt': verificationPrompt,
+      if (minConfidence != null) 'minConfidence': minConfidence,
+      if (venueCodeConfigured != null)
+        'venueCodeConfigured': venueCodeConfigured,
       'spokenChallengeRequired': spokenChallengeRequired,
       if (acceptedContentTypes != null)
         'acceptedContentTypes': acceptedContentTypes?.toJson(),
@@ -443,6 +478,9 @@ class _ActionRequirementViewImpl extends ActionRequirementView {
     int? minDurationSeconds,
     int? maxDurationSeconds,
     _i0pk7h0c.ActionVerificationPolicy? verificationPolicy,
+    String? verificationPrompt,
+    double? minConfidence,
+    bool? venueCodeConfigured,
     bool? spokenChallengeRequired,
     List<String>? acceptedContentTypes,
     int? maxByteLength,
@@ -478,6 +516,9 @@ class _ActionRequirementViewImpl extends ActionRequirementView {
          minDurationSeconds: minDurationSeconds,
          maxDurationSeconds: maxDurationSeconds,
          verificationPolicy: verificationPolicy,
+         verificationPrompt: verificationPrompt,
+         minConfidence: minConfidence,
+         venueCodeConfigured: venueCodeConfigured,
          spokenChallengeRequired: spokenChallengeRequired,
          acceptedContentTypes: acceptedContentTypes,
          maxByteLength: maxByteLength,
@@ -521,6 +562,9 @@ class _ActionRequirementViewImpl extends ActionRequirementView {
     Object? minDurationSeconds = _Undefined,
     Object? maxDurationSeconds = _Undefined,
     Object? verificationPolicy = _Undefined,
+    Object? verificationPrompt = _Undefined,
+    Object? minConfidence = _Undefined,
+    Object? venueCodeConfigured = _Undefined,
     bool? spokenChallengeRequired,
     Object? acceptedContentTypes = _Undefined,
     Object? maxByteLength = _Undefined,
@@ -566,6 +610,15 @@ class _ActionRequirementViewImpl extends ActionRequirementView {
           verificationPolicy is _i0pk7h0c.ActionVerificationPolicy?
           ? verificationPolicy
           : this.verificationPolicy,
+      verificationPrompt: verificationPrompt is String?
+          ? verificationPrompt
+          : this.verificationPrompt,
+      minConfidence: minConfidence is double?
+          ? minConfidence
+          : this.minConfidence,
+      venueCodeConfigured: venueCodeConfigured is bool?
+          ? venueCodeConfigured
+          : this.venueCodeConfigured,
       spokenChallengeRequired:
           spokenChallengeRequired ?? this.spokenChallengeRequired,
       acceptedContentTypes: acceptedContentTypes is List<String>?

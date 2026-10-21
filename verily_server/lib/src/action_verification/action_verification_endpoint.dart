@@ -165,6 +165,19 @@ class ActionVerificationEndpoint extends Endpoint {
     );
   }
 
+  /// One action by id, for a deep-linked action page. Throws
+  /// [ResourceNotFoundException] when it does not exist or is not visible.
+  Future<ActionOpportunity> getAction(
+    Session session, {
+    required UuidValue actionId,
+  }) {
+    return service.getAction(
+      session,
+      authUserId: _caller(session),
+      actionId: actionId,
+    );
+  }
+
   /// Live actions whose public place is within [radiusKm] (clamped to
   /// 0.1-50 km) of the given point, nearest first. The point is coarsened
   /// and never stored.

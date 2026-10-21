@@ -162,7 +162,7 @@ void main() {
               bea,
               actionId: action.id,
             ),
-            throwsStateError,
+            throwsA(isA<ResourceNotFoundException>()),
           );
           await expectLater(
             endpoints.actionVerification.publishAction(
@@ -634,7 +634,7 @@ void main() {
           expect(firstResult.status, ActionAttemptStatus.verified);
           expect(firstResult.verifiedRank, 1);
           expect(secondResult.status, ActionAttemptStatus.capacityReached);
-          expect(secondResult.rejectionCode, 'action_capacity_reached');
+          expect(secondResult.rejectionCode, 'action_full');
           final stored = await ActionDefinition.db.findById(
             sessionBuilder.build(),
             action.id,

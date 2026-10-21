@@ -558,6 +558,7 @@ class RewardPoolService {
             myWins: winsByPool[pool.id] ?? 0,
             status: pool.status,
             expiresAt: pool.expiresAt,
+            refundDelayDays: pool.refundDelaySeconds ~/ Duration.secondsPerDay,
             escrowAddress: pool.escrowAddress,
           ),
     };

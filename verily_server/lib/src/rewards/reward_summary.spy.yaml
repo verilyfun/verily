@@ -13,5 +13,8 @@ fields:
   myWins: int
   status: RewardPoolStatus
   expiresAt: DateTime
+  ### Days after expiry before the creator can reclaim the rest, as in the
+  ### terms draft (the pool stores seconds).
+  refundDelayDays: int, default=7
   ### Anyone can read this escrow on chain; null until funding starts.
   escrowAddress: String?

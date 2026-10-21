@@ -376,6 +376,27 @@ class Endpoints extends _is.EndpointDispatch {
                         limit: params['limit'],
                       ),
         ),
+        'getAction': _is.MethodConnector(
+          name: 'getAction',
+          params: {
+            'actionId': _is.ParameterDescription(
+              name: 'actionId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['actionVerification']
+                          as _il8ja9q3.ActionVerificationEndpoint)
+                      .getAction(
+                        session,
+                        actionId: params['actionId'],
+                      ),
+        ),
         'listNearbyActions': _is.MethodConnector(
           name: 'listNearbyActions',
           params: {
@@ -841,6 +862,25 @@ class Endpoints extends _is.EndpointDispatch {
                 Map<String, dynamic> params,
               ) async => (endpoints['verilyApp'] as _iqeqjjry.VerilyAppEndpoint)
                   .listApps(session),
+        ),
+        'getApp': _is.MethodConnector(
+          name: 'getApp',
+          params: {
+            'appId': _is.ParameterDescription(
+              name: 'appId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['verilyApp'] as _iqeqjjry.VerilyAppEndpoint)
+                  .getApp(
+                    session,
+                    appId: params['appId'],
+                  ),
         ),
         'createApp': _is.MethodConnector(
           name: 'createApp',

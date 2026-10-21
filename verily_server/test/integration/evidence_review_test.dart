@@ -223,7 +223,7 @@ void main() {
         );
 
         expect(result.status, ActionAttemptStatus.rejected);
-        expect(result.rejectionCode, 'manual_review_rejected');
+        expect(result.rejectionCode, 'proof_not_accepted');
       },
     );
 

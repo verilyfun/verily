@@ -3,7 +3,6 @@ import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart';
 import 'package:test/test.dart';
 import 'package:verily_server/src/action_verification/action_verification_service.dart';
-import 'package:verily_server/src/action_verification/action_views.dart';
 import 'package:verily_server/src/action_verification/evidence_verification_worker.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 import 'package:verily_server/src/rewards/reward_configuration.dart';
@@ -1076,7 +1075,7 @@ void main() {
 
         expect(held.status, ActionAttemptStatus.pendingReview);
         expect(held.rewardValueReview, isTrue);
-        expect(held.rejectionCode, highValuePayoutReviewCode);
+        expect(held.rejectionCode, 'payout_review');
         expect(held.payoutStatus, isNull);
         final session = sessionBuilder.build();
         expect(await _payoutFor(session, held.id), isNull);
@@ -1090,7 +1089,7 @@ void main() {
           limit: 10,
         );
         final item = queue.single;
-        expect(item.reviewReasonCode, highValuePayoutReviewCode);
+        expect(item.reviewReasonCode, 'payout_review');
         expect(item.payoutReview!.amountPerPayout, 30000000);
         expect(
           item.payoutReview!.thresholdAtoms,

@@ -2,6 +2,7 @@ import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart';
 import 'package:verily_server/src/action_verification/action_period.dart';
 import 'package:verily_server/src/action_verification/local_check/local_check_catalog.dart';
+import 'package:verily_server/src/action_verification/public_reasons.dart';
 import 'package:verily_server/src/evidence_storage/evidence_media_types.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 import 'package:verily_server/src/rewards/reward_pool_service.dart';
@@ -71,6 +72,25 @@ class ActionViews {
             session,
             where: (table) => table.requirementId.inSet(requirementIds),
           );
+    // Venue secrets are never shown; creators only learn one is stored.
+    final creatorRequirementIds = <UuidValue>{
+      for (final requirement in requirements)
+        if (actions.any(
+          (action) =>
+              action.id == requirement.actionDefinitionId &&
+              action.creatorAuthUserId == viewerAuthUserId,
+        ))
+          requirement.id!,
+    };
+    final qrRules = creatorRequirementIds.isEmpty
+        ? const <ActionQrRule>[]
+        : await ActionQrRule.db.find(
+            session,
+            where: (table) => table.requirementId.inSet(creatorRequirementIds),
+          );
+    final venueCodeRequirementIds = {
+      for (final rule in qrRules) rule.requirementId,
+    };
     final appIds = {for (final rule in externalRules) rule.appId};
     final apps = appIds.isEmpty
         ? const <VerilyApp>[]
@@ -170,11 +190,16 @@ class ActionViews {
                 motion: motionByRequirement[requirement.id],
                 app: appByRequirement[requirement.id],
                 external: externalByRequirement[requirement.id],
+                creatorView: action.creatorAuthUserId == viewerAuthUserId,
+                venueCodeConfigured: venueCodeRequirementIds.contains(
+                  requirement.id,
+                ),
               ),
           ],
           myAttempt: switch (attemptByAction[action.id]) {
             final attempt? => attemptView(
               attempt,
+              action: action,
               payout: payouts[attempt.id],
               acceptedRequirementIds: accepted[attempt.id] ?? const [],
             ),
@@ -266,6 +291,8 @@ ActionRequirementView requirementView(
   ActionMotionRule? motion,
   VerilyApp? app,
   ActionExternalRule? external,
+  bool creatorView = false,
+  bool venueCodeConfigured = false,
 }) {
   final mediaKind = mediaKindOf(requirement.kind);
   return ActionRequirementView(
@@ -283,6 +310,12 @@ ActionRequirementView requirementView(
     minDurationSeconds: media?.minDurationSeconds ?? motion?.minDurationSeconds,
     maxDurationSeconds: media?.maxDurationSeconds ?? motion?.maxDurationSeconds,
     verificationPolicy: media?.verificationPolicy,
+    verificationPrompt: creatorView ? creatorWrittenPrompt(media) : null,
+    minConfidence: creatorView ? media?.minConfidence : null,
+    venueCodeConfigured:
+        creatorView && requirement.kind == ActionRequirementKind.qrCode
+        ? venueCodeConfigured
+        : null,
     spokenChallengeRequired: media?.spokenChallengeRequired ?? false,
     acceptedContentTypes: mediaKind == null
         ? null
@@ -327,19 +360,40 @@ ActionRequirementView requirementView(
   );
 }
 
+/// [attemptView] with its action loaded, for single attempts returned to the
+/// app.
+Future<ActionAttemptView> attemptViewWithAction(
+  Session session,
+  ActionAttempt attempt, {
+  RewardPayout? payout,
+  Transaction? transaction,
+}) async {
+  final action = await ActionDefinition.db.findById(
+    session,
+    attempt.actionDefinitionId,
+    transaction: transaction,
+  );
+  return attemptView(attempt, payout: payout, action: action);
+}
+
+/// The app-facing attempt. [action] fills its title and key; the reason is
+/// always a public code (see `public_reasons.dart`).
 ActionAttemptView attemptView(
   ActionAttempt attempt, {
   RewardPayout? payout,
+  ActionDefinition? action,
   List<UuidValue>? acceptedRequirementIds,
 }) {
   return ActionAttemptView(
     id: attempt.id!,
     actionDefinitionId: attempt.actionDefinitionId,
+    actionTitle: action?.title,
+    actionKey: action?.actionKey,
     periodKey: attempt.periodKey,
     status: attempt.status,
     verificationScore: attempt.verificationScore,
     verifiedRank: attempt.verifiedRank,
-    rejectionCode: attempt.rejectionCode,
+    rejectionCode: publicAttemptReason(attempt),
     startedAt: attempt.startedAt,
     submittedAt: attempt.submittedAt,
     verifiedAt: attempt.verifiedAt,
@@ -351,4 +405,31 @@ ActionAttemptView attemptView(
         attempt.status == ActionAttemptStatus.pendingReview &&
         attempt.rejectionCode == highValuePayoutReviewCode,
   );
+}
+
+/// The verifier text a creator wrote, or null when the server wrote it (a
+/// tracked movement, or a local check without creator text), so saving the
+/// view back as a draft reproduces the stored rule exactly.
+String? creatorWrittenPrompt(ActionMediaRule? media) {
+  if (media == null || media.movementKind != null) return null;
+  final check = switch (media) {
+    ActionMediaRule(
+      localCheckTask: final task?,
+      localCheckLabel: final label?,
+      localCheckMinScore: final minScore?,
+      localCheckMinFrames: final minFrames?,
+    ) =>
+      ActionLocalCheck(
+        task: task,
+        label: label,
+        minScore: minScore,
+        minFrames: minFrames,
+      ),
+    _ => null,
+  };
+  if (check != null &&
+      media.verificationPrompt == localCheckVerificationPrompt(check)) {
+    return null;
+  }
+  return media.verificationPrompt;
 }

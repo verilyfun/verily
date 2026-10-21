@@ -164,6 +164,22 @@ class ActionAuthoringService {
             message: 'You already use that action key.',
           );
         }
+        // Read before a reused draft's requirements are replaced, so a venue
+        // code saved as null keeps its stored secret.
+        final storedVenueCodes = latest == null
+            ? const <String, String>{}
+            : await _venueCodeHashes(
+                session,
+                actionId: latest.id!,
+                transaction: transaction,
+              );
+        for (final item in input.requirements) {
+          if (item.draft.kind == ActionRequirementKind.qrCode &&
+              item.draft.qrCode == null &&
+              !storedVenueCodes.containsKey(item.key)) {
+            throw ArgumentError('Enter the venue code for "${item.title}".');
+          }
+        }
 
         final reusableDraft =
             asDraft && latest?.status == ActionDefinitionStatus.draft
@@ -241,6 +257,7 @@ class ActionAuthoringService {
             requirement.id!,
             item,
             transaction,
+            inheritedQrSecretHash: storedVenueCodes[item.key],
           );
         }
         await rewardPools.applyDraftTerms(
@@ -256,16 +273,25 @@ class ActionAuthoringService {
     );
   }
 
+  /// The creator's full view of one of their actions, draft or not. Throws
+  /// [ResourceNotFoundException] for anything else.
   Future<ActionOpportunity> previewAction(
     Session session, {
     required UuidValue authUserId,
     required UuidValue actionId,
   }) async {
-    final action = await _ownedAction(
+    final action = await ActionDefinition.db.findFirstRow(
       session,
-      authUserId: authUserId,
-      actionId: actionId,
+      where: (table) =>
+          table.id.equals(actionId) &
+          table.creatorAuthUserId.equals(authUserId),
     );
+    if (action == null) {
+      throw ResourceNotFoundException(
+        resource: MissingResource.action,
+        message: 'This action was not found.',
+      );
+    }
     return views.opportunity(
       session,
       action: action,
@@ -706,4 +732,34 @@ class _ValidatedRequest {
   final String timeZone;
   final List<ValidatedRequirement> requirements;
   final ValidatedRewardTerms? reward;
+}
+
+/// Venue-code secret hashes of one revision, by requirement key.
+Future<Map<String, String>> _venueCodeHashes(
+  Session session, {
+  required UuidValue actionId,
+  required Transaction transaction,
+}) async {
+  final requirements = await ActionRequirement.db.find(
+    session,
+    where: (table) =>
+        table.actionDefinitionId.equals(actionId) &
+        table.kind.equals(ActionRequirementKind.qrCode),
+    transaction: transaction,
+  );
+  if (requirements.isEmpty) return const {};
+  final rules = await ActionQrRule.db.find(
+    session,
+    where: (table) => table.requirementId.inSet(<UuidValue>{
+      for (final requirement in requirements) requirement.id!,
+    }),
+    transaction: transaction,
+  );
+  final keyById = {
+    for (final requirement in requirements)
+      requirement.id!: requirement.requirementKey,
+  };
+  return {
+    for (final rule in rules) keyById[rule.requirementId]!: rule.secretHash,
+  };
 }

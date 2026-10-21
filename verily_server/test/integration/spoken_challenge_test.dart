@@ -332,7 +332,7 @@ void main() {
           );
 
           expect(result.status, EvidenceDecisionStatus.rejected);
-          expect(result.reasonCode, 'spoken_challenge_predates_capture');
+          expect(result.reasonCode, 'challenge_word_too_early');
           final stored = await evidence();
           expect(
             await EvidenceVerificationJob.db.count(

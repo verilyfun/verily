@@ -15,6 +15,14 @@ fields:
   minDurationSeconds: int?
   maxDurationSeconds: int?
   verificationPolicy: ActionVerificationPolicy?
+  ### Creator view only: the creator-written verifier text (null when the
+  ### server writes it, for tracked movements and label-only local checks)
+  ### and the confidence threshold, so a draft round-trips unchanged.
+  verificationPrompt: String?
+  minConfidence: double?
+  ### Creator view only: whether a venue code secret is stored. Saving the
+  ### draft with `qrCode: null` keeps it; sending a new code replaces it.
+  venueCodeConfigured: bool?
   ### Whether the app must fetch a challenge word before recording.
   spokenChallengeRequired: bool, default=false
   ### Media types and size the upload flow accepts for this proof.

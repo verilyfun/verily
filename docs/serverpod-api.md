@@ -18,11 +18,12 @@ Local ports (see `devenv.nix`): API 8180, Insights 8181, web 8182, Postgres
 | `listTemplates()`                                                           | The twelve value-free templates                                                                               |
 | `draftActionFromPrompt(prompt:)`                                            | AI draft proposal; throws `ActionDraftingUnavailableException` when AI is off or the daily allowance is spent |
 | `createAction(request)` / `saveActionDraft(request)`                        | Create or update the caller's draft (optional `reward` terms)                                                 |
-| `previewAction(actionId:)`                                                  | The creator's view of a draft                                                                                 |
+| `previewAction(actionId:)`                                                  | The creator's full view, including creator-only rule fields; typed not-found                                  |
 | `listOwnedActions(limit:)`                                                  | The caller's own actions                                                                                      |
 | `publishAction(actionId:, expectedRevision:)`                               | Publish; a rewarded action needs a funded pool                                                                |
 | `pauseAction(actionId:, expectedRevision:)`                                 | Stop new attempts                                                                                             |
 | `createQrChallenge(requirementId:, validitySeconds:)`                       | A short-lived, single-use venue code (`verily:v1:`)                                                           |
+| `getAction(actionId:)`                                                      | One action for a deep-linked page (published, or the caller's own); typed not-found                           |
 | `listAvailableActions(limit:)`                                              | Live actions for the caller                                                                                   |
 | `listNearbyActions(latitude:, longitude:, radiusKm:, limit:)`               | Live actions with a place within 0.1 to 50 km, nearest first                                                  |
 | `beginAttempt(actionId:, idempotencyKey:)`                                  | Open (or return) the caller's attempt for this period                                                         |
@@ -55,6 +56,7 @@ See [reward escrow](reward-escrow.md).
 | Method                                              | Purpose                                                                                 |
 | --------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | `listApps()`                                        | The caller's Apps                                                                       |
+| `getApp(appId:)`                                    | One of the caller's Apps, for its detail page; typed not-found                          |
 | `createApp(name:, websiteUrl:)`                     | Register an App; returns its first key once                                             |
 | `createKey(appId:)`                                 | A new `vly_<keyId>.<secret>` key, shown once (at most two active)                       |
 | `revokeKey(appId:, keyId:)`                         | Revoke one key                                                                          |
@@ -103,7 +105,9 @@ Authentication uses Serverpod's identity providers: `emailIdp`, `googleIdp`
 
 ### Errors
 
-Typed, product-safe exceptions reach the client: `ActionAuthoringException`
+Typed, product-safe exceptions reach the client: `ResourceNotFoundException`
+(with a `MissingResource`: `action` or `app`; the message never says whether
+the thing is missing or hidden), `ActionAuthoringException`
 (with an `ActionAuthoringProblem`), `ActionDraftingUnavailableException`,
 `AppUnavailableException`, `AppPlatformException` (with an
 `AppPlatformProblem`: `invalidWebhookUrl`, `webhooksUnavailable`,
@@ -181,3 +185,71 @@ Ed25519 receipt seed), and `VERILY_RECEIPT_RETIRED_PUBLIC_KEYS` (still
 published after a rotation). Development generates the first two; staging and
 production require them. A missing key disables only webhooks or receipts,
 with typed errors; a malformed one stops startup.
+
+## Reason codes the app sees
+
+`EvidenceSubmissionResult.reasonCode` and `ActionAttemptView.rejectionCode`
+are always one of these public codes. Internal verifier codes, model and
+provider details, and reasons an App sent are kept on the decision for audit
+and never returned. `summary` is short product copy.
+
+| Code                                                                             | Meaning                                                                         |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `proof_accepted`                                                                 | The proof passed                                                                |
+| `checking`                                                                       | Verification is running                                                         |
+| `needs_review`                                                                   | A person will check it                                                          |
+| `proof_not_accepted`                                                             | It did not show what the action asks for                                        |
+| `proof_missing`                                                                  | Required proof is still missing                                                 |
+| `action_full`                                                                    | The action reached its completion limit                                         |
+| `outside_area`, `location_not_precise`, `location_too_old`                       | The location check failed for that reason                                       |
+| `phone_clock`                                                                    | The capture time does not match the phone clock                                 |
+| `recording_length`                                                               | The recording was too short or too long                                         |
+| `challenge_word_missing`, `challenge_word_too_early`, `challenge_word_not_heard` | The spoken word was not fetched, came after recording started, or was not heard |
+| `code_not_matched`                                                               | The venue code did not match                                                    |
+| `motion_not_matched`                                                             | The phone movement did not match                                                |
+| `capture_not_verified`                                                           | The phone could not verify the capture                                          |
+| `payout_review`                                                                  | A person checks it because the reward is large                                  |
+| `app_confirmed`, `app_not_confirmed`                                             | The App confirmed, or did not                                                   |
+| `app_checking`, `app_unreachable`, `app_no_answer`                               | Asking the App; it could not be reached; it never answered                      |
+
+Reviewers see `EvidenceReviewQueueItem.reviewReasonCode` as one of
+`payout_review`, `security_review`, `challenge_word_unclear`,
+`location_review`, `abuse_review`, `local_check_unavailable`,
+`verifier_unavailable`, `low_confidence`, or `needs_review`.
+
+## Client-visible changes since the platform phase
+
+All additive: new fields are nullable or defaulted, and no field or method was
+removed or renamed.
+
+- `actionVerification.getAction(actionId:)` (new) returns the participant view
+  of one action: any published public action, including paused and completed
+  ones, or the caller's own drafts. Other drafts, private verification-request
+  actions, actions under a safety hold, and unknown ids throw
+  `ResourceNotFoundException(resource: action)`.
+- `actionVerification.previewAction` now throws
+  `ResourceNotFoundException(resource: action)` instead of a generic error.
+- `verilyApp.getApp(appId:)` (new) returns one `VerilyAppView`; unknown or
+  someone else's App throws `ResourceNotFoundException(resource: app)`.
+- `ActionAttemptView.actionTitle` and `actionKey` (new, nullable) are filled on
+  every attempt the endpoints return, including `listMyAttempts`.
+- `ActionRequirementView.verificationPrompt`, `minConfidence`, and
+  `venueCodeConfigured` (new, nullable) are filled only in the creator's own
+  views (`previewAction`, `listOwnedActions`, creator `getAction`), so the
+  editor can save a loaded draft back without losing anything.
+  `verificationPrompt` is null when the server writes it (tracked movements,
+  and local checks saved without creator text); send it back as null.
+- Venue codes: saving a draft with `qrCode: null` keeps the secret already
+  stored for that requirement key, including when editing a published action
+  creates its next revision. To rotate a static code, save the draft with a
+  new `qrCode` and publish it. Live, single-use codes from `createQrChallenge`
+  rotate on their own. A venue-code requirement with no stored secret still
+  needs a code.
+- `RewardSummary.refundDelayDays` (new, defaults to 7 in older payloads)
+  mirrors the terms draft; the pool stores seconds.
+- `ResourceNotFoundException` and the `MissingResource` enum (new).
+- `EvidenceSubmissionResult.reasonCode`, `ActionAttemptView.rejectionCode`, and
+  `EvidenceReviewQueueItem.reviewReasonCode` now carry only the public codes
+  above.
+- The participant pull trigger is `actionVerification.requestAppVerification`
+  ("I did it", with an optional `reference` of at most 120 characters).

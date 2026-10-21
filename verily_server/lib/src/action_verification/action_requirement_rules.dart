@@ -94,11 +94,15 @@ ValidatedRequirement validateRequirementDraft(
         ActionRequirementKind.audio:
       spokenChallengeRequired = _validateMediaDraft(draft, mediaKind!);
     case ActionRequirementKind.qrCode:
-      final code = requiredText(draft.qrCode ?? '', 'qrCode', maxLength: 512);
-      if (code.length < _minimumQrCodeLength) {
-        throw ArgumentError(
-          'QR codes need at least $_minimumQrCodeLength characters.',
-        );
+      // A null code keeps the secret stored for this requirement key; the
+      // authoring service resolves it, or refuses when there is none.
+      if (draft.qrCode case final value?) {
+        final code = requiredText(value, 'qrCode', maxLength: 512);
+        if (code.length < _minimumQrCodeLength) {
+          throw ArgumentError(
+            'QR codes need at least $_minimumQrCodeLength characters.',
+          );
+        }
       }
     case ActionRequirementKind.motion:
       const MotionEvidenceAnalyzer().validateRule(_motionRuleFromDraft(draft));
@@ -185,12 +189,16 @@ bool _validateMediaDraft(ActionRequirementDraft draft, MediaEvidenceKind kind) {
 }
 
 /// Persists the rule row for one validated requirement.
+///
+/// A venue-code requirement saved with `qrCode: null` stores
+/// [inheritedQrSecretHash], the hash already stored for its requirement key.
 Future<void> insertRequirementRule(
   Session session,
   UuidValue requirementId,
   ValidatedRequirement requirement,
-  Transaction transaction,
-) async {
+  Transaction transaction, {
+  String? inheritedQrSecretHash,
+}) async {
   final draft = requirement.draft;
   switch (draft.kind) {
     case ActionRequirementKind.location:
@@ -246,7 +254,12 @@ Future<void> insertRequirementRule(
         session,
         ActionQrRule(
           requirementId: requirementId,
-          secretHash: secretSha256Hex(draft.qrCode!),
+          secretHash: switch (draft.qrCode) {
+            final code? => secretSha256Hex(code),
+            null =>
+              inheritedQrSecretHash ??
+                  (throw ArgumentError('Enter the venue code for this proof.')),
+          },
         ),
         transaction: transaction,
       );

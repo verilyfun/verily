@@ -9,6 +9,7 @@ import 'package:serverpod/serverpod.dart';
 import 'package:verily_server/src/account/account_access.dart';
 import 'package:verily_server/src/action_verification/action_verification_service.dart';
 import 'package:verily_server/src/action_verification/action_views.dart';
+import 'package:verily_server/src/action_verification/public_reasons.dart';
 import 'package:verily_server/src/apps/app_confirmation_payload.dart';
 import 'package:verily_server/src/apps/app_rate_limiter.dart';
 import 'package:verily_server/src/apps/app_subjects.dart';
@@ -931,41 +932,45 @@ class AppPullCheckService {
       throw StateError('The action attempt was not found.');
     }
     final (status, reason, summary) = switch (check.status) {
+      // The App's own reason stays on the decision for audit; the app sees
+      // only Verily's public codes.
       AppPullCheckStatus.accepted => (
         EvidenceDecisionStatus.accepted,
-        check.reasonCode ?? 'app_confirmed',
+        PublicReason.appConfirmed,
         'Confirmed by ${app.name}.',
       ),
       AppPullCheckStatus.rejected || AppPullCheckStatus.expired => (
         EvidenceDecisionStatus.rejected,
-        check.reasonCode ?? 'app_not_confirmed',
+        check.status == AppPullCheckStatus.expired
+            ? PublicReason.appNoAnswer
+            : PublicReason.appNotConfirmed,
         check.status == AppPullCheckStatus.expired
             ? '${app.name} did not answer in time.'
             : '${app.name} did not confirm this.',
       ),
       AppPullCheckStatus.waiting => (
         null,
-        'app_verification_waiting',
+        PublicReason.appChecking,
         'Waiting for ${app.name} to confirm.',
       ),
       AppPullCheckStatus.calling => (
         null,
-        'app_verification_calling',
+        PublicReason.appChecking,
         'Checking with ${app.name}.',
       ),
       AppPullCheckStatus.retrying => (
         null,
-        'app_verification_retrying',
+        PublicReason.appChecking,
         'We could not reach ${app.name} yet. We will keep trying.',
       ),
       AppPullCheckStatus.failed => (
         null,
-        'app_verification_failed',
+        PublicReason.appUnreachable,
         '${app.name} did not answer. Try again later.',
       ),
     };
     return EvidenceSubmissionResult(
-      attempt: attemptView(attempt),
+      attempt: await attemptViewWithAction(session, attempt),
       requirementId: target.requirementId,
       status: status,
       confidence: status == null ? null : 1,

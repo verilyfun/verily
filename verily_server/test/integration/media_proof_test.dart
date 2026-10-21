@@ -693,7 +693,7 @@ void main() {
           );
 
           expect(result.status, EvidenceDecisionStatus.rejected);
-          expect(result.reasonCode, 'media_duration_out_of_range');
+          expect(result.reasonCode, 'recording_length');
           final evidence = await evidenceFor(attempt.id);
           expect(
             await EvidenceVerificationJob.db.count(
@@ -707,7 +707,7 @@ void main() {
             attempt.id,
           );
           expect(completed.status, ActionAttemptStatus.rejected);
-          expect(completed.rejectionCode, 'media_duration_out_of_range');
+          expect(completed.rejectionCode, 'recording_length');
         },
       );
 
@@ -727,7 +727,7 @@ void main() {
         );
 
         expect(result.status, EvidenceDecisionStatus.rejected);
-        expect(result.reasonCode, 'media_capture_time_invalid');
+        expect(result.reasonCode, 'phone_clock');
       });
     });
 

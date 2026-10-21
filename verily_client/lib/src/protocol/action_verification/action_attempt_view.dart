@@ -22,6 +22,8 @@ abstract class ActionAttemptView
   ActionAttemptView._({
     required this.id,
     required this.actionDefinitionId,
+    this.actionTitle,
+    this.actionKey,
     required this.periodKey,
     required this.status,
     this.verificationScore,
@@ -40,6 +42,8 @@ abstract class ActionAttemptView
   factory ActionAttemptView({
     required _isc.UuidValue id,
     required _isc.UuidValue actionDefinitionId,
+    String? actionTitle,
+    String? actionKey,
     required String periodKey,
     required _i8xrgke5.ActionAttemptStatus status,
     double? verificationScore,
@@ -61,6 +65,8 @@ abstract class ActionAttemptView
       actionDefinitionId: _isc.UuidValueJsonExtension.fromJson(
         jsonSerialization['actionDefinitionId'],
       ),
+      actionTitle: jsonSerialization['actionTitle'] as String?,
+      actionKey: jsonSerialization['actionKey'] as String?,
       periodKey: jsonSerialization['periodKey'] as String,
       status: _i8xrgke5.ActionAttemptStatus.fromJson(
         (jsonSerialization['status'] as String),
@@ -113,6 +119,11 @@ abstract class ActionAttemptView
 
   _isc.UuidValue actionDefinitionId;
 
+  /// The action's title and key, so lists of attempts need no lookup.
+  String? actionTitle;
+
+  String? actionKey;
+
   String periodKey;
 
   _i8xrgke5.ActionAttemptStatus status;
@@ -151,6 +162,8 @@ abstract class ActionAttemptView
   ActionAttemptView copyWith({
     _isc.UuidValue? id,
     _isc.UuidValue? actionDefinitionId,
+    String? actionTitle,
+    String? actionKey,
     String? periodKey,
     _i8xrgke5.ActionAttemptStatus? status,
     double? verificationScore,
@@ -171,6 +184,8 @@ abstract class ActionAttemptView
       '__className__': 'ActionAttemptView',
       'id': id.toJson(),
       'actionDefinitionId': actionDefinitionId.toJson(),
+      if (actionTitle != null) 'actionTitle': actionTitle,
+      if (actionKey != null) 'actionKey': actionKey,
       'periodKey': periodKey,
       'status': status.toJson(),
       if (verificationScore != null) 'verificationScore': verificationScore,
@@ -196,6 +211,8 @@ abstract class ActionAttemptView
       '__className__': 'ActionAttemptView',
       'id': id.toJson(),
       'actionDefinitionId': actionDefinitionId.toJson(),
+      if (actionTitle != null) 'actionTitle': actionTitle,
+      if (actionKey != null) 'actionKey': actionKey,
       'periodKey': periodKey,
       'status': status.toJson(),
       if (verificationScore != null) 'verificationScore': verificationScore,
@@ -227,6 +244,8 @@ class _ActionAttemptViewImpl extends ActionAttemptView {
   _ActionAttemptViewImpl({
     required _isc.UuidValue id,
     required _isc.UuidValue actionDefinitionId,
+    String? actionTitle,
+    String? actionKey,
     required String periodKey,
     required _i8xrgke5.ActionAttemptStatus status,
     double? verificationScore,
@@ -243,6 +262,8 @@ class _ActionAttemptViewImpl extends ActionAttemptView {
   }) : super._(
          id: id,
          actionDefinitionId: actionDefinitionId,
+         actionTitle: actionTitle,
+         actionKey: actionKey,
          periodKey: periodKey,
          status: status,
          verificationScore: verificationScore,
@@ -265,6 +286,8 @@ class _ActionAttemptViewImpl extends ActionAttemptView {
   ActionAttemptView copyWith({
     _isc.UuidValue? id,
     _isc.UuidValue? actionDefinitionId,
+    Object? actionTitle = _Undefined,
+    Object? actionKey = _Undefined,
     String? periodKey,
     _i8xrgke5.ActionAttemptStatus? status,
     Object? verificationScore = _Undefined,
@@ -282,6 +305,8 @@ class _ActionAttemptViewImpl extends ActionAttemptView {
     return ActionAttemptView(
       id: id ?? this.id,
       actionDefinitionId: actionDefinitionId ?? this.actionDefinitionId,
+      actionTitle: actionTitle is String? ? actionTitle : this.actionTitle,
+      actionKey: actionKey is String? ? actionKey : this.actionKey,
       periodKey: periodKey ?? this.periodKey,
       status: status ?? this.status,
       verificationScore: verificationScore is double?

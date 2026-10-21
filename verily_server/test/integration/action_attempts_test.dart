@@ -190,7 +190,7 @@ void main() {
           final result = await checkIn(participant, attempt.id);
 
           expect(result.status, EvidenceDecisionStatus.accepted);
-          expect(result.reasonCode, 'inside_geofence');
+          expect(result.reasonCode, 'proof_accepted');
           expect(result.confidence, 1);
           expect(result.requirementId, location.id);
           final stored = await ActionEvidence.db.findFirstRow(
@@ -219,7 +219,7 @@ void main() {
         );
 
         expect(result.status, EvidenceDecisionStatus.rejected);
-        expect(result.reasonCode, 'outside_geofence');
+        expect(result.reasonCode, 'outside_area');
       });
 
       test('then an imprecise check-in is rejected', () async {
@@ -232,7 +232,7 @@ void main() {
         );
 
         expect(result.status, EvidenceDecisionStatus.rejected);
-        expect(result.reasonCode, 'location_accuracy_too_low');
+        expect(result.reasonCode, 'location_not_precise');
       });
 
       test('then stale and future captures are rejected', () async {
@@ -251,9 +251,9 @@ void main() {
         );
 
         expect(stale.status, EvidenceDecisionStatus.rejected);
-        expect(stale.reasonCode, 'location_capture_stale');
+        expect(stale.reasonCode, 'location_too_old');
         expect(future.status, EvidenceDecisionStatus.rejected);
-        expect(future.reasonCode, 'location_capture_time_invalid');
+        expect(future.reasonCode, 'phone_clock');
       });
 
       test('then incomplete or wrapped coordinates are refused', () async {
@@ -330,7 +330,7 @@ void main() {
           );
 
           expect(result.status, EvidenceDecisionStatus.manualReview);
-          expect(result.reasonCode, 'location_travel_needs_review');
+          expect(result.reasonCode, 'needs_review');
         },
       );
     });
@@ -349,7 +349,7 @@ void main() {
           );
 
           expect(result.status, EvidenceDecisionStatus.rejected);
-          expect(result.reasonCode, 'qr_code_mismatch');
+          expect(result.reasonCode, 'code_not_matched');
         },
       );
 
@@ -385,7 +385,7 @@ void main() {
           );
 
           expect(accepted.status, EvidenceDecisionStatus.accepted);
-          expect(accepted.reasonCode, 'qr_code_matched');
+          expect(accepted.reasonCode, 'proof_accepted');
           expect(resubmitted.status, EvidenceDecisionStatus.accepted);
           expect(replayed.status, EvidenceDecisionStatus.rejected);
           final stored = await ActionQrChallenge.db.findFirstRow(
@@ -417,7 +417,7 @@ void main() {
         final result = await scan(participant, attempt.id, code);
 
         expect(result.status, EvidenceDecisionStatus.rejected);
-        expect(result.reasonCode, 'qr_code_mismatch');
+        expect(result.reasonCode, 'code_not_matched');
       });
 
       test('then codes need a bounded lifetime and a live action', () async {
@@ -555,7 +555,7 @@ void main() {
             input: input,
           );
           expect(replay.status, EvidenceDecisionStatus.rejected);
-          expect(replay.reasonCode, 'capture_challenge_invalid');
+          expect(replay.reasonCode, 'capture_not_verified');
         },
       );
 
@@ -658,7 +658,7 @@ void main() {
           );
 
           expect(result.status, EvidenceDecisionStatus.rejected);
-          expect(result.reasonCode, 'evidence_binding_mismatch');
+          expect(result.reasonCode, 'capture_not_verified');
           expect(integrityVerifier.requestHash, isNull);
           final stored = await ActionCaptureChallenge.db.findById(
             session,
@@ -690,7 +690,7 @@ void main() {
         );
 
         expect(result.status, EvidenceDecisionStatus.rejected);
-        expect(result.reasonCode, 'device_integrity_required');
+        expect(result.reasonCode, 'capture_not_verified');
       });
 
       test(
@@ -793,7 +793,7 @@ void main() {
         );
 
         expect(completed.status, ActionAttemptStatus.collectingEvidence);
-        expect(completed.rejectionCode, 'missing_required_evidence');
+        expect(completed.rejectionCode, 'proof_missing');
         final listed = await endpoints.actionVerification.listAvailableActions(
           participant,
           limit: 10,
@@ -814,7 +814,7 @@ void main() {
         );
 
         expect(completed.status, ActionAttemptStatus.rejected);
-        expect(completed.rejectionCode, 'outside_geofence');
+        expect(completed.rejectionCode, 'outside_area');
       });
 
       test('then proof routed to a person waits for review', () async {
@@ -1114,7 +1114,7 @@ void main() {
         );
 
         expect(motionResult.status, EvidenceDecisionStatus.accepted);
-        expect(motionResult.reasonCode, 'motion_verified');
+        expect(motionResult.reasonCode, 'proof_accepted');
         expect(motionResult.confidence, 1);
         expect(locationResult.status, EvidenceDecisionStatus.accepted);
         expect(completed.status, ActionAttemptStatus.verified);
@@ -1169,7 +1169,7 @@ void main() {
         );
 
         expect(result.status, EvidenceDecisionStatus.rejected);
-        expect(result.reasonCode, 'evidence_binding_mismatch');
+        expect(result.reasonCode, 'capture_not_verified');
       },
     );
 
@@ -1195,7 +1195,7 @@ void main() {
         );
 
         expect(result.status, EvidenceDecisionStatus.rejected);
-        expect(result.reasonCode, 'motion_rotation_wrong_axis');
+        expect(result.reasonCode, 'motion_not_matched');
       },
     );
 

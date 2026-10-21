@@ -33,6 +33,18 @@ class VerilyAppEndpoint extends Endpoint {
     );
   }
 
+  /// One of the caller's Apps, for its detail page.
+  Future<VerilyAppView> getApp(
+    Session session, {
+    required UuidValue appId,
+  }) {
+    return service.getApp(
+      session,
+      authUserId: session.authenticated!.authUserId,
+      appId: appId,
+    );
+  }
+
   /// Registers an App. The returned key is never retrievable again.
   Future<VerilyAppCredential> createApp(
     Session session, {

@@ -280,7 +280,8 @@ void main() {
         final result = await request(sender);
 
         expect(result.status, EvidenceDecisionStatus.rejected);
-        expect(result.reasonCode, 'steps_not_found');
+        // The App's own reason is kept for audit but never shown.
+        expect(result.reasonCode, 'app_not_confirmed');
         final stored = await storedAttempt();
         expect(stored.status, ActionAttemptStatus.rejected);
         expect(stored.rejectionCode, 'steps_not_found');
@@ -299,7 +300,7 @@ void main() {
           final waiting = await request(sender);
 
           expect(waiting.status, isNull);
-          expect(waiting.reasonCode, 'app_verification_waiting');
+          expect(waiting.reasonCode, 'app_checking');
           expect((await check()).status, AppPullCheckStatus.waiting);
           expect(scheduled, isEmpty);
           // Asking again while the App is deciding makes no call.
@@ -439,7 +440,7 @@ void main() {
           final result = await request(_ScriptedSender([answer]));
 
           expect(result.status, isNull);
-          expect(result.reasonCode, 'app_verification_retrying');
+          expect(result.reasonCode, 'app_checking');
           expect(
             (await storedAttempt()).status,
             ActionAttemptStatus.collectingEvidence,
@@ -560,7 +561,7 @@ void main() {
           final asked = await request(sender);
 
           expect(sender.calls, isEmpty);
-          expect(asked.reasonCode, 'app_verification_calling');
+          expect(asked.reasonCode, 'app_checking');
 
           now = now.add(appPullCallLease);
           await service(sender).callApp(session, leased.id!);

@@ -83,7 +83,9 @@ import 'action_verification/local_check/local_check_model_view.dart'
     as _iqhexf0c;
 import 'action_verification/local_check/local_check_task.dart' as _if2a7jyy;
 import 'action_verification/media_upload_confirmation.dart' as _i9z86si9;
+import 'action_verification/missing_resource.dart' as _itcje0ok;
 import 'action_verification/payout_review_view.dart' as _i05z8wlg;
+import 'action_verification/resource_not_found_exception.dart' as _ihri8lgz;
 import 'ai_usage/ai_usage_status.dart' as _ij8e0uwy;
 import 'apps/app_confirmation_outcome.dart' as _ix5pwyym;
 import 'apps/app_confirmation_view.dart' as _iqtml4wq;
@@ -177,7 +179,9 @@ export 'action_verification/local_check/device_local_check_result.dart';
 export 'action_verification/local_check/local_check_model_view.dart';
 export 'action_verification/local_check/local_check_task.dart';
 export 'action_verification/media_upload_confirmation.dart';
+export 'action_verification/missing_resource.dart';
 export 'action_verification/payout_review_view.dart';
+export 'action_verification/resource_not_found_exception.dart';
 export 'ai_usage/ai_usage_status.dart';
 export 'apps/app_confirmation_outcome.dart';
 export 'apps/app_confirmation_view.dart';
@@ -388,8 +392,14 @@ class Protocol extends _isc.SerializationManager {
     if (t == _i9z86si9.MediaUploadConfirmation) {
       return _i9z86si9.MediaUploadConfirmation.fromJson(data) as T;
     }
+    if (t == _itcje0ok.MissingResource) {
+      return _itcje0ok.MissingResource.fromJson(data) as T;
+    }
     if (t == _i05z8wlg.PayoutReviewView) {
       return _i05z8wlg.PayoutReviewView.fromJson(data) as T;
+    }
+    if (t == _ihri8lgz.ResourceNotFoundException) {
+      return _ihri8lgz.ResourceNotFoundException.fromJson(data) as T;
     }
     if (t == _ij8e0uwy.AiUsageStatus) {
       return _ij8e0uwy.AiUsageStatus.fromJson(data) as T;
@@ -766,8 +776,18 @@ class Protocol extends _isc.SerializationManager {
               : null)
           as T;
     }
+    if (t == _isc.getType<_itcje0ok.MissingResource?>()) {
+      return (data != null ? _itcje0ok.MissingResource.fromJson(data) : null)
+          as T;
+    }
     if (t == _isc.getType<_i05z8wlg.PayoutReviewView?>()) {
       return (data != null ? _i05z8wlg.PayoutReviewView.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ihri8lgz.ResourceNotFoundException?>()) {
+      return (data != null
+              ? _ihri8lgz.ResourceNotFoundException.fromJson(data)
+              : null)
           as T;
     }
     if (t == _isc.getType<_ij8e0uwy.AiUsageStatus?>()) {
@@ -1205,7 +1225,9 @@ class Protocol extends _isc.SerializationManager {
       _iqhexf0c.LocalCheckModelView => 'LocalCheckModelView',
       _if2a7jyy.LocalCheckTask => 'LocalCheckTask',
       _i9z86si9.MediaUploadConfirmation => 'MediaUploadConfirmation',
+      _itcje0ok.MissingResource => 'MissingResource',
       _i05z8wlg.PayoutReviewView => 'PayoutReviewView',
+      _ihri8lgz.ResourceNotFoundException => 'ResourceNotFoundException',
       _ij8e0uwy.AiUsageStatus => 'AiUsageStatus',
       _ix5pwyym.AppConfirmationOutcome => 'AppConfirmationOutcome',
       _iqtml4wq.AppConfirmationView => 'AppConfirmationView',
@@ -1356,8 +1378,12 @@ class Protocol extends _isc.SerializationManager {
         return 'LocalCheckTask';
       case _i9z86si9.MediaUploadConfirmation():
         return 'MediaUploadConfirmation';
+      case _itcje0ok.MissingResource():
+        return 'MissingResource';
       case _i05z8wlg.PayoutReviewView():
         return 'PayoutReviewView';
+      case _ihri8lgz.ResourceNotFoundException():
+        return 'ResourceNotFoundException';
       case _ij8e0uwy.AiUsageStatus():
         return 'AiUsageStatus';
       case _ix5pwyym.AppConfirmationOutcome():
@@ -1611,8 +1637,14 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'MediaUploadConfirmation') {
       return deserialize<_i9z86si9.MediaUploadConfirmation>(data['data']);
     }
+    if (dataClassName == 'MissingResource') {
+      return deserialize<_itcje0ok.MissingResource>(data['data']);
+    }
     if (dataClassName == 'PayoutReviewView') {
       return deserialize<_i05z8wlg.PayoutReviewView>(data['data']);
+    }
+    if (dataClassName == 'ResourceNotFoundException') {
+      return deserialize<_ihri8lgz.ResourceNotFoundException>(data['data']);
     }
     if (dataClassName == 'AiUsageStatus') {
       return deserialize<_ij8e0uwy.AiUsageStatus>(data['data']);

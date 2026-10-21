@@ -30,8 +30,9 @@ abstract class RewardSummary
     required this.myWins,
     required this.status,
     required this.expiresAt,
+    int? refundDelayDays,
     this.escrowAddress,
-  });
+  }) : refundDelayDays = refundDelayDays ?? 7;
 
   factory RewardSummary({
     required _ifrvw135.RewardCluster cluster,
@@ -45,6 +46,7 @@ abstract class RewardSummary
     required int myWins,
     required _i2n7u226.RewardPoolStatus status,
     required DateTime expiresAt,
+    int? refundDelayDays,
     String? escrowAddress,
   }) = _RewardSummaryImpl;
 
@@ -67,6 +69,7 @@ abstract class RewardSummary
       expiresAt: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['expiresAt'],
       ),
+      refundDelayDays: jsonSerialization['refundDelayDays'] as int?,
       escrowAddress: jsonSerialization['escrowAddress'] as String?,
     );
   }
@@ -94,6 +97,10 @@ abstract class RewardSummary
 
   DateTime expiresAt;
 
+  /// Days after expiry before the creator can reclaim the rest, as in the
+  /// terms draft (the pool stores seconds).
+  int refundDelayDays;
+
   /// Anyone can read this escrow on chain; null until funding starts.
   String? escrowAddress;
 
@@ -112,6 +119,7 @@ abstract class RewardSummary
     int? myWins,
     _i2n7u226.RewardPoolStatus? status,
     DateTime? expiresAt,
+    int? refundDelayDays,
     String? escrowAddress,
   });
   @override
@@ -129,6 +137,7 @@ abstract class RewardSummary
       'myWins': myWins,
       'status': status.toJson(),
       'expiresAt': expiresAt.toJson(),
+      'refundDelayDays': refundDelayDays,
       if (escrowAddress != null) 'escrowAddress': escrowAddress,
     };
   }
@@ -148,6 +157,7 @@ abstract class RewardSummary
       'myWins': myWins,
       'status': status.toJson(),
       'expiresAt': expiresAt.toJson(),
+      'refundDelayDays': refundDelayDays,
       if (escrowAddress != null) 'escrowAddress': escrowAddress,
     };
   }
@@ -173,6 +183,7 @@ class _RewardSummaryImpl extends RewardSummary {
     required int myWins,
     required _i2n7u226.RewardPoolStatus status,
     required DateTime expiresAt,
+    int? refundDelayDays,
     String? escrowAddress,
   }) : super._(
          cluster: cluster,
@@ -186,6 +197,7 @@ class _RewardSummaryImpl extends RewardSummary {
          myWins: myWins,
          status: status,
          expiresAt: expiresAt,
+         refundDelayDays: refundDelayDays,
          escrowAddress: escrowAddress,
        );
 
@@ -205,6 +217,7 @@ class _RewardSummaryImpl extends RewardSummary {
     int? myWins,
     _i2n7u226.RewardPoolStatus? status,
     DateTime? expiresAt,
+    int? refundDelayDays,
     Object? escrowAddress = _Undefined,
   }) {
     return RewardSummary(
@@ -219,6 +232,7 @@ class _RewardSummaryImpl extends RewardSummary {
       myWins: myWins ?? this.myWins,
       status: status ?? this.status,
       expiresAt: expiresAt ?? this.expiresAt,
+      refundDelayDays: refundDelayDays ?? this.refundDelayDays,
       escrowAddress: escrowAddress is String?
           ? escrowAddress
           : this.escrowAddress,

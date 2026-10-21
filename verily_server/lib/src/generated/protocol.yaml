@@ -11,6 +11,7 @@ actionVerification:
   - pauseAction:
   - createQrChallenge:
   - listAvailableActions:
+  - getAction:
   - listNearbyActions:
   - beginAttempt:
   - issueSpokenChallenge:
@@ -31,6 +32,7 @@ evidenceReview:
   - review:
 verilyApp:
   - listApps:
+  - getApp:
   - createApp:
   - createKey:
   - revokeKey:

@@ -2,6 +2,9 @@ class: ActionAttemptView
 fields:
   id: UuidValue
   actionDefinitionId: UuidValue
+  ### The action's title and key, so lists of attempts need no lookup.
+  actionTitle: String?
+  actionKey: String?
   periodKey: String
   status: ActionAttemptStatus
   verificationScore: double?

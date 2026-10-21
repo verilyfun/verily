@@ -47,6 +47,27 @@ class VerilyAppService {
     return _views(session, apps);
   }
 
+  /// One of the creator's Apps, for its detail page. Throws
+  /// [ResourceNotFoundException] for an unknown App or someone else's.
+  Future<VerilyAppView> getApp(
+    Session session, {
+    required UuidValue authUserId,
+    required UuidValue appId,
+  }) async {
+    final app = await VerilyApp.db.findFirstRow(
+      session,
+      where: (table) =>
+          table.id.equals(appId) & table.creatorAuthUserId.equals(authUserId),
+    );
+    if (app == null) {
+      throw ResourceNotFoundException(
+        resource: MissingResource.app,
+        message: 'That app was not found.',
+      );
+    }
+    return (await _views(session, [app])).single;
+  }
+
   /// Creates an App and its first key, returned exactly once.
   Future<VerilyAppCredential> createApp(
     Session session, {

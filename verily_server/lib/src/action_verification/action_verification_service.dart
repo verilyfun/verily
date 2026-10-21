@@ -19,6 +19,7 @@ import 'package:verily_server/src/action_verification/evidence_verification_queu
 import 'package:verily_server/src/action_verification/local_check/local_check_advisory.dart';
 import 'package:verily_server/src/action_verification/location_evidence_policy.dart';
 import 'package:verily_server/src/action_verification/media_evidence_verifier.dart';
+import 'package:verily_server/src/action_verification/public_reasons.dart';
 import 'package:verily_server/src/action_verification/spoken_challenge_words.dart';
 import 'package:verily_server/src/apps/app_confirmation_payload.dart';
 import 'package:verily_server/src/apps/external_confirmation.dart';
@@ -119,6 +120,39 @@ class ActionVerificationService {
     return views.opportunities(
       session,
       actions: await _withoutSafetyHolds(session, actions),
+      viewerAuthUserId: authUserId,
+    );
+  }
+
+  /// One action as a participant sees it, for a deep-linked action page.
+  ///
+  /// Published public actions are visible to everyone, including paused and
+  /// completed ones so the page can say so; the creator also sees their
+  /// drafts. Drafts of others, private verification-request actions, and
+  /// actions under a safety hold throw [ResourceNotFoundException] with the
+  /// same message, so the response never reveals which applies.
+  Future<ActionOpportunity> getAction(
+    Session session, {
+    required UuidValue authUserId,
+    required UuidValue actionId,
+  }) async {
+    final action = await ActionDefinition.db.findById(session, actionId);
+    final isCreator = action?.creatorAuthUserId == authUserId;
+    final visible =
+        action != null &&
+        (isCreator ||
+            (action.visibility == ActionVisibility.public &&
+                action.status != ActionDefinitionStatus.draft &&
+                (await _withoutSafetyHolds(session, [action])).isNotEmpty));
+    if (!visible) {
+      throw ResourceNotFoundException(
+        resource: MissingResource.action,
+        message: 'This action is not available.',
+      );
+    }
+    return views.opportunity(
+      session,
+      action: action,
       viewerAuthUserId: authUserId,
     );
   }
@@ -293,7 +327,7 @@ class ActionVerificationService {
         );
       },
     );
-    return attemptView(attempt);
+    return attemptViewWithAction(session, attempt);
   }
 
   /// Returns the account's attempt for [periodKey], creating it only when no
@@ -754,11 +788,14 @@ class ActionVerificationService {
       },
     );
     return EvidenceSubmissionResult(
-      attempt: attemptView(result.attempt),
+      attempt: await attemptViewWithAction(session, result.attempt),
       requirementId: requirement.id!,
       status: result.evaluation.status,
       confidence: result.evaluation.confidence,
-      reasonCode: result.evaluation.reasonCode,
+      reasonCode: publicDecisionReason(
+        result.evaluation.reasonCode,
+        result.evaluation.status,
+      ),
       summary: result.evaluation.summary,
       provenanceLevel: result.evaluation.provenanceLevel,
     );
@@ -977,11 +1014,14 @@ class ActionVerificationService {
       await verificationQueue.schedule(session, evidenceId: evidenceId);
     }
     return EvidenceSubmissionResult(
-      attempt: attemptView(result.attempt),
+      attempt: await attemptViewWithAction(session, result.attempt),
       requirementId: requirement.id!,
       status: result.evaluation.status,
       confidence: result.evaluation.confidence,
-      reasonCode: result.evaluation.reasonCode,
+      reasonCode: publicDecisionReason(
+        result.evaluation.reasonCode,
+        result.evaluation.status,
+      ),
       summary: result.evaluation.summary,
       provenanceLevel: result.evaluation.provenanceLevel,
     );
@@ -1150,7 +1190,12 @@ class ActionVerificationService {
         await appEventOutbox.schedule(session, eventId);
       }
     }
-    return attemptView(completed.attempt, payout: completed.payout);
+    return attemptViewWithAction(
+      session,
+      completed.attempt,
+      payout: completed.payout,
+      transaction: enclosingTransaction,
+    );
   }
 
   /// Completes [attemptId] on the participant's behalf once every required
@@ -1913,9 +1958,23 @@ LIMIT 1;
       session,
       attemptIds: {for (final attempt in attempts) attempt.id!},
     );
+    final actionIds = <UuidValue>{
+      for (final attempt in attempts) attempt.actionDefinitionId,
+    };
+    final actions = actionIds.isEmpty
+        ? const <ActionDefinition>[]
+        : await ActionDefinition.db.find(
+            session,
+            where: (table) => table.id.inSet(actionIds),
+          );
+    final actionById = {for (final action in actions) action.id!: action};
     return [
       for (final attempt in attempts)
-        attemptView(attempt, payout: payouts[attempt.id]),
+        attemptView(
+          attempt,
+          payout: payouts[attempt.id],
+          action: actionById[attempt.actionDefinitionId],
+        ),
     ];
   }
 
