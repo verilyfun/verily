@@ -65,9 +65,10 @@ class MovementBodyPainter extends CustomPainter {
         Offset(pose[joint].x * size.width, pose[joint].y * size.height);
     bool visible(int joint) => (pose[joint].visibility ?? 0) >= 0.5;
 
+    // Dusk at rest, paper at depth: the body lights up as the rep counts.
     final glowColor = atDepth
-        ? VerilyColors.movementAtDepth
-        : VerilyColors.movementJoint;
+        ? VerilyColors.movementHudInk
+        : VerilyColors.movementHudWash;
     final shoulderSpan =
         visible(PoseJoint.leftShoulder) && visible(PoseJoint.rightShoulder)
         ? (at(PoseJoint.leftShoulder) - at(PoseJoint.rightShoulder)).distance

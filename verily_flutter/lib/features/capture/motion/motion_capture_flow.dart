@@ -4,12 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skribble/skribble.dart'
-    show
-        SkribbleIcon,
-        WiredCircularProgress,
-        WiredSvgIconData,
-        WiredTheme,
-        WiredThemeScope;
+    show SkribbleIcon, WiredCircularProgress, WiredSvgIconData;
 import 'package:verily_client/verily_client.dart';
 
 import 'package:verily_flutter/app/theme/verily_icons.g.dart';
@@ -375,7 +370,7 @@ class _MotionTargetCard extends StatelessWidget {
               child: SkribbleIcon(
                 data: VerilyIcons.rotatePhone,
                 size: 28,
-                color: palette.readableAccent(palette.place),
+                color: palette.ink,
               ),
             ),
           ),
@@ -487,14 +482,14 @@ class _MotionMeter extends StatelessWidget {
       _MotionStage.matched || _MotionStage.sending => SkribbleIcon(
         data: VerilyIcons.check,
         size: 62,
-        color: palette.accent,
+        color: palette.ink,
       ),
       _MotionStage.failed || _MotionStage.notMatched => SkribbleIcon(
         data: VerilyIcons.replay,
         size: 58,
         color: palette.ink,
       ),
-      _ => SkribbleIcon(data: icon, size: 62, color: palette.accent),
+      _ => SkribbleIcon(data: icon, size: 62, color: palette.ink),
     };
     return Center(
       child: Semantics(
@@ -504,17 +499,12 @@ class _MotionMeter extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // The meter's pen takes the accent so progress reads against
-              // the ink of the dial inside it.
-              WiredThemeScope(
-                data: WiredTheme.of(
-                  context,
-                ).copyWith(borderColor: palette.accent),
-                child: WiredCircularProgress(
-                  value: meterValue,
-                  size: 176,
-                  strokeWidth: 9,
-                ),
+              // Inked like every other line: progress reads from the heavy
+              // stroke over the thin ring, not from a colour.
+              WiredCircularProgress(
+                value: meterValue,
+                size: 176,
+                strokeWidth: 9,
               ),
               Container(
                 width: 124,

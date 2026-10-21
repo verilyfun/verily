@@ -253,6 +253,13 @@ counter, the live challenge in a speech bubble ("Say “pelican”"), and a smal
 place chip with a pulsing dot inside the hatched radius. No face boxes, no
 grids, no red rectangles, no scores.
 
+The roles keep their meaning over the camera. The HUD inks with paper, fills
+with dusk, and outlines in ink; the record, stop, and shutter button is the
+night page's primary action, ink on a paper fill. A counter reaching its
+target, a body at depth, or a quick check seeing its label says so in words
+and with a paper fill, never in gold, green, or vermilion: nothing on the HUD
+is a reward or a verdict yet.
+
 ### Proof checklist
 
 One row per plain outcome: _Filmed live in Verily_, _Signed by this phone_,

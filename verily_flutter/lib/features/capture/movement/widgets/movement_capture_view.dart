@@ -394,9 +394,8 @@ class _CountHud extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = context.l10n;
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
-    final color = reached
-        ? VerilyColors.movementHudAccent
-        : VerilyColors.movementHudInk;
+    // Reaching the target is said in words and a bigger count, not a colour.
+    const color = VerilyColors.movementHudInk;
     final shadow = [
       Shadow(
         color: VerilyColors.movementScrim.withValues(alpha: 0.7),
@@ -443,7 +442,7 @@ class _CountHud extends StatelessWidget {
               Text(
                 l10n.movementCaptureBest(best),
                 style: theme.textTheme.titleMedium?.copyWith(
-                  color: VerilyColors.movementHudAccent,
+                  color: VerilyColors.movementHudMuted,
                   shadows: shadow,
                 ),
               ),
@@ -512,7 +511,6 @@ class _BottomPanel extends StatelessWidget {
                 ? l10n.movementCaptureStop
                 : l10n.movementCaptureKeepGoing,
             icon: VerilyIcons.stop,
-            emphasis: false,
             onPressed: canStop ? onStop : null,
           )
         : ViewfinderButton(
@@ -572,7 +570,7 @@ class _CueBanner extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
         decoration: BoxDecoration(
           color: highlighted
-              ? VerilyColors.movementAtDepth
+              ? VerilyColors.movementHudInk
               : VerilyColors.movementScrim.withValues(alpha: 0.7),
           borderRadius: BorderRadius.circular(VerilyRadius.chip),
         ),
@@ -602,8 +600,8 @@ class _DepthMeter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fill = progress.atDepth
-        ? VerilyColors.movementAtDepth
-        : VerilyColors.movementJoint;
+        ? VerilyColors.movementHudInk
+        : VerilyColors.movementHudMuted;
     return Semantics(
       value: context.l10n.movementCaptureDepthSemantics(
         (progress.depth * 100).round(),
@@ -664,7 +662,7 @@ class _Countdown extends StatelessWidget {
                 key: VerilyTestKeys.movementCaptureCountdown,
                 textScaler: TextScaler.noScaling,
                 style: theme.textTheme.displayLarge?.copyWith(
-                  color: VerilyColors.movementHudAccent,
+                  color: VerilyColors.movementHudInk,
                   fontSize: 160,
                   height: 1,
                 ),

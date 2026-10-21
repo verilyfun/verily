@@ -132,11 +132,16 @@ class LocalCheckGuide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accent = switch (copy.tone) {
-      LocalCheckTone.neutral => VerilyColors.movementHudInk,
-      LocalCheckTone.almost => VerilyColors.movementHudAccent,
-      LocalCheckTone.seen => VerilyColors.movementPower,
-    };
+    // The tone is told by the words and the icon. Seeing the label is also
+    // inked on paper, the HUD's emphasis, and never in a role colour: the
+    // phone has not verified anything.
+    final seen = copy.tone == LocalCheckTone.seen;
+    final fill = seen
+        ? VerilyColors.movementHudInk
+        : VerilyColors.movementScrim;
+    final ink = seen
+        ? VerilyColors.movementOutline
+        : VerilyColors.movementHudInk;
     return Semantics(
       container: true,
       liveRegion: true,
@@ -149,13 +154,13 @@ class LocalCheckGuide extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
             decoration: VerilyRoughDecoration(
-              color: VerilyColors.movementScrim,
-              outline: accent,
+              color: fill,
+              outline: ink,
               seed: 433,
             ),
             child: Row(
               children: [
-                SkribbleIcon(data: copy.icon, size: 26, color: accent),
+                SkribbleIcon(data: copy.icon, size: 26, color: ink),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -167,7 +172,7 @@ class LocalCheckGuide extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.labelMedium?.copyWith(
-                          color: VerilyColors.movementHudInk,
+                          color: ink,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -176,7 +181,7 @@ class LocalCheckGuide extends StatelessWidget {
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.titleSmall?.copyWith(
-                          color: accent,
+                          color: ink,
                         ),
                       ),
                     ],

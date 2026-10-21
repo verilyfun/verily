@@ -196,12 +196,9 @@ class LiveBadge extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: recording
-                  ? VerilyColors.movementHudAccent
+                  ? VerilyColors.movementHudInk
                   : VerilyColors.transparent,
-              border: Border.all(
-                color: VerilyColors.movementHudAccent,
-                width: 2,
-              ),
+              border: Border.all(color: VerilyColors.movementHudInk, width: 2),
             ),
           ),
           const SizedBox(width: 6),
@@ -289,13 +286,14 @@ class ViewfinderTopBar extends StatelessWidget {
   }
 }
 
-/// The big round-cornered button at the bottom of a viewfinder.
+/// The big round-cornered button at the bottom of a viewfinder: the page's
+/// one next step, so it is the night page's primary action, ink on a paper
+/// fill. Start and stop differ in word and icon, never in colour.
 class ViewfinderButton extends StatelessWidget {
   const ViewfinderButton({
     required this.label,
     required this.icon,
     required this.onPressed,
-    this.emphasis = true,
     super.key,
   });
 
@@ -303,14 +301,9 @@ class ViewfinderButton extends StatelessWidget {
   final WiredSvgIconData icon;
   final VoidCallback? onPressed;
 
-  /// The gold-on-night start button, or the paper stop button.
-  final bool emphasis;
-
   @override
   Widget build(BuildContext context) {
-    final background = emphasis
-        ? VerilyColors.movementHudAccent
-        : VerilyColors.movementHudInk;
+    const background = VerilyColors.movementHudInk;
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 420),
       child: SizedBox(

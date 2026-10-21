@@ -41,7 +41,7 @@ void main() {
   });
 
   test('inks only the pen, never a fill over the control', () {
-    const ink = VerilyColors.movementJoint;
+    const ink = VerilyColors.movementHudWash;
     const border = VerilyRoughBorder(
       side: BorderSide(color: ink, width: VerilyPen.strokeWidth),
     );
