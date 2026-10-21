@@ -568,8 +568,10 @@ in
         build:escrow
         # The Mollusk suite runs the compiled program against the real SPL
         # Token programs. It is its own Cargo workspace because Mollusk pulls
-        # crates that `audit:rust` forbids in the main workspace.
-        ${rustToolchain}/bin/cargo test \
+        # crates that `audit:rust` forbids in the main workspace. Mollusk logs
+        # every instruction at debug level; that volume overwhelms the
+        # pre-push hook runner, so only errors are printed here.
+        RUST_LOG="''${RUST_LOG:-error}" ${rustToolchain}/bin/cargo test \
           --manifest-path programs/verily_escrow/tests/mollusk/Cargo.toml \
           --locked
       '';
