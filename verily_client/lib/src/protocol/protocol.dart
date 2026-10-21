@@ -30,6 +30,8 @@ import 'package:verily_client/src/protocol/apps/app_confirmation_view.dart'
     as _iw9760io;
 import 'package:verily_client/src/protocol/apps/verily_app_view.dart'
     as _in92p10u;
+import 'package:verily_client/src/protocol/apps/webhooks/app_webhook_delivery_view.dart'
+    as _ifzy4ji6;
 import 'package:verily_client/src/protocol/moderation/moderation_case_status_view.dart'
     as _ie976x46;
 import 'package:verily_client/src/protocol/rewards/reward_payout_view.dart'
@@ -64,6 +66,7 @@ import 'action_verification/action_spoken_challenge_cleanup_task.dart'
 import 'action_verification/action_spoken_challenge_view.dart' as _iikyln3l;
 import 'action_verification/action_template.dart' as _i0iphegd;
 import 'action_verification/action_verification_policy.dart' as _i960u7rl;
+import 'action_verification/action_visibility.dart' as _ichxscv5;
 import 'action_verification/create_action_definition_request.dart' as _i5yjywpf;
 import 'action_verification/evidence_appeal_status.dart' as _i90o7tud;
 import 'action_verification/evidence_appeal_view.dart' as _iy27rorb;
@@ -73,17 +76,37 @@ import 'action_verification/evidence_review_queue_item.dart' as _i0mgpur2;
 import 'action_verification/evidence_submission_result.dart' as _iy0z34jt;
 import 'action_verification/evidence_verification_job_status.dart' as _i2k44lse;
 import 'action_verification/evidence_verification_task.dart' as _in8wt7wh;
+import 'action_verification/local_check/action_local_check.dart' as _iu3m4umr;
+import 'action_verification/local_check/device_local_check_result.dart'
+    as _iarjk3hm;
+import 'action_verification/local_check/local_check_model_view.dart'
+    as _iqhexf0c;
+import 'action_verification/local_check/local_check_task.dart' as _if2a7jyy;
 import 'action_verification/media_upload_confirmation.dart' as _i9z86si9;
 import 'action_verification/payout_review_view.dart' as _i05z8wlg;
 import 'ai_usage/ai_usage_status.dart' as _ij8e0uwy;
 import 'apps/app_confirmation_outcome.dart' as _ix5pwyym;
 import 'apps/app_confirmation_view.dart' as _iqtml4wq;
+import 'apps/app_platform_exception.dart' as _iwa6gvjs;
+import 'apps/app_platform_problem.dart' as _if20wdmx;
+import 'apps/app_pull_check_recovery_task.dart' as _inaep7ed;
+import 'apps/app_pull_check_status.dart' as _i3ubh0mc;
+import 'apps/app_pull_check_task.dart' as _i3j4e45w;
 import 'apps/app_unavailable_exception.dart' as _i3krqelq;
+import 'apps/app_verification_mode.dart' as _ijzftij0;
+import 'apps/linking/app_link_code_cleanup_task.dart' as _i36kvzuc;
+import 'apps/linking/app_link_redirect.dart' as _i6s4a256;
+import 'apps/linking/app_link_request_view.dart' as _ilshz35f;
 import 'apps/verily_app_credential.dart' as _iaui7d4n;
 import 'apps/verily_app_key_view.dart' as _ipa8tni0;
 import 'apps/verily_app_link_view.dart' as _ikihia57;
 import 'apps/verily_app_status.dart' as _ibal4ihb;
 import 'apps/verily_app_view.dart' as _ifrl0pdw;
+import 'apps/webhooks/app_event_delivery_task.dart' as _ichijhlk;
+import 'apps/webhooks/app_event_recovery_task.dart' as _igoow6fn;
+import 'apps/webhooks/app_event_status.dart' as _io6036x8;
+import 'apps/webhooks/app_webhook_delivery_view.dart' as _ifch1v2s;
+import 'apps/webhooks/verily_app_webhook_secret.dart' as _it0ux8yj;
 import 'evidence_storage/evidence_upload_cleanup_task.dart' as _ioo44wgs;
 import 'evidence_storage/evidence_upload_status.dart' as _iz4zjc1b;
 import 'moderation/moderation_audit_view.dart' as _i59xm5p1;
@@ -106,6 +129,13 @@ import 'rewards/reward_pool_view.dart' as _if6e3cxh;
 import 'rewards/reward_problem.dart' as _i4sm4ipz;
 import 'rewards/reward_summary.dart' as _i9b5h2nk;
 import 'rewards/reward_terms_draft.dart' as _iokaii94;
+import 'verification_requests/verification_request_check.dart' as _ig30b0kc;
+import 'verification_requests/verification_request_expiry_task.dart'
+    as _igwxgobn;
+import 'verification_requests/verification_request_kind.dart' as _ij8vmgkg;
+import 'verification_requests/verification_request_redirect.dart' as _ik3wnzle;
+import 'verification_requests/verification_request_status.dart' as _in2jgiwv;
+import 'verification_requests/verification_request_view.dart' as _i3v95178;
 export 'account/account_closure_status.dart';
 export 'action_verification/action_attempt_status.dart';
 export 'action_verification/action_attempt_view.dart';
@@ -132,6 +162,7 @@ export 'action_verification/action_spoken_challenge_cleanup_task.dart';
 export 'action_verification/action_spoken_challenge_view.dart';
 export 'action_verification/action_template.dart';
 export 'action_verification/action_verification_policy.dart';
+export 'action_verification/action_visibility.dart';
 export 'action_verification/create_action_definition_request.dart';
 export 'action_verification/evidence_appeal_status.dart';
 export 'action_verification/evidence_appeal_view.dart';
@@ -141,17 +172,35 @@ export 'action_verification/evidence_review_queue_item.dart';
 export 'action_verification/evidence_submission_result.dart';
 export 'action_verification/evidence_verification_job_status.dart';
 export 'action_verification/evidence_verification_task.dart';
+export 'action_verification/local_check/action_local_check.dart';
+export 'action_verification/local_check/device_local_check_result.dart';
+export 'action_verification/local_check/local_check_model_view.dart';
+export 'action_verification/local_check/local_check_task.dart';
 export 'action_verification/media_upload_confirmation.dart';
 export 'action_verification/payout_review_view.dart';
 export 'ai_usage/ai_usage_status.dart';
 export 'apps/app_confirmation_outcome.dart';
 export 'apps/app_confirmation_view.dart';
+export 'apps/app_platform_exception.dart';
+export 'apps/app_platform_problem.dart';
+export 'apps/app_pull_check_recovery_task.dart';
+export 'apps/app_pull_check_status.dart';
+export 'apps/app_pull_check_task.dart';
 export 'apps/app_unavailable_exception.dart';
+export 'apps/app_verification_mode.dart';
+export 'apps/linking/app_link_code_cleanup_task.dart';
+export 'apps/linking/app_link_redirect.dart';
+export 'apps/linking/app_link_request_view.dart';
 export 'apps/verily_app_credential.dart';
 export 'apps/verily_app_key_view.dart';
 export 'apps/verily_app_link_view.dart';
 export 'apps/verily_app_status.dart';
 export 'apps/verily_app_view.dart';
+export 'apps/webhooks/app_event_delivery_task.dart';
+export 'apps/webhooks/app_event_recovery_task.dart';
+export 'apps/webhooks/app_event_status.dart';
+export 'apps/webhooks/app_webhook_delivery_view.dart';
+export 'apps/webhooks/verily_app_webhook_secret.dart';
 export 'evidence_storage/evidence_upload_cleanup_task.dart';
 export 'evidence_storage/evidence_upload_status.dart';
 export 'moderation/moderation_audit_view.dart';
@@ -174,6 +223,12 @@ export 'rewards/reward_pool_view.dart';
 export 'rewards/reward_problem.dart';
 export 'rewards/reward_summary.dart';
 export 'rewards/reward_terms_draft.dart';
+export 'verification_requests/verification_request_check.dart';
+export 'verification_requests/verification_request_expiry_task.dart';
+export 'verification_requests/verification_request_kind.dart';
+export 'verification_requests/verification_request_redirect.dart';
+export 'verification_requests/verification_request_status.dart';
+export 'verification_requests/verification_request_view.dart';
 export 'client.dart';
 
 class Protocol extends _isc.SerializationManager {
@@ -190,7 +245,10 @@ class Protocol extends _isc.SerializationManager {
   }
 
   @override
-  T deserialize<T>(dynamic data, [Type? t]) {
+  T deserialize<T>(
+    dynamic data, [
+    Type? t,
+  ]) {
     t ??= T;
 
     final dataClassName = getClassNameFromObjectJson(data);
@@ -285,6 +343,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _i960u7rl.ActionVerificationPolicy) {
       return _i960u7rl.ActionVerificationPolicy.fromJson(data) as T;
     }
+    if (t == _ichxscv5.ActionVisibility) {
+      return _ichxscv5.ActionVisibility.fromJson(data) as T;
+    }
     if (t == _i5yjywpf.CreateActionDefinitionRequest) {
       return _i5yjywpf.CreateActionDefinitionRequest.fromJson(data) as T;
     }
@@ -312,6 +373,18 @@ class Protocol extends _isc.SerializationManager {
     if (t == _in8wt7wh.EvidenceVerificationTask) {
       return _in8wt7wh.EvidenceVerificationTask.fromJson(data) as T;
     }
+    if (t == _iu3m4umr.ActionLocalCheck) {
+      return _iu3m4umr.ActionLocalCheck.fromJson(data) as T;
+    }
+    if (t == _iarjk3hm.DeviceLocalCheckResult) {
+      return _iarjk3hm.DeviceLocalCheckResult.fromJson(data) as T;
+    }
+    if (t == _iqhexf0c.LocalCheckModelView) {
+      return _iqhexf0c.LocalCheckModelView.fromJson(data) as T;
+    }
+    if (t == _if2a7jyy.LocalCheckTask) {
+      return _if2a7jyy.LocalCheckTask.fromJson(data) as T;
+    }
     if (t == _i9z86si9.MediaUploadConfirmation) {
       return _i9z86si9.MediaUploadConfirmation.fromJson(data) as T;
     }
@@ -327,8 +400,35 @@ class Protocol extends _isc.SerializationManager {
     if (t == _iqtml4wq.AppConfirmationView) {
       return _iqtml4wq.AppConfirmationView.fromJson(data) as T;
     }
+    if (t == _iwa6gvjs.AppPlatformException) {
+      return _iwa6gvjs.AppPlatformException.fromJson(data) as T;
+    }
+    if (t == _if20wdmx.AppPlatformProblem) {
+      return _if20wdmx.AppPlatformProblem.fromJson(data) as T;
+    }
+    if (t == _inaep7ed.AppPullCheckRecoveryTask) {
+      return _inaep7ed.AppPullCheckRecoveryTask.fromJson(data) as T;
+    }
+    if (t == _i3ubh0mc.AppPullCheckStatus) {
+      return _i3ubh0mc.AppPullCheckStatus.fromJson(data) as T;
+    }
+    if (t == _i3j4e45w.AppPullCheckTask) {
+      return _i3j4e45w.AppPullCheckTask.fromJson(data) as T;
+    }
     if (t == _i3krqelq.AppUnavailableException) {
       return _i3krqelq.AppUnavailableException.fromJson(data) as T;
+    }
+    if (t == _ijzftij0.AppVerificationMode) {
+      return _ijzftij0.AppVerificationMode.fromJson(data) as T;
+    }
+    if (t == _i36kvzuc.AppLinkCodeCleanupTask) {
+      return _i36kvzuc.AppLinkCodeCleanupTask.fromJson(data) as T;
+    }
+    if (t == _i6s4a256.AppLinkRedirect) {
+      return _i6s4a256.AppLinkRedirect.fromJson(data) as T;
+    }
+    if (t == _ilshz35f.AppLinkRequestView) {
+      return _ilshz35f.AppLinkRequestView.fromJson(data) as T;
     }
     if (t == _iaui7d4n.VerilyAppCredential) {
       return _iaui7d4n.VerilyAppCredential.fromJson(data) as T;
@@ -344,6 +444,21 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _ifrl0pdw.VerilyAppView) {
       return _ifrl0pdw.VerilyAppView.fromJson(data) as T;
+    }
+    if (t == _ichijhlk.AppEventDeliveryTask) {
+      return _ichijhlk.AppEventDeliveryTask.fromJson(data) as T;
+    }
+    if (t == _igoow6fn.AppEventRecoveryTask) {
+      return _igoow6fn.AppEventRecoveryTask.fromJson(data) as T;
+    }
+    if (t == _io6036x8.AppEventStatus) {
+      return _io6036x8.AppEventStatus.fromJson(data) as T;
+    }
+    if (t == _ifch1v2s.AppWebhookDeliveryView) {
+      return _ifch1v2s.AppWebhookDeliveryView.fromJson(data) as T;
+    }
+    if (t == _it0ux8yj.VerilyAppWebhookSecret) {
+      return _it0ux8yj.VerilyAppWebhookSecret.fromJson(data) as T;
     }
     if (t == _ioo44wgs.EvidenceUploadCleanupTask) {
       return _ioo44wgs.EvidenceUploadCleanupTask.fromJson(data) as T;
@@ -410,6 +525,24 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _iokaii94.RewardTermsDraft) {
       return _iokaii94.RewardTermsDraft.fromJson(data) as T;
+    }
+    if (t == _ig30b0kc.VerificationRequestCheck) {
+      return _ig30b0kc.VerificationRequestCheck.fromJson(data) as T;
+    }
+    if (t == _igwxgobn.VerificationRequestExpiryTask) {
+      return _igwxgobn.VerificationRequestExpiryTask.fromJson(data) as T;
+    }
+    if (t == _ij8vmgkg.VerificationRequestKind) {
+      return _ij8vmgkg.VerificationRequestKind.fromJson(data) as T;
+    }
+    if (t == _ik3wnzle.VerificationRequestRedirect) {
+      return _ik3wnzle.VerificationRequestRedirect.fromJson(data) as T;
+    }
+    if (t == _in2jgiwv.VerificationRequestStatus) {
+      return _in2jgiwv.VerificationRequestStatus.fromJson(data) as T;
+    }
+    if (t == _i3v95178.VerificationRequestView) {
+      return _i3v95178.VerificationRequestView.fromJson(data) as T;
     }
     if (t == _isc.getType<_i7zadist.AccountClosureStatus?>()) {
       return (data != null
@@ -551,6 +684,10 @@ class Protocol extends _isc.SerializationManager {
               : null)
           as T;
     }
+    if (t == _isc.getType<_ichxscv5.ActionVisibility?>()) {
+      return (data != null ? _ichxscv5.ActionVisibility.fromJson(data) : null)
+          as T;
+    }
     if (t == _isc.getType<_i5yjywpf.CreateActionDefinitionRequest?>()) {
       return (data != null
               ? _i5yjywpf.CreateActionDefinitionRequest.fromJson(data)
@@ -603,6 +740,26 @@ class Protocol extends _isc.SerializationManager {
               : null)
           as T;
     }
+    if (t == _isc.getType<_iu3m4umr.ActionLocalCheck?>()) {
+      return (data != null ? _iu3m4umr.ActionLocalCheck.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_iarjk3hm.DeviceLocalCheckResult?>()) {
+      return (data != null
+              ? _iarjk3hm.DeviceLocalCheckResult.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_iqhexf0c.LocalCheckModelView?>()) {
+      return (data != null
+              ? _iqhexf0c.LocalCheckModelView.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_if2a7jyy.LocalCheckTask?>()) {
+      return (data != null ? _if2a7jyy.LocalCheckTask.fromJson(data) : null)
+          as T;
+    }
     if (t == _isc.getType<_i9z86si9.MediaUploadConfirmation?>()) {
       return (data != null
               ? _i9z86si9.MediaUploadConfirmation.fromJson(data)
@@ -629,10 +786,54 @@ class Protocol extends _isc.SerializationManager {
               : null)
           as T;
     }
+    if (t == _isc.getType<_iwa6gvjs.AppPlatformException?>()) {
+      return (data != null
+              ? _iwa6gvjs.AppPlatformException.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_if20wdmx.AppPlatformProblem?>()) {
+      return (data != null ? _if20wdmx.AppPlatformProblem.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_inaep7ed.AppPullCheckRecoveryTask?>()) {
+      return (data != null
+              ? _inaep7ed.AppPullCheckRecoveryTask.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_i3ubh0mc.AppPullCheckStatus?>()) {
+      return (data != null ? _i3ubh0mc.AppPullCheckStatus.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_i3j4e45w.AppPullCheckTask?>()) {
+      return (data != null ? _i3j4e45w.AppPullCheckTask.fromJson(data) : null)
+          as T;
+    }
     if (t == _isc.getType<_i3krqelq.AppUnavailableException?>()) {
       return (data != null
               ? _i3krqelq.AppUnavailableException.fromJson(data)
               : null)
+          as T;
+    }
+    if (t == _isc.getType<_ijzftij0.AppVerificationMode?>()) {
+      return (data != null
+              ? _ijzftij0.AppVerificationMode.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_i36kvzuc.AppLinkCodeCleanupTask?>()) {
+      return (data != null
+              ? _i36kvzuc.AppLinkCodeCleanupTask.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_i6s4a256.AppLinkRedirect?>()) {
+      return (data != null ? _i6s4a256.AppLinkRedirect.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ilshz35f.AppLinkRequestView?>()) {
+      return (data != null ? _ilshz35f.AppLinkRequestView.fromJson(data) : null)
           as T;
     }
     if (t == _isc.getType<_iaui7d4n.VerilyAppCredential?>()) {
@@ -655,6 +856,34 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_ifrl0pdw.VerilyAppView?>()) {
       return (data != null ? _ifrl0pdw.VerilyAppView.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ichijhlk.AppEventDeliveryTask?>()) {
+      return (data != null
+              ? _ichijhlk.AppEventDeliveryTask.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_igoow6fn.AppEventRecoveryTask?>()) {
+      return (data != null
+              ? _igoow6fn.AppEventRecoveryTask.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_io6036x8.AppEventStatus?>()) {
+      return (data != null ? _io6036x8.AppEventStatus.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ifch1v2s.AppWebhookDeliveryView?>()) {
+      return (data != null
+              ? _ifch1v2s.AppWebhookDeliveryView.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_it0ux8yj.VerilyAppWebhookSecret?>()) {
+      return (data != null
+              ? _it0ux8yj.VerilyAppWebhookSecret.fromJson(data)
+              : null)
           as T;
     }
     if (t == _isc.getType<_ioo44wgs.EvidenceUploadCleanupTask?>()) {
@@ -761,6 +990,42 @@ class Protocol extends _isc.SerializationManager {
       return (data != null ? _iokaii94.RewardTermsDraft.fromJson(data) : null)
           as T;
     }
+    if (t == _isc.getType<_ig30b0kc.VerificationRequestCheck?>()) {
+      return (data != null
+              ? _ig30b0kc.VerificationRequestCheck.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_igwxgobn.VerificationRequestExpiryTask?>()) {
+      return (data != null
+              ? _igwxgobn.VerificationRequestExpiryTask.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_ij8vmgkg.VerificationRequestKind?>()) {
+      return (data != null
+              ? _ij8vmgkg.VerificationRequestKind.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_ik3wnzle.VerificationRequestRedirect?>()) {
+      return (data != null
+              ? _ik3wnzle.VerificationRequestRedirect.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_in2jgiwv.VerificationRequestStatus?>()) {
+      return (data != null
+              ? _in2jgiwv.VerificationRequestStatus.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_i3v95178.VerificationRequestView?>()) {
+      return (data != null
+              ? _i3v95178.VerificationRequestView.fromJson(data)
+              : null)
+          as T;
+    }
     if (t == List<_isc.UuidValue>) {
       return (data as List).map((e) => deserialize<_isc.UuidValue>(e)).toList()
           as T;
@@ -862,6 +1127,15 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
+    if (t == List<_ifzy4ji6.AppWebhookDeliveryView>) {
+      return (data as List)
+              .map((e) => deserialize<_ifzy4ji6.AppWebhookDeliveryView>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_ie976x46.ModerationCaseStatusView>) {
       return (data as List)
               .map((e) => deserialize<_ie976x46.ModerationCaseStatusView>(e))
@@ -914,6 +1188,7 @@ class Protocol extends _isc.SerializationManager {
       _iikyln3l.ActionSpokenChallengeView => 'ActionSpokenChallengeView',
       _i0iphegd.ActionTemplate => 'ActionTemplate',
       _i960u7rl.ActionVerificationPolicy => 'ActionVerificationPolicy',
+      _ichxscv5.ActionVisibility => 'ActionVisibility',
       _i5yjywpf.CreateActionDefinitionRequest =>
         'CreateActionDefinitionRequest',
       _i90o7tud.EvidenceAppealStatus => 'EvidenceAppealStatus',
@@ -925,17 +1200,35 @@ class Protocol extends _isc.SerializationManager {
       _i2k44lse.EvidenceVerificationJobStatus =>
         'EvidenceVerificationJobStatus',
       _in8wt7wh.EvidenceVerificationTask => 'EvidenceVerificationTask',
+      _iu3m4umr.ActionLocalCheck => 'ActionLocalCheck',
+      _iarjk3hm.DeviceLocalCheckResult => 'DeviceLocalCheckResult',
+      _iqhexf0c.LocalCheckModelView => 'LocalCheckModelView',
+      _if2a7jyy.LocalCheckTask => 'LocalCheckTask',
       _i9z86si9.MediaUploadConfirmation => 'MediaUploadConfirmation',
       _i05z8wlg.PayoutReviewView => 'PayoutReviewView',
       _ij8e0uwy.AiUsageStatus => 'AiUsageStatus',
       _ix5pwyym.AppConfirmationOutcome => 'AppConfirmationOutcome',
       _iqtml4wq.AppConfirmationView => 'AppConfirmationView',
+      _iwa6gvjs.AppPlatformException => 'AppPlatformException',
+      _if20wdmx.AppPlatformProblem => 'AppPlatformProblem',
+      _inaep7ed.AppPullCheckRecoveryTask => 'AppPullCheckRecoveryTask',
+      _i3ubh0mc.AppPullCheckStatus => 'AppPullCheckStatus',
+      _i3j4e45w.AppPullCheckTask => 'AppPullCheckTask',
       _i3krqelq.AppUnavailableException => 'AppUnavailableException',
+      _ijzftij0.AppVerificationMode => 'AppVerificationMode',
+      _i36kvzuc.AppLinkCodeCleanupTask => 'AppLinkCodeCleanupTask',
+      _i6s4a256.AppLinkRedirect => 'AppLinkRedirect',
+      _ilshz35f.AppLinkRequestView => 'AppLinkRequestView',
       _iaui7d4n.VerilyAppCredential => 'VerilyAppCredential',
       _ipa8tni0.VerilyAppKeyView => 'VerilyAppKeyView',
       _ikihia57.VerilyAppLinkView => 'VerilyAppLinkView',
       _ibal4ihb.VerilyAppStatus => 'VerilyAppStatus',
       _ifrl0pdw.VerilyAppView => 'VerilyAppView',
+      _ichijhlk.AppEventDeliveryTask => 'AppEventDeliveryTask',
+      _igoow6fn.AppEventRecoveryTask => 'AppEventRecoveryTask',
+      _io6036x8.AppEventStatus => 'AppEventStatus',
+      _ifch1v2s.AppWebhookDeliveryView => 'AppWebhookDeliveryView',
+      _it0ux8yj.VerilyAppWebhookSecret => 'VerilyAppWebhookSecret',
       _ioo44wgs.EvidenceUploadCleanupTask => 'EvidenceUploadCleanupTask',
       _iz4zjc1b.EvidenceUploadStatus => 'EvidenceUploadStatus',
       _i59xm5p1.ModerationAuditView => 'ModerationAuditView',
@@ -960,6 +1253,13 @@ class Protocol extends _isc.SerializationManager {
       _i4sm4ipz.RewardProblem => 'RewardProblem',
       _i9b5h2nk.RewardSummary => 'RewardSummary',
       _iokaii94.RewardTermsDraft => 'RewardTermsDraft',
+      _ig30b0kc.VerificationRequestCheck => 'VerificationRequestCheck',
+      _igwxgobn.VerificationRequestExpiryTask =>
+        'VerificationRequestExpiryTask',
+      _ij8vmgkg.VerificationRequestKind => 'VerificationRequestKind',
+      _ik3wnzle.VerificationRequestRedirect => 'VerificationRequestRedirect',
+      _in2jgiwv.VerificationRequestStatus => 'VerificationRequestStatus',
+      _i3v95178.VerificationRequestView => 'VerificationRequestView',
       _ => null,
     };
   }
@@ -1026,6 +1326,8 @@ class Protocol extends _isc.SerializationManager {
         return 'ActionTemplate';
       case _i960u7rl.ActionVerificationPolicy():
         return 'ActionVerificationPolicy';
+      case _ichxscv5.ActionVisibility():
+        return 'ActionVisibility';
       case _i5yjywpf.CreateActionDefinitionRequest():
         return 'CreateActionDefinitionRequest';
       case _i90o7tud.EvidenceAppealStatus():
@@ -1044,6 +1346,14 @@ class Protocol extends _isc.SerializationManager {
         return 'EvidenceVerificationJobStatus';
       case _in8wt7wh.EvidenceVerificationTask():
         return 'EvidenceVerificationTask';
+      case _iu3m4umr.ActionLocalCheck():
+        return 'ActionLocalCheck';
+      case _iarjk3hm.DeviceLocalCheckResult():
+        return 'DeviceLocalCheckResult';
+      case _iqhexf0c.LocalCheckModelView():
+        return 'LocalCheckModelView';
+      case _if2a7jyy.LocalCheckTask():
+        return 'LocalCheckTask';
       case _i9z86si9.MediaUploadConfirmation():
         return 'MediaUploadConfirmation';
       case _i05z8wlg.PayoutReviewView():
@@ -1054,8 +1364,26 @@ class Protocol extends _isc.SerializationManager {
         return 'AppConfirmationOutcome';
       case _iqtml4wq.AppConfirmationView():
         return 'AppConfirmationView';
+      case _iwa6gvjs.AppPlatformException():
+        return 'AppPlatformException';
+      case _if20wdmx.AppPlatformProblem():
+        return 'AppPlatformProblem';
+      case _inaep7ed.AppPullCheckRecoveryTask():
+        return 'AppPullCheckRecoveryTask';
+      case _i3ubh0mc.AppPullCheckStatus():
+        return 'AppPullCheckStatus';
+      case _i3j4e45w.AppPullCheckTask():
+        return 'AppPullCheckTask';
       case _i3krqelq.AppUnavailableException():
         return 'AppUnavailableException';
+      case _ijzftij0.AppVerificationMode():
+        return 'AppVerificationMode';
+      case _i36kvzuc.AppLinkCodeCleanupTask():
+        return 'AppLinkCodeCleanupTask';
+      case _i6s4a256.AppLinkRedirect():
+        return 'AppLinkRedirect';
+      case _ilshz35f.AppLinkRequestView():
+        return 'AppLinkRequestView';
       case _iaui7d4n.VerilyAppCredential():
         return 'VerilyAppCredential';
       case _ipa8tni0.VerilyAppKeyView():
@@ -1066,6 +1394,16 @@ class Protocol extends _isc.SerializationManager {
         return 'VerilyAppStatus';
       case _ifrl0pdw.VerilyAppView():
         return 'VerilyAppView';
+      case _ichijhlk.AppEventDeliveryTask():
+        return 'AppEventDeliveryTask';
+      case _igoow6fn.AppEventRecoveryTask():
+        return 'AppEventRecoveryTask';
+      case _io6036x8.AppEventStatus():
+        return 'AppEventStatus';
+      case _ifch1v2s.AppWebhookDeliveryView():
+        return 'AppWebhookDeliveryView';
+      case _it0ux8yj.VerilyAppWebhookSecret():
+        return 'VerilyAppWebhookSecret';
       case _ioo44wgs.EvidenceUploadCleanupTask():
         return 'EvidenceUploadCleanupTask';
       case _iz4zjc1b.EvidenceUploadStatus():
@@ -1110,6 +1448,18 @@ class Protocol extends _isc.SerializationManager {
         return 'RewardSummary';
       case _iokaii94.RewardTermsDraft():
         return 'RewardTermsDraft';
+      case _ig30b0kc.VerificationRequestCheck():
+        return 'VerificationRequestCheck';
+      case _igwxgobn.VerificationRequestExpiryTask():
+        return 'VerificationRequestExpiryTask';
+      case _ij8vmgkg.VerificationRequestKind():
+        return 'VerificationRequestKind';
+      case _ik3wnzle.VerificationRequestRedirect():
+        return 'VerificationRequestRedirect';
+      case _in2jgiwv.VerificationRequestStatus():
+        return 'VerificationRequestStatus';
+      case _i3v95178.VerificationRequestView():
+        return 'VerificationRequestView';
     }
     className = _iacc.Protocol().getClassNameForObject(data);
     if (className != null) {
@@ -1216,6 +1566,9 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'ActionVerificationPolicy') {
       return deserialize<_i960u7rl.ActionVerificationPolicy>(data['data']);
     }
+    if (dataClassName == 'ActionVisibility') {
+      return deserialize<_ichxscv5.ActionVisibility>(data['data']);
+    }
     if (dataClassName == 'CreateActionDefinitionRequest') {
       return deserialize<_i5yjywpf.CreateActionDefinitionRequest>(data['data']);
     }
@@ -1243,6 +1596,18 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'EvidenceVerificationTask') {
       return deserialize<_in8wt7wh.EvidenceVerificationTask>(data['data']);
     }
+    if (dataClassName == 'ActionLocalCheck') {
+      return deserialize<_iu3m4umr.ActionLocalCheck>(data['data']);
+    }
+    if (dataClassName == 'DeviceLocalCheckResult') {
+      return deserialize<_iarjk3hm.DeviceLocalCheckResult>(data['data']);
+    }
+    if (dataClassName == 'LocalCheckModelView') {
+      return deserialize<_iqhexf0c.LocalCheckModelView>(data['data']);
+    }
+    if (dataClassName == 'LocalCheckTask') {
+      return deserialize<_if2a7jyy.LocalCheckTask>(data['data']);
+    }
     if (dataClassName == 'MediaUploadConfirmation') {
       return deserialize<_i9z86si9.MediaUploadConfirmation>(data['data']);
     }
@@ -1258,8 +1623,35 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'AppConfirmationView') {
       return deserialize<_iqtml4wq.AppConfirmationView>(data['data']);
     }
+    if (dataClassName == 'AppPlatformException') {
+      return deserialize<_iwa6gvjs.AppPlatformException>(data['data']);
+    }
+    if (dataClassName == 'AppPlatformProblem') {
+      return deserialize<_if20wdmx.AppPlatformProblem>(data['data']);
+    }
+    if (dataClassName == 'AppPullCheckRecoveryTask') {
+      return deserialize<_inaep7ed.AppPullCheckRecoveryTask>(data['data']);
+    }
+    if (dataClassName == 'AppPullCheckStatus') {
+      return deserialize<_i3ubh0mc.AppPullCheckStatus>(data['data']);
+    }
+    if (dataClassName == 'AppPullCheckTask') {
+      return deserialize<_i3j4e45w.AppPullCheckTask>(data['data']);
+    }
     if (dataClassName == 'AppUnavailableException') {
       return deserialize<_i3krqelq.AppUnavailableException>(data['data']);
+    }
+    if (dataClassName == 'AppVerificationMode') {
+      return deserialize<_ijzftij0.AppVerificationMode>(data['data']);
+    }
+    if (dataClassName == 'AppLinkCodeCleanupTask') {
+      return deserialize<_i36kvzuc.AppLinkCodeCleanupTask>(data['data']);
+    }
+    if (dataClassName == 'AppLinkRedirect') {
+      return deserialize<_i6s4a256.AppLinkRedirect>(data['data']);
+    }
+    if (dataClassName == 'AppLinkRequestView') {
+      return deserialize<_ilshz35f.AppLinkRequestView>(data['data']);
     }
     if (dataClassName == 'VerilyAppCredential') {
       return deserialize<_iaui7d4n.VerilyAppCredential>(data['data']);
@@ -1275,6 +1667,21 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'VerilyAppView') {
       return deserialize<_ifrl0pdw.VerilyAppView>(data['data']);
+    }
+    if (dataClassName == 'AppEventDeliveryTask') {
+      return deserialize<_ichijhlk.AppEventDeliveryTask>(data['data']);
+    }
+    if (dataClassName == 'AppEventRecoveryTask') {
+      return deserialize<_igoow6fn.AppEventRecoveryTask>(data['data']);
+    }
+    if (dataClassName == 'AppEventStatus') {
+      return deserialize<_io6036x8.AppEventStatus>(data['data']);
+    }
+    if (dataClassName == 'AppWebhookDeliveryView') {
+      return deserialize<_ifch1v2s.AppWebhookDeliveryView>(data['data']);
+    }
+    if (dataClassName == 'VerilyAppWebhookSecret') {
+      return deserialize<_it0ux8yj.VerilyAppWebhookSecret>(data['data']);
     }
     if (dataClassName == 'EvidenceUploadCleanupTask') {
       return deserialize<_ioo44wgs.EvidenceUploadCleanupTask>(data['data']);
@@ -1343,6 +1750,24 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'RewardTermsDraft') {
       return deserialize<_iokaii94.RewardTermsDraft>(data['data']);
+    }
+    if (dataClassName == 'VerificationRequestCheck') {
+      return deserialize<_ig30b0kc.VerificationRequestCheck>(data['data']);
+    }
+    if (dataClassName == 'VerificationRequestExpiryTask') {
+      return deserialize<_igwxgobn.VerificationRequestExpiryTask>(data['data']);
+    }
+    if (dataClassName == 'VerificationRequestKind') {
+      return deserialize<_ij8vmgkg.VerificationRequestKind>(data['data']);
+    }
+    if (dataClassName == 'VerificationRequestRedirect') {
+      return deserialize<_ik3wnzle.VerificationRequestRedirect>(data['data']);
+    }
+    if (dataClassName == 'VerificationRequestStatus') {
+      return deserialize<_in2jgiwv.VerificationRequestStatus>(data['data']);
+    }
+    if (dataClassName == 'VerificationRequestView') {
+      return deserialize<_i3v95178.VerificationRequestView>(data['data']);
     }
     if (dataClassName.startsWith('serverpod_auth_core.')) {
       data['className'] = dataClassName.substring(20);

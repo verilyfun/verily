@@ -249,6 +249,106 @@ ALTER TABLE verily_reward_payout ADD CONSTRAINT verily_reward_payout_check
       "recipientWallet" ~ '^[1-9A-HJ-NP-Za-km-z]{32,44}$')
     AND ("lastErrorCode" IS NULL OR "lastErrorCode" ~ '^[a-z0-9_]{1,64}$'));
 
+-- Platform: webhooks, deep links, pull checks, and verification requests.
+-- Webhook secrets are derived from the server master key, so only a version
+-- is stored. Every outbound URL and redirect is exact and fragment-free.
+ALTER TABLE verily_app ADD CONSTRAINT verily_app_webhook_check
+  CHECK (("webhookUrl" IS NULL OR ("webhookUrl" LIKE 'https://%'
+        AND length("webhookUrl") <= 2048 AND position('#' IN "webhookUrl") = 0))
+    AND "webhookSecretVersion" >= 0
+    AND (("webhookSecretVersion" = 0) = ("webhookSecretRotatedAt" IS NULL))
+    AND ("previousWebhookSecretVersion" IS NULL
+      OR "previousWebhookSecretVersion" BETWEEN 1 AND "webhookSecretVersion" - 1));
+ALTER TABLE verily_app_redirect_uri ADD CONSTRAINT verily_app_redirect_uri_check
+  CHECK (length(uri) BETWEEN 4 AND 512
+    AND uri ~ '^[a-z][a-z0-9+.-]*:[^[:space:]#*]+$'
+    AND uri NOT LIKE 'http:%');
+ALTER TABLE verily_app_rate_window ADD CONSTRAINT verily_app_rate_window_check
+  CHECK ("requestCount" >= 0 AND length(bucket) BETWEEN 1 AND 160);
+ALTER TABLE verily_app_event ADD CONSTRAINT verily_app_event_check
+  CHECK ("eventId" ~ '^vev_[A-Za-z0-9_-]{22}$'
+    AND type IN ('attempt.verified', 'attempt.rejected', 'payout.released',
+      'verification_request.completed')
+    AND status IN ('pending', 'delivering', 'delivered', 'failed')
+    AND length("dedupeKey") BETWEEN 1 AND 200
+    AND length(body) BETWEEN 2 AND 65536
+    AND "attemptCount" >= 0
+    AND ((status = 'delivered') = ("deliveredAt" IS NOT NULL))
+    AND ("lastStatusCode" IS NULL OR "lastStatusCode" BETWEEN 100 AND 599));
+ALTER TABLE verily_app_webhook_delivery ADD CONSTRAINT verily_app_webhook_delivery_check
+  CHECK ("eventId" ~ '^vev_[A-Za-z0-9_-]{22}$'
+    AND "eventType" IN ('attempt.verify', 'attempt.verified',
+      'attempt.rejected', 'payout.released', 'verification_request.completed')
+    AND "attemptNumber" >= 1
+    AND "durationMilliseconds" >= 0
+    AND ("statusCode" IS NULL OR "statusCode" BETWEEN 100 AND 599)
+    AND (NOT succeeded OR ("statusCode" BETWEEN 200 AND 299 AND "errorCode" IS NULL))
+    AND (succeeded OR "errorCode" IS NOT NULL));
+ALTER TABLE verily_app_pull_check ADD CONSTRAINT verily_app_pull_check_check
+  CHECK ("eventId" ~ '^vev_[A-Za-z0-9_-]{22}$'
+    AND status IN ('calling', 'waiting', 'retrying', 'accepted', 'rejected',
+      'failed', 'expired')
+    AND (reference IS NULL OR length(reference) BETWEEN 1 AND 120)
+    AND ("reasonCode" IS NULL OR "reasonCode" ~ '^[a-z0-9_]{1,64}$')
+    AND "callCount" >= 0
+    AND "expiresAt" > "createdAt"
+    AND "expiresAt" <= "createdAt" + interval '24 hours');
+ALTER TABLE verily_app_link_code ADD CONSTRAINT verily_app_link_code_check
+  CHECK ("codeHash" ~ '^[0-9a-f]{64}$'
+    AND "expiresAt" > "createdAt"
+    AND "expiresAt" <= "createdAt" + interval '5 minutes'
+    AND length("redirectUri") BETWEEN 4 AND 512
+    AND (state IS NULL OR length(state) BETWEEN 1 AND 256)
+    AND ("usedAt" IS NULL OR "usedAt" >= "createdAt"));
+ALTER TABLE verily_verification_request ADD CONSTRAINT verily_verification_request_check
+  CHECK (kind IN ('video', 'photo', 'audio', 'location')
+    AND "check" IN ('captureOnly', 'content')
+    AND status IN ('open', 'accepted', 'declined', 'completed', 'expired')
+    AND (instructions IS NULL OR length(btrim(instructions)) BETWEEN 1 AND 280)
+    AND (("placeLatitude" IS NULL AND "placeLongitude" IS NULL
+        AND "placeRadiusMeters" IS NULL)
+      OR ("placeLatitude" BETWEEN -90 AND 90
+        AND "placeLongitude" BETWEEN -180 AND 180
+        AND "placeRadiusMeters" BETWEEN 10 AND 5000))
+    AND (kind <> 'location' OR "placeLatitude" IS NOT NULL)
+    AND (NOT "spokenChallenge" OR kind IN ('video', 'audio'))
+    AND (NOT "evidenceShared" OR "shareEvidence")
+    AND length("redirectUri") BETWEEN 4 AND 512
+    AND (state IS NULL OR length(state) BETWEEN 1 AND 256)
+    AND "expiresAt" >= "createdAt" + interval '60 seconds'
+    AND "expiresAt" <= "createdAt" + interval '3600 seconds'
+    AND (subject IS NULL OR subject ~ '^vls_[A-Za-z0-9_-]{22}$')
+    AND ("codeHash" IS NULL OR "codeHash" ~ '^[0-9a-f]{64}$')
+    AND (status <> 'open' OR ("attemptId" IS NULL AND "acceptedAt" IS NULL))
+    AND (status NOT IN ('accepted', 'completed')
+      OR ("attemptId" IS NOT NULL AND "acceptedAt" IS NOT NULL)));
+-- A verification request's private action is single-use and never recurs.
+ALTER TABLE verily_action_definition ADD CONSTRAINT verily_action_visibility_check
+  CHECK (visibility IN ('public', 'verificationRequest')
+    AND (visibility = 'public'
+      OR ("maxVerifiedCompletions" = 1 AND recurrence = 'once')));
+-- A local check is fully specified or absent, and fits its media kind.
+ALTER TABLE verily_action_media_rule ADD CONSTRAINT verily_media_local_check
+  CHECK (("localCheckTask" IS NULL AND "localCheckLabel" IS NULL
+      AND "localCheckMinScore" IS NULL AND "localCheckMinFrames" IS NULL)
+    OR ("localCheckTask" IN ('gesture', 'object', 'sound')
+      AND length("localCheckLabel") BETWEEN 1 AND 64
+      AND "localCheckMinScore" BETWEEN 0.3 AND 0.99
+      AND "localCheckMinFrames" BETWEEN 1 AND 30
+      AND (kind <> 'photo' OR "localCheckMinFrames" = 1)
+      AND (("localCheckTask" = 'sound') = (kind = 'audio'))));
+-- The phone's local-check result is advisory and fully attributed to a model.
+ALTER TABLE verily_action_evidence ADD CONSTRAINT verily_evidence_local_check
+  CHECK (("deviceLocalCheckModelId" IS NULL
+      AND "deviceLocalCheckModelSha256" IS NULL
+      AND "deviceLocalCheckLabel" IS NULL AND "deviceLocalCheckScore" IS NULL
+      AND "deviceLocalCheckMatchedFrames" IS NULL)
+    OR (length("deviceLocalCheckModelId") BETWEEN 1 AND 128
+      AND "deviceLocalCheckModelSha256" ~ '^[0-9a-f]{64}$'
+      AND length("deviceLocalCheckLabel") BETWEEN 1 AND 64
+      AND "deviceLocalCheckScore" BETWEEN 0 AND 1
+      AND "deviceLocalCheckMatchedFrames" BETWEEN 0 AND 10000));
+
 -- Audit facts are protected independently of application code.
 CREATE FUNCTION verily_reject_update_or_delete() RETURNS trigger AS $$
 BEGIN
@@ -355,6 +455,9 @@ CREATE TRIGGER verily_moderation_audit_update_guard
   FOR EACH ROW EXECUTE FUNCTION verily_reject_update_or_delete();
 CREATE TRIGGER verily_app_confirmation_update_guard
   BEFORE UPDATE OR DELETE ON verily_app_confirmation
+  FOR EACH ROW EXECUTE FUNCTION verily_reject_update_or_delete();
+CREATE TRIGGER verily_app_webhook_delivery_update_guard
+  BEFORE UPDATE OR DELETE ON verily_app_webhook_delivery
   FOR EACH ROW EXECUTE FUNCTION verily_reject_update_or_delete();
 CREATE TRIGGER verily_external_requirement_exclusive_guard
   BEFORE INSERT OR UPDATE ON verily_action_requirement

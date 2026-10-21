@@ -26,9 +26,12 @@ abstract class VerilyAppView
     required this.status,
     required this.keys,
     required this.boundActionCount,
+    this.webhookUrl,
+    int? webhookSecretVersion,
+    required this.redirectUris,
     required this.createdAt,
     this.revokedAt,
-  });
+  }) : webhookSecretVersion = webhookSecretVersion ?? 0;
 
   factory VerilyAppView({
     required _isc.UuidValue id,
@@ -37,6 +40,9 @@ abstract class VerilyAppView
     required _i0paxa5b.VerilyAppStatus status,
     required List<_is0b8866.VerilyAppKeyView> keys,
     required int boundActionCount,
+    String? webhookUrl,
+    int? webhookSecretVersion,
+    required List<String> redirectUris,
     required DateTime createdAt,
     DateTime? revokedAt,
   }) = _VerilyAppViewImpl;
@@ -53,6 +59,11 @@ abstract class VerilyAppView
         jsonSerialization['keys'],
       ),
       boundActionCount: jsonSerialization['boundActionCount'] as int,
+      webhookUrl: jsonSerialization['webhookUrl'] as String?,
+      webhookSecretVersion: jsonSerialization['webhookSecretVersion'] as int?,
+      redirectUris: _iop4qpu5.Protocol().deserialize<List<String>>(
+        jsonSerialization['redirectUris'],
+      ),
       createdAt: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
@@ -75,6 +86,13 @@ abstract class VerilyAppView
   /// Live or draft action revisions whose proof this App confirms.
   int boundActionCount;
 
+  String? webhookUrl;
+
+  /// 0 until a signing secret has been issued.
+  int webhookSecretVersion;
+
+  List<String> redirectUris;
+
   DateTime createdAt;
 
   DateTime? revokedAt;
@@ -89,6 +107,9 @@ abstract class VerilyAppView
     _i0paxa5b.VerilyAppStatus? status,
     List<_is0b8866.VerilyAppKeyView>? keys,
     int? boundActionCount,
+    String? webhookUrl,
+    int? webhookSecretVersion,
+    List<String>? redirectUris,
     DateTime? createdAt,
     DateTime? revokedAt,
   });
@@ -102,6 +123,9 @@ abstract class VerilyAppView
       'status': status.toJson(),
       'keys': keys.toJson(valueToJson: (v) => v.toJson()),
       'boundActionCount': boundActionCount,
+      if (webhookUrl != null) 'webhookUrl': webhookUrl,
+      'webhookSecretVersion': webhookSecretVersion,
+      'redirectUris': redirectUris.toJson(),
       'createdAt': createdAt.toJson(),
       if (revokedAt != null) 'revokedAt': revokedAt?.toJson(),
     };
@@ -117,6 +141,9 @@ abstract class VerilyAppView
       'status': status.toJson(),
       'keys': keys.toJson(valueToJson: (v) => v.toJsonForProtocol()),
       'boundActionCount': boundActionCount,
+      if (webhookUrl != null) 'webhookUrl': webhookUrl,
+      'webhookSecretVersion': webhookSecretVersion,
+      'redirectUris': redirectUris.toJson(),
       'createdAt': createdAt.toJson(),
       if (revokedAt != null) 'revokedAt': revokedAt?.toJson(),
     };
@@ -138,6 +165,9 @@ class _VerilyAppViewImpl extends VerilyAppView {
     required _i0paxa5b.VerilyAppStatus status,
     required List<_is0b8866.VerilyAppKeyView> keys,
     required int boundActionCount,
+    String? webhookUrl,
+    int? webhookSecretVersion,
+    required List<String> redirectUris,
     required DateTime createdAt,
     DateTime? revokedAt,
   }) : super._(
@@ -147,6 +177,9 @@ class _VerilyAppViewImpl extends VerilyAppView {
          status: status,
          keys: keys,
          boundActionCount: boundActionCount,
+         webhookUrl: webhookUrl,
+         webhookSecretVersion: webhookSecretVersion,
+         redirectUris: redirectUris,
          createdAt: createdAt,
          revokedAt: revokedAt,
        );
@@ -162,6 +195,9 @@ class _VerilyAppViewImpl extends VerilyAppView {
     _i0paxa5b.VerilyAppStatus? status,
     List<_is0b8866.VerilyAppKeyView>? keys,
     int? boundActionCount,
+    Object? webhookUrl = _Undefined,
+    int? webhookSecretVersion,
+    List<String>? redirectUris,
     DateTime? createdAt,
     Object? revokedAt = _Undefined,
   }) {
@@ -172,6 +208,9 @@ class _VerilyAppViewImpl extends VerilyAppView {
       status: status ?? this.status,
       keys: keys ?? this.keys.map((e0) => e0.copyWith()).toList(),
       boundActionCount: boundActionCount ?? this.boundActionCount,
+      webhookUrl: webhookUrl is String? ? webhookUrl : this.webhookUrl,
+      webhookSecretVersion: webhookSecretVersion ?? this.webhookSecretVersion,
+      redirectUris: redirectUris ?? this.redirectUris.map((e0) => e0).toList(),
       createdAt: createdAt ?? this.createdAt,
       revokedAt: revokedAt is DateTime? ? revokedAt : this.revokedAt,
     );

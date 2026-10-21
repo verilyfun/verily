@@ -35,12 +35,18 @@ abstract class RewardPayoutTask
   RewardPayoutTask copyWith({_isc.UuidValue? payoutId});
   @override
   Map<String, dynamic> toJson() {
-    return {'__className__': 'RewardPayoutTask', 'payoutId': payoutId.toJson()};
+    return {
+      '__className__': 'RewardPayoutTask',
+      'payoutId': payoutId.toJson(),
+    };
   }
 
   @override
   Map<String, dynamic> toJsonForProtocol() {
-    return {'__className__': 'RewardPayoutTask', 'payoutId': payoutId.toJson()};
+    return {
+      '__className__': 'RewardPayoutTask',
+      'payoutId': payoutId.toJson(),
+    };
   }
 
   @override

@@ -2,6 +2,7 @@ import 'package:serverpod/serverpod.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 import 'package:verily_server/src/rewards/local_development_reward_escrow_gateway.dart';
 import 'package:verily_server/src/rewards/reward_escrow_gateway.dart';
+import 'package:verily_server/src/rewards/solana_reward_escrow_gateway.dart';
 
 /// The token a pool pays in. v1 supports classic-SPL USDC only, so the
 /// creator never chooses a mint and a scam or fee-bearing token can never be
@@ -74,22 +75,22 @@ class RewardConfiguration {
   /// `solana`), `VERILY_REWARD_CLUSTER` (`devnet` or `mainnet`), and
   /// `VERILY_REWARD_REVIEW_THRESHOLD_ATOMS`. Every invalid value stops the
   /// server, so a typo can never wave valuable payouts through.
+  ///
+  /// The `solana` mode needs [solanaGateway], connected and verified against
+  /// the chain by `connectSolanaRewardEscrowFromEnvironment` before startup
+  /// reads this configuration.
   factory RewardConfiguration.fromEnvironment({
     required String runMode,
     required Map<String, String> environment,
+    SolanaRewardEscrowGateway? solanaGateway,
   }) {
     final developmentLike =
         runMode == ServerpodRunMode.development ||
         runMode == ServerpodRunMode.test;
-    final cluster = switch (environment['VERILY_REWARD_CLUSTER']
-        ?.trim()
-        .toLowerCase()) {
-      null || '' when developmentLike => RewardCluster.devnet,
-      null || '' => RewardCluster.mainnet,
-      'devnet' => RewardCluster.devnet,
-      'mainnet' => RewardCluster.mainnet,
-      _ => throw StateError('VERILY_REWARD_CLUSTER must be devnet or mainnet.'),
-    };
+    final cluster = rewardClusterFromEnvironment(
+      runMode: runMode,
+      environment: environment,
+    );
     final threshold = rewardReviewThresholdFromEnvironment(environment);
     final gateway = switch (environment['VERILY_REWARD_ESCROW_MODE']
         ?.trim()
@@ -105,11 +106,16 @@ class RewardConfiguration {
         'The local development escrow is refused outside development and '
         'test run modes.',
       ),
-      // The Solana gateway is built against the generated verily_escrow
-      // client in a later phase. Until then the mode fails closed.
-      'solana' => throw StateError(
-        'The Solana reward escrow gateway is not available in this build.',
-      ),
+      'solana' => switch (solanaGateway) {
+        null => throw StateError(
+          'The Solana reward escrow gateway must be connected before startup '
+          'reads the reward configuration.',
+        ),
+        final gateway when gateway.cluster != cluster => throw StateError(
+          'The Solana reward escrow gateway serves another cluster.',
+        ),
+        final gateway => gateway,
+      },
       _ => throw StateError(
         'VERILY_REWARD_ESCROW_MODE must be disabled, local-development, or '
         'solana.',
@@ -132,6 +138,24 @@ class RewardConfiguration {
   final int reviewThresholdAtoms;
 
   RewardToken get token => rewardTokens[cluster]!;
+}
+
+/// Parses `VERILY_REWARD_CLUSTER`: `devnet` or `mainnet`, defaulting to
+/// devnet in development and test and to mainnet everywhere else.
+RewardCluster rewardClusterFromEnvironment({
+  required String runMode,
+  required Map<String, String> environment,
+}) {
+  final developmentLike =
+      runMode == ServerpodRunMode.development ||
+      runMode == ServerpodRunMode.test;
+  return switch (environment['VERILY_REWARD_CLUSTER']?.trim().toLowerCase()) {
+    null || '' when developmentLike => RewardCluster.devnet,
+    null || '' => RewardCluster.mainnet,
+    'devnet' => RewardCluster.devnet,
+    'mainnet' => RewardCluster.mainnet,
+    _ => throw StateError('VERILY_REWARD_CLUSTER must be devnet or mainnet.'),
+  };
 }
 
 /// Parses `VERILY_REWARD_REVIEW_THRESHOLD_ATOMS`: a whole number of atoms

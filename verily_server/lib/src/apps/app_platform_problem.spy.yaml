@@ -1,0 +1,17 @@
+### Stable, product-safe reasons an App platform call was refused.
+enum: AppPlatformProblem
+serialized: byName
+values:
+  - invalidWebhookUrl
+  - webhooksUnavailable
+  - invalidRedirectUri
+  - tooManyRedirectUris
+  - linkRequestInvalid
+  - linkCodeInvalid
+  - pullVerificationUnavailable
+  - invalidReference
+  - verificationRequestNotFound
+  - verificationRequestExpired
+  - verificationRequestTaken
+  - verificationRequestClosed
+  - rateLimited

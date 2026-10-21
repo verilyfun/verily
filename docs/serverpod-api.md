@@ -31,6 +31,7 @@ Local ports (see `devenv.nix`): API 8180, Insights 8181, web 8182, Postgres
 | `submitEvidence(input)`                                                     | Location, venue code, or motion proof                                                                         |
 | `requestMediaUpload(attemptId:, requirementId:, contentType:, byteLength:)` | Upload description for `FileUploader`                                                                         |
 | `confirmMediaUpload(confirmation)`                                          | Inspect the upload and queue verification                                                                     |
+| `requestAppVerification(attemptId:, requirementId:, reference:)`            | "I did it" on a pull-verified `externalApp` requirement: Verily asks the App (`status` null while waiting)    |
 | `completeAttempt(attemptId)`                                                | Finish an attempt whose proof is accepted                                                                     |
 | `listMyAttempts(limit:)`                                                    | The caller's attempts                                                                                         |
 
@@ -51,17 +52,39 @@ See [reward escrow](reward-escrow.md).
 
 ### `verilyApp`
 
-| Method                                         | Purpose                                                            |
-| ---------------------------------------------- | ------------------------------------------------------------------ |
-| `listApps()`                                   | The caller's Apps                                                  |
-| `createApp(name:, websiteUrl:)`                | Register an App; returns its first key once                        |
-| `createKey(appId:)`                            | A new `vly_<keyId>.<secret>` key, shown once (at most two active)  |
-| `revokeKey(appId:, keyId:)`                    | Revoke one key                                                     |
-| `revokeApp(appId:)`                            | Revoke the App and its keys; pauses its actions                    |
-| `listConfirmations(appId:, limit:, beforeId:)` | Append-only receipts, newest first                                 |
-| `linkApp(appId:)`                              | The caller's pairwise `vls_` subject for an App with a live action |
+| Method                                              | Purpose                                                                                 |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `listApps()`                                        | The caller's Apps                                                                       |
+| `createApp(name:, websiteUrl:)`                     | Register an App; returns its first key once                                             |
+| `createKey(appId:)`                                 | A new `vly_<keyId>.<secret>` key, shown once (at most two active)                       |
+| `revokeKey(appId:, keyId:)`                         | Revoke one key                                                                          |
+| `revokeApp(appId:)`                                 | Revoke the App and its keys; pauses its actions                                         |
+| `listConfirmations(appId:, limit:, beforeId:)`      | Append-only receipts, newest first                                                      |
+| `linkApp(appId:)`                                   | The caller's pairwise `vls_` subject for an App with a live action                      |
+| `setWebhookUrl(appId:, webhookUrl:)`                | Set (or clear with null) the https URL for events and pull calls; private hosts refused |
+| `rotateWebhookSecret(appId:)`                       | The next `whsec_` secret, shown once; the previous one keeps signing for 24 h           |
+| `setRedirectUris(appId:, redirectUris:)`            | Replace the exact-match deep-link return addresses (at most ten)                        |
+| `listWebhookDeliveries(appId:, limit:, beforeId:)`  | The append-only outbound call log, newest first, with each event's state                |
+| `describeLinkRequest(appId:, redirectUri:, state:)` | What to show before linking to an App that opened `/link`                               |
+| `approveLink(appId:, redirectUri:, state:)`         | Link and return the App's redirect with a one-time, five-minute code                    |
+| `declineLink(appId:, redirectUri:, state:)`         | Return the App's redirect with `error=access_denied`                                    |
 
 See [platform](platform.md).
+
+### `verificationRequest`
+
+The Verily app's side of `https://verily.fun/r/<id>` and `verily://r/<id>`.
+
+| Method                   | Purpose                                                                       |
+| ------------------------ | ----------------------------------------------------------------------------- |
+| `getRequest(requestId:)` | Who is asking, for what, and what will be shared (`VerificationRequestView`)  |
+| `accept(requestId:)`     | Accept; the view carries the private single-use action to capture against     |
+| `decline(requestId:)`    | The App's redirect with `status=declined`                                     |
+| `finish(requestId:)`     | After the proof is submitted: the App's redirect with a one-time receipt code |
+
+After `accept`, the app runs the normal flow on `view.action`: `beginAttempt`,
+then location (first, when the request has a place) and media proof, then
+`finish`. The private action never appears in any list.
 
 ### Review, appeals, moderation, account
 
@@ -82,19 +105,31 @@ Authentication uses Serverpod's identity providers: `emailIdp`, `googleIdp`
 
 Typed, product-safe exceptions reach the client: `ActionAuthoringException`
 (with an `ActionAuthoringProblem`), `ActionDraftingUnavailableException`,
-`AppUnavailableException`, and `RewardException` (with a `RewardProblem`).
+`AppUnavailableException`, `AppPlatformException` (with an
+`AppPlatformProblem`: `invalidWebhookUrl`, `webhooksUnavailable`,
+`invalidRedirectUri`, `tooManyRedirectUris`, `linkRequestInvalid`,
+`linkCodeInvalid`, `pullVerificationUnavailable`, `invalidReference`,
+`verificationRequestNotFound`, `verificationRequestExpired`,
+`verificationRequestTaken`, `verificationRequestClosed`, `rateLimited`), and
+`RewardException` (with a `RewardProblem`).
 Anything else becomes a generic error; provider names, routes, and stack traces
 stay in server logs.
 
 ## Web routes
 
-| Route                                | Purpose                                                          |
-| ------------------------------------ | ---------------------------------------------------------------- |
-| `GET /`, `/index.html`               | Landing page                                                     |
-| `GET /healthz`                       | Liveness and database check                                      |
-| `GET /app/assets/assets/config.json` | Public API URL for the web app                                   |
-| `POST /api/v1/confirmations`         | Verily App confirmations (Bearer `vly_` key, `Verily-Timestamp`) |
-| `/app`                               | The built Flutter web app, when `web/app` exists                 |
+| Route                                                   | Purpose                                                         |
+| ------------------------------------------------------- | --------------------------------------------------------------- |
+| `GET /`, `/index.html`                                  | Landing page                                                    |
+| `GET /healthz`                                          | Liveness and database check                                     |
+| `GET /app/assets/assets/config.json`                    | Public API URL for the web app                                  |
+| `POST /api/v1/confirmations`                            | App confirmations, optionally naming a pull-checked `attempt`   |
+| `POST /api/v1/actions`                                  | Create or update a draft action owned by the App's creator      |
+| `POST /api/v1/actions/:actionId/publish`, `/pause`      | Publish or pause it (`{"expectedRevision": n}`)                 |
+| `POST /api/v1/links/exchange`                           | Trade a deep-link code for the pairwise `vls_` subject          |
+| `POST /api/v1/verification-requests`                    | Ask one person to prove something with the Verily app           |
+| `POST /api/v1/verification-requests/:requestId/receipt` | The signed receipt (with the code, or the key alone to refetch) |
+| `GET /.well-known/jwks.json`                            | Public keys that verify receipts                                |
+| `/app`                                                  | The built Flutter web app, when `web/app` exists                |
 
 ## Background work
 
@@ -108,9 +143,14 @@ startup:
 | Payout wallet challenge cleanup                                         | daily     |
 | Evidence verification recovery (stranded jobs and `verifying` attempts) | 5 minutes |
 | Reward payout recovery (missed releases, expired pools)                 | 5 minutes |
+| Deep-link code cleanup                                                  | daily     |
+| App event recovery (due retries, expired delivery leases)               | 1 minute  |
+| Pull check recovery (due retries, 24-hour expiry)                       | 1 minute  |
+| Verification request expiry (and its final event)                       | 1 minute  |
 
-One-off calls: `evidenceVerification.verify` per uploaded proof and
-`rewardPayout.release` per reserved payout. Both are idempotent.
+One-off calls: `evidenceVerification.verify` per uploaded proof,
+`rewardPayout.release` per reserved payout, `appEventDelivery.deliver` per
+event attempt, and `appPullCheck.check` per pull retry. All are idempotent.
 
 ## Running
 
@@ -127,11 +167,17 @@ escrow, review threshold). `bin/check_verily_production_readiness.dart` and
 `bin/check_release_secrets.dart` evaluate release gates without reading
 secrets from 1Password.
 
-## Not in this API yet
+## App API contracts
 
-From [platform](platform.md): `POST /api/v1/actions`, deep-link linking
-(`/link`, `POST /api/v1/links/exchange`), the pull verification webhook and
-outbound signed events, verification requests with signed receipts and JWKS,
-and on-device model replay (`mp-replay`). See
-[adding a kind or verifier](verification.md#adding-a-kind-or-verifier) for the
-extension points.
+Every `/api/v1` call takes `Authorization: Bearer vly_…` and
+`Verily-Timestamp` (±300 s) and answers typed JSON errors. Request and
+response bodies, limits, signatures, and event payloads are specified in
+[platform](platform.md); the signed receipt claims are in
+[platform](platform.md#receipt).
+
+Platform keys come from Monosecret: `VERILY_WEBHOOK_SIGNING_MASTER_KEY`
+(webhook secrets are derived from it), `VERILY_RECEIPT_SIGNING_KEY` (the
+Ed25519 receipt seed), and `VERILY_RECEIPT_RETIRED_PUBLIC_KEYS` (still
+published after a rotation). Development generates the first two; staging and
+production require them. A missing key disables only webhooks or receipts,
+with typed errors; a malformed one stops startup.

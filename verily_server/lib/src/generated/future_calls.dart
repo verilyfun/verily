@@ -25,6 +25,16 @@ import 'package:verily_server/src/generated/action_verification/evidence_verific
     as _ikmo5pl9;
 import 'package:verily_server/src/generated/action_verification/evidence_verification_task.dart'
     as _ip06q9f7;
+import 'package:verily_server/src/generated/apps/app_pull_check_recovery_task.dart'
+    as _i0i951jb;
+import 'package:verily_server/src/generated/apps/app_pull_check_task.dart'
+    as _ips0vmbg;
+import 'package:verily_server/src/generated/apps/linking/app_link_code_cleanup_task.dart'
+    as _i3ew32yk;
+import 'package:verily_server/src/generated/apps/webhooks/app_event_delivery_task.dart'
+    as _ib4x2pmw;
+import 'package:verily_server/src/generated/apps/webhooks/app_event_recovery_task.dart'
+    as _i8h368fz;
 import 'package:verily_server/src/generated/evidence_storage/evidence_upload_cleanup_task.dart'
     as _ivz1brjg;
 import 'package:verily_server/src/generated/rewards/payout_wallet_challenge_cleanup_task.dart'
@@ -33,6 +43,8 @@ import 'package:verily_server/src/generated/rewards/reward_payout_recovery_task.
     as _iii6pmpe;
 import 'package:verily_server/src/generated/rewards/reward_payout_task.dart'
     as _iiiev0wf;
+import 'package:verily_server/src/generated/verification_requests/verification_request_expiry_task.dart'
+    as _iqe2qini;
 
 import '../action_verification/action_capture_challenge_cleanup_future_call.dart'
     as _iw89bc2u;
@@ -44,12 +56,19 @@ import '../action_verification/evidence_verification_future_call.dart'
     as _i83aqavm;
 import '../action_verification/evidence_verification_recovery_future_call.dart'
     as _in13zbxq;
+import '../apps/app_pull_check_future_call.dart' as _iqchdy97;
+import '../apps/app_pull_check_recovery_future_call.dart' as _if68ir6f;
+import '../apps/linking/app_link_code_cleanup_future_call.dart' as _iy0se1pt;
+import '../apps/webhooks/app_event_delivery_future_call.dart' as _i7b8o1r5;
+import '../apps/webhooks/app_event_recovery_future_call.dart' as _iaeafu7l;
 import '../evidence_storage/evidence_upload_cleanup_future_call.dart'
     as _ig2i46m2;
 import '../rewards/payout_wallet_challenge_cleanup_future_call.dart'
     as _i1jnm1ox;
 import '../rewards/reward_payout_future_call.dart' as _i5op9hs9;
 import '../rewards/reward_payout_recovery_future_call.dart' as _i5te3c5b;
+import '../verification_requests/verification_request_expiry_future_call.dart'
+    as _i1cws02m;
 
 /// Invokes a future call.
 typedef _InvokeFutureCall = Future<void> Function(
@@ -105,6 +124,13 @@ class FutureCalls extends _is.FutureCallDispatch<_FutureCallRef> {
           EvidenceVerificationVerifyFutureCall(),
       'EvidenceVerificationRecoveryRecoverFutureCall':
           EvidenceVerificationRecoveryRecoverFutureCall(),
+      'AppPullCheckCheckFutureCall': AppPullCheckCheckFutureCall(),
+      'AppPullCheckRecoveryRecoverFutureCall':
+          AppPullCheckRecoveryRecoverFutureCall(),
+      'AppLinkCodeCleanupCleanupFutureCall':
+          AppLinkCodeCleanupCleanupFutureCall(),
+      'AppEventDeliveryDeliverFutureCall': AppEventDeliveryDeliverFutureCall(),
+      'AppEventRecoveryRecoverFutureCall': AppEventRecoveryRecoverFutureCall(),
       'EvidenceUploadCleanupCleanupFutureCall':
           EvidenceUploadCleanupCleanupFutureCall(),
       'PayoutWalletChallengeCleanupCleanupFutureCall':
@@ -112,6 +138,8 @@ class FutureCalls extends _is.FutureCallDispatch<_FutureCallRef> {
       'RewardPayoutReleaseFutureCall': RewardPayoutReleaseFutureCall(),
       'RewardPayoutRecoveryRecoverFutureCall':
           RewardPayoutRecoveryRecoverFutureCall(),
+      'VerificationRequestExpiryExpireFutureCall':
+          VerificationRequestExpiryExpireFutureCall(),
     };
     _futureCallManager = futureCallManager;
     _serverId = serverId;
@@ -248,6 +276,26 @@ class _FutureCallRef {
   late final evidenceVerificationRecovery =
       _EvidenceVerificationRecoveryFutureCallDispatcher(_invokeFutureCall);
 
+  late final appPullCheck = _AppPullCheckFutureCallDispatcher(
+    _invokeFutureCall,
+  );
+
+  late final appPullCheckRecovery = _AppPullCheckRecoveryFutureCallDispatcher(
+    _invokeFutureCall,
+  );
+
+  late final appLinkCodeCleanup = _AppLinkCodeCleanupFutureCallDispatcher(
+    _invokeFutureCall,
+  );
+
+  late final appEventDelivery = _AppEventDeliveryFutureCallDispatcher(
+    _invokeFutureCall,
+  );
+
+  late final appEventRecovery = _AppEventRecoveryFutureCallDispatcher(
+    _invokeFutureCall,
+  );
+
   late final evidenceUploadCleanup = _EvidenceUploadCleanupFutureCallDispatcher(
     _invokeFutureCall,
   );
@@ -262,6 +310,9 @@ class _FutureCallRef {
   late final rewardPayoutRecovery = _RewardPayoutRecoveryFutureCallDispatcher(
     _invokeFutureCall,
   );
+
+  late final verificationRequestExpiry =
+      _VerificationRequestExpiryFutureCallDispatcher(_invokeFutureCall);
 }
 
 class _ActionCaptureChallengeCleanupFutureCallDispatcher {
@@ -329,6 +380,71 @@ class _EvidenceVerificationRecoveryFutureCallDispatcher {
   }
 }
 
+class _AppPullCheckFutureCallDispatcher {
+  _AppPullCheckFutureCallDispatcher(this._invokeFutureCall);
+
+  final _InvokeFutureCall _invokeFutureCall;
+
+  Future<void> check(_ips0vmbg.AppPullCheckTask task) {
+    return _invokeFutureCall(
+      'AppPullCheckCheckFutureCall',
+      task,
+    );
+  }
+}
+
+class _AppPullCheckRecoveryFutureCallDispatcher {
+  _AppPullCheckRecoveryFutureCallDispatcher(this._invokeFutureCall);
+
+  final _InvokeFutureCall _invokeFutureCall;
+
+  Future<void> recover(_i0i951jb.AppPullCheckRecoveryTask task) {
+    return _invokeFutureCall(
+      'AppPullCheckRecoveryRecoverFutureCall',
+      task,
+    );
+  }
+}
+
+class _AppLinkCodeCleanupFutureCallDispatcher {
+  _AppLinkCodeCleanupFutureCallDispatcher(this._invokeFutureCall);
+
+  final _InvokeFutureCall _invokeFutureCall;
+
+  Future<void> cleanup(_i3ew32yk.AppLinkCodeCleanupTask task) {
+    return _invokeFutureCall(
+      'AppLinkCodeCleanupCleanupFutureCall',
+      task,
+    );
+  }
+}
+
+class _AppEventDeliveryFutureCallDispatcher {
+  _AppEventDeliveryFutureCallDispatcher(this._invokeFutureCall);
+
+  final _InvokeFutureCall _invokeFutureCall;
+
+  Future<void> deliver(_ib4x2pmw.AppEventDeliveryTask task) {
+    return _invokeFutureCall(
+      'AppEventDeliveryDeliverFutureCall',
+      task,
+    );
+  }
+}
+
+class _AppEventRecoveryFutureCallDispatcher {
+  _AppEventRecoveryFutureCallDispatcher(this._invokeFutureCall);
+
+  final _InvokeFutureCall _invokeFutureCall;
+
+  Future<void> recover(_i8h368fz.AppEventRecoveryTask task) {
+    return _invokeFutureCall(
+      'AppEventRecoveryRecoverFutureCall',
+      task,
+    );
+  }
+}
+
 class _EvidenceUploadCleanupFutureCallDispatcher {
   _EvidenceUploadCleanupFutureCallDispatcher(this._invokeFutureCall);
 
@@ -376,6 +492,19 @@ class _RewardPayoutRecoveryFutureCallDispatcher {
   Future<void> recover(_iii6pmpe.RewardPayoutRecoveryTask task) {
     return _invokeFutureCall(
       'RewardPayoutRecoveryRecoverFutureCall',
+      task,
+    );
+  }
+}
+
+class _VerificationRequestExpiryFutureCallDispatcher {
+  _VerificationRequestExpiryFutureCallDispatcher(this._invokeFutureCall);
+
+  final _InvokeFutureCall _invokeFutureCall;
+
+  Future<void> expire(_iqe2qini.VerificationRequestExpiryTask task) {
+    return _invokeFutureCall(
+      'VerificationRequestExpiryExpireFutureCall',
       task,
     );
   }
@@ -459,6 +588,81 @@ class EvidenceVerificationRecoveryRecoverFutureCall
   }
 }
 
+class AppPullCheckCheckFutureCall
+    extends _is.FutureCall<_ips0vmbg.AppPullCheckTask>
+    implements _is.InvokableFutureCall<_ips0vmbg.AppPullCheckTask> {
+  @override
+  _ida.Future<void> invoke(
+    _is.Session session,
+    _ips0vmbg.AppPullCheckTask? task,
+  ) async {
+    await _iqchdy97.AppPullCheckFutureCall().check(
+      session,
+      task!,
+    );
+  }
+}
+
+class AppPullCheckRecoveryRecoverFutureCall
+    extends _is.FutureCall<_i0i951jb.AppPullCheckRecoveryTask>
+    implements _is.InvokableFutureCall<_i0i951jb.AppPullCheckRecoveryTask> {
+  @override
+  _ida.Future<void> invoke(
+    _is.Session session,
+    _i0i951jb.AppPullCheckRecoveryTask? task,
+  ) async {
+    await _if68ir6f.AppPullCheckRecoveryFutureCall().recover(
+      session,
+      task!,
+    );
+  }
+}
+
+class AppLinkCodeCleanupCleanupFutureCall
+    extends _is.FutureCall<_i3ew32yk.AppLinkCodeCleanupTask>
+    implements _is.InvokableFutureCall<_i3ew32yk.AppLinkCodeCleanupTask> {
+  @override
+  _ida.Future<void> invoke(
+    _is.Session session,
+    _i3ew32yk.AppLinkCodeCleanupTask? task,
+  ) async {
+    await _iy0se1pt.AppLinkCodeCleanupFutureCall().cleanup(
+      session,
+      task!,
+    );
+  }
+}
+
+class AppEventDeliveryDeliverFutureCall
+    extends _is.FutureCall<_ib4x2pmw.AppEventDeliveryTask>
+    implements _is.InvokableFutureCall<_ib4x2pmw.AppEventDeliveryTask> {
+  @override
+  _ida.Future<void> invoke(
+    _is.Session session,
+    _ib4x2pmw.AppEventDeliveryTask? task,
+  ) async {
+    await _i7b8o1r5.AppEventDeliveryFutureCall().deliver(
+      session,
+      task!,
+    );
+  }
+}
+
+class AppEventRecoveryRecoverFutureCall
+    extends _is.FutureCall<_i8h368fz.AppEventRecoveryTask>
+    implements _is.InvokableFutureCall<_i8h368fz.AppEventRecoveryTask> {
+  @override
+  _ida.Future<void> invoke(
+    _is.Session session,
+    _i8h368fz.AppEventRecoveryTask? task,
+  ) async {
+    await _iaeafu7l.AppEventRecoveryFutureCall().recover(
+      session,
+      task!,
+    );
+  }
+}
+
 class EvidenceUploadCleanupCleanupFutureCall
     extends _is.FutureCall<_ivz1brjg.EvidenceUploadCleanupTask>
     implements _is.InvokableFutureCall<_ivz1brjg.EvidenceUploadCleanupTask> {
@@ -514,6 +718,22 @@ class RewardPayoutRecoveryRecoverFutureCall
     _iii6pmpe.RewardPayoutRecoveryTask? task,
   ) async {
     await _i5te3c5b.RewardPayoutRecoveryFutureCall().recover(
+      session,
+      task!,
+    );
+  }
+}
+
+class VerificationRequestExpiryExpireFutureCall
+    extends _is.FutureCall<_iqe2qini.VerificationRequestExpiryTask>
+    implements
+        _is.InvokableFutureCall<_iqe2qini.VerificationRequestExpiryTask> {
+  @override
+  _ida.Future<void> invoke(
+    _is.Session session,
+    _iqe2qini.VerificationRequestExpiryTask? task,
+  ) async {
+    await _i1cws02m.VerificationRequestExpiryFutureCall().expire(
       session,
       task!,
     );

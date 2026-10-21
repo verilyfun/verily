@@ -50,12 +50,20 @@ import 'package:verily_client/src/protocol/action_verification/media_upload_conf
     as _iy5c6735;
 import 'package:verily_client/src/protocol/apps/app_confirmation_view.dart'
     as _iw9760io;
+import 'package:verily_client/src/protocol/apps/linking/app_link_redirect.dart'
+    as _ietd10id;
+import 'package:verily_client/src/protocol/apps/linking/app_link_request_view.dart'
+    as _ihri8xdm;
 import 'package:verily_client/src/protocol/apps/verily_app_credential.dart'
     as _i3hnfj5e;
 import 'package:verily_client/src/protocol/apps/verily_app_link_view.dart'
     as _i7ba7git;
 import 'package:verily_client/src/protocol/apps/verily_app_view.dart'
     as _in92p10u;
+import 'package:verily_client/src/protocol/apps/webhooks/app_webhook_delivery_view.dart'
+    as _ifzy4ji6;
+import 'package:verily_client/src/protocol/apps/webhooks/verily_app_webhook_secret.dart'
+    as _iwmhqfps;
 import 'package:verily_client/src/protocol/moderation/moderation_case_review_view.dart'
     as _ics7hcmp;
 import 'package:verily_client/src/protocol/moderation/moderation_case_status_view.dart'
@@ -72,6 +80,10 @@ import 'package:verily_client/src/protocol/rewards/reward_payout_view.dart'
     as _isztzkpq;
 import 'package:verily_client/src/protocol/rewards/reward_pool_view.dart'
     as _i68mfray;
+import 'package:verily_client/src/protocol/verification_requests/verification_request_redirect.dart'
+    as _iv7cvvng;
+import 'package:verily_client/src/protocol/verification_requests/verification_request_view.dart'
+    as _izhqijgv;
 
 import 'protocol.dart' as _il2as5qe;
 
@@ -83,9 +95,11 @@ class EndpointAccountLifecycle extends _isc.EndpointRef {
   String get name => 'accountLifecycle';
 
   _ida.Future<DateTime> closeAccount({required String confirmation}) =>
-      caller.callServerEndpoint<DateTime>('accountLifecycle', 'closeAccount', {
-        'confirmation': confirmation,
-      });
+      caller.callServerEndpoint<DateTime>(
+        'accountLifecycle',
+        'closeAccount',
+        {'confirmation': confirmation},
+      );
 }
 
 /// Actions for everyone: creators design and publish their own, and
@@ -156,7 +170,10 @@ class EndpointActionVerification extends _isc.EndpointRef {
   }) => caller.callServerEndpoint<_ijjtlylw.ActionOpportunity>(
     'actionVerification',
     'publishAction',
-    {'actionId': actionId, 'expectedRevision': expectedRevision},
+    {
+      'actionId': actionId,
+      'expectedRevision': expectedRevision,
+    },
   );
 
   _ida.Future<_ijjtlylw.ActionOpportunity> pauseAction({
@@ -165,7 +182,10 @@ class EndpointActionVerification extends _isc.EndpointRef {
   }) => caller.callServerEndpoint<_ijjtlylw.ActionOpportunity>(
     'actionVerification',
     'pauseAction',
-    {'actionId': actionId, 'expectedRevision': expectedRevision},
+    {
+      'actionId': actionId,
+      'expectedRevision': expectedRevision,
+    },
   );
 
   /// Creates a short-lived, single-use venue code for a live QR action.
@@ -175,7 +195,10 @@ class EndpointActionVerification extends _isc.EndpointRef {
   }) => caller.callServerEndpoint<_i81fl04r.ActionQrChallengeView>(
     'actionVerification',
     'createQrChallenge',
-    {'requirementId': requirementId, 'validitySeconds': validitySeconds},
+    {
+      'requirementId': requirementId,
+      'validitySeconds': validitySeconds,
+    },
   );
 
   _ida.Future<List<_ijjtlylw.ActionOpportunity>> listAvailableActions({
@@ -211,7 +234,10 @@ class EndpointActionVerification extends _isc.EndpointRef {
   }) => caller.callServerEndpoint<_ir431rrk.ActionAttemptView>(
     'actionVerification',
     'beginAttempt',
-    {'actionId': actionId, 'idempotencyKey': idempotencyKey},
+    {
+      'actionId': actionId,
+      'idempotencyKey': idempotencyKey,
+    },
   );
 
   /// The live word to say while recording a video or audio proof. Call it
@@ -222,7 +248,10 @@ class EndpointActionVerification extends _isc.EndpointRef {
   }) => caller.callServerEndpoint<_idk923ry.ActionSpokenChallengeView>(
     'actionVerification',
     'issueSpokenChallenge',
-    {'attemptId': attemptId, 'requirementId': requirementId},
+    {
+      'attemptId': attemptId,
+      'requirementId': requirementId,
+    },
   );
 
   /// Binds the next proof to a fresh device-integrity request committing to
@@ -278,6 +307,23 @@ class EndpointActionVerification extends _isc.EndpointRef {
     {'confirmation': confirmation},
   );
 
+  /// "I did it" for a pull-verified `externalApp` requirement: Verily asks
+  /// the App's webhook. [reference] is optional text the participant typed
+  /// (at most 120 characters), such as a username or order number.
+  _ida.Future<_is1oqp1g.EvidenceSubmissionResult> requestAppVerification({
+    required _isc.UuidValue attemptId,
+    required _isc.UuidValue requirementId,
+    String? reference,
+  }) => caller.callServerEndpoint<_is1oqp1g.EvidenceSubmissionResult>(
+    'actionVerification',
+    'requestAppVerification',
+    {
+      'attemptId': attemptId,
+      'requirementId': requirementId,
+      'reference': reference,
+    },
+  );
+
   _ida.Future<_ir431rrk.ActionAttemptView> completeAttempt(
     _isc.UuidValue attemptId,
   ) => caller.callServerEndpoint<_ir431rrk.ActionAttemptView>(
@@ -309,7 +355,10 @@ class EndpointEvidenceAppeal extends _isc.EndpointRef {
   }) => caller.callServerEndpoint<_igtzj0f1.EvidenceAppealView>(
     'evidenceAppeal',
     'submit',
-    {'attemptId': attemptId, 'reason': reason},
+    {
+      'attemptId': attemptId,
+      'reason': reason,
+    },
   );
 
   _ida.Future<_igtzj0f1.EvidenceAppealView?> getMine({
@@ -336,7 +385,11 @@ class EndpointEvidenceAppeal extends _isc.EndpointRef {
   }) => caller.callServerEndpoint<_igtzj0f1.EvidenceAppealView>(
     'evidenceAppeal',
     'resolve',
-    {'appealId': appealId, 'decision': decision, 'note': note},
+    {
+      'appealId': appealId,
+      'decision': decision,
+      'note': note,
+    },
   );
 }
 
@@ -363,7 +416,11 @@ class EndpointEvidenceReview extends _isc.EndpointRef {
   }) => caller.callServerEndpoint<_ir431rrk.ActionAttemptView>(
     'evidenceReview',
     'review',
-    {'evidenceId': evidenceId, 'decision': decision, 'note': note},
+    {
+      'evidenceId': evidenceId,
+      'decision': decision,
+      'note': note,
+    },
   );
 }
 
@@ -393,7 +450,10 @@ class EndpointVerilyApp extends _isc.EndpointRef {
   }) => caller.callServerEndpoint<_i3hnfj5e.VerilyAppCredential>(
     'verilyApp',
     'createApp',
-    {'name': name, 'websiteUrl': websiteUrl},
+    {
+      'name': name,
+      'websiteUrl': websiteUrl,
+    },
   );
 
   /// Adds a rotation key. The returned key is never retrievable again.
@@ -411,7 +471,10 @@ class EndpointVerilyApp extends _isc.EndpointRef {
   }) => caller.callServerEndpoint<_in92p10u.VerilyAppView>(
     'verilyApp',
     'revokeKey',
-    {'appId': appId, 'keyId': keyId},
+    {
+      'appId': appId,
+      'keyId': keyId,
+    },
   );
 
   _ida.Future<_in92p10u.VerilyAppView> revokeApp({
@@ -429,7 +492,11 @@ class EndpointVerilyApp extends _isc.EndpointRef {
   }) => caller.callServerEndpoint<List<_iw9760io.AppConfirmationView>>(
     'verilyApp',
     'listConfirmations',
-    {'appId': appId, 'limit': limit, 'beforeId': beforeId},
+    {
+      'appId': appId,
+      'limit': limit,
+      'beforeId': beforeId,
+    },
   );
 
   /// Returns the caller's own subject for an App of a live action.
@@ -439,6 +506,105 @@ class EndpointVerilyApp extends _isc.EndpointRef {
     'verilyApp',
     'linkApp',
     {'appId': appId},
+  );
+
+  /// Sets or clears the HTTPS URL that receives signed events and pull
+  /// verification calls.
+  _ida.Future<_in92p10u.VerilyAppView> setWebhookUrl({
+    required _isc.UuidValue appId,
+    String? webhookUrl,
+  }) => caller.callServerEndpoint<_in92p10u.VerilyAppView>(
+    'verilyApp',
+    'setWebhookUrl',
+    {
+      'appId': appId,
+      'webhookUrl': webhookUrl,
+    },
+  );
+
+  /// Issues the next `whsec_` signing secret, returned only this once.
+  _ida.Future<_iwmhqfps.VerilyAppWebhookSecret> rotateWebhookSecret({
+    required _isc.UuidValue appId,
+  }) => caller.callServerEndpoint<_iwmhqfps.VerilyAppWebhookSecret>(
+    'verilyApp',
+    'rotateWebhookSecret',
+    {'appId': appId},
+  );
+
+  /// Replaces the exact-match redirect URIs used by deep links.
+  _ida.Future<_in92p10u.VerilyAppView> setRedirectUris({
+    required _isc.UuidValue appId,
+    required List<String> redirectUris,
+  }) => caller.callServerEndpoint<_in92p10u.VerilyAppView>(
+    'verilyApp',
+    'setRedirectUris',
+    {
+      'appId': appId,
+      'redirectUris': redirectUris,
+    },
+  );
+
+  /// The App's outbound webhook log, newest first.
+  _ida.Future<List<_ifzy4ji6.AppWebhookDeliveryView>> listWebhookDeliveries({
+    required _isc.UuidValue appId,
+    required int limit,
+    _isc.UuidValue? beforeId,
+  }) => caller.callServerEndpoint<List<_ifzy4ji6.AppWebhookDeliveryView>>(
+    'verilyApp',
+    'listWebhookDeliveries',
+    {
+      'appId': appId,
+      'limit': limit,
+      'beforeId': beforeId,
+    },
+  );
+
+  /// What to show before linking this account to an App that opened
+  /// `https://verily.fun/link?app=…&redirect_uri=…&state=…`.
+  _ida.Future<_ihri8xdm.AppLinkRequestView> describeLinkRequest({
+    required _isc.UuidValue appId,
+    required String redirectUri,
+    String? state,
+  }) => caller.callServerEndpoint<_ihri8xdm.AppLinkRequestView>(
+    'verilyApp',
+    'describeLinkRequest',
+    {
+      'appId': appId,
+      'redirectUri': redirectUri,
+      'state': state,
+    },
+  );
+
+  /// Approves the link and returns the App's redirect with a one-time,
+  /// five-minute code.
+  _ida.Future<_ietd10id.AppLinkRedirect> approveLink({
+    required _isc.UuidValue appId,
+    required String redirectUri,
+    String? state,
+  }) => caller.callServerEndpoint<_ietd10id.AppLinkRedirect>(
+    'verilyApp',
+    'approveLink',
+    {
+      'appId': appId,
+      'redirectUri': redirectUri,
+      'state': state,
+    },
+  );
+
+  /// Declines the link and returns the App's redirect with
+  /// `error=access_denied`.
+  _ida.Future<_ietd10id.AppLinkRedirect> declineLink({
+    required _isc.UuidValue appId,
+    required String redirectUri,
+    String? state,
+  }) => caller.callServerEndpoint<_ietd10id.AppLinkRedirect>(
+    'verilyApp',
+    'declineLink',
+    {
+      'appId': appId,
+      'redirectUri': redirectUri,
+      'state': state,
+    },
   );
 }
 
@@ -465,10 +631,14 @@ class EndpointEmailIdp extends _iaic.EndpointEmailIdpBase {
   _ida.Future<_iacc.AuthSuccess> login({
     required String email,
     required String password,
-  }) => caller.callServerEndpoint<_iacc.AuthSuccess>('emailIdp', 'login', {
-    'email': email,
-    'password': password,
-  });
+  }) => caller.callServerEndpoint<_iacc.AuthSuccess>(
+    'emailIdp',
+    'login',
+    {
+      'email': email,
+      'password': password,
+    },
+  );
 
   /// Starts the registration for a new user account with an email-based login
   /// associated to it.
@@ -502,11 +672,14 @@ class EndpointEmailIdp extends _iaic.EndpointEmailIdpBase {
   _ida.Future<String> verifyRegistrationCode({
     required _isc.UuidValue accountRequestId,
     required String verificationCode,
-  }) =>
-      caller.callServerEndpoint<String>('emailIdp', 'verifyRegistrationCode', {
-        'accountRequestId': accountRequestId,
-        'verificationCode': verificationCode,
-      });
+  }) => caller.callServerEndpoint<String>(
+    'emailIdp',
+    'verifyRegistrationCode',
+    {
+      'accountRequestId': accountRequestId,
+      'verificationCode': verificationCode,
+    },
+  );
 
   /// Completes a new account registration, creating a new auth user with a
   /// profile and attaching the given email account to it.
@@ -529,7 +702,10 @@ class EndpointEmailIdp extends _iaic.EndpointEmailIdpBase {
   }) => caller.callServerEndpoint<_iacc.AuthSuccess>(
     'emailIdp',
     'finishRegistration',
-    {'registrationToken': registrationToken, 'password': password},
+    {
+      'registrationToken': registrationToken,
+      'password': password,
+    },
   );
 
   /// Requests a password reset for [email].
@@ -571,11 +747,14 @@ class EndpointEmailIdp extends _iaic.EndpointEmailIdpBase {
   _ida.Future<String> verifyPasswordResetCode({
     required _isc.UuidValue passwordResetRequestId,
     required String verificationCode,
-  }) =>
-      caller.callServerEndpoint<String>('emailIdp', 'verifyPasswordResetCode', {
-        'passwordResetRequestId': passwordResetRequestId,
-        'verificationCode': verificationCode,
-      });
+  }) => caller.callServerEndpoint<String>(
+    'emailIdp',
+    'verifyPasswordResetCode',
+    {
+      'passwordResetRequestId': passwordResetRequestId,
+      'verificationCode': verificationCode,
+    },
+  );
 
   /// Completes a password reset request by setting a new password.
   ///
@@ -595,14 +774,21 @@ class EndpointEmailIdp extends _iaic.EndpointEmailIdpBase {
   _ida.Future<void> finishPasswordReset({
     required String finishPasswordResetToken,
     required String newPassword,
-  }) => caller.callServerEndpoint<void>('emailIdp', 'finishPasswordReset', {
-    'finishPasswordResetToken': finishPasswordResetToken,
-    'newPassword': newPassword,
-  });
+  }) => caller.callServerEndpoint<void>(
+    'emailIdp',
+    'finishPasswordReset',
+    {
+      'finishPasswordResetToken': finishPasswordResetToken,
+      'newPassword': newPassword,
+    },
+  );
 
   @override
-  _ida.Future<bool> hasAccount() =>
-      caller.callServerEndpoint<bool>('emailIdp', 'hasAccount', {});
+  _ida.Future<bool> hasAccount() => caller.callServerEndpoint<bool>(
+    'emailIdp',
+    'hasAccount',
+    {},
+  );
 }
 
 /// Enables Google sign-in for generated clients.
@@ -621,10 +807,14 @@ class EndpointGoogleIdp extends _iaic.EndpointGoogleIdpBase {
   _ida.Future<_iacc.AuthSuccess> login({
     required String idToken,
     required String? accessToken,
-  }) => caller.callServerEndpoint<_iacc.AuthSuccess>('googleIdp', 'login', {
-    'idToken': idToken,
-    'accessToken': accessToken,
-  });
+  }) => caller.callServerEndpoint<_iacc.AuthSuccess>(
+    'googleIdp',
+    'login',
+    {
+      'idToken': idToken,
+      'accessToken': accessToken,
+    },
+  );
 
   /// Validates a Google authorization code from the web OAuth2 PKCE flow and
   /// either logs in the associated user or creates a new account.
@@ -641,12 +831,19 @@ class EndpointGoogleIdp extends _iaic.EndpointGoogleIdpBase {
   }) => caller.callServerEndpoint<_iacc.AuthSuccess>(
     'googleIdp',
     'loginWithCode',
-    {'code': code, 'codeVerifier': codeVerifier, 'redirectUri': redirectUri},
+    {
+      'code': code,
+      'codeVerifier': codeVerifier,
+      'redirectUri': redirectUri,
+    },
   );
 
   @override
-  _ida.Future<bool> hasAccount() =>
-      caller.callServerEndpoint<bool>('googleIdp', 'hasAccount', {});
+  _ida.Future<bool> hasAccount() => caller.callServerEndpoint<bool>(
+    'googleIdp',
+    'hasAccount',
+    {},
+  );
 }
 
 /// By extending [RefreshJwtTokensEndpoint], the JWT token refresh endpoint
@@ -737,7 +934,10 @@ class EndpointModeration extends _isc.EndpointRef {
   }) => caller.callServerEndpoint<_ie976x46.ModerationCaseStatusView>(
     'moderation',
     'appeal',
-    {'caseId': caseId, 'reason': reason},
+    {
+      'caseId': caseId,
+      'reason': reason,
+    },
   );
 }
 
@@ -772,7 +972,11 @@ class EndpointModerationReview extends _isc.EndpointRef {
   }) => caller.callServerEndpoint<_ie976x46.ModerationCaseStatusView>(
     'moderationReview',
     'review',
-    {'caseId': caseId, 'decision': decision, 'note': note},
+    {
+      'caseId': caseId,
+      'decision': decision,
+      'note': note,
+    },
   );
 
   _ida.Future<_ie976x46.ModerationCaseStatusView> resolveAppeal({
@@ -782,7 +986,11 @@ class EndpointModerationReview extends _isc.EndpointRef {
   }) => caller.callServerEndpoint<_ie976x46.ModerationCaseStatusView>(
     'moderationReview',
     'resolveAppeal',
-    {'caseId': caseId, 'decision': decision, 'note': note},
+    {
+      'caseId': caseId,
+      'decision': decision,
+      'note': note,
+    },
   );
 }
 
@@ -818,7 +1026,11 @@ class EndpointPayoutWallet extends _isc.EndpointRef {
   }) => caller.callServerEndpoint<_iuosx0t6.PayoutWalletView>(
     'payoutWallet',
     'linkPayoutWallet',
-    {'walletAddress': walletAddress, 'nonce': nonce, 'signature': signature},
+    {
+      'walletAddress': walletAddress,
+      'nonce': nonce,
+      'signature': signature,
+    },
   );
 }
 
@@ -860,7 +1072,10 @@ class EndpointRewards extends _isc.EndpointRef {
   }) => caller.callServerEndpoint<_i68mfray.RewardPoolView>(
     'rewards',
     'confirmRewardFunding',
-    {'actionId': actionId, 'signature': signature},
+    {
+      'actionId': actionId,
+      'signature': signature,
+    },
   );
 
   /// Stops new payouts now; reserved payouts still release.
@@ -882,6 +1097,57 @@ class EndpointRewards extends _isc.EndpointRef {
   );
 }
 
+/// The Verily app's side of a verification request opened from
+/// `https://verily.fun/r/<id>` or `verily://r/<id>`.
+///
+/// The link carries only the request id; everything shown comes from here,
+/// so a forged link can only point at a real request.
+/// {@category Endpoint}
+class EndpointVerificationRequest extends _isc.EndpointRef {
+  EndpointVerificationRequest(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'verificationRequest';
+
+  /// Who is asking, for what, and exactly what will be shared.
+  _ida.Future<_izhqijgv.VerificationRequestView> getRequest({
+    required _isc.UuidValue requestId,
+  }) => caller.callServerEndpoint<_izhqijgv.VerificationRequestView>(
+    'verificationRequest',
+    'getRequest',
+    {'requestId': requestId},
+  );
+
+  /// Accepts the request. The returned view carries the private action to
+  /// capture against with the normal proof flow.
+  _ida.Future<_izhqijgv.VerificationRequestView> accept({
+    required _isc.UuidValue requestId,
+  }) => caller.callServerEndpoint<_izhqijgv.VerificationRequestView>(
+    'verificationRequest',
+    'accept',
+    {'requestId': requestId},
+  );
+
+  /// Declines; the App receives `status=declined`.
+  _ida.Future<_iv7cvvng.VerificationRequestRedirect> decline({
+    required _isc.UuidValue requestId,
+  }) => caller.callServerEndpoint<_iv7cvvng.VerificationRequestRedirect>(
+    'verificationRequest',
+    'decline',
+    {'requestId': requestId},
+  );
+
+  /// After the proof is submitted: the App's redirect with a one-time,
+  /// five-minute receipt code.
+  _ida.Future<_iv7cvvng.VerificationRequestRedirect> finish({
+    required _isc.UuidValue requestId,
+  }) => caller.callServerEndpoint<_iv7cvvng.VerificationRequestRedirect>(
+    'verificationRequest',
+    'finish',
+    {'requestId': requestId},
+  );
+}
+
 class Modules {
   Modules(Client client) {
     auth = _iacc.Caller(client);
@@ -899,7 +1165,12 @@ class Client extends _isc.ServerpodClientShared {
     dynamic securityContext,
     Duration? streamingConnectionTimeout,
     Duration? connectionTimeout,
-    Function(_isc.MethodCallContext, Object, StackTrace)? onFailedCall,
+    Function(
+      _isc.MethodCallContext,
+      Object,
+      StackTrace,
+    )?
+    onFailedCall,
     Function(_isc.MethodCallContext)? onSucceededCall,
     bool? disconnectStreamsOnLostInternetConnection,
     _i85jenna.Client? httpClientOverride,
@@ -927,6 +1198,7 @@ class Client extends _isc.ServerpodClientShared {
     moderationReview = EndpointModerationReview(this);
     payoutWallet = EndpointPayoutWallet(this);
     rewards = EndpointRewards(this);
+    verificationRequest = EndpointVerificationRequest(this);
     modules = Modules(this);
   }
 
@@ -954,6 +1226,8 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointRewards rewards;
 
+  late final EndpointVerificationRequest verificationRequest;
+
   late final Modules modules;
 
   @override
@@ -970,6 +1244,7 @@ class Client extends _isc.ServerpodClientShared {
     'moderationReview': moderationReview,
     'payoutWallet': payoutWallet,
     'rewards': rewards,
+    'verificationRequest': verificationRequest,
   };
 
   @override

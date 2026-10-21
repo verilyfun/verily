@@ -21,7 +21,10 @@ abstract class RewardException
         _isc.SerializableException,
         _isc.SerializableModel,
         _isc.ProtocolSerialization {
-  RewardException._({required this.problem, required this.message});
+  RewardException._({
+    required this.problem,
+    required this.message,
+  });
 
   factory RewardException({
     required _iy4kq0ps.RewardProblem problem,
@@ -44,7 +47,10 @@ abstract class RewardException
   /// Returns a shallow copy of this [RewardException]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
-  RewardException copyWith({_iy4kq0ps.RewardProblem? problem, String? message});
+  RewardException copyWith({
+    _iy4kq0ps.RewardProblem? problem,
+    String? message,
+  });
   @override
   Map<String, dynamic> toJson() {
     return {
@@ -73,7 +79,10 @@ class _RewardExceptionImpl extends RewardException {
   _RewardExceptionImpl({
     required _iy4kq0ps.RewardProblem problem,
     required String message,
-  }) : super._(problem: problem, message: message);
+  }) : super._(
+         problem: problem,
+         message: message,
+       );
 
   /// Returns a shallow copy of this [RewardException]
   /// with some or all fields replaced by the given arguments.

@@ -1,6 +1,7 @@
 import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart';
 import 'package:verily_server/src/action_verification/action_period.dart';
+import 'package:verily_server/src/action_verification/local_check/local_check_catalog.dart';
 import 'package:verily_server/src/evidence_storage/evidence_media_types.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 import 'package:verily_server/src/rewards/reward_pool_service.dart';
@@ -129,6 +130,9 @@ class ActionViews {
       for (final rule in externalRules)
         rule.requirementId: ?appById[rule.appId],
     };
+    final externalByRequirement = {
+      for (final rule in externalRules) rule.requirementId: rule,
+    };
     final attemptByAction = {
       for (final attempt in attempts)
         if (attempt.periodKey == periodKeyByAction[attempt.actionDefinitionId])
@@ -165,6 +169,7 @@ class ActionViews {
                 media: mediaByRequirement[requirement.id],
                 motion: motionByRequirement[requirement.id],
                 app: appByRequirement[requirement.id],
+                external: externalByRequirement[requirement.id],
               ),
           ],
           myAttempt: switch (attemptByAction[action.id]) {
@@ -260,6 +265,7 @@ ActionRequirementView requirementView(
   ActionMediaRule? media,
   ActionMotionRule? motion,
   VerilyApp? app,
+  ActionExternalRule? external,
 }) {
   final mediaKind = mediaKindOf(requirement.kind);
   return ActionRequirementView(
@@ -298,6 +304,26 @@ ActionRequirementView requirementView(
     appId: app?.id,
     appName: app?.name,
     appAvailable: app == null ? null : app.status == VerilyAppStatus.active,
+    appVerificationMode: external?.verificationMode,
+    localCheck: switch (media) {
+      ActionMediaRule(
+        localCheckTask: final task?,
+        localCheckLabel: final label?,
+        localCheckMinScore: final minScore?,
+        localCheckMinFrames: final minFrames?,
+      ) =>
+        ActionLocalCheck(
+          task: task,
+          label: label,
+          minScore: minScore,
+          minFrames: minFrames,
+        ),
+      _ => null,
+    },
+    localCheckModel: switch (media?.localCheckTask) {
+      final task? => LocalCheckModel.forTask(task).view,
+      null => null,
+    },
   );
 }
 

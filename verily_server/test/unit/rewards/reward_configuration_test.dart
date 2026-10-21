@@ -110,11 +110,11 @@ void main() {
       ServerpodRunMode.development,
       ServerpodRunMode.production,
     ]) {
-      test('when $runMode starts then it fails closed until the reviewed '
-          'gateway ships', () {
+      test('when $runMode starts without a connected gateway then startup is '
+          'refused', () {
         expect(
           () => configure(runMode, {'VERILY_REWARD_ESCROW_MODE': 'solana'}),
-          refusedWith('not available in this build'),
+          refusedWith('must be connected before startup'),
         );
       });
     }

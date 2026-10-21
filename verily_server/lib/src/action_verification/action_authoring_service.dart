@@ -79,17 +79,55 @@ class ActionAuthoringService {
     );
   }
 
+  /// Like [saveActionDraft], inside the caller's [transaction], for server
+  /// callers (the App API) that lock and check more in the same
+  /// transaction. Returns the stored revision; build any view after commit.
+  Future<ActionDefinition> saveActionDraftIn(
+    Session session, {
+    required UuidValue authUserId,
+    required CreateActionDefinitionRequest request,
+    required Transaction transaction,
+  }) {
+    return _storeDefinition(
+      session,
+      authUserId: authUserId,
+      request: request,
+      asDraft: true,
+      transaction: transaction,
+    );
+  }
+
   Future<ActionOpportunity> _store(
     Session session, {
     required UuidValue authUserId,
     required CreateActionDefinitionRequest request,
     required bool asDraft,
   }) async {
+    final action = await _storeDefinition(
+      session,
+      authUserId: authUserId,
+      request: request,
+      asDraft: asDraft,
+    );
+    return views.opportunity(
+      session,
+      action: action,
+      viewerAuthUserId: authUserId,
+    );
+  }
+
+  Future<ActionDefinition> _storeDefinition(
+    Session session, {
+    required UuidValue authUserId,
+    required CreateActionDefinitionRequest request,
+    required bool asDraft,
+    Transaction? transaction,
+  }) async {
     final now = clock().toUtc();
     final input = _validatedRequest(request, now);
-    final action = await DatabaseUtil.runInTransactionOrSavepoint(
+    return DatabaseUtil.runInTransactionOrSavepoint(
       session.db,
-      null,
+      transaction,
       (transaction) async {
         await AccountAccess.requireActive(
           session,
@@ -216,11 +254,6 @@ class ActionAuthoringService {
         return action;
       },
     );
-    return views.opportunity(
-      session,
-      action: action,
-      viewerAuthUserId: authUserId,
-    );
   }
 
   Future<ActionOpportunity> previewAction(
@@ -248,7 +281,10 @@ class ActionAuthoringService {
   }) async {
     final definitions = await ActionDefinition.db.find(
       session,
-      where: (table) => table.creatorAuthUserId.equals(authUserId),
+      // Verification-request actions belong to their request, not the list.
+      where: (table) =>
+          table.creatorAuthUserId.equals(authUserId) &
+          table.visibility.equals(ActionVisibility.public),
       orderBy: (table) => table.updatedAt.desc(),
       limit: 500,
     );
@@ -298,6 +334,27 @@ class ActionAuthoringService {
     );
   }
 
+  /// Publishes ([publish]) or pauses inside the caller's [transaction], for
+  /// server callers such as the App API. Returns the updated revision; build
+  /// any view after commit.
+  Future<ActionDefinition> setPublicationIn(
+    Session session, {
+    required UuidValue authUserId,
+    required UuidValue actionId,
+    required int expectedRevision,
+    required bool publish,
+    required Transaction transaction,
+  }) {
+    return _setPublicationDefinition(
+      session,
+      authUserId: authUserId,
+      actionId: actionId,
+      expectedRevision: expectedRevision,
+      publish: publish,
+      transaction: transaction,
+    );
+  }
+
   Future<ActionOpportunity> _setPublication(
     Session session, {
     required UuidValue authUserId,
@@ -305,10 +362,32 @@ class ActionAuthoringService {
     required int expectedRevision,
     required bool publish,
   }) async {
+    final result = await _setPublicationDefinition(
+      session,
+      authUserId: authUserId,
+      actionId: actionId,
+      expectedRevision: expectedRevision,
+      publish: publish,
+    );
+    return views.opportunity(
+      session,
+      action: result,
+      viewerAuthUserId: authUserId,
+    );
+  }
+
+  Future<ActionDefinition> _setPublicationDefinition(
+    Session session, {
+    required UuidValue authUserId,
+    required UuidValue actionId,
+    required int expectedRevision,
+    required bool publish,
+    Transaction? transaction,
+  }) async {
     final now = clock().toUtc();
-    final result = await DatabaseUtil.runInTransactionOrSavepoint(
+    return DatabaseUtil.runInTransactionOrSavepoint(
       session.db,
-      null,
+      transaction,
       (transaction) async {
         await AccountAccess.requireActive(
           session,
@@ -403,11 +482,6 @@ class ActionAuthoringService {
           transaction: transaction,
         );
       },
-    );
-    return views.opportunity(
-      session,
-      action: result,
-      viewerAuthUserId: authUserId,
     );
   }
 

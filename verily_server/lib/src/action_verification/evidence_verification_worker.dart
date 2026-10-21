@@ -3,6 +3,10 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:serverpod/serverpod.dart';
 import 'package:verily_server/src/action_verification/action_verification_service.dart';
+import 'package:verily_server/src/action_verification/local_check/local_check_catalog.dart';
+import 'package:verily_server/src/action_verification/local_check/local_check_models.dart';
+import 'package:verily_server/src/action_verification/local_check/local_check_replay.dart';
+import 'package:verily_server/src/action_verification/local_check/mp_local_check_replayer.dart';
 import 'package:verily_server/src/action_verification/media_evidence_verifier.dart';
 import 'package:verily_server/src/action_verification/openrouter_media_evidence_verifier.dart';
 import 'package:verily_server/src/action_verification/production_ai_deployment.dart';
@@ -33,8 +37,14 @@ class EvidenceVerificationWorker {
     MediaVerifierFactory? verifierFactory,
     InferenceReservationService? reservations,
     ActionVerificationService? actions,
+    LocalCheckReplayer? localCheckReplayer,
+    LocalCheckEvidenceReader? readLocalCheckEvidence,
     DateTime Function()? clock,
   }) : verifierFactory = verifierFactory ?? configuredMediaVerifier,
+       localCheckReplayer =
+           localCheckReplayer ??
+           MpLocalCheckReplayer.fromEnvironment(Platform.environment),
+       readLocalCheckEvidence = readLocalCheckEvidence ?? readPinnedEvidence,
        reservations =
            reservations ??
            InferenceReservationService(
@@ -48,6 +58,10 @@ class EvidenceVerificationWorker {
   final MediaVerifierFactory verifierFactory;
   final InferenceReservationService reservations;
   final ActionVerificationService actions;
+
+  /// Replays phone-only local checks with the pinned MediaPipe model.
+  final LocalCheckReplayer localCheckReplayer;
+  final LocalCheckEvidenceReader readLocalCheckEvidence;
   final DateTime Function() clock;
 
   Future<void> verify(Session session, UuidValue evidenceId) async {
@@ -146,6 +160,26 @@ class EvidenceVerificationWorker {
       throw StateError('The proof lost its challenge word.');
     }
 
+    // A local check is replayed first with the pinned model. It decides on
+    // its own unless a spoken word must also be heard; when it cannot run,
+    // the AI policy decides. The phone's own result is never consulted.
+    final localCheck = localCheckOf(rule);
+    final localModel = localCheck == null
+        ? null
+        : LocalCheckModel.forTask(localCheck.task);
+    final replay = localCheck == null
+        ? null
+        : await _replayLocalCheck(session, localCheck, localModel!, seal);
+    if (replay != null) {
+      final decided = decideLocalCheck(
+        model: localModel!,
+        check: localCheck!,
+        replay: replay,
+        spokenChallengeRequired: rule.spokenChallengeRequired,
+      );
+      if (decided != null) return decided;
+    }
+
     var callSequence = 0;
     Future<void> reserveCall(String modelId) {
       final sequence = callSequence++;
@@ -161,24 +195,69 @@ class EvidenceVerificationWorker {
 
     final httpClient = http.Client();
     try {
-      return await verifierFactory(session, reserveCall, httpClient).verify(
-        session,
-        MediaVerificationRequest(
-          rule: rule,
-          storagePath: seal.storagePath,
-          storageVersionId: seal.storageVersionId,
-          mimeType: seal.contentType,
-          sha256Digest: seal.sha256Digest,
-          byteLength: seal.byteLength,
-          durationSeconds: evidence.durationSeconds,
-          capturedAt: evidence.capturedAt,
-          spokenChallengeWord: rule.spokenChallengeRequired
-              ? evidence.spokenChallengeWord
-              : null,
-        ),
-      );
+      final decision = await verifierFactory(session, reserveCall, httpClient)
+          .verify(
+            session,
+            MediaVerificationRequest(
+              rule: rule,
+              storagePath: seal.storagePath,
+              storageVersionId: seal.storageVersionId,
+              mimeType: seal.contentType,
+              sha256Digest: seal.sha256Digest,
+              byteLength: seal.byteLength,
+              durationSeconds: evidence.durationSeconds,
+              capturedAt: evidence.capturedAt,
+              spokenChallengeWord: rule.spokenChallengeRequired
+                  ? evidence.spokenChallengeWord
+                  : null,
+            ),
+          );
+      return replay == null
+          ? decision
+          : withLocalCheckReplay(
+              decision,
+              model: localModel!,
+              check: localCheck!,
+              replay: replay,
+            );
     } finally {
       httpClient.close();
+    }
+  }
+
+  /// Reads the sealed evidence bytes and replays [check] over them. Every
+  /// failure becomes [LocalCheckReplayUnavailable], so the AI policy decides.
+  Future<LocalCheckReplay> _replayLocalCheck(
+    Session session,
+    ActionLocalCheck check,
+    LocalCheckModel model,
+    EvidenceIntegritySeal seal,
+  ) async {
+    try {
+      final bytes = await readLocalCheckEvidence(
+        session,
+        storagePath: seal.storagePath,
+        sha256Digest: seal.sha256Digest,
+        byteLength: seal.byteLength,
+      );
+      return await localCheckReplayer.replay(
+        check: check,
+        model: model,
+        media: bytes,
+        mimeType: seal.contentType,
+      );
+    } on LocalCheckUnavailableException catch (error) {
+      return LocalCheckReplayUnavailable(error.code);
+    } on Object catch (error, stackTrace) {
+      session.log(
+        'Local check replay failed for ${seal.storagePath}.',
+        level: LogLevel.warning,
+        exception: error,
+        stackTrace: stackTrace,
+      );
+      return const LocalCheckReplayUnavailable(
+        LocalCheckUnavailableCode.replayFailed,
+      );
     }
   }
 

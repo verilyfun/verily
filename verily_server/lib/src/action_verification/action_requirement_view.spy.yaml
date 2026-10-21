@@ -37,3 +37,7 @@ fields:
   appName: String?
   ### Whether the App is still active; false blocks new attempts.
   appAvailable: bool?
+  appVerificationMode: AppVerificationMode?
+  localCheck: ActionLocalCheck?
+  ### The pinned model the phone runs for [localCheck].
+  localCheckModel: LocalCheckModelView?

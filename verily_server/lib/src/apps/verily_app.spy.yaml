@@ -16,6 +16,16 @@ fields:
   rateWindowStartedAt: DateTime?
   ### Authenticated deliveries counted in the current rate-limit window.
   rateWindowCount: int, default=0
+  ### HTTPS endpoint for signed events and pull verification; null until set.
+  webhookUrl: String?
+  ### Version of the current `whsec_` signing secret; 0 means none issued.
+  ### Secrets are derived from the server master key and this version, so no
+  ### secret is stored.
+  webhookSecretVersion: int, default=0
+  ### The version replaced by the last rotation, still signed alongside the
+  ### current one for 24 hours so the App can roll over.
+  previousWebhookSecretVersion: int?
+  webhookSecretRotatedAt: DateTime?
   createdAt: DateTime, defaultModel=now
   updatedAt: DateTime, defaultModel=now
   revokedAt: DateTime?

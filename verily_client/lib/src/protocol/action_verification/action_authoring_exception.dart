@@ -22,7 +22,10 @@ abstract class ActionAuthoringException
         _isc.SerializableException,
         _isc.SerializableModel,
         _isc.ProtocolSerialization {
-  ActionAuthoringException._({required this.reason, required this.message});
+  ActionAuthoringException._({
+    required this.reason,
+    required this.message,
+  });
 
   factory ActionAuthoringException({
     required _i4svfrok.ActionAuthoringProblem reason,
@@ -79,7 +82,10 @@ class _ActionAuthoringExceptionImpl extends ActionAuthoringException {
   _ActionAuthoringExceptionImpl({
     required _i4svfrok.ActionAuthoringProblem reason,
     required String message,
-  }) : super._(reason: reason, message: message);
+  }) : super._(
+         reason: reason,
+         message: message,
+       );
 
   /// Returns a shallow copy of this [ActionAuthoringException]
   /// with some or all fields replaced by the given arguments.

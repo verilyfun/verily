@@ -18,6 +18,11 @@ import '../action_verification/action_motion_type.dart' as _iw0fdt08;
 import '../action_verification/action_movement_kind.dart' as _idij3jhk;
 import '../action_verification/action_requirement_kind.dart' as _iws572ni;
 import '../action_verification/action_verification_policy.dart' as _i0pk7h0c;
+import '../action_verification/local_check/action_local_check.dart'
+    as _iyt6y350;
+import '../action_verification/local_check/local_check_model_view.dart'
+    as _ip3cz2wq;
+import '../apps/app_verification_mode.dart' as _is7dtawb;
 
 abstract class ActionRequirementView
     implements _isc.SerializableModel, _isc.ProtocolSerialization {
@@ -53,6 +58,9 @@ abstract class ActionRequirementView
     this.appId,
     this.appName,
     this.appAvailable,
+    this.appVerificationMode,
+    this.localCheck,
+    this.localCheckModel,
   }) : spokenChallengeRequired = spokenChallengeRequired ?? false;
 
   factory ActionRequirementView({
@@ -87,6 +95,9 @@ abstract class ActionRequirementView
     _isc.UuidValue? appId,
     String? appName,
     bool? appAvailable,
+    _is7dtawb.AppVerificationMode? appVerificationMode,
+    _iyt6y350.ActionLocalCheck? localCheck,
+    _ip3cz2wq.LocalCheckModelView? localCheckModel,
   }) = _ActionRequirementViewImpl;
 
   factory ActionRequirementView.fromJson(
@@ -171,6 +182,21 @@ abstract class ActionRequirementView
       appAvailable: jsonSerialization['appAvailable'] == null
           ? null
           : _isc.BoolJsonExtension.fromJson(jsonSerialization['appAvailable']),
+      appVerificationMode: jsonSerialization['appVerificationMode'] == null
+          ? null
+          : _is7dtawb.AppVerificationMode.fromJson(
+              (jsonSerialization['appVerificationMode'] as String),
+            ),
+      localCheck: jsonSerialization['localCheck'] == null
+          ? null
+          : _iop4qpu5.Protocol().deserialize<_iyt6y350.ActionLocalCheck>(
+              jsonSerialization['localCheck'],
+            ),
+      localCheckModel: jsonSerialization['localCheckModel'] == null
+          ? null
+          : _iop4qpu5.Protocol().deserialize<_ip3cz2wq.LocalCheckModelView>(
+              jsonSerialization['localCheckModel'],
+            ),
     );
   }
 
@@ -242,6 +268,13 @@ abstract class ActionRequirementView
   /// Whether the App is still active; false blocks new attempts.
   bool? appAvailable;
 
+  _is7dtawb.AppVerificationMode? appVerificationMode;
+
+  _iyt6y350.ActionLocalCheck? localCheck;
+
+  /// The pinned model the phone runs for [localCheck].
+  _ip3cz2wq.LocalCheckModelView? localCheckModel;
+
   /// Returns a shallow copy of this [ActionRequirementView]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
@@ -277,6 +310,9 @@ abstract class ActionRequirementView
     _isc.UuidValue? appId,
     String? appName,
     bool? appAvailable,
+    _is7dtawb.AppVerificationMode? appVerificationMode,
+    _iyt6y350.ActionLocalCheck? localCheck,
+    _ip3cz2wq.LocalCheckModelView? localCheckModel,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -323,6 +359,10 @@ abstract class ActionRequirementView
       if (appId != null) 'appId': appId?.toJson(),
       if (appName != null) 'appName': appName,
       if (appAvailable != null) 'appAvailable': appAvailable,
+      if (appVerificationMode != null)
+        'appVerificationMode': appVerificationMode?.toJson(),
+      if (localCheck != null) 'localCheck': localCheck?.toJson(),
+      if (localCheckModel != null) 'localCheckModel': localCheckModel?.toJson(),
     };
   }
 
@@ -371,6 +411,11 @@ abstract class ActionRequirementView
       if (appId != null) 'appId': appId?.toJson(),
       if (appName != null) 'appName': appName,
       if (appAvailable != null) 'appAvailable': appAvailable,
+      if (appVerificationMode != null)
+        'appVerificationMode': appVerificationMode?.toJson(),
+      if (localCheck != null) 'localCheck': localCheck?.toJsonForProtocol(),
+      if (localCheckModel != null)
+        'localCheckModel': localCheckModel?.toJsonForProtocol(),
     };
   }
 
@@ -415,6 +460,9 @@ class _ActionRequirementViewImpl extends ActionRequirementView {
     _isc.UuidValue? appId,
     String? appName,
     bool? appAvailable,
+    _is7dtawb.AppVerificationMode? appVerificationMode,
+    _iyt6y350.ActionLocalCheck? localCheck,
+    _ip3cz2wq.LocalCheckModelView? localCheckModel,
   }) : super._(
          id: id,
          requirementKey: requirementKey,
@@ -449,6 +497,9 @@ class _ActionRequirementViewImpl extends ActionRequirementView {
          appId: appId,
          appName: appName,
          appAvailable: appAvailable,
+         appVerificationMode: appVerificationMode,
+         localCheck: localCheck,
+         localCheckModel: localCheckModel,
        );
 
   /// Returns a shallow copy of this [ActionRequirementView]
@@ -487,6 +538,9 @@ class _ActionRequirementViewImpl extends ActionRequirementView {
     Object? appId = _Undefined,
     Object? appName = _Undefined,
     Object? appAvailable = _Undefined,
+    Object? appVerificationMode = _Undefined,
+    Object? localCheck = _Undefined,
+    Object? localCheckModel = _Undefined,
   }) {
     return ActionRequirementView(
       id: id ?? this.id,
@@ -558,6 +612,15 @@ class _ActionRequirementViewImpl extends ActionRequirementView {
       appId: appId is _isc.UuidValue? ? appId : this.appId,
       appName: appName is String? ? appName : this.appName,
       appAvailable: appAvailable is bool? ? appAvailable : this.appAvailable,
+      appVerificationMode: appVerificationMode is _is7dtawb.AppVerificationMode?
+          ? appVerificationMode
+          : this.appVerificationMode,
+      localCheck: localCheck is _iyt6y350.ActionLocalCheck?
+          ? localCheck
+          : this.localCheck?.copyWith(),
+      localCheckModel: localCheckModel is _ip3cz2wq.LocalCheckModelView?
+          ? localCheckModel
+          : this.localCheckModel?.copyWith(),
     );
   }
 }

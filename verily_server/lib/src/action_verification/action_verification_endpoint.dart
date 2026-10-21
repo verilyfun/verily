@@ -5,6 +5,7 @@ import 'package:verily_server/src/action_verification/action_draft_generator.dar
 import 'package:verily_server/src/action_verification/action_verification_service.dart';
 import 'package:verily_server/src/action_verification/model_input_security.dart';
 import 'package:verily_server/src/ai_usage/ai_usage_guard.dart';
+import 'package:verily_server/src/apps/app_pull_check_service.dart';
 import 'package:verily_server/src/evidence_storage/media_evidence_service.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 
@@ -20,7 +21,9 @@ class ActionVerificationEndpoint extends Endpoint {
     ActionDraftGenerator? draftGenerator,
     MediaEvidenceService? media,
     AiUsageGuard? usageGuard,
+    AppPullCheckService? pullChecks,
   }) : service = service ?? ActionVerificationService(),
+       pullChecks = pullChecks ?? AppPullCheckService(),
        authoring = authoring ?? ActionAuthoringService(),
        draftGenerator = draftGenerator ?? ActionDraftGenerator(),
        media = media ?? MediaEvidenceService(),
@@ -31,6 +34,7 @@ class ActionVerificationEndpoint extends Endpoint {
   final ActionDraftGenerator draftGenerator;
   final MediaEvidenceService media;
   final AiUsageGuard usageGuard;
+  final AppPullCheckService pullChecks;
 
   @override
   bool get requireLogin => true;
@@ -267,6 +271,24 @@ class ActionVerificationEndpoint extends Endpoint {
       session,
       authUserId: _caller(session),
       confirmation: confirmation,
+    );
+  }
+
+  /// "I did it" for a pull-verified `externalApp` requirement: Verily asks
+  /// the App's webhook. [reference] is optional text the participant typed
+  /// (at most 120 characters), such as a username or order number.
+  Future<EvidenceSubmissionResult> requestAppVerification(
+    Session session, {
+    required UuidValue attemptId,
+    required UuidValue requirementId,
+    String? reference,
+  }) {
+    return pullChecks.requestVerification(
+      session,
+      authUserId: _caller(session),
+      attemptId: attemptId,
+      requirementId: requirementId,
+      reference: reference,
     );
   }
 

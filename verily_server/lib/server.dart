@@ -12,6 +12,10 @@ import 'package:verily_server/src/action_verification/capture_integrity.dart';
 import 'package:verily_server/src/action_verification/evidence_verification_recovery_future_call.dart';
 import 'package:verily_server/src/action_verification/media_evidence_verifier.dart';
 import 'package:verily_server/src/action_verification/production_ai_deployment.dart';
+import 'package:verily_server/src/apps/app_pull_check_recovery_future_call.dart';
+import 'package:verily_server/src/apps/linking/app_link_code_cleanup_future_call.dart';
+import 'package:verily_server/src/apps/platform_keys.dart';
+import 'package:verily_server/src/apps/webhooks/app_event_recovery_future_call.dart';
 import 'package:verily_server/src/auth/email_auth_configuration.dart';
 import 'package:verily_server/src/auth/email_delivery_service.dart';
 import 'package:verily_server/src/evidence_storage/evidence_storage_configuration.dart';
@@ -21,10 +25,16 @@ import 'package:verily_server/src/generated/serverpod.dart';
 import 'package:verily_server/src/rewards/payout_wallet_challenge_cleanup_future_call.dart';
 import 'package:verily_server/src/rewards/reward_configuration.dart';
 import 'package:verily_server/src/rewards/reward_payout_recovery_future_call.dart';
+import 'package:verily_server/src/rewards/solana_reward_escrow_configuration.dart';
+import 'package:verily_server/src/verification_requests/verification_request_expiry_future_call.dart';
+import 'package:verily_server/src/web/routes/api_actions_route.dart';
 import 'package:verily_server/src/web/routes/app_config_route.dart';
 import 'package:verily_server/src/web/routes/app_confirmations_route.dart';
+import 'package:verily_server/src/web/routes/app_link_exchange_route.dart';
 import 'package:verily_server/src/web/routes/health_route.dart';
+import 'package:verily_server/src/web/routes/jwks_route.dart';
 import 'package:verily_server/src/web/routes/root_route.dart';
+import 'package:verily_server/src/web/routes/verification_requests_route.dart';
 
 /// The starting point of the Verily Serverpod server.
 ///
@@ -59,6 +69,16 @@ Future<void> run(List<String> args) async {
       ),
       (envName: 'VERILY_MEDIA_VERIFIER_TOKEN', alias: 'mediaVerifierToken'),
       (envName: 'VERILY_OPENROUTER_API_KEY', alias: 'openRouterApiKey'),
+      ...solanaRewardSecretPasswords,
+      (
+        envName: 'VERILY_WEBHOOK_SIGNING_MASTER_KEY',
+        alias: 'webhookSigningMasterKey',
+      ),
+      (envName: 'VERILY_RECEIPT_SIGNING_KEY', alias: 'receiptSigningKey'),
+      (
+        envName: 'VERILY_RECEIPT_RETIRED_PUBLIC_KEYS',
+        alias: 'receiptRetiredPublicKeys',
+      ),
     ]);
   final developmentLike =
       pod.runMode == ServerpodRunMode.development ||
@@ -83,9 +103,24 @@ Future<void> run(List<String> args) async {
       'be false outside development and test.',
     );
   }
+  // The Solana gateway proves its signers and the cluster, program, and
+  // mint before the server accepts traffic; any failure stops startup.
   RewardRuntime.current = RewardConfiguration.fromEnvironment(
     runMode: pod.runMode,
     environment: environment,
+    solanaGateway: await connectSolanaRewardEscrowFromEnvironment(
+      runMode: pod.runMode,
+      environment: environment,
+      readPassword: pod.getPassword,
+    ),
+  );
+
+  // App platform keys: a configured but malformed key stops startup; a
+  // missing one disables only webhooks or receipts, with typed errors.
+  PlatformKeys.current = PlatformKeys.fromSecrets(
+    webhookSigningMasterKey: pod.getPassword('webhookSigningMasterKey'),
+    receiptSigningKey: pod.getPassword('receiptSigningKey'),
+    retiredReceiptPublicKeys: pod.getPassword('receiptRetiredPublicKeys'),
   );
 
   final storageMode = EvidenceStorageSelection.resolveMode(
@@ -163,7 +198,23 @@ Future<void> run(List<String> args) async {
       AppConfigRoute(apiConfig: pod.config.apiServer),
       '/app/assets/assets/config.json',
     )
-    ..addRoute(AppConfirmationsRoute(), '/api/v1/confirmations');
+    ..addRoute(AppConfirmationsRoute(), '/api/v1/confirmations')
+    ..addRoute(ApiActionsRoute(), '/api/v1/actions')
+    ..addRoute(
+      ApiActionLifecycleRoute(ApiActionLifecycle.publish),
+      '/api/v1/actions/:actionId/publish',
+    )
+    ..addRoute(
+      ApiActionLifecycleRoute(ApiActionLifecycle.pause),
+      '/api/v1/actions/:actionId/pause',
+    )
+    ..addRoute(AppLinkExchangeRoute(), '/api/v1/links/exchange')
+    ..addRoute(VerificationRequestsRoute(), '/api/v1/verification-requests')
+    ..addRoute(
+      VerificationReceiptRoute(),
+      '/api/v1/verification-requests/:requestId/receipt',
+    )
+    ..addRoute(JwksRoute(), '/.well-known/jwks.json');
   final appDir = Directory(Uri(path: 'web/app').toFilePath());
   if (appDir.existsSync()) {
     pod.webServer.addRoute(FlutterRoute(appDir), '/app');
@@ -236,6 +287,38 @@ Future<void> run(List<String> args) async {
         .every(const Duration(minutes: 5))
         .rewardPayoutRecovery
         .recover(RewardPayoutRecoveryTask(batchSize: 100)),
+  );
+  await recurring(
+    appLinkCodeCleanupIdentifier,
+    () => futureCalls
+        .callRecurring(identifier: appLinkCodeCleanupIdentifier)
+        .every(const Duration(days: 1))
+        .appLinkCodeCleanup
+        .cleanup(AppLinkCodeCleanupTask(batchSize: 1000)),
+  );
+  await recurring(
+    appEventRecoveryIdentifier,
+    () => futureCalls
+        .callRecurring(identifier: appEventRecoveryIdentifier)
+        .every(const Duration(minutes: 1))
+        .appEventRecovery
+        .recover(AppEventRecoveryTask(batchSize: 200)),
+  );
+  await recurring(
+    appPullCheckRecoveryIdentifier,
+    () => futureCalls
+        .callRecurring(identifier: appPullCheckRecoveryIdentifier)
+        .every(const Duration(minutes: 1))
+        .appPullCheckRecovery
+        .recover(AppPullCheckRecoveryTask(batchSize: 100)),
+  );
+  await recurring(
+    verificationRequestExpiryIdentifier,
+    () => futureCalls
+        .callRecurring(identifier: verificationRequestExpiryIdentifier)
+        .every(const Duration(minutes: 1))
+        .verificationRequestExpiry
+        .expire(VerificationRequestExpiryTask(batchSize: 200)),
   );
 }
 

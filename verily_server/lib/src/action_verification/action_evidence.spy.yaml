@@ -28,6 +28,12 @@ fields:
   ### the proof so verifiers and reviewers check exactly what was asked.
   spokenChallengeId: UuidValue?, relation(parent=verily_action_spoken_challenge, onDelete=SetNull)
   spokenChallengeWord: String?
+  ### The phone's advisory local-check result, kept for calibration only.
+  deviceLocalCheckModelId: String?
+  deviceLocalCheckModelSha256: String?
+  deviceLocalCheckLabel: String?
+  deviceLocalCheckScore: double?
+  deviceLocalCheckMatchedFrames: int?
   provenanceLevel: EvidenceProvenanceLevel, default=basic
   captureManifest: String?
   captureSignature: String?

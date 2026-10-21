@@ -1,4 +1,4 @@
-name: _
+name: verily_workspace
 publish_to: none
 
 environment:
@@ -7,4 +7,5 @@ environment:
 workspace:
   - verily_client
   - verily_server
+  - packages/verily_escrow_client
   - packages/verily_evidence

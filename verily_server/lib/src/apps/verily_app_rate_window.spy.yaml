@@ -1,0 +1,16 @@
+### A fixed-window counter for one App and one rate-limited operation, such as
+### API action writes, link exchanges, or verification requests. The bucket
+### may include a pairwise subject for per-person limits.
+class: VerilyAppRateWindow
+serverOnly: true
+table: verily_app_rate_window
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  appId: UuidValue, relation(parent=verily_app, onDelete=Cascade)
+  bucket: String
+  windowStartedAt: DateTime
+  requestCount: int
+indexes:
+  verily_app_rate_window_bucket_idx:
+    fields: appId, bucket
+    unique: true

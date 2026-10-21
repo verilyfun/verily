@@ -14,7 +14,10 @@ import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 abstract class ActionQrChallengeView
     implements _isc.SerializableModel, _isc.ProtocolSerialization {
-  ActionQrChallengeView._({required this.code, required this.expiresAt});
+  ActionQrChallengeView._({
+    required this.code,
+    required this.expiresAt,
+  });
 
   factory ActionQrChallengeView({
     required String code,
@@ -39,7 +42,10 @@ abstract class ActionQrChallengeView
   /// Returns a shallow copy of this [ActionQrChallengeView]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
-  ActionQrChallengeView copyWith({String? code, DateTime? expiresAt});
+  ActionQrChallengeView copyWith({
+    String? code,
+    DateTime? expiresAt,
+  });
   @override
   Map<String, dynamic> toJson() {
     return {
@@ -68,13 +74,19 @@ class _ActionQrChallengeViewImpl extends ActionQrChallengeView {
   _ActionQrChallengeViewImpl({
     required String code,
     required DateTime expiresAt,
-  }) : super._(code: code, expiresAt: expiresAt);
+  }) : super._(
+         code: code,
+         expiresAt: expiresAt,
+       );
 
   /// Returns a shallow copy of this [ActionQrChallengeView]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
   @override
-  ActionQrChallengeView copyWith({String? code, DateTime? expiresAt}) {
+  ActionQrChallengeView copyWith({
+    String? code,
+    DateTime? expiresAt,
+  }) {
     return ActionQrChallengeView(
       code: code ?? this.code,
       expiresAt: expiresAt ?? this.expiresAt,

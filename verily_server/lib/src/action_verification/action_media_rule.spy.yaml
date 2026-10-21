@@ -24,6 +24,11 @@ fields:
   movementKind: ActionMovementKind?
   ### Complete repetitions or consecutive touches required by [movementKind].
   targetRepetitions: int?
+  ### Optional on-device check replayed on the server (`mp-replay`).
+  localCheckTask: LocalCheckTask?
+  localCheckLabel: String?
+  localCheckMinScore: double?
+  localCheckMinFrames: int?
 indexes:
   verily_action_media_rule_requirement_idx:
     fields: requirementId

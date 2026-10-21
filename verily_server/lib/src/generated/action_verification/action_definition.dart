@@ -18,6 +18,7 @@ import 'package:verily_server/src/generated/protocol.dart' as _itf691yl;
 
 import '../action_verification/action_definition_status.dart' as _irpnjpe3;
 import '../action_verification/action_recurrence.dart' as _ivhzgwse;
+import '../action_verification/action_visibility.dart' as _izz63myo;
 
 /// Versioned, creator-owned proof contract. Published revisions are immutable;
 /// historical attempts stay tied to the rules they accepted.
@@ -40,10 +41,12 @@ abstract class ActionDefinition
     this.closesAt,
     this.publishedAt,
     this.pausedAt,
+    _izz63myo.ActionVisibility? visibility,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) : revision = revision ?? 1,
        verifiedCompletions = verifiedCompletions ?? 0,
+       visibility = visibility ?? _izz63myo.ActionVisibility.public,
        createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now();
 
@@ -64,6 +67,7 @@ abstract class ActionDefinition
     DateTime? closesAt,
     DateTime? publishedAt,
     DateTime? pausedAt,
+    _izz63myo.ActionVisibility? visibility,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _ActionDefinitionImpl;
@@ -109,6 +113,11 @@ abstract class ActionDefinition
       pausedAt: jsonSerialization['pausedAt'] == null
           ? null
           : _is.DateTimeJsonExtension.fromJson(jsonSerialization['pausedAt']),
+      visibility: jsonSerialization['visibility'] == null
+          ? null
+          : _izz63myo.ActionVisibility.fromJson(
+              (jsonSerialization['visibility'] as String),
+            ),
       createdAt: jsonSerialization['createdAt'] == null
           ? null
           : _is.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
@@ -155,6 +164,8 @@ abstract class ActionDefinition
 
   DateTime? pausedAt;
 
+  _izz63myo.ActionVisibility visibility;
+
   DateTime createdAt;
 
   DateTime updatedAt;
@@ -182,6 +193,7 @@ abstract class ActionDefinition
     DateTime? closesAt,
     DateTime? publishedAt,
     DateTime? pausedAt,
+    _izz63myo.ActionVisibility? visibility,
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -206,6 +218,7 @@ abstract class ActionDefinition
       if (closesAt != null) 'closesAt': closesAt?.toJson(),
       if (publishedAt != null) 'publishedAt': publishedAt?.toJson(),
       if (pausedAt != null) 'pausedAt': pausedAt?.toJson(),
+      'visibility': visibility.toJson(),
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -266,6 +279,7 @@ class _ActionDefinitionImpl extends ActionDefinition {
     DateTime? closesAt,
     DateTime? publishedAt,
     DateTime? pausedAt,
+    _izz63myo.ActionVisibility? visibility,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) : super._(
@@ -285,6 +299,7 @@ class _ActionDefinitionImpl extends ActionDefinition {
          closesAt: closesAt,
          publishedAt: publishedAt,
          pausedAt: pausedAt,
+         visibility: visibility,
          createdAt: createdAt,
          updatedAt: updatedAt,
        );
@@ -310,6 +325,7 @@ class _ActionDefinitionImpl extends ActionDefinition {
     Object? closesAt = _Undefined,
     Object? publishedAt = _Undefined,
     Object? pausedAt = _Undefined,
+    _izz63myo.ActionVisibility? visibility,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -334,6 +350,7 @@ class _ActionDefinitionImpl extends ActionDefinition {
       closesAt: closesAt is DateTime? ? closesAt : this.closesAt,
       publishedAt: publishedAt is DateTime? ? publishedAt : this.publishedAt,
       pausedAt: pausedAt is DateTime? ? pausedAt : this.pausedAt,
+      visibility: visibility ?? this.visibility,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -426,6 +443,12 @@ class ActionDefinitionUpdateTable
         value,
       );
 
+  _is.ColumnValue<_izz63myo.ActionVisibility, _izz63myo.ActionVisibility>
+  visibility(_izz63myo.ActionVisibility value) => _is.ColumnValue(
+    table.visibility,
+    value,
+  );
+
   _is.ColumnValue<DateTime, DateTime> createdAt(DateTime value) =>
       _is.ColumnValue(
         table.createdAt,
@@ -503,6 +526,12 @@ class ActionDefinitionTable extends _is.Table<_is.UuidValue?> {
       'pausedAt',
       this,
     );
+    visibility = _is.ColumnEnum(
+      'visibility',
+      this,
+      _is.EnumSerialization.byName,
+      hasDefault: true,
+    );
     createdAt = _is.ColumnDateTime(
       'createdAt',
       this,
@@ -545,6 +574,8 @@ class ActionDefinitionTable extends _is.Table<_is.UuidValue?> {
 
   late final _is.ColumnDateTime pausedAt;
 
+  late final _is.ColumnEnum<_izz63myo.ActionVisibility> visibility;
+
   late final _is.ColumnDateTime createdAt;
 
   late final _is.ColumnDateTime updatedAt;
@@ -579,6 +610,7 @@ class ActionDefinitionTable extends _is.Table<_is.UuidValue?> {
     closesAt,
     publishedAt,
     pausedAt,
+    visibility,
     createdAt,
     updatedAt,
   ];

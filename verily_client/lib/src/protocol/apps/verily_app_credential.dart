@@ -86,7 +86,11 @@ class _VerilyAppCredentialImpl extends VerilyAppCredential {
     required _ihuwd3rm.VerilyAppView app,
     required String keyId,
     required String secret,
-  }) : super._(app: app, keyId: keyId, secret: secret);
+  }) : super._(
+         app: app,
+         keyId: keyId,
+         secret: secret,
+       );
 
   /// Returns a shallow copy of this [VerilyAppCredential]
   /// with some or all fields replaced by the given arguments.

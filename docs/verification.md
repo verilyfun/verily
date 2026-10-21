@@ -42,17 +42,23 @@ is unique. Two creators can use the same key; one creator cannot reuse theirs.
 An action has one to five requirements (`maxActionRequirements`). Each has a
 kind and kind-specific rule rows:
 
-| Kind (`ActionRequirementKind`) | Rule table                    | Checked by                                                         |
-| ------------------------------ | ----------------------------- | ------------------------------------------------------------------ |
-| `video`, `photo`, `audio`      | `verily_action_media_rule`    | Upload pipeline, then a media verifier or a person                 |
-| `location`                     | `verily_action_location_rule` | PostGIS radius, accuracy, freshness, travel plausibility           |
-| `qrCode`                       | `verily_action_qr_rule`       | Server-issued, single-use, short-lived codes (`verily:v1:` prefix) |
-| `motion`                       | `verily_action_motion_rule`   | The phone's sensor trace, recomputed on the server                 |
-| `externalApp`                  | `verily_action_external_rule` | A confirmation from the creator's Verily App                       |
+| Kind (`ActionRequirementKind`) | Rule table                    | Checked by                                                          |
+| ------------------------------ | ----------------------------- | ------------------------------------------------------------------- |
+| `video`, `photo`, `audio`      | `verily_action_media_rule`    | Upload pipeline, then a media verifier or a person                  |
+| `location`                     | `verily_action_location_rule` | PostGIS radius, accuracy, freshness, travel plausibility            |
+| `qrCode`                       | `verily_action_qr_rule`       | Server-issued, single-use, short-lived codes (`verily:v1:` prefix)  |
+| `motion`                       | `verily_action_motion_rule`   | The phone's sensor trace, recomputed on the server                  |
+| `externalApp`                  | `verily_action_external_rule` | The creator's Verily App: it pushes a confirmation, or Verily pulls |
 
 `externalApp` is the `external` kind in [platform](platform.md). Serverpod
 reserves `external` as an enum value, so the wire name differs; the meaning is
-the same.
+the same. Its rule records `verificationMode`: `push` (the App calls
+`POST /api/v1/confirmations`) or `pull` (the participant taps "I did it" with
+`requestAppVerification` and Verily calls the App's webhook; see
+[platform](platform.md#verification-push-or-pull)).
+
+A media requirement may also carry a `localCheck` (gesture, object, or sound),
+replayed on the server; see [below](#on-device-checks-replayed-on-the-server-mp-replay).
 
 Media rules are one generalized table for all three media kinds:
 verification prompt, duration bounds (none for photos; 3 to 300 seconds for
@@ -169,31 +175,75 @@ Each decision row records `status` (`accepted`, `rejected`, `manualReview`),
 `verifierType`, a stable `reasonCode`, short product copy, confidence, and
 model provenance. Participants only ever see the product copy.
 
-| `verifierType`                                         | Source                                                   |
-| ------------------------------------------------------ | -------------------------------------------------------- |
-| `geofence`, `location-risk`                            | Location policy                                          |
-| `qr-digest`                                            | Venue codes                                              |
-| `device-motion-v1`                                     | Motion trace recomputed on the server                    |
-| `media-preflight`, `spoken-challenge`                  | Upload and challenge-word checks before any model runs   |
-| `openrouter-single-model`, `openrouter-model-council`  | [OpenRouter verification](openrouter-verification.md)    |
-| `cloud-ai-media`                                       | [Cloud verifier contract](video-verifier-contract.md)    |
-| `manual-review-fallback`                               | `VERILY_MEDIA_VERIFIER_MODE=manual-review` (the default) |
-| `human-review`, `appeal-review`, `payout-value-review` | People with the `evidence.review` scope                  |
-| `abuse-risk`                                           | The abuse gate                                           |
-| `verily-app`                                           | A Verily App confirmation                                |
+| `verifierType`                                         | Source                                                     |
+| ------------------------------------------------------ | ---------------------------------------------------------- |
+| `geofence`, `location-risk`                            | Location policy                                            |
+| `qr-digest`                                            | Venue codes                                                |
+| `device-motion-v1`                                     | Motion trace recomputed on the server                      |
+| `media-preflight`, `spoken-challenge`                  | Upload and challenge-word checks before any model runs     |
+| `openrouter-single-model`, `openrouter-model-council`  | [OpenRouter verification](openrouter-verification.md)      |
+| `cloud-ai-media`                                       | [Cloud verifier contract](video-verifier-contract.md)      |
+| `manual-review-fallback`                               | `VERILY_MEDIA_VERIFIER_MODE=manual-review` (the default)   |
+| `human-review`, `appeal-review`, `payout-value-review` | People with the `evidence.review` scope                    |
+| `abuse-risk`                                           | The abuse gate                                             |
+| `verily-app`, `verily-app-pull`                        | A Verily App's push confirmation or pull verdict           |
+| `mp-replay`                                            | A local check replayed on the server with the pinned model |
 
 `VERILY_MEDIA_VERIFIER_MODE` selects `manual-review` (default, needs no
 secret), `openrouter`, or `cloud`. Partial configuration stops startup.
 
-### Not implemented yet: on-device models replayed on the server
+### On-device checks replayed on the server (mp-replay)
 
-[platform](platform.md) describes phone-only kinds (show a gesture, show a
-thing, make a sound) checked by MediaPipe models on the phone and replayed on
-the server as `verifierType = mp-replay`. They are not in this build: there is
-no gesture, object, or sound kind and no server replay. The seam is the
-extension path above: a new kind, a rule table with the pinned model URL,
-byte length, and SHA-256, and a verifier that runs over the pinned evidence
-version and falls back to AI or a person when the runtime is unavailable.
+A video, photo, or audio requirement can carry a **local check**: something a
+MediaPipe model recognizes, checked live on the phone and then replayed on the
+server with exactly the same model.
+
+| Task      | Media          | Model (pinned)                          | Labels                                  |
+| --------- | -------------- | --------------------------------------- | --------------------------------------- |
+| `gesture` | photo or video | Gesture recognizer, float16 v1 (8.4 MB) | The seven canned gestures (`Thumb_Up`…) |
+| `object`  | photo or video | EfficientDet-Lite0, int8 v1 (4.6 MB)    | The 80 COCO classes                     |
+| `sound`   | audio          | YAMNet, float32 v1 (4.1 MB)             | A reviewed subset of AudioSet sounds    |
+
+- **Rule.** `localCheck: {task, label, minScore, minFrames}` on the media rule:
+  a label from the server allow-list (`local_check_catalog.dart`), a minimum
+  score of 0.3 to 0.99, and 1 to 30 matching frames or audio windows (one for a
+  photo). Without a creator prompt the server writes the verification text
+  from the label, so no creator text reaches a model.
+- **Pinning.** Models are pinned by Google's versioned `mediapipe-models` URL,
+  byte length, and SHA-256. The phone receives them in `localCheckModel`; the
+  server downloads each once into its cache
+  (`VERILY_LOCAL_CHECK_MODEL_CACHE`, baked into the image) and re-checks length
+  and digest on every load, discarding anything that does not match.
+- **Replay.** The worker reads the sealed evidence bytes (digest and length
+  re-checked) and decodes them with ffmpeg: a photo is one frame, a video 30
+  evenly spaced frames scaled to at most 640 px, audio 16 kHz mono PCM capped
+  at 300 s. ffmpeg runs with argument lists, a 20-second timeout, bounded
+  output, and a private temp directory that is always deleted. The decision is
+  `verifierType = mp-replay`, with the model id as model name and its SHA-256
+  as model version; it is accepted (`local_check_matched`) when at least
+  `minFrames` frames score at least `minScore` for the label, otherwise
+  rejected (`local_check_not_matched`). Confidence is the best score.
+- **The phone's result is advisory.** `MediaUploadConfirmation.deviceLocalCheck`
+  (model id, SHA-256, label, score, matched frames) is stored on the evidence
+  row for calibration, only when the rule has a local check, and never feeds a
+  decision.
+- **Spoken word.** A model cannot hear words, so the spoken challenge is off by
+  default for a local check. When a creator turns it on, the replay is recorded
+  as a vote and the AI policy or a person decides.
+- **No runtime, no shortcut.** When the replay cannot run (runtime missing,
+  model download or digest failure, unreadable evidence, decode failure) the
+  rule's AI policy decides; under manual review the reason is
+  `mp_replay_unavailable`. The failed replay is kept as a vote with its code
+  (`mp_runtime_unavailable`, `mp_model_download_failed`,
+  `mp_model_digest_mismatch`, `mp_evidence_unreadable`,
+  `mp_evidence_digest_mismatch`, `mp_decoder_unavailable`,
+  `mp_media_decode_failed`, or `mp_replay_failed`).
+- **Runtime.** The server uses the published `mp_core`, `mp_vision`, and
+  `mp_audio` 0.1.3 packages, whose build hook downloads the pinned native
+  MediaPipe runtime. It is published for macOS arm64 and Linux x64 only; the
+  replay was verified on macOS arm64 (a thumbs-up photo scores 0.73 for
+  `Thumb_Up`, cat and dog 0.82 and 0.89). The image installs `ffmpeg` and
+  `libstdc++6`; the Linux path has not been run yet.
 
 ## Review, appeals, and moderation
 
@@ -249,9 +299,20 @@ Completion and confirmation take locks in one order, which every path follows:
 4. action revision rows;
 5. the reward pool row, then payout rows.
 
-App deliveries lock the App row first, then follow the same order. The payout
-release job locks only the pool and payout rows and reads accounts without a
-lock, so it cannot deadlock with completion.
+Every App request (confirmations, API actions, link exchanges, verification
+requests) locks the App row first, then follows the same order; a
+verification request row is locked after the account and before completion
+reaches it. The payout release job locks only the pool and payout rows and
+reads accounts without a lock, so it cannot deadlock with completion.
+Outbound webhook calls (event deliveries and pull checks) run outside every
+transaction: a short lease is claimed, the call is made, and the result is
+recorded in a second transaction.
+
+When an attempt settles, `AttemptSettlementHooks` runs inside the completing
+transaction: it queues `attempt.verified` or `attempt.rejected` for the App
+behind the action and settles a verification request whose private action it
+is. Payout releases queue `payout.released` the same way. Events are delivered
+after commit, or by the one-minute recovery sweep.
 
 ## Schema contracts
 
@@ -263,4 +324,4 @@ Serverpod's development-mode schema check still passes. It enforces bounds on
 every value-bearing table, append-only receipts and audits, the no-mixing and
 creator-binding rules for Apps, frozen reward terms, and payout invariants.
 `dart run tool/verify_schema_contracts.dart` checks a live database read-only
-(29 constraints, 8 triggers).
+(40 constraints, 9 triggers).

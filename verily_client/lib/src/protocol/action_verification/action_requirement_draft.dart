@@ -11,12 +11,16 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:verily_client/src/protocol/protocol.dart' as _iop4qpu5;
 
 import '../action_verification/action_motion_axis.dart' as _i2kywim4;
 import '../action_verification/action_motion_type.dart' as _iw0fdt08;
 import '../action_verification/action_movement_kind.dart' as _idij3jhk;
 import '../action_verification/action_requirement_kind.dart' as _iws572ni;
 import '../action_verification/action_verification_policy.dart' as _i0pk7h0c;
+import '../action_verification/local_check/action_local_check.dart'
+    as _iyt6y350;
+import '../apps/app_verification_mode.dart' as _is7dtawb;
 
 abstract class ActionRequirementDraft
     implements _isc.SerializableModel, _isc.ProtocolSerialization {
@@ -49,6 +53,8 @@ abstract class ActionRequirementDraft
     this.maxPeakAccelerationMetersPerSecondSquared,
     this.qrCode,
     this.appId,
+    this.appVerificationMode,
+    this.localCheck,
   });
 
   factory ActionRequirementDraft({
@@ -80,6 +86,8 @@ abstract class ActionRequirementDraft
     double? maxPeakAccelerationMetersPerSecondSquared,
     String? qrCode,
     _isc.UuidValue? appId,
+    _is7dtawb.AppVerificationMode? appVerificationMode,
+    _iyt6y350.ActionLocalCheck? localCheck,
   }) = _ActionRequirementDraftImpl;
 
   factory ActionRequirementDraft.fromJson(
@@ -155,6 +163,16 @@ abstract class ActionRequirementDraft
       appId: jsonSerialization['appId'] == null
           ? null
           : _isc.UuidValueJsonExtension.fromJson(jsonSerialization['appId']),
+      appVerificationMode: jsonSerialization['appVerificationMode'] == null
+          ? null
+          : _is7dtawb.AppVerificationMode.fromJson(
+              (jsonSerialization['appVerificationMode'] as String),
+            ),
+      localCheck: jsonSerialization['localCheck'] == null
+          ? null
+          : _iop4qpu5.Protocol().deserialize<_iyt6y350.ActionLocalCheck>(
+              jsonSerialization['localCheck'],
+            ),
     );
   }
 
@@ -216,6 +234,12 @@ abstract class ActionRequirementDraft
   /// The creator's App that confirms an `external` requirement.
   _isc.UuidValue? appId;
 
+  /// Push (the App confirms) or pull (Verily asks the App); push when null.
+  _is7dtawb.AppVerificationMode? appVerificationMode;
+
+  /// Optional phone-only check for video, photo, or audio proof.
+  _iyt6y350.ActionLocalCheck? localCheck;
+
   /// Returns a shallow copy of this [ActionRequirementDraft]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
@@ -248,6 +272,8 @@ abstract class ActionRequirementDraft
     double? maxPeakAccelerationMetersPerSecondSquared,
     String? qrCode,
     _isc.UuidValue? appId,
+    _is7dtawb.AppVerificationMode? appVerificationMode,
+    _iyt6y350.ActionLocalCheck? localCheck,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -291,6 +317,9 @@ abstract class ActionRequirementDraft
             maxPeakAccelerationMetersPerSecondSquared,
       if (qrCode != null) 'qrCode': qrCode,
       if (appId != null) 'appId': appId?.toJson(),
+      if (appVerificationMode != null)
+        'appVerificationMode': appVerificationMode?.toJson(),
+      if (localCheck != null) 'localCheck': localCheck?.toJson(),
     };
   }
 
@@ -336,6 +365,9 @@ abstract class ActionRequirementDraft
             maxPeakAccelerationMetersPerSecondSquared,
       if (qrCode != null) 'qrCode': qrCode,
       if (appId != null) 'appId': appId?.toJson(),
+      if (appVerificationMode != null)
+        'appVerificationMode': appVerificationMode?.toJson(),
+      if (localCheck != null) 'localCheck': localCheck?.toJsonForProtocol(),
     };
   }
 
@@ -377,6 +409,8 @@ class _ActionRequirementDraftImpl extends ActionRequirementDraft {
     double? maxPeakAccelerationMetersPerSecondSquared,
     String? qrCode,
     _isc.UuidValue? appId,
+    _is7dtawb.AppVerificationMode? appVerificationMode,
+    _iyt6y350.ActionLocalCheck? localCheck,
   }) : super._(
          requirementKey: requirementKey,
          kind: kind,
@@ -408,6 +442,8 @@ class _ActionRequirementDraftImpl extends ActionRequirementDraft {
              maxPeakAccelerationMetersPerSecondSquared,
          qrCode: qrCode,
          appId: appId,
+         appVerificationMode: appVerificationMode,
+         localCheck: localCheck,
        );
 
   /// Returns a shallow copy of this [ActionRequirementDraft]
@@ -443,6 +479,8 @@ class _ActionRequirementDraftImpl extends ActionRequirementDraft {
     Object? maxPeakAccelerationMetersPerSecondSquared = _Undefined,
     Object? qrCode = _Undefined,
     Object? appId = _Undefined,
+    Object? appVerificationMode = _Undefined,
+    Object? localCheck = _Undefined,
   }) {
     return ActionRequirementDraft(
       requirementKey: requirementKey ?? this.requirementKey,
@@ -514,6 +552,12 @@ class _ActionRequirementDraftImpl extends ActionRequirementDraft {
           : this.maxPeakAccelerationMetersPerSecondSquared,
       qrCode: qrCode is String? ? qrCode : this.qrCode,
       appId: appId is _isc.UuidValue? ? appId : this.appId,
+      appVerificationMode: appVerificationMode is _is7dtawb.AppVerificationMode?
+          ? appVerificationMode
+          : this.appVerificationMode,
+      localCheck: localCheck is _iyt6y350.ActionLocalCheck?
+          ? localCheck
+          : this.localCheck?.copyWith(),
     );
   }
 }

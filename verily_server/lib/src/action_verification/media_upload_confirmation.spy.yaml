@@ -12,6 +12,8 @@ fields:
   capturedAt: DateTime
   deviceRepetitionCount: int?
   deviceTrackerVersion: String?
+  ### Advisory only; the server replays the pinned model itself.
+  deviceLocalCheck: DeviceLocalCheckResult?
   captureChallengeId: UuidValue?
   deviceIntegrityToken: String?
   captureManifest: String?

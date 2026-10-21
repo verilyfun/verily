@@ -16,11 +16,14 @@ import 'package:verily_server/src/action_verification/action_templates.dart';
 import 'package:verily_server/src/action_verification/action_views.dart';
 import 'package:verily_server/src/action_verification/capture_integrity.dart';
 import 'package:verily_server/src/action_verification/evidence_verification_queue.dart';
+import 'package:verily_server/src/action_verification/local_check/local_check_advisory.dart';
 import 'package:verily_server/src/action_verification/location_evidence_policy.dart';
 import 'package:verily_server/src/action_verification/media_evidence_verifier.dart';
 import 'package:verily_server/src/action_verification/spoken_challenge_words.dart';
 import 'package:verily_server/src/apps/app_confirmation_payload.dart';
 import 'package:verily_server/src/apps/external_confirmation.dart';
+import 'package:verily_server/src/apps/webhooks/app_attempt_events.dart';
+import 'package:verily_server/src/apps/webhooks/app_event_outbox.dart';
 import 'package:verily_server/src/evidence_storage/evidence_integrity_policy.dart';
 import 'package:verily_server/src/evidence_storage/evidence_media_types.dart';
 import 'package:verily_server/src/generated/protocol.dart';
@@ -62,6 +65,8 @@ class ActionVerificationService {
     DateTime Function()? clock,
     bool? allowStaticQrCodes,
     math.Random? random,
+    this.settlementHooks = const AttemptSettlementHooks(),
+    this.appEventOutbox = const AppEventOutbox(),
   }) : clock = clock ?? (() => DateTime.now().toUtc()),
        captureIntegrity =
            captureIntegrity ?? CaptureIntegrityEvaluator(clock: clock),
@@ -77,6 +82,10 @@ class ActionVerificationService {
        _random = random ?? math.Random.secure();
 
   final DateTime Function() clock;
+
+  /// App events and verification-request updates for a settled attempt.
+  final AttemptSettlementHooks settlementHooks;
+  final AppEventOutbox appEventOutbox;
   final CaptureIntegrityEvaluator captureIntegrity;
   final LocationEvidencePolicy locationEvidencePolicy;
   final ModerationGate moderationGate;
@@ -99,6 +108,7 @@ class ActionVerificationService {
       session,
       where: (table) =>
           table.status.equals(ActionDefinitionStatus.active) &
+          table.visibility.equals(ActionVisibility.public) &
           (table.opensAt.equals(null) | (table.opensAt <= now)) &
           (table.closesAt.equals(null) | (table.closesAt > now)) &
           (table.maxVerifiedCompletions.equals(null) |
@@ -180,6 +190,9 @@ class ActionVerificationService {
           table.requirement.actionDefinition.status.equals(
             ActionDefinitionStatus.active,
           ) &
+          table.requirement.actionDefinition.visibility.equals(
+            ActionVisibility.public,
+          ) &
           (table.requirement.actionDefinition.opensAt.equals(null) |
               (table.requirement.actionDefinition.opensAt <= now)) &
           (table.requirement.actionDefinition.closesAt.equals(null) |
@@ -244,6 +257,19 @@ class ActionVerificationService {
           lockMode: LockMode.forUpdate,
         );
         if (action == null || !_isOpen(action, clock())) {
+          throw StateError('This action is not currently available.');
+        }
+        // A verification request's private action belongs to the one
+        // account that accepted it; its single completion is theirs alone.
+        if (action.visibility == ActionVisibility.verificationRequest &&
+            await VerificationRequest.db.count(
+                  session,
+                  where: (table) =>
+                      table.actionDefinitionId.equals(actionId) &
+                      table.participantAuthUserId.equals(authUserId),
+                  transaction: transaction,
+                ) ==
+                0) {
           throw StateError('This action is not currently available.');
         }
         final revokedApp = await _revokedAppName(
@@ -767,6 +793,11 @@ class ActionVerificationService {
     );
     if (rule == null) throw StateError('Media rule is missing.');
     _validateDeviceRepetitionCount(rule, confirmation);
+    // Advisory only: stored for calibration, never read by a decision.
+    final deviceLocalCheck = advisoryLocalCheck(
+      rule,
+      confirmation.deviceLocalCheck,
+    );
     final duration = confirmation.durationSeconds;
     if (mediaKind == MediaEvidenceKind.photo && duration != null) {
       throw ArgumentError('A photo has no duration.');
@@ -859,6 +890,11 @@ class ActionVerificationService {
           durationSeconds: duration,
           deviceRepetitionCount: confirmation.deviceRepetitionCount,
           deviceTrackerVersion: confirmation.deviceTrackerVersion,
+          deviceLocalCheckModelId: deviceLocalCheck?.modelId,
+          deviceLocalCheckModelSha256: deviceLocalCheck?.modelSha256,
+          deviceLocalCheckLabel: deviceLocalCheck?.label,
+          deviceLocalCheckScore: deviceLocalCheck?.score,
+          deviceLocalCheckMatchedFrames: deviceLocalCheck?.matchedFrames,
           spokenChallengeId: spokenChallenge?.id,
           spokenChallengeWord: spokenChallenge?.word,
           provenanceLevel: evaluation.provenanceLevel,
@@ -1083,19 +1119,36 @@ class ActionVerificationService {
     required UuidValue attemptId,
     Transaction? enclosingTransaction,
   }) async {
+    final appEventIds = <UuidValue>[];
     final completed = await DatabaseUtil.runInTransactionOrSavepoint(
       session.db,
       enclosingTransaction,
-      (transaction) => _complete(
-        session,
-        authUserId: authUserId,
-        attemptId: attemptId,
-        transaction: transaction,
-      ),
+      (transaction) async {
+        final result = await _complete(
+          session,
+          authUserId: authUserId,
+          attemptId: attemptId,
+          transaction: transaction,
+        );
+        appEventIds.addAll(
+          await settlementHooks.onAttemptSettled(
+            session,
+            attempt: result.attempt,
+            now: clock().toUtc(),
+            transaction: transaction,
+          ),
+        );
+        return result;
+      },
     );
-    if (enclosingTransaction == null &&
-        completed.payout?.status == RewardPayoutStatus.reserved) {
-      await payouts.scheduler.schedule(session, completed.payout!.id!);
+    if (enclosingTransaction == null) {
+      if (completed.payout?.status == RewardPayoutStatus.reserved) {
+        await payouts.scheduler.schedule(session, completed.payout!.id!);
+      }
+      // Inside a caller's transaction the recovery sweep delivers them.
+      for (final eventId in appEventIds) {
+        await appEventOutbox.schedule(session, eventId);
+      }
     }
     return attemptView(completed.attempt, payout: completed.payout);
   }
@@ -1442,6 +1495,16 @@ class ActionVerificationService {
     if (requirement == null) {
       return reject(ExternalConfirmationRejection.unknownAction);
     }
+    // A pull requirement is settled only by a push that names the attempt
+    // of an open `attempt.verify` check, never by a bare event.
+    final externalRule = await ActionExternalRule.db.findFirstRow(
+      session,
+      where: (table) => table.requirementId.equals(requirement.id),
+      transaction: transaction,
+    );
+    if (externalRule?.verificationMode == AppVerificationMode.pull) {
+      return reject(ExternalConfirmationRejection.pullRequiresAttempt);
+    }
     if (!await AccountAccess.isActive(
       session,
       authUserId,
@@ -1605,6 +1668,176 @@ class ActionVerificationService {
       actionDefinitionId: actionId,
       attempt: completed,
       alreadyComplete: false,
+    );
+  }
+
+  /// Records an App's verdict on one `externalApp` requirement of a known
+  /// attempt, from pull verification or a push that names the attempt, and
+  /// completes the attempt.
+  ///
+  /// Runs inside the caller's transaction, which already holds the App row
+  /// lock, then locks the participant's account, the attempt, and (through
+  /// the moderation gate) the action key, in the shared order. Returns
+  /// [AppVerdictOutcome.applied] false when the attempt can no longer take
+  /// this proof, so the caller records the reason without changing it.
+  Future<AppVerdictOutcome> applyAppVerdict(
+    Session session, {
+    required Transaction transaction,
+    required VerilyApp app,
+    required UuidValue attemptId,
+    required UuidValue requirementId,
+    required bool accepted,
+    required String verifierType,
+    required String reasonCode,
+    required String eventDigest,
+    required DateTime occurredAt,
+  }) async {
+    final unlocked = await ActionAttempt.db.findById(
+      session,
+      attemptId,
+      transaction: transaction,
+    );
+    if (unlocked == null) {
+      return const AppVerdictOutcome(applied: false, code: 'unknown_attempt');
+    }
+    final authUserId = unlocked.participantAuthUserId;
+    if (!await AccountAccess.isActive(
+      session,
+      authUserId,
+      transaction: transaction,
+    )) {
+      return const AppVerdictOutcome(
+        applied: false,
+        code: 'participant_unavailable',
+      );
+    }
+    final attempt = await _ownedAttempt(
+      session,
+      attemptId,
+      authUserId,
+      transaction: transaction,
+      lockMode: LockMode.forUpdate,
+    );
+    final requirement = await ActionRequirement.db.findById(
+      session,
+      requirementId,
+      transaction: transaction,
+    );
+    final rule = requirement == null
+        ? null
+        : await ActionExternalRule.db.findFirstRow(
+            session,
+            where: (table) => table.requirementId.equals(requirement.id),
+            transaction: transaction,
+          );
+    if (requirement == null ||
+        requirement.actionDefinitionId != attempt.actionDefinitionId ||
+        requirement.kind != ActionRequirementKind.externalApp ||
+        rule == null ||
+        rule.appId != app.id) {
+      return AppVerdictOutcome(
+        applied: false,
+        code: 'unknown_requirement',
+        attempt: attemptView(attempt),
+      );
+    }
+    if (attempt.status != ActionAttemptStatus.collectingEvidence) {
+      return AppVerdictOutcome(
+        applied: false,
+        code: 'attempt_closed',
+        attempt: attemptView(attempt),
+      );
+    }
+    if (accepted &&
+        await moderationGate.isActionPaused(
+          session,
+          actionId: attempt.actionDefinitionId,
+          transaction: transaction,
+        )) {
+      return AppVerdictOutcome(
+        applied: false,
+        code: 'action_unavailable',
+        attempt: attemptView(attempt),
+      );
+    }
+    final action = await ActionDefinition.db.findById(
+      session,
+      attempt.actionDefinitionId,
+      transaction: transaction,
+    );
+    if (action == null) {
+      return const AppVerdictOutcome(applied: false, code: 'unknown_attempt');
+    }
+
+    final now = clock().toUtc();
+    final candidateEvidence = ActionEvidence(
+      attemptId: attempt.id!,
+      requirementId: requirement.id!,
+      kind: ActionRequirementKind.externalApp,
+      sha256Digest: eventDigest,
+      capturedAt: occurredAt.toUtc(),
+      submittedAt: now,
+    );
+    final verdict = _Evaluation(
+      status: accepted
+          ? EvidenceDecisionStatus.accepted
+          : EvidenceDecisionStatus.rejected,
+      verifierType: verifierType,
+      confidence: 1,
+      reasonCode: reasonCode,
+      summary: accepted
+          ? 'Confirmed by ${app.name}.'
+          : '${app.name} did not confirm this.',
+    );
+    final evaluation = accepted
+        ? _withAbuseDecision(
+            verdict,
+            await abuseGate.assess(
+              session,
+              action: action,
+              attempt: attempt,
+              evidence: candidateEvidence,
+              phase: AbuseAssessmentPhase.evidenceSubmission,
+              transaction: transaction,
+            ),
+          )
+        : verdict;
+    final existing = await ActionEvidence.db.findFirstRow(
+      session,
+      where: (table) =>
+          table.attemptId.equals(attempt.id) &
+          table.requirementId.equals(requirement.id),
+      transaction: transaction,
+      lockMode: LockMode.forUpdate,
+    );
+    final evidence = existing == null
+        ? await ActionEvidence.db.insertRow(
+            session,
+            candidateEvidence,
+            transaction: transaction,
+          )
+        : await ActionEvidence.db.updateRow(
+            session,
+            existing.copyWith(
+              sha256Digest: eventDigest,
+              capturedAt: occurredAt.toUtc(),
+              submittedAt: now,
+            ),
+            transaction: transaction,
+          );
+    await _insertDecision(session, evidence, evaluation, now, transaction);
+    final completed = await completeAttempt(
+      session,
+      authUserId: authUserId,
+      attemptId: attempt.id!,
+      enclosingTransaction: transaction,
+    );
+    return AppVerdictOutcome(
+      applied: true,
+      code: evaluation.reasonCode,
+      attempt: completed,
+      decisionStatus: evaluation.status,
+      summary: evaluation.summary,
     );
   }
 

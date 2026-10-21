@@ -60,12 +60,30 @@ import 'package:verily_server/src/generated/action_verification/media_upload_con
     as _iihlm2mq;
 import 'package:verily_server/src/generated/apps/app_confirmation_view.dart'
     as _i8j33595;
+import 'package:verily_server/src/generated/apps/app_pull_check_recovery_task.dart'
+    as _i0i951jb;
+import 'package:verily_server/src/generated/apps/app_pull_check_task.dart'
+    as _ips0vmbg;
+import 'package:verily_server/src/generated/apps/linking/app_link_code_cleanup_task.dart'
+    as _i3ew32yk;
+import 'package:verily_server/src/generated/apps/linking/app_link_redirect.dart'
+    as _irz1tj98;
+import 'package:verily_server/src/generated/apps/linking/app_link_request_view.dart'
+    as _iluomum5;
 import 'package:verily_server/src/generated/apps/verily_app_credential.dart'
     as _ifzrjeai;
 import 'package:verily_server/src/generated/apps/verily_app_link_view.dart'
     as _i08pulje;
 import 'package:verily_server/src/generated/apps/verily_app_view.dart'
     as _i4dty38s;
+import 'package:verily_server/src/generated/apps/webhooks/app_event_delivery_task.dart'
+    as _ib4x2pmw;
+import 'package:verily_server/src/generated/apps/webhooks/app_event_recovery_task.dart'
+    as _i8h368fz;
+import 'package:verily_server/src/generated/apps/webhooks/app_webhook_delivery_view.dart'
+    as _i1cq8y15;
+import 'package:verily_server/src/generated/apps/webhooks/verily_app_webhook_secret.dart'
+    as _iazlpcyj;
 import 'package:verily_server/src/generated/evidence_storage/evidence_upload_cleanup_task.dart'
     as _ivz1brjg;
 import 'package:verily_server/src/generated/future_calls.dart' as _ic0hj7xj;
@@ -91,6 +109,12 @@ import 'package:verily_server/src/generated/rewards/reward_payout_view.dart'
     as _ijh2di3d;
 import 'package:verily_server/src/generated/rewards/reward_pool_view.dart'
     as _ig5ctw47;
+import 'package:verily_server/src/generated/verification_requests/verification_request_expiry_task.dart'
+    as _iqe2qini;
+import 'package:verily_server/src/generated/verification_requests/verification_request_redirect.dart'
+    as _iatltsvr;
+import 'package:verily_server/src/generated/verification_requests/verification_request_view.dart'
+    as _imaco256;
 import 'package:verily_server/src/generated/protocol.dart';
 import 'package:verily_server/src/generated/endpoints.dart';
 export 'package:serverpod_test/serverpod_test_public_exports.dart';
@@ -249,6 +273,8 @@ class TestEndpoints {
   late final _PayoutWalletEndpoint payoutWallet;
 
   late final _RewardsEndpoint rewards;
+
+  late final _VerificationRequestEndpoint verificationRequest;
 }
 
 class _InternalTestEndpoints extends TestEndpoints
@@ -306,6 +332,10 @@ class _InternalTestEndpoints extends TestEndpoints
       endpoints,
       serializationManager,
     );
+    verificationRequest = _VerificationRequestEndpoint(
+      endpoints,
+      serializationManager,
+    );
   }
 }
 
@@ -323,6 +353,16 @@ class _FutureCalls {
   late final evidenceVerificationRecovery =
       _EvidenceVerificationRecoveryFutureCall();
 
+  late final appPullCheck = _AppPullCheckFutureCall();
+
+  late final appPullCheckRecovery = _AppPullCheckRecoveryFutureCall();
+
+  late final appLinkCodeCleanup = _AppLinkCodeCleanupFutureCall();
+
+  late final appEventDelivery = _AppEventDeliveryFutureCall();
+
+  late final appEventRecovery = _AppEventRecoveryFutureCall();
+
   late final evidenceUploadCleanup = _EvidenceUploadCleanupFutureCall();
 
   late final payoutWalletChallengeCleanup =
@@ -331,6 +371,8 @@ class _FutureCalls {
   late final rewardPayout = _RewardPayoutFutureCall();
 
   late final rewardPayoutRecovery = _RewardPayoutRecoveryFutureCall();
+
+  late final verificationRequestExpiry = _VerificationRequestExpiryFutureCall();
 }
 
 class _AccountLifecycleEndpoint {
@@ -917,6 +959,41 @@ class _ActionVerificationEndpoint {
     });
   }
 
+  _ida.Future<_ixjvyqsc.EvidenceSubmissionResult> requestAppVerification(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required _is.UuidValue attemptId,
+    required _is.UuidValue requirementId,
+    String? reference,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'actionVerification',
+            method: 'requestAppVerification',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'actionVerification',
+          methodName: 'requestAppVerification',
+          parameters: _ist.testObjectToJson({
+            'attemptId': attemptId,
+            'requirementId': requirementId,
+            'reference': reference,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<_ixjvyqsc.EvidenceSubmissionResult>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
   _ida.Future<_iyvinv8z.ActionAttemptView> completeAttempt(
     _ist.TestSessionBuilder sessionBuilder,
     _is.UuidValue attemptId,
@@ -1407,6 +1484,241 @@ class _VerilyAppEndpoint {
           _localUniqueSession,
           _localCallContext.arguments,
         ) as _ida.Future<_i08pulje.VerilyAppLinkView>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_i4dty38s.VerilyAppView> setWebhookUrl(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required _is.UuidValue appId,
+    String? webhookUrl,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'verilyApp',
+            method: 'setWebhookUrl',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'verilyApp',
+          methodName: 'setWebhookUrl',
+          parameters: _ist.testObjectToJson({
+            'appId': appId,
+            'webhookUrl': webhookUrl,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<_i4dty38s.VerilyAppView>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_iazlpcyj.VerilyAppWebhookSecret> rotateWebhookSecret(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required _is.UuidValue appId,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'verilyApp',
+            method: 'rotateWebhookSecret',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'verilyApp',
+          methodName: 'rotateWebhookSecret',
+          parameters: _ist.testObjectToJson({'appId': appId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<_iazlpcyj.VerilyAppWebhookSecret>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_i4dty38s.VerilyAppView> setRedirectUris(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required _is.UuidValue appId,
+    required List<String> redirectUris,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'verilyApp',
+            method: 'setRedirectUris',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'verilyApp',
+          methodName: 'setRedirectUris',
+          parameters: _ist.testObjectToJson({
+            'appId': appId,
+            'redirectUris': redirectUris,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<_i4dty38s.VerilyAppView>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<List<_i1cq8y15.AppWebhookDeliveryView>> listWebhookDeliveries(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required _is.UuidValue appId,
+    required int limit,
+    _is.UuidValue? beforeId,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'verilyApp',
+            method: 'listWebhookDeliveries',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'verilyApp',
+          methodName: 'listWebhookDeliveries',
+          parameters: _ist.testObjectToJson({
+            'appId': appId,
+            'limit': limit,
+            'beforeId': beforeId,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<List<_i1cq8y15.AppWebhookDeliveryView>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_iluomum5.AppLinkRequestView> describeLinkRequest(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required _is.UuidValue appId,
+    required String redirectUri,
+    String? state,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'verilyApp',
+            method: 'describeLinkRequest',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'verilyApp',
+          methodName: 'describeLinkRequest',
+          parameters: _ist.testObjectToJson({
+            'appId': appId,
+            'redirectUri': redirectUri,
+            'state': state,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<_iluomum5.AppLinkRequestView>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_irz1tj98.AppLinkRedirect> approveLink(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required _is.UuidValue appId,
+    required String redirectUri,
+    String? state,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'verilyApp',
+            method: 'approveLink',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'verilyApp',
+          methodName: 'approveLink',
+          parameters: _ist.testObjectToJson({
+            'appId': appId,
+            'redirectUri': redirectUri,
+            'state': state,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<_irz1tj98.AppLinkRedirect>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_irz1tj98.AppLinkRedirect> declineLink(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required _is.UuidValue appId,
+    required String redirectUri,
+    String? state,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'verilyApp',
+            method: 'declineLink',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'verilyApp',
+          methodName: 'declineLink',
+          parameters: _ist.testObjectToJson({
+            'appId': appId,
+            'redirectUri': redirectUri,
+            'state': state,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<_irz1tj98.AppLinkRedirect>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -2362,6 +2674,133 @@ class _RewardsEndpoint {
   }
 }
 
+class _VerificationRequestEndpoint {
+  _VerificationRequestEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_imaco256.VerificationRequestView> getRequest(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required _is.UuidValue requestId,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'verificationRequest',
+            method: 'getRequest',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'verificationRequest',
+          methodName: 'getRequest',
+          parameters: _ist.testObjectToJson({'requestId': requestId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<_imaco256.VerificationRequestView>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_imaco256.VerificationRequestView> accept(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required _is.UuidValue requestId,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'verificationRequest',
+            method: 'accept',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'verificationRequest',
+          methodName: 'accept',
+          parameters: _ist.testObjectToJson({'requestId': requestId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<_imaco256.VerificationRequestView>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_iatltsvr.VerificationRequestRedirect> decline(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required _is.UuidValue requestId,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'verificationRequest',
+            method: 'decline',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'verificationRequest',
+          methodName: 'decline',
+          parameters: _ist.testObjectToJson({'requestId': requestId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<_iatltsvr.VerificationRequestRedirect>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<_iatltsvr.VerificationRequestRedirect> finish(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required _is.UuidValue requestId,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'verificationRequest',
+            method: 'finish',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'verificationRequest',
+          methodName: 'finish',
+          parameters: _ist.testObjectToJson({'requestId': requestId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<_iatltsvr.VerificationRequestRedirect>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
 class _ActionCaptureChallengeCleanupFutureCall {
   Future<void> cleanup(
     _ist.TestSessionBuilder sessionBuilder,
@@ -2452,6 +2891,96 @@ class _EvidenceVerificationRecoveryFutureCall {
   }
 }
 
+class _AppPullCheckFutureCall {
+  Future<void> check(
+    _ist.TestSessionBuilder sessionBuilder,
+    _ips0vmbg.AppPullCheckTask task,
+  ) async {
+    var _localUniqueSession =
+        (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
+    try {
+      await _ic0hj7xj.AppPullCheckCheckFutureCall().invoke(
+        _localUniqueSession,
+        task,
+      );
+    } finally {
+      await _localUniqueSession.close();
+    }
+  }
+}
+
+class _AppPullCheckRecoveryFutureCall {
+  Future<void> recover(
+    _ist.TestSessionBuilder sessionBuilder,
+    _i0i951jb.AppPullCheckRecoveryTask task,
+  ) async {
+    var _localUniqueSession =
+        (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
+    try {
+      await _ic0hj7xj.AppPullCheckRecoveryRecoverFutureCall().invoke(
+        _localUniqueSession,
+        task,
+      );
+    } finally {
+      await _localUniqueSession.close();
+    }
+  }
+}
+
+class _AppLinkCodeCleanupFutureCall {
+  Future<void> cleanup(
+    _ist.TestSessionBuilder sessionBuilder,
+    _i3ew32yk.AppLinkCodeCleanupTask task,
+  ) async {
+    var _localUniqueSession =
+        (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
+    try {
+      await _ic0hj7xj.AppLinkCodeCleanupCleanupFutureCall().invoke(
+        _localUniqueSession,
+        task,
+      );
+    } finally {
+      await _localUniqueSession.close();
+    }
+  }
+}
+
+class _AppEventDeliveryFutureCall {
+  Future<void> deliver(
+    _ist.TestSessionBuilder sessionBuilder,
+    _ib4x2pmw.AppEventDeliveryTask task,
+  ) async {
+    var _localUniqueSession =
+        (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
+    try {
+      await _ic0hj7xj.AppEventDeliveryDeliverFutureCall().invoke(
+        _localUniqueSession,
+        task,
+      );
+    } finally {
+      await _localUniqueSession.close();
+    }
+  }
+}
+
+class _AppEventRecoveryFutureCall {
+  Future<void> recover(
+    _ist.TestSessionBuilder sessionBuilder,
+    _i8h368fz.AppEventRecoveryTask task,
+  ) async {
+    var _localUniqueSession =
+        (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
+    try {
+      await _ic0hj7xj.AppEventRecoveryRecoverFutureCall().invoke(
+        _localUniqueSession,
+        task,
+      );
+    } finally {
+      await _localUniqueSession.close();
+    }
+  }
+}
+
 class _EvidenceUploadCleanupFutureCall {
   Future<void> cleanup(
     _ist.TestSessionBuilder sessionBuilder,
@@ -2515,6 +3044,24 @@ class _RewardPayoutRecoveryFutureCall {
         (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
     try {
       await _ic0hj7xj.RewardPayoutRecoveryRecoverFutureCall().invoke(
+        _localUniqueSession,
+        task,
+      );
+    } finally {
+      await _localUniqueSession.close();
+    }
+  }
+}
+
+class _VerificationRequestExpiryFutureCall {
+  Future<void> expire(
+    _ist.TestSessionBuilder sessionBuilder,
+    _iqe2qini.VerificationRequestExpiryTask task,
+  ) async {
+    var _localUniqueSession =
+        (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
+    try {
+      await _ic0hj7xj.VerificationRequestExpiryExpireFutureCall().invoke(
         _localUniqueSession,
         task,
       );

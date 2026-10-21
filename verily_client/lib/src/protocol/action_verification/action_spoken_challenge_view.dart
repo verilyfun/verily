@@ -84,7 +84,11 @@ class _ActionSpokenChallengeViewImpl extends ActionSpokenChallengeView {
     required _isc.UuidValue id,
     required String word,
     required DateTime expiresAt,
-  }) : super._(id: id, word: word, expiresAt: expiresAt);
+  }) : super._(
+         id: id,
+         word: word,
+         expiresAt: expiresAt,
+       );
 
   /// Returns a shallow copy of this [ActionSpokenChallengeView]
   /// with some or all fields replaced by the given arguments.

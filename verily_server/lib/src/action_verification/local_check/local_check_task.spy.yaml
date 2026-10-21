@@ -1,0 +1,11 @@
+### A simple on-device check, replayed on the server with the same pinned
+### MediaPipe model (`verifierType = mp-replay`).
+enum: LocalCheckTask
+serialized: byName
+values:
+  ### MediaPipe gesture recognizer: a canned hand gesture in a photo or video.
+  - gesture
+  ### MediaPipe object detector: a COCO object in a photo or video.
+  - object
+  ### MediaPipe audio classifier (YAMNet): a sound in a recording.
+  - sound

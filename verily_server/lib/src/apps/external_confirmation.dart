@@ -11,7 +11,16 @@ enum ExternalConfirmationRejection {
   occurredAtOutOfRange('occurred_at_out_of_range', 422),
   occurredOutsideWindow('occurred_outside_window', 422),
   occurredOutsidePeriod('occurred_outside_period', 422),
-  actionUnavailable('action_unavailable', 422);
+  actionUnavailable('action_unavailable', 422),
+
+  /// A pull requirement takes a push only when it names the attempt.
+  pullRequiresAttempt('pull_requires_attempt', 422),
+
+  /// The named attempt does not exist for this App, subject, and action.
+  unknownAttempt('unknown_attempt', 404),
+
+  /// The named attempt has no open pull verification check to settle.
+  noOpenPullCheck('no_open_pull_check', 409);
 
   const ExternalConfirmationRejection(this.code, this.httpStatus);
 
@@ -53,4 +62,26 @@ final class ExternalConfirmationRejected extends ExternalConfirmation {
 
   final ExternalConfirmationRejection reason;
   final UuidValue? actionDefinitionId;
+}
+
+/// What applying an App's verdict to a known attempt did.
+final class AppVerdictOutcome {
+  const AppVerdictOutcome({
+    required this.applied,
+    required this.code,
+    this.attempt,
+    this.decisionStatus,
+    this.summary,
+  });
+
+  /// Whether a decision was recorded and the attempt completed.
+  final bool applied;
+
+  /// The decision's reason code when applied, otherwise why not:
+  /// `unknown_attempt`, `participant_unavailable`, `unknown_requirement`,
+  /// `attempt_closed`, or `action_unavailable`.
+  final String code;
+  final ActionAttemptView? attempt;
+  final EvidenceDecisionStatus? decisionStatus;
+  final String? summary;
 }

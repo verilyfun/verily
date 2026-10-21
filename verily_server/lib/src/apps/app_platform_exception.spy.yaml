@@ -1,0 +1,5 @@
+### A refused App platform call. The message is safe to show.
+exception: AppPlatformException
+fields:
+  problem: AppPlatformProblem
+  message: String

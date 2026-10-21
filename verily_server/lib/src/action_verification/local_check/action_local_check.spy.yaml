@@ -1,0 +1,11 @@
+### What a local check looks for. The label comes from the server allow-list
+### for the task; the thresholds are bounded server-side.
+class: ActionLocalCheck
+fields:
+  task: LocalCheckTask
+  label: String
+  ### Lowest model score that counts as a detection (0.3 to 0.99).
+  minScore: double
+  ### Sampled video frames or audio windows that must match (1 to 30); 1 for a
+  ### photo.
+  minFrames: int

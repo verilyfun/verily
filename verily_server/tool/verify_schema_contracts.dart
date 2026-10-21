@@ -62,6 +62,24 @@ const _constraintFragments = <String, List<String>>{
     '"maxWinsPerAccount"',
   ],
   'verily_reward_payout_check': ['"payoutIndex"', '"recipientWallet"'],
+  'verily_app_webhook_check': ['"webhookUrl"', '"webhookSecretVersion"'],
+  'verily_app_redirect_uri_check': ['uri'],
+  'verily_app_rate_window_check': ['"requestCount"', 'bucket'],
+  'verily_app_event_check': ['"eventId"', '"dedupeKey"', '"deliveredAt"'],
+  'verily_app_webhook_delivery_check': ['"attemptNumber"', 'succeeded'],
+  'verily_app_pull_check_check': ['reference', '"expiresAt"'],
+  'verily_app_link_code_check': ['"codeHash"', '"redirectUri"'],
+  'verily_verification_request_check': [
+    '"placeRadiusMeters"',
+    '"spokenChallenge"',
+    '"evidenceShared"',
+  ],
+  'verily_action_visibility_check': ['visibility', '"maxVerifiedCompletions"'],
+  'verily_media_local_check': ['"localCheckTask"', '"localCheckMinScore"'],
+  'verily_evidence_local_check': [
+    '"deviceLocalCheckModelSha256"',
+    '"deviceLocalCheckScore"',
+  ],
 };
 
 const _triggerContracts =
@@ -78,6 +96,11 @@ const _triggerContracts =
       ),
       'verily_app_confirmation_update_guard': (
         table: 'verily_app_confirmation',
+        function: 'verily_reject_update_or_delete',
+        events: ['BEFORE', 'DELETE', 'UPDATE'],
+      ),
+      'verily_app_webhook_delivery_update_guard': (
+        table: 'verily_app_webhook_delivery',
         function: 'verily_reject_update_or_delete',
         events: ['BEFORE', 'DELETE', 'UPDATE'],
       ),

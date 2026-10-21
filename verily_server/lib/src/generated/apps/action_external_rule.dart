@@ -12,6 +12,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _is;
 
+import '../apps/app_verification_mode.dart' as _is7dtawb;
+
 /// Binds one `external` requirement to the creator's App that may confirm it.
 abstract class ActionExternalRule
     implements _is.TableRow<_is.UuidValue?>, _is.ProtocolSerialization {
@@ -19,12 +21,15 @@ abstract class ActionExternalRule
     this.id,
     required this.requirementId,
     required this.appId,
-  });
+    _is7dtawb.AppVerificationMode? verificationMode,
+  }) : verificationMode =
+           verificationMode ?? _is7dtawb.AppVerificationMode.push;
 
   factory ActionExternalRule({
     _is.UuidValue? id,
     required _is.UuidValue requirementId,
     required _is.UuidValue appId,
+    _is7dtawb.AppVerificationMode? verificationMode,
   }) = _ActionExternalRuleImpl;
 
   factory ActionExternalRule.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -36,6 +41,11 @@ abstract class ActionExternalRule
         jsonSerialization['requirementId'],
       ),
       appId: _is.UuidValueJsonExtension.fromJson(jsonSerialization['appId']),
+      verificationMode: jsonSerialization['verificationMode'] == null
+          ? null
+          : _is7dtawb.AppVerificationMode.fromJson(
+              (jsonSerialization['verificationMode'] as String),
+            ),
     );
   }
 
@@ -50,6 +60,8 @@ abstract class ActionExternalRule
 
   _is.UuidValue appId;
 
+  _is7dtawb.AppVerificationMode verificationMode;
+
   @override
   _is.Table<_is.UuidValue?> get table => t;
 
@@ -60,6 +72,7 @@ abstract class ActionExternalRule
     _is.UuidValue? id,
     _is.UuidValue? requirementId,
     _is.UuidValue? appId,
+    _is7dtawb.AppVerificationMode? verificationMode,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -68,6 +81,7 @@ abstract class ActionExternalRule
       if (id != null) 'id': id?.toJson(),
       'requirementId': requirementId.toJson(),
       'appId': appId.toJson(),
+      'verificationMode': verificationMode.toJson(),
     };
   }
 
@@ -111,10 +125,12 @@ class _ActionExternalRuleImpl extends ActionExternalRule {
     _is.UuidValue? id,
     required _is.UuidValue requirementId,
     required _is.UuidValue appId,
+    _is7dtawb.AppVerificationMode? verificationMode,
   }) : super._(
          id: id,
          requirementId: requirementId,
          appId: appId,
+         verificationMode: verificationMode,
        );
 
   /// Returns a shallow copy of this [ActionExternalRule]
@@ -125,11 +141,13 @@ class _ActionExternalRuleImpl extends ActionExternalRule {
     Object? id = _Undefined,
     _is.UuidValue? requirementId,
     _is.UuidValue? appId,
+    _is7dtawb.AppVerificationMode? verificationMode,
   }) {
     return ActionExternalRule(
       id: id is _is.UuidValue? ? id : this.id,
       requirementId: requirementId ?? this.requirementId,
       appId: appId ?? this.appId,
+      verificationMode: verificationMode ?? this.verificationMode,
     );
   }
 }
@@ -150,6 +168,12 @@ class ActionExternalRuleUpdateTable
         table.appId,
         value,
       );
+
+  _is.ColumnValue<_is7dtawb.AppVerificationMode, _is7dtawb.AppVerificationMode>
+  verificationMode(_is7dtawb.AppVerificationMode value) => _is.ColumnValue(
+    table.verificationMode,
+    value,
+  );
 }
 
 class ActionExternalRuleTable extends _is.Table<_is.UuidValue?> {
@@ -164,6 +188,12 @@ class ActionExternalRuleTable extends _is.Table<_is.UuidValue?> {
       'appId',
       this,
     );
+    verificationMode = _is.ColumnEnum(
+      'verificationMode',
+      this,
+      _is.EnumSerialization.byName,
+      hasDefault: true,
+    );
   }
 
   late final ActionExternalRuleUpdateTable updateTable;
@@ -172,11 +202,14 @@ class ActionExternalRuleTable extends _is.Table<_is.UuidValue?> {
 
   late final _is.ColumnUuid appId;
 
+  late final _is.ColumnEnum<_is7dtawb.AppVerificationMode> verificationMode;
+
   @override
   List<_is.Column> get columns => [
     id,
     requirementId,
     appId,
+    verificationMode,
   ];
 }
 

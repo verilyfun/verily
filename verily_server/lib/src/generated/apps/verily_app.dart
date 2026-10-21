@@ -33,10 +33,15 @@ abstract class VerilyApp
     required this.status,
     this.rateWindowStartedAt,
     int? rateWindowCount,
+    this.webhookUrl,
+    int? webhookSecretVersion,
+    this.previousWebhookSecretVersion,
+    this.webhookSecretRotatedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
     this.revokedAt,
   }) : rateWindowCount = rateWindowCount ?? 0,
+       webhookSecretVersion = webhookSecretVersion ?? 0,
        createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now();
 
@@ -49,6 +54,10 @@ abstract class VerilyApp
     required _i0paxa5b.VerilyAppStatus status,
     DateTime? rateWindowStartedAt,
     int? rateWindowCount,
+    String? webhookUrl,
+    int? webhookSecretVersion,
+    int? previousWebhookSecretVersion,
+    DateTime? webhookSecretRotatedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? revokedAt,
@@ -78,6 +87,16 @@ abstract class VerilyApp
               jsonSerialization['rateWindowStartedAt'],
             ),
       rateWindowCount: jsonSerialization['rateWindowCount'] as int?,
+      webhookUrl: jsonSerialization['webhookUrl'] as String?,
+      webhookSecretVersion: jsonSerialization['webhookSecretVersion'] as int?,
+      previousWebhookSecretVersion:
+          jsonSerialization['previousWebhookSecretVersion'] as int?,
+      webhookSecretRotatedAt:
+          jsonSerialization['webhookSecretRotatedAt'] == null
+          ? null
+          : _is.DateTimeJsonExtension.fromJson(
+              jsonSerialization['webhookSecretRotatedAt'],
+            ),
       createdAt: jsonSerialization['createdAt'] == null
           ? null
           : _is.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
@@ -114,6 +133,20 @@ abstract class VerilyApp
   /// Authenticated deliveries counted in the current rate-limit window.
   int rateWindowCount;
 
+  /// HTTPS endpoint for signed events and pull verification; null until set.
+  String? webhookUrl;
+
+  /// Version of the current `whsec_` signing secret; 0 means none issued.
+  /// Secrets are derived from the server master key and this version, so no
+  /// secret is stored.
+  int webhookSecretVersion;
+
+  /// The version replaced by the last rotation, still signed alongside the
+  /// current one for 24 hours so the App can roll over.
+  int? previousWebhookSecretVersion;
+
+  DateTime? webhookSecretRotatedAt;
+
   DateTime createdAt;
 
   DateTime updatedAt;
@@ -135,6 +168,10 @@ abstract class VerilyApp
     _i0paxa5b.VerilyAppStatus? status,
     DateTime? rateWindowStartedAt,
     int? rateWindowCount,
+    String? webhookUrl,
+    int? webhookSecretVersion,
+    int? previousWebhookSecretVersion,
+    DateTime? webhookSecretRotatedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? revokedAt,
@@ -152,6 +189,12 @@ abstract class VerilyApp
       if (rateWindowStartedAt != null)
         'rateWindowStartedAt': rateWindowStartedAt?.toJson(),
       'rateWindowCount': rateWindowCount,
+      if (webhookUrl != null) 'webhookUrl': webhookUrl,
+      'webhookSecretVersion': webhookSecretVersion,
+      if (previousWebhookSecretVersion != null)
+        'previousWebhookSecretVersion': previousWebhookSecretVersion,
+      if (webhookSecretRotatedAt != null)
+        'webhookSecretRotatedAt': webhookSecretRotatedAt?.toJson(),
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
       if (revokedAt != null) 'revokedAt': revokedAt?.toJson(),
@@ -203,6 +246,10 @@ class _VerilyAppImpl extends VerilyApp {
     required _i0paxa5b.VerilyAppStatus status,
     DateTime? rateWindowStartedAt,
     int? rateWindowCount,
+    String? webhookUrl,
+    int? webhookSecretVersion,
+    int? previousWebhookSecretVersion,
+    DateTime? webhookSecretRotatedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? revokedAt,
@@ -215,6 +262,10 @@ class _VerilyAppImpl extends VerilyApp {
          status: status,
          rateWindowStartedAt: rateWindowStartedAt,
          rateWindowCount: rateWindowCount,
+         webhookUrl: webhookUrl,
+         webhookSecretVersion: webhookSecretVersion,
+         previousWebhookSecretVersion: previousWebhookSecretVersion,
+         webhookSecretRotatedAt: webhookSecretRotatedAt,
          createdAt: createdAt,
          updatedAt: updatedAt,
          revokedAt: revokedAt,
@@ -233,6 +284,10 @@ class _VerilyAppImpl extends VerilyApp {
     _i0paxa5b.VerilyAppStatus? status,
     Object? rateWindowStartedAt = _Undefined,
     int? rateWindowCount,
+    Object? webhookUrl = _Undefined,
+    int? webhookSecretVersion,
+    Object? previousWebhookSecretVersion = _Undefined,
+    Object? webhookSecretRotatedAt = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
     Object? revokedAt = _Undefined,
@@ -250,6 +305,14 @@ class _VerilyAppImpl extends VerilyApp {
           ? rateWindowStartedAt
           : this.rateWindowStartedAt,
       rateWindowCount: rateWindowCount ?? this.rateWindowCount,
+      webhookUrl: webhookUrl is String? ? webhookUrl : this.webhookUrl,
+      webhookSecretVersion: webhookSecretVersion ?? this.webhookSecretVersion,
+      previousWebhookSecretVersion: previousWebhookSecretVersion is int?
+          ? previousWebhookSecretVersion
+          : this.previousWebhookSecretVersion,
+      webhookSecretRotatedAt: webhookSecretRotatedAt is DateTime?
+          ? webhookSecretRotatedAt
+          : this.webhookSecretRotatedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       revokedAt: revokedAt is DateTime? ? revokedAt : this.revokedAt,
@@ -294,6 +357,28 @@ class VerilyAppUpdateTable extends _is.UpdateTable<VerilyAppTable> {
     table.rateWindowCount,
     value,
   );
+
+  _is.ColumnValue<String, String> webhookUrl(String? value) => _is.ColumnValue(
+    table.webhookUrl,
+    value,
+  );
+
+  _is.ColumnValue<int, int> webhookSecretVersion(int value) => _is.ColumnValue(
+    table.webhookSecretVersion,
+    value,
+  );
+
+  _is.ColumnValue<int, int> previousWebhookSecretVersion(int? value) =>
+      _is.ColumnValue(
+        table.previousWebhookSecretVersion,
+        value,
+      );
+
+  _is.ColumnValue<DateTime, DateTime> webhookSecretRotatedAt(DateTime? value) =>
+      _is.ColumnValue(
+        table.webhookSecretRotatedAt,
+        value,
+      );
 
   _is.ColumnValue<DateTime, DateTime> createdAt(DateTime value) =>
       _is.ColumnValue(
@@ -343,6 +428,23 @@ class VerilyAppTable extends _is.Table<_is.UuidValue?> {
       this,
       hasDefault: true,
     );
+    webhookUrl = _is.ColumnString(
+      'webhookUrl',
+      this,
+    );
+    webhookSecretVersion = _is.ColumnInt(
+      'webhookSecretVersion',
+      this,
+      hasDefault: true,
+    );
+    previousWebhookSecretVersion = _is.ColumnInt(
+      'previousWebhookSecretVersion',
+      this,
+    );
+    webhookSecretRotatedAt = _is.ColumnDateTime(
+      'webhookSecretRotatedAt',
+      this,
+    );
     createdAt = _is.ColumnDateTime(
       'createdAt',
       this,
@@ -376,6 +478,20 @@ class VerilyAppTable extends _is.Table<_is.UuidValue?> {
   /// Authenticated deliveries counted in the current rate-limit window.
   late final _is.ColumnInt rateWindowCount;
 
+  /// HTTPS endpoint for signed events and pull verification; null until set.
+  late final _is.ColumnString webhookUrl;
+
+  /// Version of the current `whsec_` signing secret; 0 means none issued.
+  /// Secrets are derived from the server master key and this version, so no
+  /// secret is stored.
+  late final _is.ColumnInt webhookSecretVersion;
+
+  /// The version replaced by the last rotation, still signed alongside the
+  /// current one for 24 hours so the App can roll over.
+  late final _is.ColumnInt previousWebhookSecretVersion;
+
+  late final _is.ColumnDateTime webhookSecretRotatedAt;
+
   late final _is.ColumnDateTime createdAt;
 
   late final _is.ColumnDateTime updatedAt;
@@ -404,6 +520,10 @@ class VerilyAppTable extends _is.Table<_is.UuidValue?> {
     status,
     rateWindowStartedAt,
     rateWindowCount,
+    webhookUrl,
+    webhookSecretVersion,
+    previousWebhookSecretVersion,
+    webhookSecretRotatedAt,
     createdAt,
     updatedAt,
     revokedAt,

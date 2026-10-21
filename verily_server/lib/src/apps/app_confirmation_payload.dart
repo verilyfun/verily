@@ -20,10 +20,19 @@ const appConfirmationMaxEventAge = Duration(hours: 24);
 /// period.
 const appConfirmationLatePeriodGrace = Duration(hours: 2);
 
-const Set<String> _fields = {'eventId', 'action', 'subject', 'occurredAt'};
+const Set<String> _fields = {
+  'eventId',
+  'action',
+  'subject',
+  'occurredAt',
+  'attempt',
+};
 final RegExp _eventIdPattern = RegExp(r'^[A-Za-z0-9._:-]{1,128}$');
 final RegExp _actionKeyPattern = RegExp(r'^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$');
 final RegExp _subjectPattern = RegExp(r'^vls_[A-Za-z0-9_-]{22}$');
+final RegExp _attemptPattern = RegExp(
+  r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+);
 // RFC 3339 date-time with an explicit offset and at most microsecond
 // precision, which is what Dart's DateTime can represent exactly.
 final RegExp _rfc3339Pattern = RegExp(
@@ -52,6 +61,7 @@ final class AppConfirmationPayload {
     required this.subject,
     required this.occurredAt,
     required this.digest,
+    this.attemptId,
   });
 
   final String eventId;
@@ -61,13 +71,17 @@ final class AppConfirmationPayload {
   /// UTC instant the participant performed the action.
   final DateTime occurredAt;
 
+  /// The attempt a pull-verified requirement is waiting on, when the App
+  /// answers a pending `attempt.verify` call (lowercase UUID).
+  final String? attemptId;
+
   /// SHA-256 of the normalized fields. Formatting, key order, and equivalent
   /// time offsets do not change it, so only a semantic change conflicts.
   final String digest;
 }
 
-/// Parses `{"eventId","action","subject","occurredAt"}`, rejecting unknown,
-/// missing, or mistyped fields.
+/// Parses `{"eventId","action","subject","occurredAt"}` plus an optional
+/// `attempt`, rejecting unknown, missing, or mistyped fields.
 AppConfirmationPayload parseAppConfirmationPayload(String body) {
   final Object? decoded;
   try {
@@ -88,7 +102,7 @@ AppConfirmationPayload parseAppConfirmationPayload(String body) {
   if (unknown.isNotEmpty) {
     throw const AppConfirmationPayloadException(
       'unknown_field',
-      'Only eventId, action, subject, and occurredAt are accepted.',
+      'Only eventId, action, subject, occurredAt, and attempt are accepted.',
     );
   }
   final eventId = _string(decoded, 'eventId', _eventIdPattern);
@@ -97,29 +111,38 @@ AppConfirmationPayload parseAppConfirmationPayload(String body) {
   final occurredAt = _rfc3339(
     _string(decoded, 'occurredAt', _rfc3339Pattern),
   );
+  final attemptId = decoded.containsKey('attempt')
+      ? _string(decoded, 'attempt', _attemptPattern)
+      : null;
   return AppConfirmationPayload(
     eventId: eventId,
     actionKey: actionKey,
     subject: subject,
     occurredAt: occurredAt,
+    attemptId: attemptId,
     digest: appConfirmationDigest(
       eventId: eventId,
       actionKey: actionKey,
       subject: subject,
       occurredAt: occurredAt,
+      attemptId: attemptId,
     ),
   );
 }
 
-/// SHA-256 over the canonical form: sorted keys, UTC microsecond time.
+/// SHA-256 over the canonical form: sorted keys, UTC microsecond time. The
+/// attempt is part of the form only when present, so digests of plain pushes
+/// are unchanged.
 String appConfirmationDigest({
   required String eventId,
   required String actionKey,
   required String subject,
   required DateTime occurredAt,
+  String? attemptId,
 }) {
   final canonical = jsonEncode({
     'action': actionKey,
+    'attempt': ?attemptId,
     'eventId': eventId,
     'occurredAt': occurredAt.toUtc().toIso8601String(),
     'subject': subject,

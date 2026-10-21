@@ -1,0 +1,3 @@
+class: AppPullCheckTask
+fields:
+  checkId: UuidValue

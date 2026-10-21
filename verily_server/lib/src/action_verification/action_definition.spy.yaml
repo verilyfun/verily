@@ -19,6 +19,7 @@ fields:
   closesAt: DateTime?
   publishedAt: DateTime?
   pausedAt: DateTime?
+  visibility: ActionVisibility, default=public
   createdAt: DateTime, defaultModel=now
   updatedAt: DateTime, defaultModel=now
 indexes:

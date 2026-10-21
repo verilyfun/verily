@@ -40,6 +40,11 @@ abstract class ActionEvidence
     this.deviceTrackerVersion,
     this.spokenChallengeId,
     this.spokenChallengeWord,
+    this.deviceLocalCheckModelId,
+    this.deviceLocalCheckModelSha256,
+    this.deviceLocalCheckLabel,
+    this.deviceLocalCheckScore,
+    this.deviceLocalCheckMatchedFrames,
     _ijbfcz4y.EvidenceProvenanceLevel? provenanceLevel,
     this.captureManifest,
     this.captureSignature,
@@ -74,6 +79,11 @@ abstract class ActionEvidence
     String? deviceTrackerVersion,
     _is.UuidValue? spokenChallengeId,
     String? spokenChallengeWord,
+    String? deviceLocalCheckModelId,
+    String? deviceLocalCheckModelSha256,
+    String? deviceLocalCheckLabel,
+    double? deviceLocalCheckScore,
+    int? deviceLocalCheckMatchedFrames,
     _ijbfcz4y.EvidenceProvenanceLevel? provenanceLevel,
     String? captureManifest,
     String? captureSignature,
@@ -125,6 +135,16 @@ abstract class ActionEvidence
               jsonSerialization['spokenChallengeId'],
             ),
       spokenChallengeWord: jsonSerialization['spokenChallengeWord'] as String?,
+      deviceLocalCheckModelId:
+          jsonSerialization['deviceLocalCheckModelId'] as String?,
+      deviceLocalCheckModelSha256:
+          jsonSerialization['deviceLocalCheckModelSha256'] as String?,
+      deviceLocalCheckLabel:
+          jsonSerialization['deviceLocalCheckLabel'] as String?,
+      deviceLocalCheckScore:
+          (jsonSerialization['deviceLocalCheckScore'] as num?)?.toDouble(),
+      deviceLocalCheckMatchedFrames:
+          jsonSerialization['deviceLocalCheckMatchedFrames'] as int?,
       provenanceLevel: jsonSerialization['provenanceLevel'] == null
           ? null
           : _ijbfcz4y.EvidenceProvenanceLevel.fromJson(
@@ -197,6 +217,17 @@ abstract class ActionEvidence
 
   String? spokenChallengeWord;
 
+  /// The phone's advisory local-check result, kept for calibration only.
+  String? deviceLocalCheckModelId;
+
+  String? deviceLocalCheckModelSha256;
+
+  String? deviceLocalCheckLabel;
+
+  double? deviceLocalCheckScore;
+
+  int? deviceLocalCheckMatchedFrames;
+
   _ijbfcz4y.EvidenceProvenanceLevel provenanceLevel;
 
   String? captureManifest;
@@ -241,6 +272,11 @@ abstract class ActionEvidence
     String? deviceTrackerVersion,
     _is.UuidValue? spokenChallengeId,
     String? spokenChallengeWord,
+    String? deviceLocalCheckModelId,
+    String? deviceLocalCheckModelSha256,
+    String? deviceLocalCheckLabel,
+    double? deviceLocalCheckScore,
+    int? deviceLocalCheckMatchedFrames,
     _ijbfcz4y.EvidenceProvenanceLevel? provenanceLevel,
     String? captureManifest,
     String? captureSignature,
@@ -280,6 +316,16 @@ abstract class ActionEvidence
         'spokenChallengeId': spokenChallengeId?.toJson(),
       if (spokenChallengeWord != null)
         'spokenChallengeWord': spokenChallengeWord,
+      if (deviceLocalCheckModelId != null)
+        'deviceLocalCheckModelId': deviceLocalCheckModelId,
+      if (deviceLocalCheckModelSha256 != null)
+        'deviceLocalCheckModelSha256': deviceLocalCheckModelSha256,
+      if (deviceLocalCheckLabel != null)
+        'deviceLocalCheckLabel': deviceLocalCheckLabel,
+      if (deviceLocalCheckScore != null)
+        'deviceLocalCheckScore': deviceLocalCheckScore,
+      if (deviceLocalCheckMatchedFrames != null)
+        'deviceLocalCheckMatchedFrames': deviceLocalCheckMatchedFrames,
       'provenanceLevel': provenanceLevel.toJson(),
       if (captureManifest != null) 'captureManifest': captureManifest,
       if (captureSignature != null) 'captureSignature': captureSignature,
@@ -349,6 +395,11 @@ class _ActionEvidenceImpl extends ActionEvidence {
     String? deviceTrackerVersion,
     _is.UuidValue? spokenChallengeId,
     String? spokenChallengeWord,
+    String? deviceLocalCheckModelId,
+    String? deviceLocalCheckModelSha256,
+    String? deviceLocalCheckLabel,
+    double? deviceLocalCheckScore,
+    int? deviceLocalCheckMatchedFrames,
     _ijbfcz4y.EvidenceProvenanceLevel? provenanceLevel,
     String? captureManifest,
     String? captureSignature,
@@ -379,6 +430,11 @@ class _ActionEvidenceImpl extends ActionEvidence {
          deviceTrackerVersion: deviceTrackerVersion,
          spokenChallengeId: spokenChallengeId,
          spokenChallengeWord: spokenChallengeWord,
+         deviceLocalCheckModelId: deviceLocalCheckModelId,
+         deviceLocalCheckModelSha256: deviceLocalCheckModelSha256,
+         deviceLocalCheckLabel: deviceLocalCheckLabel,
+         deviceLocalCheckScore: deviceLocalCheckScore,
+         deviceLocalCheckMatchedFrames: deviceLocalCheckMatchedFrames,
          provenanceLevel: provenanceLevel,
          captureManifest: captureManifest,
          captureSignature: captureSignature,
@@ -415,6 +471,11 @@ class _ActionEvidenceImpl extends ActionEvidence {
     Object? deviceTrackerVersion = _Undefined,
     Object? spokenChallengeId = _Undefined,
     Object? spokenChallengeWord = _Undefined,
+    Object? deviceLocalCheckModelId = _Undefined,
+    Object? deviceLocalCheckModelSha256 = _Undefined,
+    Object? deviceLocalCheckLabel = _Undefined,
+    Object? deviceLocalCheckScore = _Undefined,
+    Object? deviceLocalCheckMatchedFrames = _Undefined,
     _ijbfcz4y.EvidenceProvenanceLevel? provenanceLevel,
     Object? captureManifest = _Undefined,
     Object? captureSignature = _Undefined,
@@ -470,6 +531,21 @@ class _ActionEvidenceImpl extends ActionEvidence {
       spokenChallengeWord: spokenChallengeWord is String?
           ? spokenChallengeWord
           : this.spokenChallengeWord,
+      deviceLocalCheckModelId: deviceLocalCheckModelId is String?
+          ? deviceLocalCheckModelId
+          : this.deviceLocalCheckModelId,
+      deviceLocalCheckModelSha256: deviceLocalCheckModelSha256 is String?
+          ? deviceLocalCheckModelSha256
+          : this.deviceLocalCheckModelSha256,
+      deviceLocalCheckLabel: deviceLocalCheckLabel is String?
+          ? deviceLocalCheckLabel
+          : this.deviceLocalCheckLabel,
+      deviceLocalCheckScore: deviceLocalCheckScore is double?
+          ? deviceLocalCheckScore
+          : this.deviceLocalCheckScore,
+      deviceLocalCheckMatchedFrames: deviceLocalCheckMatchedFrames is int?
+          ? deviceLocalCheckMatchedFrames
+          : this.deviceLocalCheckMatchedFrames,
       provenanceLevel: provenanceLevel ?? this.provenanceLevel,
       captureManifest: captureManifest is String?
           ? captureManifest
@@ -615,6 +691,36 @@ class ActionEvidenceUpdateTable extends _is.UpdateTable<ActionEvidenceTable> {
         value,
       );
 
+  _is.ColumnValue<String, String> deviceLocalCheckModelId(String? value) =>
+      _is.ColumnValue(
+        table.deviceLocalCheckModelId,
+        value,
+      );
+
+  _is.ColumnValue<String, String> deviceLocalCheckModelSha256(String? value) =>
+      _is.ColumnValue(
+        table.deviceLocalCheckModelSha256,
+        value,
+      );
+
+  _is.ColumnValue<String, String> deviceLocalCheckLabel(String? value) =>
+      _is.ColumnValue(
+        table.deviceLocalCheckLabel,
+        value,
+      );
+
+  _is.ColumnValue<double, double> deviceLocalCheckScore(double? value) =>
+      _is.ColumnValue(
+        table.deviceLocalCheckScore,
+        value,
+      );
+
+  _is.ColumnValue<int, int> deviceLocalCheckMatchedFrames(int? value) =>
+      _is.ColumnValue(
+        table.deviceLocalCheckMatchedFrames,
+        value,
+      );
+
   _is.ColumnValue<
     _ijbfcz4y.EvidenceProvenanceLevel,
     _ijbfcz4y.EvidenceProvenanceLevel
@@ -752,6 +858,26 @@ class ActionEvidenceTable extends _is.Table<_is.UuidValue?> {
       'spokenChallengeWord',
       this,
     );
+    deviceLocalCheckModelId = _is.ColumnString(
+      'deviceLocalCheckModelId',
+      this,
+    );
+    deviceLocalCheckModelSha256 = _is.ColumnString(
+      'deviceLocalCheckModelSha256',
+      this,
+    );
+    deviceLocalCheckLabel = _is.ColumnString(
+      'deviceLocalCheckLabel',
+      this,
+    );
+    deviceLocalCheckScore = _is.ColumnDouble(
+      'deviceLocalCheckScore',
+      this,
+    );
+    deviceLocalCheckMatchedFrames = _is.ColumnInt(
+      'deviceLocalCheckMatchedFrames',
+      this,
+    );
     provenanceLevel = _is.ColumnEnum(
       'provenanceLevel',
       this,
@@ -834,6 +960,17 @@ class ActionEvidenceTable extends _is.Table<_is.UuidValue?> {
 
   late final _is.ColumnString spokenChallengeWord;
 
+  /// The phone's advisory local-check result, kept for calibration only.
+  late final _is.ColumnString deviceLocalCheckModelId;
+
+  late final _is.ColumnString deviceLocalCheckModelSha256;
+
+  late final _is.ColumnString deviceLocalCheckLabel;
+
+  late final _is.ColumnDouble deviceLocalCheckScore;
+
+  late final _is.ColumnInt deviceLocalCheckMatchedFrames;
+
   late final _is.ColumnEnum<_ijbfcz4y.EvidenceProvenanceLevel> provenanceLevel;
 
   late final _is.ColumnString captureManifest;
@@ -873,6 +1010,11 @@ class ActionEvidenceTable extends _is.Table<_is.UuidValue?> {
     deviceTrackerVersion,
     spokenChallengeId,
     spokenChallengeWord,
+    deviceLocalCheckModelId,
+    deviceLocalCheckModelSha256,
+    deviceLocalCheckLabel,
+    deviceLocalCheckScore,
+    deviceLocalCheckMatchedFrames,
     provenanceLevel,
     captureManifest,
     captureSignature,

@@ -39,6 +39,8 @@ import '../moderation/moderation_endpoint.dart' as _icwcy5wq;
 import '../moderation/moderation_review_endpoint.dart' as _ilzfasxk;
 import '../rewards/payout_wallet_endpoint.dart' as _i9hfqu1s;
 import '../rewards/rewards_endpoint.dart' as _i4hn2z2u;
+import '../verification_requests/verification_request_endpoint.dart'
+    as _iw1snziy;
 export 'future_calls.dart' show ServerpodFutureCallsGetter;
 
 class Endpoints extends _is.EndpointDispatch {
@@ -115,6 +117,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'rewards',
+          null,
+        ),
+      'verificationRequest': _iw1snziy.VerificationRequestEndpoint()
+        ..initialize(
+          server,
+          'verificationRequest',
           null,
         ),
     };
@@ -575,6 +583,39 @@ class Endpoints extends _is.EndpointDispatch {
                         params['confirmation'],
                       ),
         ),
+        'requestAppVerification': _is.MethodConnector(
+          name: 'requestAppVerification',
+          params: {
+            'attemptId': _is.ParameterDescription(
+              name: 'attemptId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'requirementId': _is.ParameterDescription(
+              name: 'requirementId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'reference': _is.ParameterDescription(
+              name: 'reference',
+              type: _is.getType<String?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['actionVerification']
+                          as _il8ja9q3.ActionVerificationEndpoint)
+                      .requestAppVerification(
+                        session,
+                        attemptId: params['attemptId'],
+                        requirementId: params['requirementId'],
+                        reference: params['reference'],
+                      ),
+        ),
         'completeAttempt': _is.MethodConnector(
           name: 'completeAttempt',
           params: {
@@ -937,6 +978,199 @@ class Endpoints extends _is.EndpointDispatch {
                   .linkApp(
                     session,
                     appId: params['appId'],
+                  ),
+        ),
+        'setWebhookUrl': _is.MethodConnector(
+          name: 'setWebhookUrl',
+          params: {
+            'appId': _is.ParameterDescription(
+              name: 'appId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'webhookUrl': _is.ParameterDescription(
+              name: 'webhookUrl',
+              type: _is.getType<String?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['verilyApp'] as _iqeqjjry.VerilyAppEndpoint)
+                  .setWebhookUrl(
+                    session,
+                    appId: params['appId'],
+                    webhookUrl: params['webhookUrl'],
+                  ),
+        ),
+        'rotateWebhookSecret': _is.MethodConnector(
+          name: 'rotateWebhookSecret',
+          params: {
+            'appId': _is.ParameterDescription(
+              name: 'appId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['verilyApp'] as _iqeqjjry.VerilyAppEndpoint)
+                  .rotateWebhookSecret(
+                    session,
+                    appId: params['appId'],
+                  ),
+        ),
+        'setRedirectUris': _is.MethodConnector(
+          name: 'setRedirectUris',
+          params: {
+            'appId': _is.ParameterDescription(
+              name: 'appId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'redirectUris': _is.ParameterDescription(
+              name: 'redirectUris',
+              type: _is.getType<List<String>>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['verilyApp'] as _iqeqjjry.VerilyAppEndpoint)
+                  .setRedirectUris(
+                    session,
+                    appId: params['appId'],
+                    redirectUris: params['redirectUris'],
+                  ),
+        ),
+        'listWebhookDeliveries': _is.MethodConnector(
+          name: 'listWebhookDeliveries',
+          params: {
+            'appId': _is.ParameterDescription(
+              name: 'appId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'limit': _is.ParameterDescription(
+              name: 'limit',
+              type: _is.getType<int>(),
+              nullable: false,
+            ),
+            'beforeId': _is.ParameterDescription(
+              name: 'beforeId',
+              type: _is.getType<_is.UuidValue?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['verilyApp'] as _iqeqjjry.VerilyAppEndpoint)
+                  .listWebhookDeliveries(
+                    session,
+                    appId: params['appId'],
+                    limit: params['limit'],
+                    beforeId: params['beforeId'],
+                  ),
+        ),
+        'describeLinkRequest': _is.MethodConnector(
+          name: 'describeLinkRequest',
+          params: {
+            'appId': _is.ParameterDescription(
+              name: 'appId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'redirectUri': _is.ParameterDescription(
+              name: 'redirectUri',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'state': _is.ParameterDescription(
+              name: 'state',
+              type: _is.getType<String?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['verilyApp'] as _iqeqjjry.VerilyAppEndpoint)
+                  .describeLinkRequest(
+                    session,
+                    appId: params['appId'],
+                    redirectUri: params['redirectUri'],
+                    state: params['state'],
+                  ),
+        ),
+        'approveLink': _is.MethodConnector(
+          name: 'approveLink',
+          params: {
+            'appId': _is.ParameterDescription(
+              name: 'appId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'redirectUri': _is.ParameterDescription(
+              name: 'redirectUri',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'state': _is.ParameterDescription(
+              name: 'state',
+              type: _is.getType<String?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['verilyApp'] as _iqeqjjry.VerilyAppEndpoint)
+                  .approveLink(
+                    session,
+                    appId: params['appId'],
+                    redirectUri: params['redirectUri'],
+                    state: params['state'],
+                  ),
+        ),
+        'declineLink': _is.MethodConnector(
+          name: 'declineLink',
+          params: {
+            'appId': _is.ParameterDescription(
+              name: 'appId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'redirectUri': _is.ParameterDescription(
+              name: 'redirectUri',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'state': _is.ParameterDescription(
+              name: 'state',
+              type: _is.getType<String?>(),
+              nullable: true,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['verilyApp'] as _iqeqjjry.VerilyAppEndpoint)
+                  .declineLink(
+                    session,
+                    appId: params['appId'],
+                    redirectUri: params['redirectUri'],
+                    state: params['state'],
                   ),
         ),
       },
@@ -1616,6 +1850,96 @@ class Endpoints extends _is.EndpointDispatch {
                     session,
                     limit: params['limit'],
                   ),
+        ),
+      },
+    );
+    connectors['verificationRequest'] = _is.EndpointConnector(
+      name: 'verificationRequest',
+      endpoint: endpoints['verificationRequest']!,
+      methodConnectors: {
+        'getRequest': _is.MethodConnector(
+          name: 'getRequest',
+          params: {
+            'requestId': _is.ParameterDescription(
+              name: 'requestId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['verificationRequest']
+                          as _iw1snziy.VerificationRequestEndpoint)
+                      .getRequest(
+                        session,
+                        requestId: params['requestId'],
+                      ),
+        ),
+        'accept': _is.MethodConnector(
+          name: 'accept',
+          params: {
+            'requestId': _is.ParameterDescription(
+              name: 'requestId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['verificationRequest']
+                          as _iw1snziy.VerificationRequestEndpoint)
+                      .accept(
+                        session,
+                        requestId: params['requestId'],
+                      ),
+        ),
+        'decline': _is.MethodConnector(
+          name: 'decline',
+          params: {
+            'requestId': _is.ParameterDescription(
+              name: 'requestId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['verificationRequest']
+                          as _iw1snziy.VerificationRequestEndpoint)
+                      .decline(
+                        session,
+                        requestId: params['requestId'],
+                      ),
+        ),
+        'finish': _is.MethodConnector(
+          name: 'finish',
+          params: {
+            'requestId': _is.ParameterDescription(
+              name: 'requestId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['verificationRequest']
+                          as _iw1snziy.VerificationRequestEndpoint)
+                      .finish(
+                        session,
+                        requestId: params['requestId'],
+                      ),
         ),
       },
     );

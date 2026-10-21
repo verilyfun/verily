@@ -31,6 +31,8 @@ import 'package:verily_server/src/generated/apps/app_confirmation_view.dart'
     as _i8j33595;
 import 'package:verily_server/src/generated/apps/verily_app_view.dart'
     as _i4dty38s;
+import 'package:verily_server/src/generated/apps/webhooks/app_webhook_delivery_view.dart'
+    as _i1cq8y15;
 import 'package:verily_server/src/generated/moderation/moderation_case_status_view.dart'
     as _ikb2aklq;
 import 'package:verily_server/src/generated/rewards/reward_payout_view.dart'
@@ -78,6 +80,7 @@ import 'action_verification/action_spoken_challenge_cleanup_task.dart'
 import 'action_verification/action_spoken_challenge_view.dart' as _iikyln3l;
 import 'action_verification/action_template.dart' as _i0iphegd;
 import 'action_verification/action_verification_policy.dart' as _i960u7rl;
+import 'action_verification/action_visibility.dart' as _ichxscv5;
 import 'action_verification/create_action_definition_request.dart' as _i5yjywpf;
 import 'action_verification/evidence_appeal.dart' as _i9u1614a;
 import 'action_verification/evidence_appeal_status.dart' as _i90o7tud;
@@ -93,6 +96,12 @@ import 'action_verification/evidence_verification_recovery_task.dart'
     as _il1p2vsk;
 import 'action_verification/evidence_verification_task.dart' as _in8wt7wh;
 import 'action_verification/evidence_verification_vote.dart' as _itcyvpmo;
+import 'action_verification/local_check/action_local_check.dart' as _iu3m4umr;
+import 'action_verification/local_check/device_local_check_result.dart'
+    as _iarjk3hm;
+import 'action_verification/local_check/local_check_model_view.dart'
+    as _iqhexf0c;
+import 'action_verification/local_check/local_check_task.dart' as _if2a7jyy;
 import 'action_verification/media_upload_confirmation.dart' as _i9z86si9;
 import 'action_verification/payout_review_view.dart' as _i05z8wlg;
 import 'ai_usage/ai_usage_request.dart' as _imnd8hof;
@@ -101,15 +110,35 @@ import 'apps/action_external_rule.dart' as _i00uumzo;
 import 'apps/app_confirmation.dart' as _iix86y46;
 import 'apps/app_confirmation_outcome.dart' as _ix5pwyym;
 import 'apps/app_confirmation_view.dart' as _iqtml4wq;
+import 'apps/app_platform_exception.dart' as _iwa6gvjs;
+import 'apps/app_platform_problem.dart' as _if20wdmx;
+import 'apps/app_pull_check.dart' as _iem3wxny;
+import 'apps/app_pull_check_recovery_task.dart' as _inaep7ed;
+import 'apps/app_pull_check_status.dart' as _i3ubh0mc;
+import 'apps/app_pull_check_task.dart' as _i3j4e45w;
 import 'apps/app_unavailable_exception.dart' as _i3krqelq;
+import 'apps/app_verification_mode.dart' as _ijzftij0;
+import 'apps/linking/app_link_code_cleanup_task.dart' as _i36kvzuc;
+import 'apps/linking/app_link_redirect.dart' as _i6s4a256;
+import 'apps/linking/app_link_request_view.dart' as _ilshz35f;
+import 'apps/linking/verily_app_link_code.dart' as _i6yo3b5n;
 import 'apps/verily_app.dart' as _in5ng4ea;
 import 'apps/verily_app_credential.dart' as _iaui7d4n;
 import 'apps/verily_app_key.dart' as _ibhkb5dt;
 import 'apps/verily_app_key_view.dart' as _ipa8tni0;
 import 'apps/verily_app_link.dart' as _ikhive7i;
 import 'apps/verily_app_link_view.dart' as _ikihia57;
+import 'apps/verily_app_rate_window.dart' as _ie89zcz8;
+import 'apps/verily_app_redirect_uri.dart' as _iqs5ny0z;
 import 'apps/verily_app_status.dart' as _ibal4ihb;
 import 'apps/verily_app_view.dart' as _ifrl0pdw;
+import 'apps/webhooks/app_event.dart' as _i13rn6uf;
+import 'apps/webhooks/app_event_delivery_task.dart' as _ichijhlk;
+import 'apps/webhooks/app_event_recovery_task.dart' as _igoow6fn;
+import 'apps/webhooks/app_event_status.dart' as _io6036x8;
+import 'apps/webhooks/app_webhook_delivery.dart' as _irpgk99g;
+import 'apps/webhooks/app_webhook_delivery_view.dart' as _ifch1v2s;
+import 'apps/webhooks/verily_app_webhook_secret.dart' as _it0ux8yj;
 import 'evidence_storage/evidence_upload_cleanup_task.dart' as _ioo44wgs;
 import 'evidence_storage/evidence_upload_reservation.dart' as _is4ltac0;
 import 'evidence_storage/evidence_upload_status.dart' as _iz4zjc1b;
@@ -140,6 +169,14 @@ import 'rewards/reward_pool_view.dart' as _if6e3cxh;
 import 'rewards/reward_problem.dart' as _i4sm4ipz;
 import 'rewards/reward_summary.dart' as _i9b5h2nk;
 import 'rewards/reward_terms_draft.dart' as _iokaii94;
+import 'verification_requests/verification_request.dart' as _i3qq4r4i;
+import 'verification_requests/verification_request_check.dart' as _ig30b0kc;
+import 'verification_requests/verification_request_expiry_task.dart'
+    as _igwxgobn;
+import 'verification_requests/verification_request_kind.dart' as _ij8vmgkg;
+import 'verification_requests/verification_request_redirect.dart' as _ik3wnzle;
+import 'verification_requests/verification_request_status.dart' as _in2jgiwv;
+import 'verification_requests/verification_request_view.dart' as _i3v95178;
 export 'abuse/abuse_risk_assessment.dart';
 export 'account/account_closure.dart';
 export 'account/account_closure_status.dart';
@@ -179,6 +216,7 @@ export 'action_verification/action_spoken_challenge_cleanup_task.dart';
 export 'action_verification/action_spoken_challenge_view.dart';
 export 'action_verification/action_template.dart';
 export 'action_verification/action_verification_policy.dart';
+export 'action_verification/action_visibility.dart';
 export 'action_verification/create_action_definition_request.dart';
 export 'action_verification/evidence_appeal.dart';
 export 'action_verification/evidence_appeal_status.dart';
@@ -193,6 +231,10 @@ export 'action_verification/evidence_verification_job_status.dart';
 export 'action_verification/evidence_verification_recovery_task.dart';
 export 'action_verification/evidence_verification_task.dart';
 export 'action_verification/evidence_verification_vote.dart';
+export 'action_verification/local_check/action_local_check.dart';
+export 'action_verification/local_check/device_local_check_result.dart';
+export 'action_verification/local_check/local_check_model_view.dart';
+export 'action_verification/local_check/local_check_task.dart';
 export 'action_verification/media_upload_confirmation.dart';
 export 'action_verification/payout_review_view.dart';
 export 'ai_usage/ai_usage_request.dart';
@@ -201,15 +243,35 @@ export 'apps/action_external_rule.dart';
 export 'apps/app_confirmation.dart';
 export 'apps/app_confirmation_outcome.dart';
 export 'apps/app_confirmation_view.dart';
+export 'apps/app_platform_exception.dart';
+export 'apps/app_platform_problem.dart';
+export 'apps/app_pull_check.dart';
+export 'apps/app_pull_check_recovery_task.dart';
+export 'apps/app_pull_check_status.dart';
+export 'apps/app_pull_check_task.dart';
 export 'apps/app_unavailable_exception.dart';
+export 'apps/app_verification_mode.dart';
+export 'apps/linking/app_link_code_cleanup_task.dart';
+export 'apps/linking/app_link_redirect.dart';
+export 'apps/linking/app_link_request_view.dart';
+export 'apps/linking/verily_app_link_code.dart';
 export 'apps/verily_app.dart';
 export 'apps/verily_app_credential.dart';
 export 'apps/verily_app_key.dart';
 export 'apps/verily_app_key_view.dart';
 export 'apps/verily_app_link.dart';
 export 'apps/verily_app_link_view.dart';
+export 'apps/verily_app_rate_window.dart';
+export 'apps/verily_app_redirect_uri.dart';
 export 'apps/verily_app_status.dart';
 export 'apps/verily_app_view.dart';
+export 'apps/webhooks/app_event.dart';
+export 'apps/webhooks/app_event_delivery_task.dart';
+export 'apps/webhooks/app_event_recovery_task.dart';
+export 'apps/webhooks/app_event_status.dart';
+export 'apps/webhooks/app_webhook_delivery.dart';
+export 'apps/webhooks/app_webhook_delivery_view.dart';
+export 'apps/webhooks/verily_app_webhook_secret.dart';
 export 'evidence_storage/evidence_upload_cleanup_task.dart';
 export 'evidence_storage/evidence_upload_reservation.dart';
 export 'evidence_storage/evidence_upload_status.dart';
@@ -240,6 +302,13 @@ export 'rewards/reward_pool_view.dart';
 export 'rewards/reward_problem.dart';
 export 'rewards/reward_summary.dart';
 export 'rewards/reward_terms_draft.dart';
+export 'verification_requests/verification_request.dart';
+export 'verification_requests/verification_request_check.dart';
+export 'verification_requests/verification_request_expiry_task.dart';
+export 'verification_requests/verification_request_kind.dart';
+export 'verification_requests/verification_request_redirect.dart';
+export 'verification_requests/verification_request_status.dart';
+export 'verification_requests/verification_request_view.dart';
 
 class Protocol extends _is.DatabaseSerializationManager {
   Protocol._();
@@ -939,6 +1008,13 @@ class Protocol extends _is.DatabaseSerializationManager {
           dartType: 'DateTime?',
         ),
         _isp.ColumnDefinition(
+          name: 'visibility',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'protocol:ActionVisibility',
+          columnDefault: '\'public\'',
+        ),
+        _isp.ColumnDefinition(
           name: 'createdAt',
           columnType: _isp.ColumnType.timestampWithoutTimeZone,
           isNullable: false,
@@ -1156,6 +1232,36 @@ class Protocol extends _is.DatabaseSerializationManager {
           dartType: 'String?',
         ),
         _isp.ColumnDefinition(
+          name: 'deviceLocalCheckModelId',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'deviceLocalCheckModelSha256',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'deviceLocalCheckLabel',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'deviceLocalCheckScore',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: true,
+          dartType: 'double?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'deviceLocalCheckMatchedFrames',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
           name: 'provenanceLevel',
           columnType: _isp.ColumnType.text,
           isNullable: false,
@@ -1338,6 +1444,13 @@ class Protocol extends _is.DatabaseSerializationManager {
           columnType: _isp.ColumnType.uuid,
           isNullable: false,
           dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'verificationMode',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'protocol:AppVerificationMode',
+          columnDefault: '\'push\'',
         ),
       ],
       foreignKeys: [
@@ -1543,6 +1656,30 @@ class Protocol extends _is.DatabaseSerializationManager {
         ),
         _isp.ColumnDefinition(
           name: 'targetRepetitions',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'localCheckTask',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'protocol:LocalCheckTask?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'localCheckLabel',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'localCheckMinScore',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: true,
+          dartType: 'double?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'localCheckMinFrames',
           columnType: _isp.ColumnType.bigint,
           isNullable: true,
           dartType: 'int?',
@@ -2299,6 +2436,31 @@ class Protocol extends _is.DatabaseSerializationManager {
           columnDefault: '0',
         ),
         _isp.ColumnDefinition(
+          name: 'webhookUrl',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'webhookSecretVersion',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+          columnDefault: '0',
+        ),
+        _isp.ColumnDefinition(
+          name: 'previousWebhookSecretVersion',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'webhookSecretRotatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
           name: 'createdAt',
           columnType: _isp.ColumnType.timestampWithoutTimeZone,
           isNullable: false,
@@ -2520,6 +2682,185 @@ class Protocol extends _is.DatabaseSerializationManager {
       managed: true,
     ),
     _isp.TableDefinition(
+      name: 'verily_app_event',
+      dartName: 'AppEvent',
+      schema: 'public',
+      module: 'verily',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue?',
+          columnDefault: 'random_v7',
+        ),
+        _isp.ColumnDefinition(
+          name: 'appId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'eventId',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'type',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'dedupeKey',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'body',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'protocol:AppEventStatus',
+        ),
+        _isp.ColumnDefinition(
+          name: 'attemptCount',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+          columnDefault: '0',
+        ),
+        _isp.ColumnDefinition(
+          name: 'nextAttemptAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'leaseExpiresAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lastStatusCode',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lastErrorCode',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'deliveredAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [
+        _isp.ForeignKeyDefinition(
+          constraintName: 'verily_app_event_fk_0',
+          columns: ['appId'],
+          referenceTable: 'verily_app',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.cascade,
+          matchType: null,
+        ),
+      ],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'verily_app_event_id_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'eventId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'verily_app_event_dedupe_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'appId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'dedupeKey',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'verily_app_event_due_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'status',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'nextAttemptAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'verily_app_event_app_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'appId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'id',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
       name: 'verily_app_key',
       dartName: 'VerilyAppKey',
       schema: 'public',
@@ -2708,6 +3049,556 @@ class Protocol extends _is.DatabaseSerializationManager {
           ],
           type: 'btree',
           isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'verily_app_link_code',
+      dartName: 'VerilyAppLinkCode',
+      schema: 'public',
+      module: 'verily',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue?',
+          columnDefault: 'random_v7',
+        ),
+        _isp.ColumnDefinition(
+          name: 'appId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'codeHash',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'redirectUri',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'state',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'expiresAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'usedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [
+        _isp.ForeignKeyDefinition(
+          constraintName: 'verily_app_link_code_fk_0',
+          columns: ['appId'],
+          referenceTable: 'verily_app',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.cascade,
+          matchType: null,
+        ),
+        _isp.ForeignKeyDefinition(
+          constraintName: 'verily_app_link_code_fk_1',
+          columns: ['authUserId'],
+          referenceTable: 'serverpod_auth_core_user',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.cascade,
+          matchType: null,
+        ),
+      ],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'verily_app_link_code_hash_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'codeHash',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'verily_app_link_code_expiry_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'expiresAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'verily_app_pull_check',
+      dartName: 'AppPullCheck',
+      schema: 'public',
+      module: 'verily',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue?',
+          columnDefault: 'random_v7',
+        ),
+        _isp.ColumnDefinition(
+          name: 'attemptId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'requirementId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'appId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'eventId',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'reference',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'protocol:AppPullCheckStatus',
+        ),
+        _isp.ColumnDefinition(
+          name: 'callCount',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+          columnDefault: '0',
+        ),
+        _isp.ColumnDefinition(
+          name: 'nextCallAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'leaseExpiresAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lastErrorCode',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'reasonCode',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'expiresAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [
+        _isp.ForeignKeyDefinition(
+          constraintName: 'verily_app_pull_check_fk_0',
+          columns: ['attemptId'],
+          referenceTable: 'verily_action_attempt',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.cascade,
+          matchType: null,
+        ),
+        _isp.ForeignKeyDefinition(
+          constraintName: 'verily_app_pull_check_fk_1',
+          columns: ['requirementId'],
+          referenceTable: 'verily_action_requirement',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.restrict,
+          matchType: null,
+        ),
+        _isp.ForeignKeyDefinition(
+          constraintName: 'verily_app_pull_check_fk_2',
+          columns: ['appId'],
+          referenceTable: 'verily_app',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.restrict,
+          matchType: null,
+        ),
+      ],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'verily_app_pull_check_requirement_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'attemptId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'requirementId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'verily_app_pull_check_event_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'eventId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'verily_app_pull_check_due_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'status',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'nextCallAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'verily_app_rate_window',
+      dartName: 'VerilyAppRateWindow',
+      schema: 'public',
+      module: 'verily',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue?',
+          columnDefault: 'random_v7',
+        ),
+        _isp.ColumnDefinition(
+          name: 'appId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'bucket',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'windowStartedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'requestCount',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+      ],
+      foreignKeys: [
+        _isp.ForeignKeyDefinition(
+          constraintName: 'verily_app_rate_window_fk_0',
+          columns: ['appId'],
+          referenceTable: 'verily_app',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.cascade,
+          matchType: null,
+        ),
+      ],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'verily_app_rate_window_bucket_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'appId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'bucket',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'verily_app_redirect_uri',
+      dartName: 'VerilyAppRedirectUri',
+      schema: 'public',
+      module: 'verily',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue?',
+          columnDefault: 'random_v7',
+        ),
+        _isp.ColumnDefinition(
+          name: 'appId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'uri',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [
+        _isp.ForeignKeyDefinition(
+          constraintName: 'verily_app_redirect_uri_fk_0',
+          columns: ['appId'],
+          referenceTable: 'verily_app',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.cascade,
+          matchType: null,
+        ),
+      ],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'verily_app_redirect_uri_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'appId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'uri',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'verily_app_webhook_delivery',
+      dartName: 'AppWebhookDelivery',
+      schema: 'public',
+      module: 'verily',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue?',
+          columnDefault: 'random_v7',
+        ),
+        _isp.ColumnDefinition(
+          name: 'appId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'eventId',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'eventType',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'attemptNumber',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'requestedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'durationMilliseconds',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'statusCode',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'errorCode',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'succeeded',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+        ),
+      ],
+      foreignKeys: [
+        _isp.ForeignKeyDefinition(
+          constraintName: 'verily_app_webhook_delivery_fk_0',
+          columns: ['appId'],
+          referenceTable: 'verily_app',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.cascade,
+          matchType: null,
+        ),
+      ],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'verily_app_webhook_delivery_app_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'appId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'id',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'verily_app_webhook_delivery_event_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'eventId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'attemptNumber',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
           isPrimary: false,
         ),
       ],
@@ -4617,6 +5508,277 @@ class Protocol extends _is.DatabaseSerializationManager {
       ],
       managed: true,
     ),
+    _isp.TableDefinition(
+      name: 'verily_verification_request',
+      dartName: 'VerificationRequest',
+      schema: 'public',
+      module: 'verily',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue?',
+          columnDefault: 'random_v7',
+        ),
+        _isp.ColumnDefinition(
+          name: 'appId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'kind',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'protocol:VerificationRequestKind',
+        ),
+        _isp.ColumnDefinition(
+          name: 'instructions',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'check',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'protocol:VerificationRequestCheck',
+        ),
+        _isp.ColumnDefinition(
+          name: 'placeLatitude',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: true,
+          dartType: 'double?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'placeLongitude',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: true,
+          dartType: 'double?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'placeRadiusMeters',
+          columnType: _isp.ColumnType.doublePrecision,
+          isNullable: true,
+          dartType: 'double?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'spokenChallenge',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+        ),
+        _isp.ColumnDefinition(
+          name: 'shareEvidence',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+        ),
+        _isp.ColumnDefinition(
+          name: 'redirectUri',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'state',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'status',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'protocol:VerificationRequestStatus',
+        ),
+        _isp.ColumnDefinition(
+          name: 'expiresAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'participantAuthUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: true,
+          dartType: 'UuidValue?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'subject',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'actionDefinitionId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: true,
+          dartType: 'UuidValue?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'attemptId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: true,
+          dartType: 'UuidValue?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'acceptedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'evidenceShared',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+          columnDefault: 'false',
+        ),
+        _isp.ColumnDefinition(
+          name: 'codeHash',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'codeExpiresAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'codeUsedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'completedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [
+        _isp.ForeignKeyDefinition(
+          constraintName: 'verily_verification_request_fk_0',
+          columns: ['appId'],
+          referenceTable: 'verily_app',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.restrict,
+          matchType: null,
+        ),
+        _isp.ForeignKeyDefinition(
+          constraintName: 'verily_verification_request_fk_1',
+          columns: ['participantAuthUserId'],
+          referenceTable: 'serverpod_auth_core_user',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.setNull,
+          matchType: null,
+        ),
+        _isp.ForeignKeyDefinition(
+          constraintName: 'verily_verification_request_fk_2',
+          columns: ['actionDefinitionId'],
+          referenceTable: 'verily_action_definition',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.restrict,
+          matchType: null,
+        ),
+        _isp.ForeignKeyDefinition(
+          constraintName: 'verily_verification_request_fk_3',
+          columns: ['attemptId'],
+          referenceTable: 'verily_action_attempt',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.restrict,
+          matchType: null,
+        ),
+      ],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'verily_verification_request_app_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'appId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'createdAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'verily_verification_request_status_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'status',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'expiresAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'verily_verification_request_code_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'codeHash',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'verily_verification_request_attempt_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'attemptId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
     ..._iacs.Protocol.targetTableDefinitions,
     ..._iais.Protocol.targetTableDefinitions,
     ..._isp.Protocol.targetTableDefinitions,
@@ -4766,6 +5928,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _i960u7rl.ActionVerificationPolicy) {
       return _i960u7rl.ActionVerificationPolicy.fromJson(data) as T;
     }
+    if (t == _ichxscv5.ActionVisibility) {
+      return _ichxscv5.ActionVisibility.fromJson(data) as T;
+    }
     if (t == _i5yjywpf.CreateActionDefinitionRequest) {
       return _i5yjywpf.CreateActionDefinitionRequest.fromJson(data) as T;
     }
@@ -4808,6 +5973,18 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _itcyvpmo.EvidenceVerificationVote) {
       return _itcyvpmo.EvidenceVerificationVote.fromJson(data) as T;
     }
+    if (t == _iu3m4umr.ActionLocalCheck) {
+      return _iu3m4umr.ActionLocalCheck.fromJson(data) as T;
+    }
+    if (t == _iarjk3hm.DeviceLocalCheckResult) {
+      return _iarjk3hm.DeviceLocalCheckResult.fromJson(data) as T;
+    }
+    if (t == _iqhexf0c.LocalCheckModelView) {
+      return _iqhexf0c.LocalCheckModelView.fromJson(data) as T;
+    }
+    if (t == _if2a7jyy.LocalCheckTask) {
+      return _if2a7jyy.LocalCheckTask.fromJson(data) as T;
+    }
     if (t == _i9z86si9.MediaUploadConfirmation) {
       return _i9z86si9.MediaUploadConfirmation.fromJson(data) as T;
     }
@@ -4832,8 +6009,41 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _iqtml4wq.AppConfirmationView) {
       return _iqtml4wq.AppConfirmationView.fromJson(data) as T;
     }
+    if (t == _iwa6gvjs.AppPlatformException) {
+      return _iwa6gvjs.AppPlatformException.fromJson(data) as T;
+    }
+    if (t == _if20wdmx.AppPlatformProblem) {
+      return _if20wdmx.AppPlatformProblem.fromJson(data) as T;
+    }
+    if (t == _iem3wxny.AppPullCheck) {
+      return _iem3wxny.AppPullCheck.fromJson(data) as T;
+    }
+    if (t == _inaep7ed.AppPullCheckRecoveryTask) {
+      return _inaep7ed.AppPullCheckRecoveryTask.fromJson(data) as T;
+    }
+    if (t == _i3ubh0mc.AppPullCheckStatus) {
+      return _i3ubh0mc.AppPullCheckStatus.fromJson(data) as T;
+    }
+    if (t == _i3j4e45w.AppPullCheckTask) {
+      return _i3j4e45w.AppPullCheckTask.fromJson(data) as T;
+    }
     if (t == _i3krqelq.AppUnavailableException) {
       return _i3krqelq.AppUnavailableException.fromJson(data) as T;
+    }
+    if (t == _ijzftij0.AppVerificationMode) {
+      return _ijzftij0.AppVerificationMode.fromJson(data) as T;
+    }
+    if (t == _i36kvzuc.AppLinkCodeCleanupTask) {
+      return _i36kvzuc.AppLinkCodeCleanupTask.fromJson(data) as T;
+    }
+    if (t == _i6s4a256.AppLinkRedirect) {
+      return _i6s4a256.AppLinkRedirect.fromJson(data) as T;
+    }
+    if (t == _ilshz35f.AppLinkRequestView) {
+      return _ilshz35f.AppLinkRequestView.fromJson(data) as T;
+    }
+    if (t == _i6yo3b5n.VerilyAppLinkCode) {
+      return _i6yo3b5n.VerilyAppLinkCode.fromJson(data) as T;
     }
     if (t == _in5ng4ea.VerilyApp) {
       return _in5ng4ea.VerilyApp.fromJson(data) as T;
@@ -4853,11 +6063,38 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _ikihia57.VerilyAppLinkView) {
       return _ikihia57.VerilyAppLinkView.fromJson(data) as T;
     }
+    if (t == _ie89zcz8.VerilyAppRateWindow) {
+      return _ie89zcz8.VerilyAppRateWindow.fromJson(data) as T;
+    }
+    if (t == _iqs5ny0z.VerilyAppRedirectUri) {
+      return _iqs5ny0z.VerilyAppRedirectUri.fromJson(data) as T;
+    }
     if (t == _ibal4ihb.VerilyAppStatus) {
       return _ibal4ihb.VerilyAppStatus.fromJson(data) as T;
     }
     if (t == _ifrl0pdw.VerilyAppView) {
       return _ifrl0pdw.VerilyAppView.fromJson(data) as T;
+    }
+    if (t == _i13rn6uf.AppEvent) {
+      return _i13rn6uf.AppEvent.fromJson(data) as T;
+    }
+    if (t == _ichijhlk.AppEventDeliveryTask) {
+      return _ichijhlk.AppEventDeliveryTask.fromJson(data) as T;
+    }
+    if (t == _igoow6fn.AppEventRecoveryTask) {
+      return _igoow6fn.AppEventRecoveryTask.fromJson(data) as T;
+    }
+    if (t == _io6036x8.AppEventStatus) {
+      return _io6036x8.AppEventStatus.fromJson(data) as T;
+    }
+    if (t == _irpgk99g.AppWebhookDelivery) {
+      return _irpgk99g.AppWebhookDelivery.fromJson(data) as T;
+    }
+    if (t == _ifch1v2s.AppWebhookDeliveryView) {
+      return _ifch1v2s.AppWebhookDeliveryView.fromJson(data) as T;
+    }
+    if (t == _it0ux8yj.VerilyAppWebhookSecret) {
+      return _it0ux8yj.VerilyAppWebhookSecret.fromJson(data) as T;
     }
     if (t == _ioo44wgs.EvidenceUploadCleanupTask) {
       return _ioo44wgs.EvidenceUploadCleanupTask.fromJson(data) as T;
@@ -4948,6 +6185,27 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _iokaii94.RewardTermsDraft) {
       return _iokaii94.RewardTermsDraft.fromJson(data) as T;
+    }
+    if (t == _i3qq4r4i.VerificationRequest) {
+      return _i3qq4r4i.VerificationRequest.fromJson(data) as T;
+    }
+    if (t == _ig30b0kc.VerificationRequestCheck) {
+      return _ig30b0kc.VerificationRequestCheck.fromJson(data) as T;
+    }
+    if (t == _igwxgobn.VerificationRequestExpiryTask) {
+      return _igwxgobn.VerificationRequestExpiryTask.fromJson(data) as T;
+    }
+    if (t == _ij8vmgkg.VerificationRequestKind) {
+      return _ij8vmgkg.VerificationRequestKind.fromJson(data) as T;
+    }
+    if (t == _ik3wnzle.VerificationRequestRedirect) {
+      return _ik3wnzle.VerificationRequestRedirect.fromJson(data) as T;
+    }
+    if (t == _in2jgiwv.VerificationRequestStatus) {
+      return _in2jgiwv.VerificationRequestStatus.fromJson(data) as T;
+    }
+    if (t == _i3v95178.VerificationRequestView) {
+      return _i3v95178.VerificationRequestView.fromJson(data) as T;
     }
     if (t == _is.getType<_ifpimmza.AbuseRiskAssessment?>()) {
       return (data != null
@@ -5146,6 +6404,10 @@ class Protocol extends _is.DatabaseSerializationManager {
               : null)
           as T;
     }
+    if (t == _is.getType<_ichxscv5.ActionVisibility?>()) {
+      return (data != null ? _ichxscv5.ActionVisibility.fromJson(data) : null)
+          as T;
+    }
     if (t == _is.getType<_i5yjywpf.CreateActionDefinitionRequest?>()) {
       return (data != null
               ? _i5yjywpf.CreateActionDefinitionRequest.fromJson(data)
@@ -5224,6 +6486,26 @@ class Protocol extends _is.DatabaseSerializationManager {
               : null)
           as T;
     }
+    if (t == _is.getType<_iu3m4umr.ActionLocalCheck?>()) {
+      return (data != null ? _iu3m4umr.ActionLocalCheck.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_iarjk3hm.DeviceLocalCheckResult?>()) {
+      return (data != null
+              ? _iarjk3hm.DeviceLocalCheckResult.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_iqhexf0c.LocalCheckModelView?>()) {
+      return (data != null
+              ? _iqhexf0c.LocalCheckModelView.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_if2a7jyy.LocalCheckTask?>()) {
+      return (data != null ? _if2a7jyy.LocalCheckTask.fromJson(data) : null)
+          as T;
+    }
     if (t == _is.getType<_i9z86si9.MediaUploadConfirmation?>()) {
       return (data != null
               ? _i9z86si9.MediaUploadConfirmation.fromJson(data)
@@ -5262,10 +6544,61 @@ class Protocol extends _is.DatabaseSerializationManager {
               : null)
           as T;
     }
+    if (t == _is.getType<_iwa6gvjs.AppPlatformException?>()) {
+      return (data != null
+              ? _iwa6gvjs.AppPlatformException.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_if20wdmx.AppPlatformProblem?>()) {
+      return (data != null ? _if20wdmx.AppPlatformProblem.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_iem3wxny.AppPullCheck?>()) {
+      return (data != null ? _iem3wxny.AppPullCheck.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_inaep7ed.AppPullCheckRecoveryTask?>()) {
+      return (data != null
+              ? _inaep7ed.AppPullCheckRecoveryTask.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_i3ubh0mc.AppPullCheckStatus?>()) {
+      return (data != null ? _i3ubh0mc.AppPullCheckStatus.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_i3j4e45w.AppPullCheckTask?>()) {
+      return (data != null ? _i3j4e45w.AppPullCheckTask.fromJson(data) : null)
+          as T;
+    }
     if (t == _is.getType<_i3krqelq.AppUnavailableException?>()) {
       return (data != null
               ? _i3krqelq.AppUnavailableException.fromJson(data)
               : null)
+          as T;
+    }
+    if (t == _is.getType<_ijzftij0.AppVerificationMode?>()) {
+      return (data != null
+              ? _ijzftij0.AppVerificationMode.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_i36kvzuc.AppLinkCodeCleanupTask?>()) {
+      return (data != null
+              ? _i36kvzuc.AppLinkCodeCleanupTask.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_i6s4a256.AppLinkRedirect?>()) {
+      return (data != null ? _i6s4a256.AppLinkRedirect.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_ilshz35f.AppLinkRequestView?>()) {
+      return (data != null ? _ilshz35f.AppLinkRequestView.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_i6yo3b5n.VerilyAppLinkCode?>()) {
+      return (data != null ? _i6yo3b5n.VerilyAppLinkCode.fromJson(data) : null)
           as T;
     }
     if (t == _is.getType<_in5ng4ea.VerilyApp?>()) {
@@ -5292,12 +6625,59 @@ class Protocol extends _is.DatabaseSerializationManager {
       return (data != null ? _ikihia57.VerilyAppLinkView.fromJson(data) : null)
           as T;
     }
+    if (t == _is.getType<_ie89zcz8.VerilyAppRateWindow?>()) {
+      return (data != null
+              ? _ie89zcz8.VerilyAppRateWindow.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_iqs5ny0z.VerilyAppRedirectUri?>()) {
+      return (data != null
+              ? _iqs5ny0z.VerilyAppRedirectUri.fromJson(data)
+              : null)
+          as T;
+    }
     if (t == _is.getType<_ibal4ihb.VerilyAppStatus?>()) {
       return (data != null ? _ibal4ihb.VerilyAppStatus.fromJson(data) : null)
           as T;
     }
     if (t == _is.getType<_ifrl0pdw.VerilyAppView?>()) {
       return (data != null ? _ifrl0pdw.VerilyAppView.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_i13rn6uf.AppEvent?>()) {
+      return (data != null ? _i13rn6uf.AppEvent.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ichijhlk.AppEventDeliveryTask?>()) {
+      return (data != null
+              ? _ichijhlk.AppEventDeliveryTask.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_igoow6fn.AppEventRecoveryTask?>()) {
+      return (data != null
+              ? _igoow6fn.AppEventRecoveryTask.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_io6036x8.AppEventStatus?>()) {
+      return (data != null ? _io6036x8.AppEventStatus.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_irpgk99g.AppWebhookDelivery?>()) {
+      return (data != null ? _irpgk99g.AppWebhookDelivery.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_ifch1v2s.AppWebhookDeliveryView?>()) {
+      return (data != null
+              ? _ifch1v2s.AppWebhookDeliveryView.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_it0ux8yj.VerilyAppWebhookSecret?>()) {
+      return (data != null
+              ? _it0ux8yj.VerilyAppWebhookSecret.fromJson(data)
+              : null)
           as T;
     }
     if (t == _is.getType<_ioo44wgs.EvidenceUploadCleanupTask?>()) {
@@ -5441,6 +6821,48 @@ class Protocol extends _is.DatabaseSerializationManager {
       return (data != null ? _iokaii94.RewardTermsDraft.fromJson(data) : null)
           as T;
     }
+    if (t == _is.getType<_i3qq4r4i.VerificationRequest?>()) {
+      return (data != null
+              ? _i3qq4r4i.VerificationRequest.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_ig30b0kc.VerificationRequestCheck?>()) {
+      return (data != null
+              ? _ig30b0kc.VerificationRequestCheck.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_igwxgobn.VerificationRequestExpiryTask?>()) {
+      return (data != null
+              ? _igwxgobn.VerificationRequestExpiryTask.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_ij8vmgkg.VerificationRequestKind?>()) {
+      return (data != null
+              ? _ij8vmgkg.VerificationRequestKind.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_ik3wnzle.VerificationRequestRedirect?>()) {
+      return (data != null
+              ? _ik3wnzle.VerificationRequestRedirect.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_in2jgiwv.VerificationRequestStatus?>()) {
+      return (data != null
+              ? _in2jgiwv.VerificationRequestStatus.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_i3v95178.VerificationRequestView?>()) {
+      return (data != null
+              ? _i3v95178.VerificationRequestView.fromJson(data)
+              : null)
+          as T;
+    }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
@@ -5542,6 +6964,15 @@ class Protocol extends _is.DatabaseSerializationManager {
               .toList()
           as T;
     }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
+    if (t == List<_i1cq8y15.AppWebhookDeliveryView>) {
+      return (data as List)
+              .map((e) => deserialize<_i1cq8y15.AppWebhookDeliveryView>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_ikb2aklq.ModerationCaseStatusView>) {
       return (data as List)
               .map((e) => deserialize<_ikb2aklq.ModerationCaseStatusView>(e))
@@ -5610,6 +7041,7 @@ class Protocol extends _is.DatabaseSerializationManager {
       _iikyln3l.ActionSpokenChallengeView => 'ActionSpokenChallengeView',
       _i0iphegd.ActionTemplate => 'ActionTemplate',
       _i960u7rl.ActionVerificationPolicy => 'ActionVerificationPolicy',
+      _ichxscv5.ActionVisibility => 'ActionVisibility',
       _i5yjywpf.CreateActionDefinitionRequest =>
         'CreateActionDefinitionRequest',
       _i9u1614a.EvidenceAppeal => 'EvidenceAppeal',
@@ -5627,6 +7059,10 @@ class Protocol extends _is.DatabaseSerializationManager {
         'EvidenceVerificationRecoveryTask',
       _in8wt7wh.EvidenceVerificationTask => 'EvidenceVerificationTask',
       _itcyvpmo.EvidenceVerificationVote => 'EvidenceVerificationVote',
+      _iu3m4umr.ActionLocalCheck => 'ActionLocalCheck',
+      _iarjk3hm.DeviceLocalCheckResult => 'DeviceLocalCheckResult',
+      _iqhexf0c.LocalCheckModelView => 'LocalCheckModelView',
+      _if2a7jyy.LocalCheckTask => 'LocalCheckTask',
       _i9z86si9.MediaUploadConfirmation => 'MediaUploadConfirmation',
       _i05z8wlg.PayoutReviewView => 'PayoutReviewView',
       _imnd8hof.AiUsageRequest => 'AiUsageRequest',
@@ -5635,15 +7071,35 @@ class Protocol extends _is.DatabaseSerializationManager {
       _iix86y46.AppConfirmation => 'AppConfirmation',
       _ix5pwyym.AppConfirmationOutcome => 'AppConfirmationOutcome',
       _iqtml4wq.AppConfirmationView => 'AppConfirmationView',
+      _iwa6gvjs.AppPlatformException => 'AppPlatformException',
+      _if20wdmx.AppPlatformProblem => 'AppPlatformProblem',
+      _iem3wxny.AppPullCheck => 'AppPullCheck',
+      _inaep7ed.AppPullCheckRecoveryTask => 'AppPullCheckRecoveryTask',
+      _i3ubh0mc.AppPullCheckStatus => 'AppPullCheckStatus',
+      _i3j4e45w.AppPullCheckTask => 'AppPullCheckTask',
       _i3krqelq.AppUnavailableException => 'AppUnavailableException',
+      _ijzftij0.AppVerificationMode => 'AppVerificationMode',
+      _i36kvzuc.AppLinkCodeCleanupTask => 'AppLinkCodeCleanupTask',
+      _i6s4a256.AppLinkRedirect => 'AppLinkRedirect',
+      _ilshz35f.AppLinkRequestView => 'AppLinkRequestView',
+      _i6yo3b5n.VerilyAppLinkCode => 'VerilyAppLinkCode',
       _in5ng4ea.VerilyApp => 'VerilyApp',
       _iaui7d4n.VerilyAppCredential => 'VerilyAppCredential',
       _ibhkb5dt.VerilyAppKey => 'VerilyAppKey',
       _ipa8tni0.VerilyAppKeyView => 'VerilyAppKeyView',
       _ikhive7i.VerilyAppLink => 'VerilyAppLink',
       _ikihia57.VerilyAppLinkView => 'VerilyAppLinkView',
+      _ie89zcz8.VerilyAppRateWindow => 'VerilyAppRateWindow',
+      _iqs5ny0z.VerilyAppRedirectUri => 'VerilyAppRedirectUri',
       _ibal4ihb.VerilyAppStatus => 'VerilyAppStatus',
       _ifrl0pdw.VerilyAppView => 'VerilyAppView',
+      _i13rn6uf.AppEvent => 'AppEvent',
+      _ichijhlk.AppEventDeliveryTask => 'AppEventDeliveryTask',
+      _igoow6fn.AppEventRecoveryTask => 'AppEventRecoveryTask',
+      _io6036x8.AppEventStatus => 'AppEventStatus',
+      _irpgk99g.AppWebhookDelivery => 'AppWebhookDelivery',
+      _ifch1v2s.AppWebhookDeliveryView => 'AppWebhookDeliveryView',
+      _it0ux8yj.VerilyAppWebhookSecret => 'VerilyAppWebhookSecret',
       _ioo44wgs.EvidenceUploadCleanupTask => 'EvidenceUploadCleanupTask',
       _is4ltac0.EvidenceUploadReservation => 'EvidenceUploadReservation',
       _iz4zjc1b.EvidenceUploadStatus => 'EvidenceUploadStatus',
@@ -5676,6 +7132,14 @@ class Protocol extends _is.DatabaseSerializationManager {
       _i4sm4ipz.RewardProblem => 'RewardProblem',
       _i9b5h2nk.RewardSummary => 'RewardSummary',
       _iokaii94.RewardTermsDraft => 'RewardTermsDraft',
+      _i3qq4r4i.VerificationRequest => 'VerificationRequest',
+      _ig30b0kc.VerificationRequestCheck => 'VerificationRequestCheck',
+      _igwxgobn.VerificationRequestExpiryTask =>
+        'VerificationRequestExpiryTask',
+      _ij8vmgkg.VerificationRequestKind => 'VerificationRequestKind',
+      _ik3wnzle.VerificationRequestRedirect => 'VerificationRequestRedirect',
+      _in2jgiwv.VerificationRequestStatus => 'VerificationRequestStatus',
+      _i3v95178.VerificationRequestView => 'VerificationRequestView',
       _ => null,
     };
   }
@@ -5768,6 +7232,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'ActionTemplate';
       case _i960u7rl.ActionVerificationPolicy():
         return 'ActionVerificationPolicy';
+      case _ichxscv5.ActionVisibility():
+        return 'ActionVisibility';
       case _i5yjywpf.CreateActionDefinitionRequest():
         return 'CreateActionDefinitionRequest';
       case _i9u1614a.EvidenceAppeal():
@@ -5796,6 +7262,14 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'EvidenceVerificationTask';
       case _itcyvpmo.EvidenceVerificationVote():
         return 'EvidenceVerificationVote';
+      case _iu3m4umr.ActionLocalCheck():
+        return 'ActionLocalCheck';
+      case _iarjk3hm.DeviceLocalCheckResult():
+        return 'DeviceLocalCheckResult';
+      case _iqhexf0c.LocalCheckModelView():
+        return 'LocalCheckModelView';
+      case _if2a7jyy.LocalCheckTask():
+        return 'LocalCheckTask';
       case _i9z86si9.MediaUploadConfirmation():
         return 'MediaUploadConfirmation';
       case _i05z8wlg.PayoutReviewView():
@@ -5812,8 +7286,30 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'AppConfirmationOutcome';
       case _iqtml4wq.AppConfirmationView():
         return 'AppConfirmationView';
+      case _iwa6gvjs.AppPlatformException():
+        return 'AppPlatformException';
+      case _if20wdmx.AppPlatformProblem():
+        return 'AppPlatformProblem';
+      case _iem3wxny.AppPullCheck():
+        return 'AppPullCheck';
+      case _inaep7ed.AppPullCheckRecoveryTask():
+        return 'AppPullCheckRecoveryTask';
+      case _i3ubh0mc.AppPullCheckStatus():
+        return 'AppPullCheckStatus';
+      case _i3j4e45w.AppPullCheckTask():
+        return 'AppPullCheckTask';
       case _i3krqelq.AppUnavailableException():
         return 'AppUnavailableException';
+      case _ijzftij0.AppVerificationMode():
+        return 'AppVerificationMode';
+      case _i36kvzuc.AppLinkCodeCleanupTask():
+        return 'AppLinkCodeCleanupTask';
+      case _i6s4a256.AppLinkRedirect():
+        return 'AppLinkRedirect';
+      case _ilshz35f.AppLinkRequestView():
+        return 'AppLinkRequestView';
+      case _i6yo3b5n.VerilyAppLinkCode():
+        return 'VerilyAppLinkCode';
       case _in5ng4ea.VerilyApp():
         return 'VerilyApp';
       case _iaui7d4n.VerilyAppCredential():
@@ -5826,10 +7322,28 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'VerilyAppLink';
       case _ikihia57.VerilyAppLinkView():
         return 'VerilyAppLinkView';
+      case _ie89zcz8.VerilyAppRateWindow():
+        return 'VerilyAppRateWindow';
+      case _iqs5ny0z.VerilyAppRedirectUri():
+        return 'VerilyAppRedirectUri';
       case _ibal4ihb.VerilyAppStatus():
         return 'VerilyAppStatus';
       case _ifrl0pdw.VerilyAppView():
         return 'VerilyAppView';
+      case _i13rn6uf.AppEvent():
+        return 'AppEvent';
+      case _ichijhlk.AppEventDeliveryTask():
+        return 'AppEventDeliveryTask';
+      case _igoow6fn.AppEventRecoveryTask():
+        return 'AppEventRecoveryTask';
+      case _io6036x8.AppEventStatus():
+        return 'AppEventStatus';
+      case _irpgk99g.AppWebhookDelivery():
+        return 'AppWebhookDelivery';
+      case _ifch1v2s.AppWebhookDeliveryView():
+        return 'AppWebhookDeliveryView';
+      case _it0ux8yj.VerilyAppWebhookSecret():
+        return 'VerilyAppWebhookSecret';
       case _ioo44wgs.EvidenceUploadCleanupTask():
         return 'EvidenceUploadCleanupTask';
       case _is4ltac0.EvidenceUploadReservation():
@@ -5890,6 +7404,20 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'RewardSummary';
       case _iokaii94.RewardTermsDraft():
         return 'RewardTermsDraft';
+      case _i3qq4r4i.VerificationRequest():
+        return 'VerificationRequest';
+      case _ig30b0kc.VerificationRequestCheck():
+        return 'VerificationRequestCheck';
+      case _igwxgobn.VerificationRequestExpiryTask():
+        return 'VerificationRequestExpiryTask';
+      case _ij8vmgkg.VerificationRequestKind():
+        return 'VerificationRequestKind';
+      case _ik3wnzle.VerificationRequestRedirect():
+        return 'VerificationRequestRedirect';
+      case _in2jgiwv.VerificationRequestStatus():
+        return 'VerificationRequestStatus';
+      case _i3v95178.VerificationRequestView():
+        return 'VerificationRequestView';
     }
     className = _iacs.Protocol().getClassNameForObject(data);
     if (className != null) {
@@ -6039,6 +7567,9 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'ActionVerificationPolicy') {
       return deserialize<_i960u7rl.ActionVerificationPolicy>(data['data']);
     }
+    if (dataClassName == 'ActionVisibility') {
+      return deserialize<_ichxscv5.ActionVisibility>(data['data']);
+    }
     if (dataClassName == 'CreateActionDefinitionRequest') {
       return deserialize<_i5yjywpf.CreateActionDefinitionRequest>(data['data']);
     }
@@ -6083,6 +7614,18 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'EvidenceVerificationVote') {
       return deserialize<_itcyvpmo.EvidenceVerificationVote>(data['data']);
     }
+    if (dataClassName == 'ActionLocalCheck') {
+      return deserialize<_iu3m4umr.ActionLocalCheck>(data['data']);
+    }
+    if (dataClassName == 'DeviceLocalCheckResult') {
+      return deserialize<_iarjk3hm.DeviceLocalCheckResult>(data['data']);
+    }
+    if (dataClassName == 'LocalCheckModelView') {
+      return deserialize<_iqhexf0c.LocalCheckModelView>(data['data']);
+    }
+    if (dataClassName == 'LocalCheckTask') {
+      return deserialize<_if2a7jyy.LocalCheckTask>(data['data']);
+    }
     if (dataClassName == 'MediaUploadConfirmation') {
       return deserialize<_i9z86si9.MediaUploadConfirmation>(data['data']);
     }
@@ -6107,8 +7650,41 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'AppConfirmationView') {
       return deserialize<_iqtml4wq.AppConfirmationView>(data['data']);
     }
+    if (dataClassName == 'AppPlatformException') {
+      return deserialize<_iwa6gvjs.AppPlatformException>(data['data']);
+    }
+    if (dataClassName == 'AppPlatformProblem') {
+      return deserialize<_if20wdmx.AppPlatformProblem>(data['data']);
+    }
+    if (dataClassName == 'AppPullCheck') {
+      return deserialize<_iem3wxny.AppPullCheck>(data['data']);
+    }
+    if (dataClassName == 'AppPullCheckRecoveryTask') {
+      return deserialize<_inaep7ed.AppPullCheckRecoveryTask>(data['data']);
+    }
+    if (dataClassName == 'AppPullCheckStatus') {
+      return deserialize<_i3ubh0mc.AppPullCheckStatus>(data['data']);
+    }
+    if (dataClassName == 'AppPullCheckTask') {
+      return deserialize<_i3j4e45w.AppPullCheckTask>(data['data']);
+    }
     if (dataClassName == 'AppUnavailableException') {
       return deserialize<_i3krqelq.AppUnavailableException>(data['data']);
+    }
+    if (dataClassName == 'AppVerificationMode') {
+      return deserialize<_ijzftij0.AppVerificationMode>(data['data']);
+    }
+    if (dataClassName == 'AppLinkCodeCleanupTask') {
+      return deserialize<_i36kvzuc.AppLinkCodeCleanupTask>(data['data']);
+    }
+    if (dataClassName == 'AppLinkRedirect') {
+      return deserialize<_i6s4a256.AppLinkRedirect>(data['data']);
+    }
+    if (dataClassName == 'AppLinkRequestView') {
+      return deserialize<_ilshz35f.AppLinkRequestView>(data['data']);
+    }
+    if (dataClassName == 'VerilyAppLinkCode') {
+      return deserialize<_i6yo3b5n.VerilyAppLinkCode>(data['data']);
     }
     if (dataClassName == 'VerilyApp') {
       return deserialize<_in5ng4ea.VerilyApp>(data['data']);
@@ -6128,11 +7704,38 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'VerilyAppLinkView') {
       return deserialize<_ikihia57.VerilyAppLinkView>(data['data']);
     }
+    if (dataClassName == 'VerilyAppRateWindow') {
+      return deserialize<_ie89zcz8.VerilyAppRateWindow>(data['data']);
+    }
+    if (dataClassName == 'VerilyAppRedirectUri') {
+      return deserialize<_iqs5ny0z.VerilyAppRedirectUri>(data['data']);
+    }
     if (dataClassName == 'VerilyAppStatus') {
       return deserialize<_ibal4ihb.VerilyAppStatus>(data['data']);
     }
     if (dataClassName == 'VerilyAppView') {
       return deserialize<_ifrl0pdw.VerilyAppView>(data['data']);
+    }
+    if (dataClassName == 'AppEvent') {
+      return deserialize<_i13rn6uf.AppEvent>(data['data']);
+    }
+    if (dataClassName == 'AppEventDeliveryTask') {
+      return deserialize<_ichijhlk.AppEventDeliveryTask>(data['data']);
+    }
+    if (dataClassName == 'AppEventRecoveryTask') {
+      return deserialize<_igoow6fn.AppEventRecoveryTask>(data['data']);
+    }
+    if (dataClassName == 'AppEventStatus') {
+      return deserialize<_io6036x8.AppEventStatus>(data['data']);
+    }
+    if (dataClassName == 'AppWebhookDelivery') {
+      return deserialize<_irpgk99g.AppWebhookDelivery>(data['data']);
+    }
+    if (dataClassName == 'AppWebhookDeliveryView') {
+      return deserialize<_ifch1v2s.AppWebhookDeliveryView>(data['data']);
+    }
+    if (dataClassName == 'VerilyAppWebhookSecret') {
+      return deserialize<_it0ux8yj.VerilyAppWebhookSecret>(data['data']);
     }
     if (dataClassName == 'EvidenceUploadCleanupTask') {
       return deserialize<_ioo44wgs.EvidenceUploadCleanupTask>(data['data']);
@@ -6226,6 +7829,27 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'RewardTermsDraft') {
       return deserialize<_iokaii94.RewardTermsDraft>(data['data']);
     }
+    if (dataClassName == 'VerificationRequest') {
+      return deserialize<_i3qq4r4i.VerificationRequest>(data['data']);
+    }
+    if (dataClassName == 'VerificationRequestCheck') {
+      return deserialize<_ig30b0kc.VerificationRequestCheck>(data['data']);
+    }
+    if (dataClassName == 'VerificationRequestExpiryTask') {
+      return deserialize<_igwxgobn.VerificationRequestExpiryTask>(data['data']);
+    }
+    if (dataClassName == 'VerificationRequestKind') {
+      return deserialize<_ij8vmgkg.VerificationRequestKind>(data['data']);
+    }
+    if (dataClassName == 'VerificationRequestRedirect') {
+      return deserialize<_ik3wnzle.VerificationRequestRedirect>(data['data']);
+    }
+    if (dataClassName == 'VerificationRequestStatus') {
+      return deserialize<_in2jgiwv.VerificationRequestStatus>(data['data']);
+    }
+    if (dataClassName == 'VerificationRequestView') {
+      return deserialize<_i3v95178.VerificationRequestView>(data['data']);
+    }
     if (dataClassName.startsWith('serverpod_auth_core.')) {
       data['className'] = dataClassName.substring(20);
       return _iacs.Protocol().deserializeByClassName(data);
@@ -6307,12 +7931,24 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _i00uumzo.ActionExternalRule.t;
       case _iix86y46.AppConfirmation:
         return _iix86y46.AppConfirmation.t;
+      case _iem3wxny.AppPullCheck:
+        return _iem3wxny.AppPullCheck.t;
+      case _i6yo3b5n.VerilyAppLinkCode:
+        return _i6yo3b5n.VerilyAppLinkCode.t;
       case _in5ng4ea.VerilyApp:
         return _in5ng4ea.VerilyApp.t;
       case _ibhkb5dt.VerilyAppKey:
         return _ibhkb5dt.VerilyAppKey.t;
       case _ikhive7i.VerilyAppLink:
         return _ikhive7i.VerilyAppLink.t;
+      case _ie89zcz8.VerilyAppRateWindow:
+        return _ie89zcz8.VerilyAppRateWindow.t;
+      case _iqs5ny0z.VerilyAppRedirectUri:
+        return _iqs5ny0z.VerilyAppRedirectUri.t;
+      case _i13rn6uf.AppEvent:
+        return _i13rn6uf.AppEvent.t;
+      case _irpgk99g.AppWebhookDelivery:
+        return _irpgk99g.AppWebhookDelivery.t;
       case _is4ltac0.EvidenceUploadReservation:
         return _is4ltac0.EvidenceUploadReservation.t;
       case _ib7h7gae.InferenceCostReservation:
@@ -6329,6 +7965,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _i09j9cr3.RewardPayout.t;
       case _i5k7uglj.RewardPool:
         return _i5k7uglj.RewardPool.t;
+      case _i3qq4r4i.VerificationRequest:
+        return _i3qq4r4i.VerificationRequest.t;
     }
     return null;
   }

@@ -81,7 +81,11 @@ class _PayoutWalletViewImpl extends PayoutWalletView {
     required String walletAddress,
     required String label,
     required DateTime linkedAt,
-  }) : super._(walletAddress: walletAddress, label: label, linkedAt: linkedAt);
+  }) : super._(
+         walletAddress: walletAddress,
+         label: label,
+         linkedAt: linkedAt,
+       );
 
   /// Returns a shallow copy of this [PayoutWalletView]
   /// with some or all fields replaced by the given arguments.

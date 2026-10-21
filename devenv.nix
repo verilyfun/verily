@@ -580,6 +580,45 @@ in
         config.scripts."build:escrow".scriptPackage
       ];
     };
+    "test:escrow:e2e" = {
+      exec = ''
+        set -euo pipefail
+        cd "$DEVENV_ROOT"
+        build:escrow
+        ${resolvePostgresPort}
+        if ! nc -z 127.0.0.1 "$postgres_port" >/dev/null 2>&1; then
+          echo "Starting devenv processes so Postgres is available for the escrow end-to-end test..."
+          devenv up -d
+        fi
+        for _ in $(seq 1 60); do
+          ${resolvePostgresPort}
+          if nc -z 127.0.0.1 "$postgres_port" >/dev/null 2>&1; then
+            break
+          fi
+          sleep 1
+        done
+        if ! nc -z 127.0.0.1 "$postgres_port" >/dev/null 2>&1; then
+          echo "Postgres did not open port $postgres_port in time. Check: devenv processes logs postgres" >&2
+          exit 1
+        fi
+
+        # The test starts its own throwaway solana-test-validator with the
+        # program at its reviewed address and stops it when it finishes.
+        export SERVERPOD_DATABASE_PORT="$postgres_port"
+        export VERILY_ESCROW_E2E_PROGRAM="$DEVENV_ROOT/target/deploy/verily_escrow.so"
+        export VERILY_ESCROW_E2E_VALIDATOR="${extra.agave}/bin/solana-test-validator"
+        cd "$DEVENV_ROOT/${serverDir}"
+        dart run tool/test_with_secrets.dart --concurrency=1 test/e2e
+      '';
+      description = "Build the reward escrow program, load it into a throwaway local validator, and run the Solana gateway end to end against Postgres.";
+      binary = "bash";
+      packages = [
+        pkgs.netcat
+        extra.agave
+        config.scripts."build:escrow".scriptPackage
+        config.scripts.dart.scriptPackage
+      ];
+    };
     "test:all" = {
       exec = ''
         set -e

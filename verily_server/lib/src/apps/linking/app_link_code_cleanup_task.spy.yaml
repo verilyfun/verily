@@ -1,0 +1,3 @@
+class: AppLinkCodeCleanupTask
+fields:
+  batchSize: int

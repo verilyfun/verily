@@ -1,0 +1,13 @@
+### One exact-match return address for deep links. No wildcards, no fragments.
+class: VerilyAppRedirectUri
+serverOnly: true
+table: verily_app_redirect_uri
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  appId: UuidValue, relation(parent=verily_app, onDelete=Cascade)
+  uri: String
+  createdAt: DateTime, defaultModel=now
+indexes:
+  verily_app_redirect_uri_idx:
+    fields: appId, uri
+    unique: true

@@ -4,6 +4,8 @@
 
 import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart';
+import 'package:verily_server/src/apps/webhooks/app_attempt_events.dart';
+import 'package:verily_server/src/apps/webhooks/app_event_outbox.dart';
 import 'package:verily_server/src/generated/future_calls.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 import 'package:verily_server/src/rewards/reward_configuration.dart';
@@ -75,9 +77,15 @@ class RewardPayoutService {
   RewardPayoutService({
     this._configuration,
     RewardPayoutScheduler? scheduler,
+    this.appPayoutEvents = const AppPayoutEvents(),
+    this.appEventOutbox = const AppEventOutbox(),
     DateTime Function()? clock,
   }) : scheduler = scheduler ?? const FutureCallRewardPayoutScheduler(),
        clock = clock ?? (() => DateTime.now().toUtc());
+
+  /// Queues `payout.released` for the App behind the rewarded action.
+  final AppPayoutEvents appPayoutEvents;
+  final AppEventOutbox appEventOutbox;
 
   final RewardConfiguration? _configuration;
   final RewardPayoutScheduler scheduler;
@@ -338,6 +346,7 @@ class RewardPayoutService {
   ) async {
     var retryDelay = Duration.zero;
     var retry = false;
+    final appEventIds = <UuidValue>[];
     await DatabaseUtil.runInTransactionOrSavepoint(
       session.db,
       null,
@@ -364,13 +373,17 @@ class RewardPayoutService {
         final now = clock().toUtc();
         switch (outcome) {
           case RewardReleased(:final signature):
-            await _markReleased(session, pool, payout, now, transaction, (
-              signature: signature,
-            ));
+            appEventIds.addAll(
+              await _markReleased(session, pool, payout, now, transaction, (
+                signature: signature,
+              )),
+            );
           case RewardAlreadyReleased():
-            await _markReleased(session, pool, payout, now, transaction, (
-              signature: payout.releaseSignature,
-            ));
+            appEventIds.addAll(
+              await _markReleased(session, pool, payout, now, transaction, (
+                signature: payout.releaseSignature,
+              )),
+            );
           case RewardReleaseFailed(:final code, :final retryable):
             final exhausted =
                 !retryable || payout.attemptCount >= rewardPayoutMaxAttempts;
@@ -399,9 +412,13 @@ class RewardPayoutService {
     if (retry) {
       await scheduler.schedule(session, claim.payout.id!, delay: retryDelay);
     }
+    for (final eventId in appEventIds) {
+      await appEventOutbox.schedule(session, eventId);
+    }
   }
 
-  Future<void> _markReleased(
+  /// Marks the payout released and returns the App events it queued.
+  Future<List<UuidValue>> _markReleased(
     Session session,
     RewardPool pool,
     RewardPayout payout,
@@ -409,7 +426,7 @@ class RewardPayoutService {
     Transaction transaction,
     ({String? signature}) release,
   ) async {
-    await RewardPayout.db.updateRow(
+    final released = await RewardPayout.db.updateRow(
       session,
       payout.copyWith(
         status: RewardPayoutStatus.released,
@@ -423,6 +440,13 @@ class RewardPayoutService {
     await RewardPool.db.updateRow(
       session,
       pool.copyWith(payoutsReleased: pool.payoutsReleased + 1, updatedAt: now),
+      transaction: transaction,
+    );
+    return appPayoutEvents.onPayoutReleased(
+      session,
+      payout: released,
+      pool: pool,
+      now: now,
       transaction: transaction,
     );
   }

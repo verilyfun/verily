@@ -1,0 +1,21 @@
+### What the Verily app shows before a person accepts a verification request:
+### who is asking, for what, and exactly what will be shared.
+class: VerificationRequestView
+fields:
+  id: UuidValue
+  appId: UuidValue
+  appName: String
+  appWebsiteUrl: String?
+  kind: VerificationRequestKind
+  instructions: String?
+  check: VerificationRequestCheck
+  ### Whether the receipt will say inside or outside the App's place. The
+  ### place itself is never shown to the App or in the receipt.
+  checksPlace: bool
+  spokenChallenge: bool
+  ### Whether the App asks to download the capture.
+  shareEvidence: bool
+  status: VerificationRequestStatus
+  expiresAt: DateTime
+  ### The private action to capture against, once accepted by this account.
+  action: ActionOpportunity?

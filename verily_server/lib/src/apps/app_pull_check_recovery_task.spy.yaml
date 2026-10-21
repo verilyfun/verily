@@ -1,0 +1,3 @@
+class: AppPullCheckRecoveryTask
+fields:
+  batchSize: int

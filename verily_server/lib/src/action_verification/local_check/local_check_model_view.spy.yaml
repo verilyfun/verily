@@ -1,0 +1,8 @@
+### The pinned model the phone must download and verify before running a local
+### check. The server replays exactly this model.
+class: LocalCheckModelView
+fields:
+  modelId: String
+  url: String
+  byteLength: int
+  sha256: String

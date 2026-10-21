@@ -18,6 +18,7 @@ actionVerification:
   - submitEvidence:
   - requestMediaUpload:
   - confirmMediaUpload:
+  - requestAppVerification:
   - completeAttempt:
   - listMyAttempts:
 evidenceAppeal:
@@ -36,6 +37,13 @@ verilyApp:
   - revokeApp:
   - listConfirmations:
   - linkApp:
+  - setWebhookUrl:
+  - rotateWebhookSecret:
+  - setRedirectUris:
+  - listWebhookDeliveries:
+  - describeLinkRequest:
+  - approveLink:
+  - declineLink:
 emailIdp:
   - login:
   - startRegistration:
@@ -71,3 +79,8 @@ rewards:
   - confirmRewardFunding:
   - endRewardEarly:
   - listMyPayouts:
+verificationRequest:
+  - getRequest:
+  - accept:
+  - decline:
+  - finish:

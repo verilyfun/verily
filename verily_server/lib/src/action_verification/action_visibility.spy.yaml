@@ -1,0 +1,9 @@
+### Where an action may appear.
+enum: ActionVisibility
+serialized: byName
+values:
+  ### Listed in feeds and discovery like any action.
+  - public
+  ### A private, single-use action behind one verification request. It never
+  ### appears in any feed and carries no reward.
+  - verificationRequest

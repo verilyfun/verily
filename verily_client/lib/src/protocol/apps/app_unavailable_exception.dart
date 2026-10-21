@@ -18,7 +18,10 @@ abstract class AppUnavailableException
         _isc.SerializableException,
         _isc.SerializableModel,
         _isc.ProtocolSerialization {
-  AppUnavailableException._({required this.appName, required this.message});
+  AppUnavailableException._({
+    required this.appName,
+    required this.message,
+  });
 
   factory AppUnavailableException({
     required String appName,
@@ -41,7 +44,10 @@ abstract class AppUnavailableException
   /// Returns a shallow copy of this [AppUnavailableException]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
-  AppUnavailableException copyWith({String? appName, String? message});
+  AppUnavailableException copyWith({
+    String? appName,
+    String? message,
+  });
   @override
   Map<String, dynamic> toJson() {
     return {
@@ -70,13 +76,19 @@ class _AppUnavailableExceptionImpl extends AppUnavailableException {
   _AppUnavailableExceptionImpl({
     required String appName,
     required String message,
-  }) : super._(appName: appName, message: message);
+  }) : super._(
+         appName: appName,
+         message: message,
+       );
 
   /// Returns a shallow copy of this [AppUnavailableException]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
   @override
-  AppUnavailableException copyWith({String? appName, String? message}) {
+  AppUnavailableException copyWith({
+    String? appName,
+    String? message,
+  }) {
     return AppUnavailableException(
       appName: appName ?? this.appName,
       message: message ?? this.message,

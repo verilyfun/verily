@@ -1,9 +1,12 @@
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:serverpod/serverpod.dart';
 import 'package:verily_server/src/account/account_access.dart';
 import 'package:verily_server/src/apps/app_credentials.dart';
+import 'package:verily_server/src/apps/app_subjects.dart';
+import 'package:verily_server/src/apps/redirect_uri_policy.dart';
+import 'package:verily_server/src/apps/webhooks/webhook_signing.dart';
+import 'package:verily_server/src/apps/webhooks/webhook_url_policy.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 
 /// Creator management of Verily Apps and participant linking.
@@ -13,12 +16,18 @@ import 'package:verily_server/src/generated/protocol.dart';
 /// its row before the creator's account row, matching the confirmation
 /// path's lock order (App first) so the two cannot deadlock.
 class VerilyAppService {
-  VerilyAppService({DateTime Function()? clock, Random? random})
-    : clock = clock ?? (() => DateTime.now().toUtc()),
-      _random = random ?? Random.secure();
+  VerilyAppService({
+    DateTime Function()? clock,
+    Random? random,
+    this.resolveHost = systemHostResolver,
+  }) : clock = clock ?? (() => DateTime.now().toUtc()),
+       _random = random ?? Random.secure();
 
   final DateTime Function() clock;
   final Random _random;
+
+  /// DNS for webhook URL checks; injectable so tests never resolve.
+  final HostResolver resolveHost;
 
   static const maxActiveApps = 10;
   static const maxActiveKeys = 2;
@@ -190,6 +199,134 @@ class VerilyAppService {
   /// Revokes the App and every key, and pauses the live actions it confirms.
   /// Confirmations stop immediately; those actions need a new revision bound
   /// to another App before they can run again.
+  /// Sets or clears (null) the App's webhook URL. The URL must be https on
+  /// the standard port and resolve only to public addresses; the sender
+  /// checks the addresses again on every call.
+  Future<VerilyAppView> setWebhookUrl(
+    Session session, {
+    required UuidValue authUserId,
+    required UuidValue appId,
+    required String? webhookUrl,
+  }) async {
+    final validated = webhookUrl == null
+        ? null
+        : (await validateWebhookUrl(
+            webhookUrl,
+            resolve: resolveHost,
+          )).toString();
+    final app = await _mutateOwnedApp(
+      session,
+      authUserId: authUserId,
+      appId: appId,
+      (app, transaction) async {
+        _requireActive(app);
+        return VerilyApp.db.updateRow(
+          session,
+          app.copyWith(webhookUrl: validated, updatedAt: clock().toUtc()),
+          transaction: transaction,
+        );
+      },
+    );
+    return (await _views(session, [app])).single;
+  }
+
+  /// Issues the next `whsec_` signing secret and returns it once. For the
+  /// next 24 hours events are signed with both the new and the previous
+  /// secret, so the App can switch without missing a delivery.
+  Future<VerilyAppWebhookSecret> rotateWebhookSecret(
+    Session session, {
+    required UuidValue authUserId,
+    required UuidValue appId,
+  }) async {
+    final secrets = WebhookSecrets.configured;
+    if (secrets == null) {
+      throw AppPlatformException(
+        problem: AppPlatformProblem.webhooksUnavailable,
+        message: 'Webhooks are not available on this server yet.',
+      );
+    }
+    final now = clock().toUtc();
+    final app = await _mutateOwnedApp(
+      session,
+      authUserId: authUserId,
+      appId: appId,
+      (app, transaction) async {
+        _requireActive(app);
+        final previous = app.webhookSecretVersion;
+        return VerilyApp.db.updateRow(
+          session,
+          app.copyWith(
+            webhookSecretVersion: previous + 1,
+            previousWebhookSecretVersion: previous == 0 ? null : previous,
+            webhookSecretRotatedAt: now,
+            updatedAt: now,
+          ),
+          transaction: transaction,
+        );
+      },
+    );
+    return VerilyAppWebhookSecret(
+      appId: app.id!,
+      version: app.webhookSecretVersion,
+      secret: secrets.secretFor(
+        appId: app.id!,
+        version: app.webhookSecretVersion,
+      ),
+      previousSecretValidUntil: app.previousWebhookSecretVersion == null
+          ? null
+          : now.add(webhookSecretOverlap),
+    );
+  }
+
+  /// Replaces the App's exact-match redirect URIs (at most ten).
+  Future<VerilyAppView> setRedirectUris(
+    Session session, {
+    required UuidValue authUserId,
+    required UuidValue appId,
+    required List<String> redirectUris,
+  }) async {
+    final validated = validateRedirectUris(redirectUris);
+    final app = await _mutateOwnedApp(
+      session,
+      authUserId: authUserId,
+      appId: appId,
+      (app, transaction) async {
+        _requireActive(app);
+        final now = clock().toUtc();
+        await VerilyAppRedirectUri.db.deleteWhere(
+          session,
+          where: (table) => table.appId.equals(appId),
+          transaction: transaction,
+        );
+        if (validated.isNotEmpty) {
+          await VerilyAppRedirectUri.db.insert(
+            session,
+            [
+              for (final uri in validated)
+                VerilyAppRedirectUri(appId: appId, uri: uri, createdAt: now),
+            ],
+            transaction: transaction,
+          );
+        }
+        return VerilyApp.db.updateRow(
+          session,
+          app.copyWith(updatedAt: now),
+          transaction: transaction,
+        );
+      },
+    );
+    return (await _views(session, [app])).single;
+  }
+
+  void _requireActive(VerilyApp app) {
+    if (app.status != VerilyAppStatus.active) {
+      throw AppUnavailableException(
+        appName: app.name,
+        message: 'This app was revoked and can no longer change.',
+      );
+    }
+  }
+
   Future<VerilyAppView> revokeApp(
     Session session, {
     required UuidValue authUserId,
@@ -311,36 +448,13 @@ class VerilyAppService {
     if (app == null || !await _confirmsLiveAction(session, appId)) {
       throw StateError('That app is not available.');
     }
-    final existing = await _link(session, appId, authUserId);
-    if (existing != null) return _linkView(app, existing);
-
-    await VerilyAppLink.db.insert(
+    final link = await appLinkFor(
       session,
-      [
-        VerilyAppLink(
-          appId: appId,
-          authUserId: authUserId,
-          subject: _subject(),
-          createdAt: clock().toUtc(),
-        ),
-      ],
-      ignoreConflicts: true,
+      appId: appId,
+      authUserId: authUserId,
+      now: clock().toUtc(),
     );
-    final link = await _link(session, appId, authUserId);
-    if (link == null) throw StateError('The app link was not saved.');
     return _linkView(app, link);
-  }
-
-  Future<VerilyAppLink?> _link(
-    Session session,
-    UuidValue appId,
-    UuidValue authUserId,
-  ) {
-    return VerilyAppLink.db.findFirstRow(
-      session,
-      where: (table) =>
-          table.appId.equals(appId) & table.authUserId.equals(authUserId),
-    );
   }
 
   Future<bool> _confirmsLiveAction(Session session, UuidValue appId) async {
@@ -379,14 +493,6 @@ WHERE r."appId" = CAST(@appId AS uuid);
     return {
       for (final row in rows) UuidValue.withValidation(row[0]! as String),
     };
-  }
-
-  /// A new 128-bit pairwise subject: `vls_` plus 22 base64url characters.
-  String _subject() {
-    final bytes = [
-      for (var index = 0; index < 16; index += 1) _random.nextInt(256),
-    ];
-    return 'vls_${base64Url.encode(bytes).replaceAll('=', '')}';
   }
 
   Future<VerilyApp> _ownedApp(
@@ -451,6 +557,11 @@ WHERE r."appId" = CAST(@appId AS uuid);
       orderBy: (table) => table.createdAt,
     );
     final boundCounts = await _boundActionCounts(session, appIds);
+    final redirects = await VerilyAppRedirectUri.db.find(
+      session,
+      where: (table) => table.appId.inSet(appIds),
+      orderBy: (table) => table.uri,
+    );
     return [
       for (final app in apps)
         VerilyAppView(
@@ -469,6 +580,12 @@ WHERE r."appId" = CAST(@appId AS uuid);
                 ),
           ],
           boundActionCount: boundCounts[app.id] ?? 0,
+          webhookUrl: app.webhookUrl,
+          webhookSecretVersion: app.webhookSecretVersion,
+          redirectUris: [
+            for (final redirect in redirects)
+              if (redirect.appId == app.id) redirect.uri,
+          ],
           createdAt: app.createdAt,
           revokedAt: app.revokedAt,
         ),

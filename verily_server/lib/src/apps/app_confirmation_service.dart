@@ -1,7 +1,8 @@
 import 'package:serverpod/serverpod.dart';
 import 'package:verily_server/src/action_verification/action_verification_service.dart';
+import 'package:verily_server/src/apps/app_api_auth.dart';
 import 'package:verily_server/src/apps/app_confirmation_payload.dart';
-import 'package:verily_server/src/apps/app_credentials.dart';
+import 'package:verily_server/src/apps/app_pull_check_service.dart';
 import 'package:verily_server/src/apps/external_confirmation.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 import 'package:verily_server/src/rewards/reward_payout_service.dart';
@@ -31,16 +32,28 @@ class AppConfirmationService {
   AppConfirmationService({
     ActionVerificationService? verificationService,
     RewardPayoutService? payouts,
+    AppPullCheckService? pullChecks,
     DateTime Function()? clock,
     this.rateLimit = 120,
     this.rateWindow = const Duration(minutes: 1),
   }) : verificationService =
            verificationService ?? ActionVerificationService(clock: clock),
        payouts = payouts ?? RewardPayoutService(clock: clock),
-       clock = clock ?? (() => DateTime.now().toUtc());
+       clock = clock ?? (() => DateTime.now().toUtc()) {
+    this.pullChecks =
+        pullChecks ??
+        AppPullCheckService(
+          actions: this.verificationService,
+          payouts: this.payouts,
+          clock: clock,
+        );
+  }
 
   final ActionVerificationService verificationService;
   final RewardPayoutService payouts;
+
+  /// Settles pull checks from pushes that name their attempt.
+  late final AppPullCheckService pullChecks;
   final DateTime Function() clock;
 
   /// Authenticated deliveries accepted per App in each [rateWindow].
@@ -53,25 +66,18 @@ class AppConfirmationService {
     required String? timestamp,
     required String body,
   }) async {
-    final credential = parseAppAuthorization(authorization);
-    if (credential == null) return _unauthorized;
-    if (!appTimestampIsFresh(timestamp, clock().toUtc())) {
-      return const AppDeliveryResponse(401, {
-        'error': 'invalid_timestamp',
-        'message': 'Verily-Timestamp must be the current unix time in seconds.',
-      });
-    }
-    // Authenticate on an unlocked read. The key id is public, so a caller
-    // without the secret must never queue behind real deliveries for the
-    // App row lock.
-    final key = await VerilyAppKey.db.findFirstRow(
+    final authentication = await authenticateAppRequest(
       session,
-      where: (table) => table.keyId.equals(credential.keyId),
+      authorization: authorization,
+      timestamp: timestamp,
+      now: clock().toUtc(),
     );
-    if (key == null ||
-        key.revokedAt != null ||
-        !credential.matches(key.secretHash)) {
-      return _unauthorized;
+    final VerilyAppKey key;
+    switch (authentication) {
+      case AppApiAuthenticated(key: final authenticated):
+        key = authenticated;
+      case AppApiRefused(:final response):
+        return response;
     }
 
     final delivery = await DatabaseUtil.runInTransactionOrSavepoint(
@@ -237,6 +243,16 @@ class AppConfirmationService {
         ExternalConfirmationRejection.unknownSubject,
       );
     }
+    // An answer to a pending `attempt.verify` call names its attempt.
+    if (payload.attemptId != null) {
+      return pullChecks.confirmFromPush(
+        session,
+        transaction: transaction,
+        app: app,
+        link: link,
+        payload: payload,
+      );
+    }
     return verificationService.confirmExternalRequirement(
       session,
       transaction: transaction,
@@ -376,4 +392,11 @@ String _rejectionMessage(ExternalConfirmationRejection reason) =>
         'occurredAt belongs to a period that ended more than two hours ago.',
       ExternalConfirmationRejection.actionUnavailable =>
         'The action is not accepting new completions right now.',
+      ExternalConfirmationRejection.pullRequiresAttempt =>
+        'This action is verified on request; name the attempt you are '
+            'answering.',
+      ExternalConfirmationRejection.unknownAttempt =>
+        'No attempt with that id belongs to this subject and action.',
+      ExternalConfirmationRejection.noOpenPullCheck =>
+        'That attempt is not waiting for a confirmation from this app.',
     };

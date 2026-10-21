@@ -1,0 +1,9 @@
+### What the Verily app shows before a person links their account to an App.
+class: AppLinkRequestView
+fields:
+  appId: UuidValue
+  appName: String
+  websiteUrl: String?
+  redirectUri: String
+  ### Whether this account is already linked to the App.
+  alreadyLinked: bool

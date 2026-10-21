@@ -30,3 +30,7 @@ fields:
   qrCode: String?
   ### The creator's App that confirms an `external` requirement.
   appId: UuidValue?
+  ### Push (the App confirms) or pull (Verily asks the App); push when null.
+  appVerificationMode: AppVerificationMode?
+  ### Optional phone-only check for video, photo, or audio proof.
+  localCheck: ActionLocalCheck?

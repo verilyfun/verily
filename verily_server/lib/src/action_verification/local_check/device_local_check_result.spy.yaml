@@ -1,0 +1,9 @@
+### The phone's own local-check result. Advisory only: it is stored for
+### calibration and never decides anything.
+class: DeviceLocalCheckResult
+fields:
+  modelId: String
+  modelSha256: String
+  label: String
+  score: double
+  matchedFrames: int

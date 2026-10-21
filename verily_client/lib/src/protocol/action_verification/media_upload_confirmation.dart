@@ -11,6 +11,10 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:verily_client/src/protocol/protocol.dart' as _iop4qpu5;
+
+import '../action_verification/local_check/device_local_check_result.dart'
+    as _ikz5p9kp;
 
 /// What the app reports after uploading a recording or photo. The server
 /// re-derives the bytes, digest, and pinned version from storage; only the
@@ -26,6 +30,7 @@ abstract class MediaUploadConfirmation
     required this.capturedAt,
     this.deviceRepetitionCount,
     this.deviceTrackerVersion,
+    this.deviceLocalCheck,
     this.captureChallengeId,
     this.deviceIntegrityToken,
     this.captureManifest,
@@ -44,6 +49,7 @@ abstract class MediaUploadConfirmation
     required DateTime capturedAt,
     int? deviceRepetitionCount,
     String? deviceTrackerVersion,
+    _ikz5p9kp.DeviceLocalCheckResult? deviceLocalCheck,
     _isc.UuidValue? captureChallengeId,
     String? deviceIntegrityToken,
     String? captureManifest,
@@ -72,6 +78,11 @@ abstract class MediaUploadConfirmation
       deviceRepetitionCount: jsonSerialization['deviceRepetitionCount'] as int?,
       deviceTrackerVersion:
           jsonSerialization['deviceTrackerVersion'] as String?,
+      deviceLocalCheck: jsonSerialization['deviceLocalCheck'] == null
+          ? null
+          : _iop4qpu5.Protocol().deserialize<_ikz5p9kp.DeviceLocalCheckResult>(
+              jsonSerialization['deviceLocalCheck'],
+            ),
       captureChallengeId: jsonSerialization['captureChallengeId'] == null
           ? null
           : _isc.UuidValueJsonExtension.fromJson(
@@ -104,6 +115,9 @@ abstract class MediaUploadConfirmation
 
   String? deviceTrackerVersion;
 
+  /// Advisory only; the server replays the pinned model itself.
+  _ikz5p9kp.DeviceLocalCheckResult? deviceLocalCheck;
+
   _isc.UuidValue? captureChallengeId;
 
   String? deviceIntegrityToken;
@@ -130,6 +144,7 @@ abstract class MediaUploadConfirmation
     DateTime? capturedAt,
     int? deviceRepetitionCount,
     String? deviceTrackerVersion,
+    _ikz5p9kp.DeviceLocalCheckResult? deviceLocalCheck,
     _isc.UuidValue? captureChallengeId,
     String? deviceIntegrityToken,
     String? captureManifest,
@@ -152,6 +167,8 @@ abstract class MediaUploadConfirmation
         'deviceRepetitionCount': deviceRepetitionCount,
       if (deviceTrackerVersion != null)
         'deviceTrackerVersion': deviceTrackerVersion,
+      if (deviceLocalCheck != null)
+        'deviceLocalCheck': deviceLocalCheck?.toJson(),
       if (captureChallengeId != null)
         'captureChallengeId': captureChallengeId?.toJson(),
       if (deviceIntegrityToken != null)
@@ -178,6 +195,8 @@ abstract class MediaUploadConfirmation
         'deviceRepetitionCount': deviceRepetitionCount,
       if (deviceTrackerVersion != null)
         'deviceTrackerVersion': deviceTrackerVersion,
+      if (deviceLocalCheck != null)
+        'deviceLocalCheck': deviceLocalCheck?.toJsonForProtocol(),
       if (captureChallengeId != null)
         'captureChallengeId': captureChallengeId?.toJson(),
       if (deviceIntegrityToken != null)
@@ -208,6 +227,7 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
     required DateTime capturedAt,
     int? deviceRepetitionCount,
     String? deviceTrackerVersion,
+    _ikz5p9kp.DeviceLocalCheckResult? deviceLocalCheck,
     _isc.UuidValue? captureChallengeId,
     String? deviceIntegrityToken,
     String? captureManifest,
@@ -224,6 +244,7 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
          capturedAt: capturedAt,
          deviceRepetitionCount: deviceRepetitionCount,
          deviceTrackerVersion: deviceTrackerVersion,
+         deviceLocalCheck: deviceLocalCheck,
          captureChallengeId: captureChallengeId,
          deviceIntegrityToken: deviceIntegrityToken,
          captureManifest: captureManifest,
@@ -246,6 +267,7 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
     DateTime? capturedAt,
     Object? deviceRepetitionCount = _Undefined,
     Object? deviceTrackerVersion = _Undefined,
+    Object? deviceLocalCheck = _Undefined,
     Object? captureChallengeId = _Undefined,
     Object? deviceIntegrityToken = _Undefined,
     Object? captureManifest = _Undefined,
@@ -269,6 +291,9 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
       deviceTrackerVersion: deviceTrackerVersion is String?
           ? deviceTrackerVersion
           : this.deviceTrackerVersion,
+      deviceLocalCheck: deviceLocalCheck is _ikz5p9kp.DeviceLocalCheckResult?
+          ? deviceLocalCheck
+          : this.deviceLocalCheck?.copyWith(),
       captureChallengeId: captureChallengeId is _isc.UuidValue?
           ? captureChallengeId
           : this.captureChallengeId,

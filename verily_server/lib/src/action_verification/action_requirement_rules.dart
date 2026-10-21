@@ -1,5 +1,6 @@
 import 'package:serverpod/serverpod.dart';
 import 'package:verily_evidence/verily_evidence.dart';
+import 'package:verily_server/src/action_verification/local_check/local_check_catalog.dart';
 import 'package:verily_server/src/action_verification/model_input_security.dart';
 import 'package:verily_server/src/action_verification/movement_verification_policy.dart';
 import 'package:verily_server/src/evidence_storage/evidence_media_types.dart';
@@ -49,7 +50,8 @@ ValidatedRequirement validateRequirementDraft(
     draft.instructions,
     'instructions',
   );
-  if (draft.kind != ActionRequirementKind.externalApp && draft.appId != null) {
+  if (draft.kind != ActionRequirementKind.externalApp &&
+      (draft.appId != null || draft.appVerificationMode != null)) {
     throw ArgumentError('Only app-confirmed requirements name an app.');
   }
   final mediaKind = mediaKindOf(draft.kind);
@@ -58,7 +60,8 @@ ValidatedRequirement validateRequirementDraft(
           draft.minConfidence != null ||
           draft.verificationPolicy != null ||
           draft.spokenChallengeRequired != null ||
-          draft.movementKind != null)) {
+          draft.movementKind != null ||
+          draft.localCheck != null)) {
     throw ArgumentError('Media verification settings need a media proof.');
   }
   var spokenChallengeRequired = false;
@@ -116,7 +119,15 @@ bool _validateMediaDraft(ActionRequirementDraft draft, MediaEvidenceKind kind) {
   if (movement != null && kind != MediaEvidenceKind.video) {
     throw ArgumentError('Tracked movements are recorded as video.');
   }
-  if (movement == null) {
+  final localCheck = draft.localCheck;
+  if (localCheck != null) {
+    if (movement != null) {
+      throw ArgumentError('A tracked movement cannot also run a local check.');
+    }
+    validateLocalCheck(localCheck, kind);
+  }
+  if (movement == null &&
+      (localCheck == null || draft.verificationPrompt != null)) {
     if (draft.targetRepetitions != null) {
       throw ArgumentError('Repetition targets need a movement.');
     }
@@ -127,6 +138,8 @@ bool _validateMediaDraft(ActionRequirementDraft draft, MediaEvidenceKind kind) {
         maxLength: 2000,
       ),
     );
+  } else if (movement == null && draft.targetRepetitions != null) {
+    throw ArgumentError('Repetition targets need a movement.');
   } else if (draft.verificationPrompt != null) {
     throw ArgumentError(
       'Movement checks are written by the server, not the creator.',
@@ -165,8 +178,10 @@ bool _validateMediaDraft(ActionRequirementDraft draft, MediaEvidenceKind kind) {
   if (movement != null) {
     validateMovementTarget(movement, draft.targetRepetitions, maximum!);
   }
+  // A local check cannot hear a word, so the challenge is opt-in there;
+  // otherwise it is on by default for recordings.
   return kind != MediaEvidenceKind.photo &&
-      (draft.spokenChallengeRequired ?? true);
+      (draft.spokenChallengeRequired ?? localCheck == null);
 }
 
 /// Persists the rule row for one validated requirement.
@@ -200,12 +215,14 @@ Future<void> insertRequirementRule(
         ActionMediaRule(
           requirementId: requirementId,
           kind: draft.kind,
-          verificationPrompt: switch (draft.movementKind) {
-            final movement? => movementVerificationPrompt(
+          verificationPrompt: switch ((draft.movementKind, draft.localCheck)) {
+            (final movement?, _) => movementVerificationPrompt(
               movement,
               draft.targetRepetitions!,
             ),
-            null => draft.verificationPrompt!.trim(),
+            (null, final check?) when draft.verificationPrompt == null =>
+              localCheckVerificationPrompt(check),
+            _ => draft.verificationPrompt!.trim(),
           },
           minDurationSeconds: draft.minDurationSeconds,
           maxDurationSeconds: draft.maxDurationSeconds,
@@ -217,6 +234,10 @@ Future<void> insertRequirementRule(
           targetRepetitions: draft.movementKind == null
               ? null
               : draft.targetRepetitions,
+          localCheckTask: draft.localCheck?.task,
+          localCheckLabel: draft.localCheck?.label,
+          localCheckMinScore: draft.localCheck?.minScore,
+          localCheckMinFrames: draft.localCheck?.minFrames,
         ),
         transaction: transaction,
       );
@@ -232,7 +253,12 @@ Future<void> insertRequirementRule(
     case ActionRequirementKind.externalApp:
       await ActionExternalRule.db.insertRow(
         session,
-        ActionExternalRule(requirementId: requirementId, appId: draft.appId!),
+        ActionExternalRule(
+          requirementId: requirementId,
+          appId: draft.appId!,
+          verificationMode:
+              draft.appVerificationMode ?? AppVerificationMode.push,
+        ),
         transaction: transaction,
       );
     case ActionRequirementKind.motion:

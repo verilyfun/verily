@@ -15,6 +15,7 @@ import 'package:serverpod/serverpod.dart' as _is;
 import '../action_verification/action_movement_kind.dart' as _idij3jhk;
 import '../action_verification/action_requirement_kind.dart' as _iws572ni;
 import '../action_verification/action_verification_policy.dart' as _i0pk7h0c;
+import '../action_verification/local_check/local_check_task.dart' as _it4e837y;
 
 /// Server-validated verification policy for one video, photo, or audio
 /// requirement. Creator text and model output are never instructions.
@@ -36,6 +37,10 @@ abstract class ActionMediaRule
     bool? spokenChallengeRequired,
     this.movementKind,
     this.targetRepetitions,
+    this.localCheckTask,
+    this.localCheckLabel,
+    this.localCheckMinScore,
+    this.localCheckMinFrames,
   }) : verificationPolicy =
            verificationPolicy ?? _i0pk7h0c.ActionVerificationPolicy.singleModel,
        spokenChallengeRequired = spokenChallengeRequired ?? false;
@@ -52,6 +57,10 @@ abstract class ActionMediaRule
     bool? spokenChallengeRequired,
     _idij3jhk.ActionMovementKind? movementKind,
     int? targetRepetitions,
+    _it4e837y.LocalCheckTask? localCheckTask,
+    String? localCheckLabel,
+    double? localCheckMinScore,
+    int? localCheckMinFrames,
   }) = _ActionMediaRuleImpl;
 
   factory ActionMediaRule.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -86,6 +95,15 @@ abstract class ActionMediaRule
               (jsonSerialization['movementKind'] as String),
             ),
       targetRepetitions: jsonSerialization['targetRepetitions'] as int?,
+      localCheckTask: jsonSerialization['localCheckTask'] == null
+          ? null
+          : _it4e837y.LocalCheckTask.fromJson(
+              (jsonSerialization['localCheckTask'] as String),
+            ),
+      localCheckLabel: jsonSerialization['localCheckLabel'] as String?,
+      localCheckMinScore: (jsonSerialization['localCheckMinScore'] as num?)
+          ?.toDouble(),
+      localCheckMinFrames: jsonSerialization['localCheckMinFrames'] as int?,
     );
   }
 
@@ -121,6 +139,15 @@ abstract class ActionMediaRule
   /// Complete repetitions or consecutive touches required by [movementKind].
   int? targetRepetitions;
 
+  /// Optional on-device check replayed on the server (`mp-replay`).
+  _it4e837y.LocalCheckTask? localCheckTask;
+
+  String? localCheckLabel;
+
+  double? localCheckMinScore;
+
+  int? localCheckMinFrames;
+
   @override
   _is.Table<_is.UuidValue?> get table => t;
 
@@ -139,6 +166,10 @@ abstract class ActionMediaRule
     bool? spokenChallengeRequired,
     _idij3jhk.ActionMovementKind? movementKind,
     int? targetRepetitions,
+    _it4e837y.LocalCheckTask? localCheckTask,
+    String? localCheckLabel,
+    double? localCheckMinScore,
+    int? localCheckMinFrames,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -155,6 +186,11 @@ abstract class ActionMediaRule
       'spokenChallengeRequired': spokenChallengeRequired,
       if (movementKind != null) 'movementKind': movementKind?.toJson(),
       if (targetRepetitions != null) 'targetRepetitions': targetRepetitions,
+      if (localCheckTask != null) 'localCheckTask': localCheckTask?.toJson(),
+      if (localCheckLabel != null) 'localCheckLabel': localCheckLabel,
+      if (localCheckMinScore != null) 'localCheckMinScore': localCheckMinScore,
+      if (localCheckMinFrames != null)
+        'localCheckMinFrames': localCheckMinFrames,
     };
   }
 
@@ -206,6 +242,10 @@ class _ActionMediaRuleImpl extends ActionMediaRule {
     bool? spokenChallengeRequired,
     _idij3jhk.ActionMovementKind? movementKind,
     int? targetRepetitions,
+    _it4e837y.LocalCheckTask? localCheckTask,
+    String? localCheckLabel,
+    double? localCheckMinScore,
+    int? localCheckMinFrames,
   }) : super._(
          id: id,
          requirementId: requirementId,
@@ -218,6 +258,10 @@ class _ActionMediaRuleImpl extends ActionMediaRule {
          spokenChallengeRequired: spokenChallengeRequired,
          movementKind: movementKind,
          targetRepetitions: targetRepetitions,
+         localCheckTask: localCheckTask,
+         localCheckLabel: localCheckLabel,
+         localCheckMinScore: localCheckMinScore,
+         localCheckMinFrames: localCheckMinFrames,
        );
 
   /// Returns a shallow copy of this [ActionMediaRule]
@@ -236,6 +280,10 @@ class _ActionMediaRuleImpl extends ActionMediaRule {
     bool? spokenChallengeRequired,
     Object? movementKind = _Undefined,
     Object? targetRepetitions = _Undefined,
+    Object? localCheckTask = _Undefined,
+    Object? localCheckLabel = _Undefined,
+    Object? localCheckMinScore = _Undefined,
+    Object? localCheckMinFrames = _Undefined,
   }) {
     return ActionMediaRule(
       id: id is _is.UuidValue? ? id : this.id,
@@ -258,6 +306,18 @@ class _ActionMediaRuleImpl extends ActionMediaRule {
       targetRepetitions: targetRepetitions is int?
           ? targetRepetitions
           : this.targetRepetitions,
+      localCheckTask: localCheckTask is _it4e837y.LocalCheckTask?
+          ? localCheckTask
+          : this.localCheckTask,
+      localCheckLabel: localCheckLabel is String?
+          ? localCheckLabel
+          : this.localCheckLabel,
+      localCheckMinScore: localCheckMinScore is double?
+          ? localCheckMinScore
+          : this.localCheckMinScore,
+      localCheckMinFrames: localCheckMinFrames is int?
+          ? localCheckMinFrames
+          : this.localCheckMinFrames,
     );
   }
 }
@@ -329,6 +389,29 @@ class ActionMediaRuleUpdateTable extends _is.UpdateTable<ActionMediaRuleTable> {
     table.targetRepetitions,
     value,
   );
+
+  _is.ColumnValue<_it4e837y.LocalCheckTask, _it4e837y.LocalCheckTask>
+  localCheckTask(_it4e837y.LocalCheckTask? value) => _is.ColumnValue(
+    table.localCheckTask,
+    value,
+  );
+
+  _is.ColumnValue<String, String> localCheckLabel(String? value) =>
+      _is.ColumnValue(
+        table.localCheckLabel,
+        value,
+      );
+
+  _is.ColumnValue<double, double> localCheckMinScore(double? value) =>
+      _is.ColumnValue(
+        table.localCheckMinScore,
+        value,
+      );
+
+  _is.ColumnValue<int, int> localCheckMinFrames(int? value) => _is.ColumnValue(
+    table.localCheckMinFrames,
+    value,
+  );
 }
 
 class ActionMediaRuleTable extends _is.Table<_is.UuidValue?> {
@@ -380,6 +463,23 @@ class ActionMediaRuleTable extends _is.Table<_is.UuidValue?> {
       'targetRepetitions',
       this,
     );
+    localCheckTask = _is.ColumnEnum(
+      'localCheckTask',
+      this,
+      _is.EnumSerialization.byName,
+    );
+    localCheckLabel = _is.ColumnString(
+      'localCheckLabel',
+      this,
+    );
+    localCheckMinScore = _is.ColumnDouble(
+      'localCheckMinScore',
+      this,
+    );
+    localCheckMinFrames = _is.ColumnInt(
+      'localCheckMinFrames',
+      this,
+    );
   }
 
   late final ActionMediaRuleUpdateTable updateTable;
@@ -410,6 +510,15 @@ class ActionMediaRuleTable extends _is.Table<_is.UuidValue?> {
   /// Complete repetitions or consecutive touches required by [movementKind].
   late final _is.ColumnInt targetRepetitions;
 
+  /// Optional on-device check replayed on the server (`mp-replay`).
+  late final _is.ColumnEnum<_it4e837y.LocalCheckTask> localCheckTask;
+
+  late final _is.ColumnString localCheckLabel;
+
+  late final _is.ColumnDouble localCheckMinScore;
+
+  late final _is.ColumnInt localCheckMinFrames;
+
   @override
   List<_is.Column> get columns => [
     id,
@@ -423,6 +532,10 @@ class ActionMediaRuleTable extends _is.Table<_is.UuidValue?> {
     spokenChallengeRequired,
     movementKind,
     targetRepetitions,
+    localCheckTask,
+    localCheckLabel,
+    localCheckMinScore,
+    localCheckMinFrames,
   ];
 }
 
