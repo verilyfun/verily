@@ -1,0 +1,12 @@
+# The server image builds from the repository root (verily_server/Dockerfile)
+# and needs only these paths. Everything else, including the ignored .env and
+# local build state, stays out of the build context.
+*
+!monosecret.toml
+!pubspec.lock
+!packages/verily_escrow_client/
+!packages/verily_evidence/
+!verily_server/
+**/.dart_tool/
+**/build/
+**/config/passwords.yaml

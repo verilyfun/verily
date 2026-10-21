@@ -89,6 +89,15 @@ Future<Uint8List> _videoFrom(Uint8List jpeg) async {
   }
 }
 
+/// Skips a real-runtime test with [reason], except where the runtime is
+/// required (the server image's replay check), where it fails instead.
+void _skipOrFail(String reason) {
+  if (Platform.environment['VERILY_LOCAL_CHECK_REPLAY_REQUIRED'] == 'true') {
+    fail(reason);
+  }
+  markTestSkipped(reason);
+}
+
 ActionLocalCheck _check(
   LocalCheckTask task,
   String label, {
@@ -103,7 +112,8 @@ ActionLocalCheck _check(
 
 void main() {
   // The MP native runtime ships for macOS arm64 and Linux x64; the pinned
-  // models and fixtures are fetched once. Anything missing skips with why.
+  // models and fixtures are fetched once. Anything missing skips with why
+  // (or fails, with VERILY_LOCAL_CHECK_REPLAY_REQUIRED=true).
   String? skipReason;
   final fixtures = <_Fixture, Uint8List>{};
   late MpLocalCheckReplayer replayer;
@@ -133,8 +143,13 @@ void main() {
       skipReason = 'Pinned fixtures are unavailable (offline?): $error';
       return;
     }
+    // The server image bakes the models in and names them with
+    // VERILY_LOCAL_CHECK_MODEL_CACHE; its replay check runs this suite there.
+    final environment = Platform.environment;
     replayer = MpLocalCheckReplayer(
-      models: PinnedLocalCheckModelStore(cacheDirectory: _cache),
+      models: environment.containsKey('VERILY_LOCAL_CHECK_MODEL_CACHE')
+          ? PinnedLocalCheckModelStore.fromEnvironment(environment)
+          : PinnedLocalCheckModelStore(cacheDirectory: _cache),
     );
   });
 
@@ -144,7 +159,7 @@ void main() {
     String mimeType,
   ) async {
     if (skipReason != null) {
-      markTestSkipped(skipReason!);
+      _skipOrFail(skipReason!);
       return null;
     }
     final result = await replayer.replay(
@@ -155,8 +170,18 @@ void main() {
     );
     if (result case LocalCheckReplayUnavailable(:final code)
         when code == LocalCheckUnavailableCode.modelDownloadFailed) {
-      markTestSkipped('The pinned model could not be downloaded (offline?).');
+      _skipOrFail('The pinned model could not be downloaded (offline?).');
       return null;
+    }
+    if (result case LocalCheckReplayScores(:final scores, :final best)) {
+      // Calibration record: docs/verification.md compares these across hosts.
+      stdout.writeln(
+        'mp-replay ${check.task.name} ${check.label}: best '
+        '${best.toStringAsFixed(2)} over ${scores.length} '
+        '${check.task == LocalCheckTask.sound ? 'windows' : 'frames'}, '
+        '${scores.where((score) => score >= check.minScore).length} at or '
+        'above ${check.minScore}',
+      );
     }
     return result;
   }
@@ -174,7 +199,6 @@ void main() {
       final scores = result as LocalCheckReplayScores;
       expect(scores.scores, hasLength(1));
       expect(scores.best, greaterThan(0.6));
-      printOnFailure('Thumb_Up score: ${scores.best}');
     });
 
     test(
@@ -195,7 +219,7 @@ void main() {
     test('when a video of the gesture is replayed then most sampled frames '
         'match', () async {
       if (skipReason != null) {
-        markTestSkipped(skipReason!);
+        _skipOrFail(skipReason!);
         return;
       }
       final video = await _videoFrom(fixtures[_Fixture.thumbsUp]!);
