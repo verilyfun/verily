@@ -45,6 +45,36 @@ void main() {
     expect(results.single, same(harness.gateway.result));
   });
 
+  testWidgets('measures only inside a capture window, and binds the trace '
+      'to it', (tester) async {
+    final sensors = _FakeSensors(rotation: 0);
+    final harness = CaptureHarness(
+      motion: sensors.service.capture,
+      gateway: FakeEvidenceGateway(windowFailures: 1),
+    );
+    await _open(tester, harness, _stillnessRequirement());
+
+    await tester.tap(find.byKey(VerilyTestKeys.captureMotionBegin));
+    await tester.pumpAndSettle();
+
+    expect(find.text("We couldn't start the capture"), findsOneWidget);
+    expect(sensors.listening, isFalse);
+    expect(find.byKey(VerilyTestKeys.captureMotionBegin), findsOneWidget);
+
+    await tester.tap(find.byKey(VerilyTestKeys.captureMotionBegin));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 9));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(VerilyTestKeys.captureMotionUse));
+    await tester.pumpAndSettle();
+
+    expect(harness.gateway.windowsOpened, 1);
+    expect(
+      harness.gateway.submitted.single.captureChallengeId,
+      FakeEvidenceGateway.windowId,
+    );
+  });
+
   testWidgets('a shaky hand does not match and can try again', (tester) async {
     final sensors = _FakeSensors(rotation: 3);
     final harness = CaptureHarness(motion: sensors.service.capture);
@@ -60,6 +90,14 @@ void main() {
     expect(find.byKey(VerilyTestKeys.captureMotionRetry), findsOneWidget);
     expect(harness.gateway.submitted, isEmpty);
     expect(results, isEmpty);
+
+    await tester.tap(find.byKey(VerilyTestKeys.captureMotionRetry));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 9));
+    await tester.pumpAndSettle();
+
+    // Nothing was sent, so the second try measures in the same window.
+    expect(harness.gateway.windowsOpened, 1);
   });
 
   testWidgets('warns before a toss and explains missing sensors', (

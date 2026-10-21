@@ -153,7 +153,7 @@ final class ServerpodActionAbuseGate implements ActionAbuseGate {
         'creatorId': action.creatorAuthUserId.toString(),
         'actionId': action.id.toString(),
         'digest': evidence.sha256Digest,
-        'captureKeyId': evidence.captureKeyId,
+        'deviceKeyId': evidence.captureDeviceKeyId,
         'capturedFrom': evidence.capturedAt.toUtc().subtract(
           AbuseRiskPolicy.locationTimeWindow,
         ),
@@ -224,7 +224,7 @@ final class ServerpodActionAbuseGate implements ActionAbuseGate {
     attemptPseudonym: _pseudonymizer.attempt(attempt.id.toString()),
     evidenceKind: _kind(evidence.kind, singleUseQr: singleUseQr),
     evidenceDigest: evidence.sha256Digest,
-    devicePseudonym: switch (evidence.captureKeyId) {
+    devicePseudonym: switch (evidence.captureDeviceKeyId) {
       final value? => _pseudonymizer.device(value),
       null => null,
     },
@@ -392,7 +392,7 @@ SELECT
       AND q."usedByAttemptId" = e."attemptId"
   ),
   e."sha256Digest",
-  e."captureKeyId",
+  e."captureDeviceKeyId",
   ST_Y(e."location"::geometry),
   ST_X(e."location"::geometry),
   e."capturedAt",
@@ -410,8 +410,8 @@ WHERE e."submittedAt" >= @startsAt
   AND (
     a."participantAuthUserId" = CAST(@accountId AS uuid)
     OR (CAST(@digest AS text) IS NOT NULL AND e."sha256Digest" = @digest)
-    OR (CAST(@captureKeyId AS text) IS NOT NULL
-      AND e."captureKeyId" = @captureKeyId)
+    OR (CAST(@deviceKeyId AS text) IS NOT NULL
+      AND e."captureDeviceKeyId" = @deviceKeyId)
     OR (
       d."creatorAuthUserId" = CAST(@creatorId AS uuid)
       AND d."id" = CAST(@actionId AS uuid)

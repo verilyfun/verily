@@ -424,10 +424,15 @@ class VerifyRequestFlow extends ChangeNotifier {
     if (place == null || proof.placeDone) return;
     _emit(proof.copyWith(working: true, clearNotice: true));
     try {
+      final session = await _evidence.beginCapture(
+        attempt: proof.attempt,
+        requirement: place,
+      );
       final fix = await _location.precisePosition();
       final result = await _evidence.submitLocation(
         attempt: proof.attempt,
         requirement: place,
+        session: session,
         fix: fix,
       );
       final rejected = result.status == EvidenceDecisionStatus.rejected;

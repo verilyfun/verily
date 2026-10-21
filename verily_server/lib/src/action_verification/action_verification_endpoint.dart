@@ -226,20 +226,19 @@ class ActionVerificationEndpoint extends Endpoint {
     );
   }
 
-  /// Binds the next proof to a fresh device-integrity request committing to
-  /// [evidenceBindingHash].
-  Future<ActionCaptureChallengeView> createCaptureChallenge(
+  /// Opens a capture window before the camera, microphone, or sensors
+  /// start. The device generates a fresh attested capture key for it, and
+  /// proof captured before it opened is refused.
+  Future<ActionCaptureChallengeView> beginCapture(
     Session session, {
     required UuidValue attemptId,
     required UuidValue requirementId,
-    required String evidenceBindingHash,
   }) {
-    return service.createCaptureChallenge(
+    return service.beginCapture(
       session,
       authUserId: _caller(session),
       attemptId: attemptId,
       requirementId: requirementId,
-      evidenceBindingHash: evidenceBindingHash,
     );
   }
 

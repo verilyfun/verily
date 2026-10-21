@@ -14,6 +14,6 @@ fields:
   deviceIntegrityToken: String?
   captureManifest: String?
   captureSignature: String?
-  capturePublicKey: String?
-  captureKeyId: String?
-  captureKeyStorage: String?
+  ### The capture key's Android Key Attestation chain: base64 DER, leaf
+  ### first. The key, its id, and where it lives come only from here.
+  captureCertificateChain: List<String>?

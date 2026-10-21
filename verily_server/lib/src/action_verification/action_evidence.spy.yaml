@@ -37,9 +37,17 @@ fields:
   provenanceLevel: EvidenceProvenanceLevel, default=basic
   captureManifest: String?
   captureSignature: String?
+  ### The signing key and its id, read from the attested leaf certificate.
   capturePublicKey: String?
   captureKeyId: String?
+  ### `strongBox` or `trustedEnvironment`, from a trusted attestation only.
   captureKeyStorage: String?
+  ### The attestation chain as submitted (base64 DER, leaf first), kept so a
+  ### later revocation can be checked against past proof.
+  captureCertificateChain: List<String>?
+  ### SHA-256 of the remotely provisioned attestation key behind the capture
+  ### key: a hardware-bound device pseudonym that rotates every few weeks.
+  captureDeviceKeyId: String?
   capturedAt: DateTime
   submittedAt: DateTime, defaultModel=now
 indexes:

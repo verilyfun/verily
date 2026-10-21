@@ -12,11 +12,13 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
+/// Opens a capture window before the camera, microphone, or sensors start.
 abstract class ActionCaptureChallengeView
     implements _isc.SerializableModel, _isc.ProtocolSerialization {
   ActionCaptureChallengeView._({
     required this.id,
-    required this.requestHash,
+    required this.captureChallenge,
+    required this.issuedAt,
     required this.expiresAt,
     required this.integrityRequired,
     bool? signatureRequired,
@@ -24,7 +26,8 @@ abstract class ActionCaptureChallengeView
 
   factory ActionCaptureChallengeView({
     required _isc.UuidValue id,
-    required String requestHash,
+    required String captureChallenge,
+    required DateTime issuedAt,
     required DateTime expiresAt,
     required bool integrityRequired,
     bool? signatureRequired,
@@ -35,7 +38,10 @@ abstract class ActionCaptureChallengeView
   ) {
     return ActionCaptureChallengeView(
       id: _isc.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
-      requestHash: jsonSerialization['requestHash'] as String,
+      captureChallenge: jsonSerialization['captureChallenge'] as String,
+      issuedAt: _isc.DateTimeJsonExtension.fromJson(
+        jsonSerialization['issuedAt'],
+      ),
       expiresAt: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['expiresAt'],
       ),
@@ -52,7 +58,11 @@ abstract class ActionCaptureChallengeView
 
   _isc.UuidValue id;
 
-  String requestHash;
+  /// 32 random bytes, unpadded base64url. The app generates a fresh capture
+  /// key whose attestation challenge is SHA-256(these bytes ‖ attemptId).
+  String captureChallenge;
+
+  DateTime issuedAt;
 
   DateTime expiresAt;
 
@@ -65,7 +75,8 @@ abstract class ActionCaptureChallengeView
   @_isc.useResult
   ActionCaptureChallengeView copyWith({
     _isc.UuidValue? id,
-    String? requestHash,
+    String? captureChallenge,
+    DateTime? issuedAt,
     DateTime? expiresAt,
     bool? integrityRequired,
     bool? signatureRequired,
@@ -75,7 +86,8 @@ abstract class ActionCaptureChallengeView
     return {
       '__className__': 'ActionCaptureChallengeView',
       'id': id.toJson(),
-      'requestHash': requestHash,
+      'captureChallenge': captureChallenge,
+      'issuedAt': issuedAt.toJson(),
       'expiresAt': expiresAt.toJson(),
       'integrityRequired': integrityRequired,
       'signatureRequired': signatureRequired,
@@ -87,7 +99,8 @@ abstract class ActionCaptureChallengeView
     return {
       '__className__': 'ActionCaptureChallengeView',
       'id': id.toJson(),
-      'requestHash': requestHash,
+      'captureChallenge': captureChallenge,
+      'issuedAt': issuedAt.toJson(),
       'expiresAt': expiresAt.toJson(),
       'integrityRequired': integrityRequired,
       'signatureRequired': signatureRequired,
@@ -103,13 +116,15 @@ abstract class ActionCaptureChallengeView
 class _ActionCaptureChallengeViewImpl extends ActionCaptureChallengeView {
   _ActionCaptureChallengeViewImpl({
     required _isc.UuidValue id,
-    required String requestHash,
+    required String captureChallenge,
+    required DateTime issuedAt,
     required DateTime expiresAt,
     required bool integrityRequired,
     bool? signatureRequired,
   }) : super._(
          id: id,
-         requestHash: requestHash,
+         captureChallenge: captureChallenge,
+         issuedAt: issuedAt,
          expiresAt: expiresAt,
          integrityRequired: integrityRequired,
          signatureRequired: signatureRequired,
@@ -121,14 +136,16 @@ class _ActionCaptureChallengeViewImpl extends ActionCaptureChallengeView {
   @override
   ActionCaptureChallengeView copyWith({
     _isc.UuidValue? id,
-    String? requestHash,
+    String? captureChallenge,
+    DateTime? issuedAt,
     DateTime? expiresAt,
     bool? integrityRequired,
     bool? signatureRequired,
   }) {
     return ActionCaptureChallengeView(
       id: id ?? this.id,
-      requestHash: requestHash ?? this.requestHash,
+      captureChallenge: captureChallenge ?? this.captureChallenge,
+      issuedAt: issuedAt ?? this.issuedAt,
       expiresAt: expiresAt ?? this.expiresAt,
       integrityRequired: integrityRequired ?? this.integrityRequired,
       signatureRequired: signatureRequired ?? this.signatureRequired,

@@ -1,8 +1,8 @@
 package app.verily
 
+import android.content.pm.PackageManager
 import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyInfo
 import android.security.keystore.KeyProperties
 import android.security.keystore.StrongBoxUnavailableException
 import com.google.android.play.core.integrity.IntegrityManagerFactory
@@ -10,12 +10,11 @@ import com.google.android.play.core.integrity.StandardIntegrityManager
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import java.security.KeyFactory
 import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.PrivateKey
+import java.security.ProviderException
 import java.security.Signature
-import java.security.interfaces.ECPublicKey
 import java.security.spec.ECGenParameterSpec
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -25,15 +24,18 @@ import java.util.concurrent.Executors
  *
  * - `app.verily/device_integrity` asks Play Integrity's Standard API for a
  *   token bound to a server-supplied request hash.
- * - `app.verily/capture_provenance` signs a finished capture's manifest with a
- *   hardware-backed P-256 key that never leaves the device.
+ * - `app.verily/capture_provenance` generates a fresh P-256 key for each
+ *   capture window the server opens, before anything is recorded, with the
+ *   window's Key Attestation challenge; then signs the finished capture's
+ *   manifest with it and returns the key's attestation chain. The server
+ *   learns where the key lives only from that chain.
  */
 class MainActivity : FlutterFragmentActivity() {
     private var integrityTokenProvider: StandardIntegrityManager.StandardIntegrityTokenProvider? = null
 
     // Key generation and signing can take hundreds of milliseconds on
     // StrongBox, so they run off the platform thread. One thread also
-    // serialises first-use key generation.
+    // serialises generation, signing, and cleanup.
     private val signingExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -61,8 +63,17 @@ class MainActivity : FlutterFragmentActivity() {
             CAPTURE_PROVENANCE_CHANNEL,
         ).setMethodCallHandler { call, result ->
             when (call.method) {
-                "signManifest" -> {
+                "prepareCaptureKey" -> {
+                    prepareCaptureKey(
+                        captureId = call.argument<String>("captureId"),
+                        attestationChallenge = call.argument<ByteArray>("attestationChallenge"),
+                        result = result,
+                    )
+                }
+
+                "signCaptureManifest" -> {
                     signCaptureManifest(
+                        captureId = call.argument<String>("captureId"),
                         manifest = call.argument<ByteArray>("manifest"),
                         result = result,
                     )
@@ -80,11 +91,57 @@ class MainActivity : FlutterFragmentActivity() {
         super.onDestroy()
     }
 
+    /**
+     * Generates the key for one capture window, attesting
+     * `attestationChallenge`. Keys left by earlier windows are deleted once
+     * they are older than any window can live.
+     */
+    private fun prepareCaptureKey(
+        captureId: String?,
+        attestationChallenge: ByteArray?,
+        result: MethodChannel.Result,
+    ) {
+        val alias = captureKeyAlias(captureId)
+        if (alias == null ||
+            attestationChallenge == null ||
+            attestationChallenge.isEmpty() ||
+            attestationChallenge.size > MAX_ATTESTATION_CHALLENGE_BYTES
+        ) {
+            result.error("invalid_capture_key_request", "The capture key request is invalid.", null)
+            return
+        }
+        signingExecutor.execute {
+            val prepared =
+                runCatching {
+                    val keyStore = KeyStore.getInstance(ANDROID_KEY_STORE).apply { load(null) }
+                    deleteStaleCaptureKeys(keyStore, keep = alias)
+                    if (!keyStore.containsAlias(alias)) {
+                        generateCaptureKey(alias, attestationChallenge, preferStrongBox = hasStrongBox())
+                    }
+                }
+            runOnUiThread {
+                prepared
+                    .onSuccess { result.success(null) }
+                    .onFailure { error ->
+                        // The class name helps diagnosis without exposing key
+                        // material or device detail to the person.
+                        result.error(
+                            "capture_key_failed",
+                            "Device signing is unavailable.",
+                            error.javaClass.simpleName,
+                        )
+                    }
+            }
+        }
+    }
+
     private fun signCaptureManifest(
+        captureId: String?,
         manifest: ByteArray?,
         result: MethodChannel.Result,
     ) {
-        if (manifest == null || manifest.isEmpty() || manifest.size > MAX_MANIFEST_BYTES) {
+        val alias = captureKeyAlias(captureId)
+        if (alias == null || manifest == null || manifest.isEmpty() || manifest.size > MAX_MANIFEST_BYTES) {
             result.error("invalid_capture_manifest", "The capture record is invalid.", null)
             return
         }
@@ -92,11 +149,12 @@ class MainActivity : FlutterFragmentActivity() {
             val signed =
                 runCatching {
                     val keyStore = KeyStore.getInstance(ANDROID_KEY_STORE).apply { load(null) }
-                    if (!keyStore.containsAlias(CAPTURE_KEY_ALIAS)) {
-                        generateCaptureKey(preferStrongBox = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-                    }
-                    val privateKey = keyStore.getKey(CAPTURE_KEY_ALIAS, null) as PrivateKey
-                    val publicKey = keyStore.getCertificate(CAPTURE_KEY_ALIAS).publicKey as ECPublicKey
+                    val privateKey =
+                        keyStore.getKey(alias, null) as? PrivateKey
+                            ?: throw IllegalStateException("No capture key for this window.")
+                    val chain =
+                        keyStore.getCertificateChain(alias)
+                            ?: throw IllegalStateException("The capture key has no attestation.")
                     val signer =
                         Signature.getInstance("SHA256withECDSA").apply {
                             initSign(privateKey)
@@ -104,16 +162,13 @@ class MainActivity : FlutterFragmentActivity() {
                         }
                     mapOf(
                         "signature" to derSignatureToP1363(signer.sign()),
-                        "publicKey" to uncompressedPublicKey(publicKey),
-                        "keyStorage" to captureKeyStorage(privateKey),
+                        "certificateChain" to chain.map { it.encoded },
                     )
                 }
             runOnUiThread {
                 signed
                     .onSuccess(result::success)
                     .onFailure { error ->
-                        // The class name helps diagnosis without exposing key
-                        // material or device detail to the person.
                         result.error(
                             "capture_signing_failed",
                             "Device signing is unavailable.",
@@ -124,7 +179,11 @@ class MainActivity : FlutterFragmentActivity() {
         }
     }
 
-    private fun generateCaptureKey(preferStrongBox: Boolean) {
+    private fun generateCaptureKey(
+        alias: String,
+        attestationChallenge: ByteArray,
+        preferStrongBox: Boolean,
+    ) {
         val generator =
             KeyPairGenerator.getInstance(
                 KeyProperties.KEY_ALGORITHM_EC,
@@ -132,11 +191,10 @@ class MainActivity : FlutterFragmentActivity() {
             )
         val builder =
             KeyGenParameterSpec
-                .Builder(
-                    CAPTURE_KEY_ALIAS,
-                    KeyProperties.PURPOSE_SIGN,
-                ).setAlgorithmParameterSpec(ECGenParameterSpec("secp256r1"))
+                .Builder(alias, KeyProperties.PURPOSE_SIGN)
+                .setAlgorithmParameterSpec(ECGenParameterSpec("secp256r1"))
                 .setDigests(KeyProperties.DIGEST_SHA256)
+                .setAttestationChallenge(attestationChallenge)
         if (preferStrongBox && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             builder.setIsStrongBoxBacked(true)
         }
@@ -145,50 +203,40 @@ class MainActivity : FlutterFragmentActivity() {
             generator.generateKeyPair()
         } catch (error: StrongBoxUnavailableException) {
             if (!preferStrongBox) throw error
-            generateCaptureKey(preferStrongBox = false)
+            generateCaptureKey(alias, attestationChallenge, preferStrongBox = false)
+        } catch (error: ProviderException) {
+            // A busy or failing StrongBox reports a provider error; the TEE
+            // still gives an attested key.
+            if (!preferStrongBox) throw error
+            generateCaptureKey(alias, attestationChallenge, preferStrongBox = false)
         }
     }
 
-    /** Where the capture key lives, reported with every signature. */
-    private fun captureKeyStorage(privateKey: PrivateKey): String =
-        runCatching {
-            val keyInfo =
-                KeyFactory
-                    .getInstance(
-                        privateKey.algorithm,
-                        ANDROID_KEY_STORE,
-                    ).getKeySpec(privateKey, KeyInfo::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                when (keyInfo.securityLevel) {
-                    KeyProperties.SECURITY_LEVEL_STRONGBOX -> "strongBox"
-                    KeyProperties.SECURITY_LEVEL_TRUSTED_ENVIRONMENT -> "trustedEnvironment"
-                    else -> "software"
-                }
-            } else if (keyInfo.isInsideSecureHardware) {
-                "trustedEnvironment"
-            } else {
-                "software"
-            }
-        }.getOrDefault("unknown")
+    private fun hasStrongBox(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.P &&
+            packageManager.hasSystemFeature(PackageManager.FEATURE_STRONGBOX_KEYSTORE)
 
-    /** The 65-byte uncompressed SEC1 point: `0x04 || X || Y`. */
-    private fun uncompressedPublicKey(publicKey: ECPublicKey): ByteArray {
-        val encoded = ByteArray(UNCOMPRESSED_POINT_BYTES)
-        encoded[0] = 0x04
-        copyUnsignedCoordinate(publicKey.w.affineX.toByteArray(), encoded, 1)
-        copyUnsignedCoordinate(publicKey.w.affineY.toByteArray(), encoded, 1 + COORDINATE_BYTES)
-        return encoded
-    }
-
-    private fun copyUnsignedCoordinate(
-        source: ByteArray,
-        target: ByteArray,
-        offset: Int,
+    /**
+     * Deletes keys from windows that have closed, and the long-lived key
+     * earlier builds signed every capture with.
+     */
+    private fun deleteStaleCaptureKeys(
+        keyStore: KeyStore,
+        keep: String,
     ) {
-        val start = if (source.size > COORDINATE_BYTES) source.size - COORDINATE_BYTES else 0
-        val length = source.size - start
-        source.copyInto(target, offset + COORDINATE_BYTES - length, start, source.size)
+        val cutoff = System.currentTimeMillis() - STALE_CAPTURE_KEY_MILLIS
+        for (alias in keyStore.aliases().toList()) {
+            if (alias == keep || !alias.startsWith(CAPTURE_KEY_PREFIX)) continue
+            val createdAt = keyStore.getCreationDate(alias)?.time
+            if (alias == LEGACY_CAPTURE_KEY_ALIAS || createdAt == null || createdAt < cutoff) {
+                keyStore.deleteEntry(alias)
+            }
+        }
     }
+
+    /** The keystore alias for one capture window, or null for a malformed id. */
+    private fun captureKeyAlias(captureId: String?): String? =
+        captureId?.takeIf { CAPTURE_ID_PATTERN.matches(it) }?.let { "$CAPTURE_KEY_PREFIX$it" }
 
     /** Converts an ASN.1 DER ECDSA signature to the 64-byte IEEE P1363 `r || s`. */
     private fun derSignatureToP1363(der: ByteArray): ByteArray {
@@ -305,10 +353,18 @@ class MainActivity : FlutterFragmentActivity() {
     private companion object {
         const val DEVICE_INTEGRITY_CHANNEL = "app.verily/device_integrity"
         const val CAPTURE_PROVENANCE_CHANNEL = "app.verily/capture_provenance"
-        const val CAPTURE_KEY_ALIAS = "verily_capture_provenance_v1"
+        const val CAPTURE_KEY_PREFIX = "verily_capture_"
+        const val LEGACY_CAPTURE_KEY_ALIAS = "verily_capture_provenance_v1"
         const val ANDROID_KEY_STORE = "AndroidKeyStore"
         const val MAX_MANIFEST_BYTES = 4096
+
+        // Key Attestation accepts challenges up to 128 bytes; Verily's is a
+        // 32-byte SHA-256.
+        const val MAX_ATTESTATION_CHALLENGE_BYTES = 128
         const val COORDINATE_BYTES = 32
-        const val UNCOMPRESSED_POINT_BYTES = 1 + 2 * COORDINATE_BYTES
+
+        // Longer than any capture window lives on the server.
+        const val STALE_CAPTURE_KEY_MILLIS = 2 * 60 * 60 * 1000L
+        val CAPTURE_ID_PATTERN = Regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
     }
 }

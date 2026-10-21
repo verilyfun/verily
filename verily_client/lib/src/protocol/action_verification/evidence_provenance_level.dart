@@ -12,10 +12,22 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
+/// The strongest capture provenance the server verified for one proof.
 enum EvidenceProvenanceLevel implements _isc.SerializableModel {
+  /// Bound to a fresh capture challenge only.
   basic,
+
+  /// Play Integrity vouched for the app and device.
   appAttested,
-  deviceSigned;
+
+  /// A device key signed the capture, but its attestation was not trusted
+  /// (only when VERILY_CAPTURE_SIGNATURE_MODE is optional).
+  deviceSigned,
+
+  /// A fresh key, attested by Google's chain to live in the TEE or StrongBox
+  /// of a locked, verified device running Verily's signed app, and created
+  /// for this capture's challenge, signed the capture.
+  hardwareAttested;
 
   static EvidenceProvenanceLevel fromJson(String name) {
     switch (name) {
@@ -25,6 +37,8 @@ enum EvidenceProvenanceLevel implements _isc.SerializableModel {
         return EvidenceProvenanceLevel.appAttested;
       case 'deviceSigned':
         return EvidenceProvenanceLevel.deviceSigned;
+      case 'hardwareAttested':
+        return EvidenceProvenanceLevel.hardwareAttested;
       default:
         throw ArgumentError(
           'Value "$name" cannot be converted to "EvidenceProvenanceLevel"',

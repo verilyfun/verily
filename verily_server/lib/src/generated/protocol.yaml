@@ -15,7 +15,7 @@ actionVerification:
   - listNearbyActions:
   - beginAttempt:
   - issueSpokenChallenge:
-  - createCaptureChallenge:
+  - beginCapture:
   - submitEvidence:
   - requestMediaUpload:
   - confirmMediaUpload:

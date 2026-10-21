@@ -143,6 +143,25 @@ class RewardPayoutService {
   bool requiresPersonReview(RewardPool pool) =>
       pool.amountPerPayout > configuration.reviewThresholdAtoms;
 
+  /// Whether a completion of [action] could be paid above the review
+  /// threshold. Proof toward such a reward must come from a device that
+  /// meets Play's strong integrity. Read without a lock: a funded pool's
+  /// terms are frozen.
+  Future<bool> paysAboveReviewThreshold(
+    Session session,
+    ActionDefinition action,
+  ) async {
+    final pool = await RewardPool.db.findFirstRow(
+      session,
+      where: (table) =>
+          table.creatorAuthUserId.equals(action.creatorAuthUserId) &
+          table.actionKey.equals(action.actionKey),
+    );
+    return pool != null &&
+        pool.status == RewardPoolStatus.funded &&
+        requiresPersonReview(pool);
+  }
+
   /// Reserves the next payout index for [attempt]. The caller holds the pool
   /// row lock from [evaluate] in the same transaction, so two completions
   /// can never take the same index.

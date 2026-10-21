@@ -40,7 +40,8 @@
     "**/android/**/*.xml",
     "**/android/**/*.properties",
     "**/android/**/GeneratedPluginRegistrant.java",
-    "**/web/flutter_bootstrap.js"
+    "**/web/flutter_bootstrap.js",
+    "**/key_attestation/vectors/*.json"
   ],
   "typescript": {},
   "plugins": [

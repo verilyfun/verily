@@ -78,6 +78,14 @@ before changing capture, upload, or verification.
 - Every device signature and Play Integrity request commits to the digest of
   the exact evidence the server accepted. Never accept a token or signature
   that is not bound to the evidence it vouches for.
+- Capture starts with `beginCapture`, before the camera, microphone, sensors,
+  or scanner open. The app signs with a fresh key generated for that window
+  and attested with `SHA-256(captureChallenge ‖ attemptId)`. A key, key id, or
+  storage level is trusted only from its Android Key Attestation chain, never
+  from the client.
+- Google's attestation roots are pinned in code. The test vectors under
+  `verily_server/test/unit/action_verification/key_attestation/vectors` come
+  from `android/keyattestation`; keep them byte-identical.
 - Evidence originals are private, hash-pinned to an immutable storage version,
   and never modified. Derived renditions may be watermarked; originals never.
 - A watermark is a lookup key, not proof. Never describe a watermark or a

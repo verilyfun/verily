@@ -128,8 +128,15 @@ ALTER TABLE verily_action_evidence ADD CONSTRAINT verily_external_evidence_check
     AND "deviceRepetitionCount" IS NULL AND "deviceTrackerVersion" IS NULL
     AND "captureSignature" IS NULL AND "captureKeyId" IS NULL));
 
+-- A capture window is opened before recording with a 32-byte nonce and lives
+-- at most an hour; the hashes it was bound to are filled when proof arrives.
 ALTER TABLE verily_action_capture_challenge ADD CONSTRAINT verily_capture_expiry_check
-  CHECK ("expiresAt" > "createdAt" AND "evidenceBindingHash" ~ '^[0-9a-f]{64}$');
+  CHECK ("expiresAt" > "createdAt"
+    AND "expiresAt" <= "createdAt" + interval '1 hour'
+    AND nonce ~ '^[A-Za-z0-9_-]{43}$'
+    AND ("requestHash" IS NULL OR "requestHash" ~ '^[A-Za-z0-9_-]{43}$')
+    AND ("evidenceBindingHash" IS NULL
+      OR "evidenceBindingHash" ~ '^[0-9a-f]{64}$'));
 ALTER TABLE verily_action_qr_challenge ADD CONSTRAINT verily_qr_expiry_check
   CHECK ("expiresAt" > "createdAt");
 ALTER TABLE verily_action_spoken_challenge ADD CONSTRAINT verily_spoken_challenge_check

@@ -16,7 +16,10 @@ import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
 import 'package:verily_server/src/generated/protocol.dart' as _itf691yl;
 
-/// Binds capture integrity to immutable evidence, not merely to a device or session.
+/// A capture window opened before anything is recorded. Its nonce derives the
+/// per-capture key's attestation challenge, and with the evidence fingerprint
+/// the Play Integrity request hash, so proof made before the window opened
+/// cannot be vouched for.
 abstract class ActionCaptureChallenge
     implements _is.TableRow<_is.UuidValue?>, _is.ProtocolSerialization {
   ActionCaptureChallenge._({
@@ -25,8 +28,9 @@ abstract class ActionCaptureChallenge
     required this.requirementId,
     required this.participantAuthUserId,
     this.participantAuthUser,
-    required this.requestHash,
-    required this.evidenceBindingHash,
+    required this.nonce,
+    this.requestHash,
+    this.evidenceBindingHash,
     required this.expiresAt,
     this.usedAt,
     this.provider,
@@ -41,8 +45,9 @@ abstract class ActionCaptureChallenge
     required _is.UuidValue requirementId,
     required _is.UuidValue participantAuthUserId,
     _iacs.AuthUser? participantAuthUser,
-    required String requestHash,
-    required String evidenceBindingHash,
+    required String nonce,
+    String? requestHash,
+    String? evidenceBindingHash,
     required DateTime expiresAt,
     DateTime? usedAt,
     String? provider,
@@ -72,8 +77,9 @@ abstract class ActionCaptureChallenge
           : _itf691yl.Protocol().deserialize<_iacs.AuthUser>(
               jsonSerialization['participantAuthUser'],
             ),
-      requestHash: jsonSerialization['requestHash'] as String,
-      evidenceBindingHash: jsonSerialization['evidenceBindingHash'] as String,
+      nonce: jsonSerialization['nonce'] as String,
+      requestHash: jsonSerialization['requestHash'] as String?,
+      evidenceBindingHash: jsonSerialization['evidenceBindingHash'] as String?,
       expiresAt: _is.DateTimeJsonExtension.fromJson(
         jsonSerialization['expiresAt'],
       ),
@@ -104,9 +110,14 @@ abstract class ActionCaptureChallenge
 
   _iacs.AuthUser? participantAuthUser;
 
-  String requestHash;
+  /// 32 random bytes, unpadded base64url.
+  String nonce;
 
-  String evidenceBindingHash;
+  /// Filled when the proof arrives: the request hash Play Integrity had to
+  /// answer and the evidence fingerprint the server recomputed.
+  String? requestHash;
+
+  String? evidenceBindingHash;
 
   DateTime expiresAt;
 
@@ -118,6 +129,7 @@ abstract class ActionCaptureChallenge
 
   String? tokenHash;
 
+  /// When the window opened: proof captured before it is refused.
   DateTime createdAt;
 
   @override
@@ -132,6 +144,7 @@ abstract class ActionCaptureChallenge
     _is.UuidValue? requirementId,
     _is.UuidValue? participantAuthUserId,
     _iacs.AuthUser? participantAuthUser,
+    String? nonce,
     String? requestHash,
     String? evidenceBindingHash,
     DateTime? expiresAt,
@@ -151,8 +164,10 @@ abstract class ActionCaptureChallenge
       'participantAuthUserId': participantAuthUserId.toJson(),
       if (participantAuthUser != null)
         'participantAuthUser': participantAuthUser?.toJson(),
-      'requestHash': requestHash,
-      'evidenceBindingHash': evidenceBindingHash,
+      'nonce': nonce,
+      if (requestHash != null) 'requestHash': requestHash,
+      if (evidenceBindingHash != null)
+        'evidenceBindingHash': evidenceBindingHash,
       'expiresAt': expiresAt.toJson(),
       if (usedAt != null) 'usedAt': usedAt?.toJson(),
       if (provider != null) 'provider': provider,
@@ -208,8 +223,9 @@ class _ActionCaptureChallengeImpl extends ActionCaptureChallenge {
     required _is.UuidValue requirementId,
     required _is.UuidValue participantAuthUserId,
     _iacs.AuthUser? participantAuthUser,
-    required String requestHash,
-    required String evidenceBindingHash,
+    required String nonce,
+    String? requestHash,
+    String? evidenceBindingHash,
     required DateTime expiresAt,
     DateTime? usedAt,
     String? provider,
@@ -222,6 +238,7 @@ class _ActionCaptureChallengeImpl extends ActionCaptureChallenge {
          requirementId: requirementId,
          participantAuthUserId: participantAuthUserId,
          participantAuthUser: participantAuthUser,
+         nonce: nonce,
          requestHash: requestHash,
          evidenceBindingHash: evidenceBindingHash,
          expiresAt: expiresAt,
@@ -242,8 +259,9 @@ class _ActionCaptureChallengeImpl extends ActionCaptureChallenge {
     _is.UuidValue? requirementId,
     _is.UuidValue? participantAuthUserId,
     Object? participantAuthUser = _Undefined,
-    String? requestHash,
-    String? evidenceBindingHash,
+    String? nonce,
+    Object? requestHash = _Undefined,
+    Object? evidenceBindingHash = _Undefined,
     DateTime? expiresAt,
     Object? usedAt = _Undefined,
     Object? provider = _Undefined,
@@ -260,8 +278,11 @@ class _ActionCaptureChallengeImpl extends ActionCaptureChallenge {
       participantAuthUser: participantAuthUser is _iacs.AuthUser?
           ? participantAuthUser
           : this.participantAuthUser?.copyWith(),
-      requestHash: requestHash ?? this.requestHash,
-      evidenceBindingHash: evidenceBindingHash ?? this.evidenceBindingHash,
+      nonce: nonce ?? this.nonce,
+      requestHash: requestHash is String? ? requestHash : this.requestHash,
+      evidenceBindingHash: evidenceBindingHash is String?
+          ? evidenceBindingHash
+          : this.evidenceBindingHash,
       expiresAt: expiresAt ?? this.expiresAt,
       usedAt: usedAt is DateTime? ? usedAt : this.usedAt,
       provider: provider is String? ? provider : this.provider,
@@ -297,12 +318,17 @@ class ActionCaptureChallengeUpdateTable
     value,
   );
 
-  _is.ColumnValue<String, String> requestHash(String value) => _is.ColumnValue(
+  _is.ColumnValue<String, String> nonce(String value) => _is.ColumnValue(
+    table.nonce,
+    value,
+  );
+
+  _is.ColumnValue<String, String> requestHash(String? value) => _is.ColumnValue(
     table.requestHash,
     value,
   );
 
-  _is.ColumnValue<String, String> evidenceBindingHash(String value) =>
+  _is.ColumnValue<String, String> evidenceBindingHash(String? value) =>
       _is.ColumnValue(
         table.evidenceBindingHash,
         value,
@@ -358,6 +384,10 @@ class ActionCaptureChallengeTable extends _is.Table<_is.UuidValue?> {
       'participantAuthUserId',
       this,
     );
+    nonce = _is.ColumnString(
+      'nonce',
+      this,
+    );
     requestHash = _is.ColumnString(
       'requestHash',
       this,
@@ -402,6 +432,11 @@ class ActionCaptureChallengeTable extends _is.Table<_is.UuidValue?> {
 
   _iacs.AuthUserTable? _participantAuthUser;
 
+  /// 32 random bytes, unpadded base64url.
+  late final _is.ColumnString nonce;
+
+  /// Filled when the proof arrives: the request hash Play Integrity had to
+  /// answer and the evidence fingerprint the server recomputed.
   late final _is.ColumnString requestHash;
 
   late final _is.ColumnString evidenceBindingHash;
@@ -416,6 +451,7 @@ class ActionCaptureChallengeTable extends _is.Table<_is.UuidValue?> {
 
   late final _is.ColumnString tokenHash;
 
+  /// When the window opened: proof captured before it is refused.
   late final _is.ColumnDateTime createdAt;
 
   _iacs.AuthUserTable get participantAuthUser {
@@ -437,6 +473,7 @@ class ActionCaptureChallengeTable extends _is.Table<_is.UuidValue?> {
     attemptId,
     requirementId,
     participantAuthUserId,
+    nonce,
     requestHash,
     evidenceBindingHash,
     expiresAt,

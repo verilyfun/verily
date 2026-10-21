@@ -3,6 +3,8 @@ import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart';
 import 'package:test/test.dart';
 import 'package:verily_server/src/action_verification/action_verification_service.dart';
+import 'package:verily_server/src/action_verification/capture_integrity.dart';
+import 'package:verily_server/src/action_verification/device_integrity_verifier.dart';
 import 'package:verily_server/src/action_verification/evidence_verification_worker.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 import 'package:verily_server/src/rewards/reward_configuration.dart';
@@ -118,6 +120,83 @@ void main() {
       ),
       maxVerifiedCompletions: maxVerifiedCompletions,
     );
+
+    group('when proof toward the reward is captured', () {
+      late _StrongIntegrityProbe integrity;
+      late ActionVerificationService service;
+
+      setUp(() {
+        integrity = _StrongIntegrityProbe();
+        service = ActionVerificationService(
+          captureIntegrity: CaptureIntegrityEvaluator(
+            deviceIntegrityRequired: true,
+            deviceIntegrityVerifier: integrity,
+          ),
+        );
+      });
+
+      Future<EvidenceSubmissionResult> checkIn(
+        ActionOpportunity action,
+        String key,
+      ) async {
+        final session = first.build();
+        final attempt = await endpoints.actionVerification.beginAttempt(
+          first,
+          actionId: action.id,
+          idempotencyKey: key,
+        );
+        final requirement = action.requirements.single;
+        final window = await service.beginCapture(
+          session,
+          authUserId: firstId,
+          attemptId: attempt.id,
+          requirementId: requirement.id,
+        );
+        return service.submitEvidence(
+          session,
+          authUserId: firstId,
+          input: ActionEvidenceInput(
+            attemptId: attempt.id,
+            requirementId: requirement.id,
+            capturedAt: DateTime.now().toUtc(),
+            latitude: requirement.latitude,
+            longitude: requirement.longitude,
+            accuracyMeters: 10,
+            captureChallengeId: window.id,
+            deviceIntegrityToken: 'device-token',
+          ),
+        );
+      }
+
+      test(
+        'then a payout above the review threshold needs strong integrity',
+        () async {
+          RewardRuntime.current = fakeRewardConfiguration(
+            gateway,
+            reviewThresholdAtoms: 500000,
+          );
+          final action = await fundedAction(actionKey: 'large-reward');
+
+          final result = await checkIn(action, 'large');
+
+          expect(integrity.strongRequired, [true]);
+          expect(result.status, EvidenceDecisionStatus.rejected);
+          expect(result.reasonCode, 'capture_not_verified');
+        },
+      );
+
+      test(
+        'then a payout within the threshold needs only device integrity',
+        () async {
+          final action = await fundedAction(actionKey: 'small-reward');
+
+          final result = await checkIn(action, 'small');
+
+          expect(integrity.strongRequired, [false]);
+          expect(result.status, EvidenceDecisionStatus.accepted);
+        },
+      );
+    });
 
     group('when a participant completes the action', () {
       test(
@@ -1339,4 +1418,31 @@ void main() {
     },
     rollbackDatabase: RollbackDatabase.disabled,
   );
+}
+
+/// A device that meets basic but not strong integrity, recording which bar
+/// each proof was held to.
+final class _StrongIntegrityProbe implements DeviceIntegrityVerifier {
+  final List<bool> strongRequired = [];
+
+  @override
+  String get providerName => 'test-device-integrity';
+
+  @override
+  Future<DeviceIntegrityVerdict> verify(
+    Session session, {
+    required String token,
+    required String requestHash,
+    required DateTime now,
+    required bool requireStrongIntegrity,
+  }) async {
+    strongRequired.add(requireStrongIntegrity);
+    return DeviceIntegrityVerdict(
+      trusted: !requireStrongIntegrity,
+      reasonCode: requireStrongIntegrity
+          ? 'device_integrity_not_strong'
+          : 'device_integrity_met',
+      provider: providerName,
+    );
+  }
 }

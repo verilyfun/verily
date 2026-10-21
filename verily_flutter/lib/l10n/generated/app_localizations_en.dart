@@ -2377,6 +2377,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Each recording needs a fresh word from Verily so it is clearly live. Check your connection and try again.';
 
   @override
+  String get captureWindowLoading => 'Getting ready to capture…';
+
+  @override
+  String get captureWindowFailedTitle => 'We couldn\'t start the capture';
+
+  @override
+  String get captureWindowFailedBody =>
+      'Verily starts a fresh, live capture for each proof. Check your connection and try again.';
+
+  @override
   String get captureRecordStart => 'Start recording';
 
   @override

@@ -253,6 +253,35 @@ void main() {
       expect(abuse.blockers, contains(contains('must be enforced')));
     });
 
+    test('when Play Integrity is optional then the abuse gate blocks', () {
+      final report = gate.evaluate(
+        _closedPilotEnvironment()
+          ..['VERILY_DEVICE_INTEGRITY_MODE'] = 'disabled',
+      );
+      final abuse = gateFor(report, VerilyProductionPriority.abuseResistance);
+
+      expect(abuse.ready, isFalse);
+      expect(abuse.blockers, contains(contains('Play Integrity')));
+    });
+
+    test('when the release signing certificate is missing or malformed then '
+        'the abuse gate blocks', () {
+      for (final value in ['', 'not-a-digest']) {
+        final report = gate.evaluate(
+          _closedPilotEnvironment()
+            ..['VERILY_ANDROID_SIGNING_CERT_SHA256'] = value,
+        );
+        final abuse = gateFor(report, VerilyProductionPriority.abuseResistance);
+
+        expect(abuse.ready, isFalse, reason: value);
+        expect(
+          abuse.blockers,
+          contains(contains('signing certificate')),
+          reason: value,
+        );
+      }
+    });
+
     test('when the pseudonym secret is short then the abuse gate blocks', () {
       final report = gate.evaluate(
         _closedPilotEnvironment()..['VERILY_ABUSE_PSEUDONYM_SECRET'] = 'short',
@@ -316,6 +345,8 @@ Map<String, String> _closedPilotEnvironment() => {
   'VERILY_ABUSE_PSEUDONYM_SECRET': 'test-only-abuse-pseudonym-secret-32-bytes',
   'VERILY_ABUSE_PSEUDONYM_KEY_EPOCH': 'pilot-2026-10',
   'VERILY_CAPTURE_SIGNATURE_MODE': 'required',
+  'VERILY_DEVICE_INTEGRITY_MODE': 'required',
+  'VERILY_ANDROID_SIGNING_CERT_SHA256': 'ab' * 32,
   'VERILY_OPERATIONS_APPROVAL_EVIDENCE': _evidence,
   'VERILY_PILOT_LOAD_EVIDENCE': _evidence,
 };

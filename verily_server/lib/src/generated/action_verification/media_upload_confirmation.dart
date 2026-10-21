@@ -35,9 +35,7 @@ abstract class MediaUploadConfirmation
     this.deviceIntegrityToken,
     this.captureManifest,
     this.captureSignature,
-    this.capturePublicKey,
-    this.captureKeyId,
-    this.captureKeyStorage,
+    this.captureCertificateChain,
   });
 
   factory MediaUploadConfirmation({
@@ -54,9 +52,7 @@ abstract class MediaUploadConfirmation
     String? deviceIntegrityToken,
     String? captureManifest,
     String? captureSignature,
-    String? capturePublicKey,
-    String? captureKeyId,
-    String? captureKeyStorage,
+    List<String>? captureCertificateChain,
   }) = _MediaUploadConfirmationImpl;
 
   factory MediaUploadConfirmation.fromJson(
@@ -92,9 +88,12 @@ abstract class MediaUploadConfirmation
           jsonSerialization['deviceIntegrityToken'] as String?,
       captureManifest: jsonSerialization['captureManifest'] as String?,
       captureSignature: jsonSerialization['captureSignature'] as String?,
-      capturePublicKey: jsonSerialization['capturePublicKey'] as String?,
-      captureKeyId: jsonSerialization['captureKeyId'] as String?,
-      captureKeyStorage: jsonSerialization['captureKeyStorage'] as String?,
+      captureCertificateChain:
+          jsonSerialization['captureCertificateChain'] == null
+          ? null
+          : _itf691yl.Protocol().deserialize<List<String>>(
+              jsonSerialization['captureCertificateChain'],
+            ),
     );
   }
 
@@ -126,11 +125,9 @@ abstract class MediaUploadConfirmation
 
   String? captureSignature;
 
-  String? capturePublicKey;
-
-  String? captureKeyId;
-
-  String? captureKeyStorage;
+  /// The capture key's Android Key Attestation chain: base64 DER, leaf
+  /// first. The key, its id, and where it lives come only from here.
+  List<String>? captureCertificateChain;
 
   /// Returns a shallow copy of this [MediaUploadConfirmation]
   /// with some or all fields replaced by the given arguments.
@@ -149,9 +146,7 @@ abstract class MediaUploadConfirmation
     String? deviceIntegrityToken,
     String? captureManifest,
     String? captureSignature,
-    String? capturePublicKey,
-    String? captureKeyId,
-    String? captureKeyStorage,
+    List<String>? captureCertificateChain,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -175,9 +170,8 @@ abstract class MediaUploadConfirmation
         'deviceIntegrityToken': deviceIntegrityToken,
       if (captureManifest != null) 'captureManifest': captureManifest,
       if (captureSignature != null) 'captureSignature': captureSignature,
-      if (capturePublicKey != null) 'capturePublicKey': capturePublicKey,
-      if (captureKeyId != null) 'captureKeyId': captureKeyId,
-      if (captureKeyStorage != null) 'captureKeyStorage': captureKeyStorage,
+      if (captureCertificateChain != null)
+        'captureCertificateChain': captureCertificateChain?.toJson(),
     };
   }
 
@@ -203,9 +197,8 @@ abstract class MediaUploadConfirmation
         'deviceIntegrityToken': deviceIntegrityToken,
       if (captureManifest != null) 'captureManifest': captureManifest,
       if (captureSignature != null) 'captureSignature': captureSignature,
-      if (capturePublicKey != null) 'capturePublicKey': capturePublicKey,
-      if (captureKeyId != null) 'captureKeyId': captureKeyId,
-      if (captureKeyStorage != null) 'captureKeyStorage': captureKeyStorage,
+      if (captureCertificateChain != null)
+        'captureCertificateChain': captureCertificateChain?.toJson(),
     };
   }
 
@@ -232,9 +225,7 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
     String? deviceIntegrityToken,
     String? captureManifest,
     String? captureSignature,
-    String? capturePublicKey,
-    String? captureKeyId,
-    String? captureKeyStorage,
+    List<String>? captureCertificateChain,
   }) : super._(
          attemptId: attemptId,
          requirementId: requirementId,
@@ -249,9 +240,7 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
          deviceIntegrityToken: deviceIntegrityToken,
          captureManifest: captureManifest,
          captureSignature: captureSignature,
-         capturePublicKey: capturePublicKey,
-         captureKeyId: captureKeyId,
-         captureKeyStorage: captureKeyStorage,
+         captureCertificateChain: captureCertificateChain,
        );
 
   /// Returns a shallow copy of this [MediaUploadConfirmation]
@@ -272,9 +261,7 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
     Object? deviceIntegrityToken = _Undefined,
     Object? captureManifest = _Undefined,
     Object? captureSignature = _Undefined,
-    Object? capturePublicKey = _Undefined,
-    Object? captureKeyId = _Undefined,
-    Object? captureKeyStorage = _Undefined,
+    Object? captureCertificateChain = _Undefined,
   }) {
     return MediaUploadConfirmation(
       attemptId: attemptId ?? this.attemptId,
@@ -306,13 +293,9 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
       captureSignature: captureSignature is String?
           ? captureSignature
           : this.captureSignature,
-      capturePublicKey: capturePublicKey is String?
-          ? capturePublicKey
-          : this.capturePublicKey,
-      captureKeyId: captureKeyId is String? ? captureKeyId : this.captureKeyId,
-      captureKeyStorage: captureKeyStorage is String?
-          ? captureKeyStorage
-          : this.captureKeyStorage,
+      captureCertificateChain: captureCertificateChain is List<String>?
+          ? captureCertificateChain
+          : this.captureCertificateChain?.map((e0) => e0).toList(),
     );
   }
 }

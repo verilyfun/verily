@@ -194,10 +194,15 @@ void main() {
         payoutStatus: RewardPayoutStatus.reserved,
         rewardOutcome: RewardOutcome.won,
       );
+      final windowsOpenAtFix = <int>[];
+      fakes.location.onPrecise = () =>
+          windowsOpenAtFix.add(fakes.evidence.windowsOpened);
       await _pumpAction(tester, fakes, action);
 
       await _tap(tester, _row(place));
 
+      // The capture window opens before the fix is taken.
+      expect(windowsOpenAtFix, [1]);
       expect(fakes.location.preciseCalls, 1);
       expect(fakes.location.approximateCalls, 0);
       final input = fakes.evidence.submitted.single;
@@ -285,9 +290,12 @@ void main() {
       await _tap(tester, _row(venue));
 
       expect(fakes.scans, 1);
+      // The capture window opens before the scanner does.
+      expect(fakes.windowsOpenAtScan, [1]);
       final input = fakes.evidence.submitted.single;
       expect(input.requirementId, venue.id);
       expect(input.qrCode, 'venue-code-1');
+      expect(input.captureChallengeId, doUuid(701));
       expect(
         find.descendant(
           of: _row(venue),

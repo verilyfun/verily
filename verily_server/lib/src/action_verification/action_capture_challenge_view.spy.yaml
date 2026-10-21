@@ -1,7 +1,11 @@
+### Opens a capture window before the camera, microphone, or sensors start.
 class: ActionCaptureChallengeView
 fields:
   id: UuidValue
-  requestHash: String
+  ### 32 random bytes, unpadded base64url. The app generates a fresh capture
+  ### key whose attestation challenge is SHA-256(these bytes ‖ attemptId).
+  captureChallenge: String
+  issuedAt: DateTime
   expiresAt: DateTime
   integrityRequired: bool
   signatureRequired: bool, default=false

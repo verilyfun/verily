@@ -1,4 +1,7 @@
-### Binds capture integrity to immutable evidence, not merely to a device or session.
+### A capture window opened before anything is recorded. Its nonce derives the
+### per-capture key's attestation challenge, and with the evidence fingerprint
+### the Play Integrity request hash, so proof made before the window opened
+### cannot be vouched for.
 class: ActionCaptureChallenge
 serverOnly: true
 table: verily_action_capture_challenge
@@ -7,15 +10,23 @@ fields:
   attemptId: UuidValue, relation(parent=verily_action_attempt, onDelete=Cascade)
   requirementId: UuidValue, relation(parent=verily_action_requirement, onDelete=Restrict)
   participantAuthUser: module:auth:AuthUser?, relation(onDelete=Cascade)
-  requestHash: String
-  evidenceBindingHash: String
+  ### 32 random bytes, unpadded base64url.
+  nonce: String
+  ### Filled when the proof arrives: the request hash Play Integrity had to
+  ### answer and the evidence fingerprint the server recomputed.
+  requestHash: String?
+  evidenceBindingHash: String?
   expiresAt: DateTime
   usedAt: DateTime?
   provider: String?
   verdict: String?
   tokenHash: String?
+  ### When the window opened: proof captured before it is refused.
   createdAt: DateTime, defaultModel=now
 indexes:
+  verily_action_capture_challenge_nonce_unique_idx:
+    fields: nonce
+    unique: true
   verily_action_capture_challenge_request_hash_unique_idx:
     fields: requestHash
     unique: true

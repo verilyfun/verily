@@ -49,10 +49,11 @@ final class _Refused extends _SendProblem {
 
 /// Captures, reviews, and sends one photo, video, or audio proof.
 ///
-/// When the requirement asks for a spoken word, the word is fetched from the
-/// server before any capture view appears, so nothing records without it.
-/// Pops with the server's result once the proof is sent, or null when the
-/// person closes.
+/// Before any capture view appears the server opens a capture window (and
+/// the phone generates a fresh attested key for it), and, when the
+/// requirement asks for one, hands out the spoken word, so nothing records
+/// outside a window or without its word. Pops with the server's result once
+/// the proof is sent, or null when the person closes.
 class MediaCaptureFlow extends HookConsumerWidget {
   const MediaCaptureFlow({
     required this.attempt,
@@ -77,6 +78,9 @@ class MediaCaptureFlow extends HookConsumerWidget {
     final challenge = useState<ActionSpokenChallengeView?>(null);
     final challengeFailed = useState(false);
     final challengeRun = useRef(0);
+    final window = useState<CaptureSession?>(null);
+    final windowFailed = useState(false);
+    final windowRun = useRef(0);
     final media = useState<CapturedMedia?>(null);
     final preparing = useState(false);
     final captureProblem = useState<CaptureProblem?>(null);
@@ -104,7 +108,25 @@ class MediaCaptureFlow extends HookConsumerWidget {
       }
     }
 
+    Future<void> openWindow() async {
+      final run = ++windowRun.value;
+      window.value = null;
+      windowFailed.value = false;
+      try {
+        final opened = await ref
+            .read(evidenceServiceProvider)
+            .beginCapture(attempt: attempt, requirement: requirement);
+        if (!context.mounted || run != windowRun.value) return;
+        window.value = opened;
+      } on Object catch (error) {
+        debugPrint('Opening the capture failed: $error');
+        if (!context.mounted || run != windowRun.value) return;
+        windowFailed.value = true;
+      }
+    }
+
     useEffect(() {
+      unawaited(openWindow());
       if (needsWord) unawaited(fetchWord());
       return null;
     }, const []);
@@ -151,16 +173,20 @@ class MediaCaptureFlow extends HookConsumerWidget {
       captureProblem.value = null;
       captureRun.value++;
       // The server hands back the same word while it is live; a new one is
-      // needed only once it has expired.
+      // needed only once it has expired. A window is reused until it closes.
       if (challenge.value case final word?
           when !word.expiresAt.isAfter(clock.now())) {
         unawaited(fetchWord());
+      }
+      if (window.value case final open? when open.isExpiredAt(clock.now())) {
+        unawaited(openWindow());
       }
     }
 
     Future<void> send() async {
       final current = media.value;
-      if (current == null || sending.value) return;
+      final session = window.value;
+      if (current == null || session == null || sending.value) return;
       sending.value = true;
       sendProblem.value = null;
       try {
@@ -169,6 +195,7 @@ class MediaCaptureFlow extends HookConsumerWidget {
             .uploadMedia(
               attempt: attempt,
               requirement: requirement,
+              session: session,
               media: current,
             );
         // The server holds the original now; the phone's copy goes.
@@ -189,10 +216,19 @@ class MediaCaptureFlow extends HookConsumerWidget {
     }
 
     final Widget page;
-    if (needsWord && challenge.value == null) {
-      page = _ChallengeGate(
-        failed: challengeFailed.value,
-        onRetry: () => unawaited(fetchWord()),
+    if (window.value == null || (needsWord && challenge.value == null)) {
+      final wordFailed = needsWord && challengeFailed.value;
+      page = _CaptureGate(
+        waitingForWord: needsWord && challenge.value == null,
+        problem: wordFailed
+            ? _GateProblem.word
+            : windowFailed.value
+            ? _GateProblem.window
+            : null,
+        onRetry: () {
+          if (windowFailed.value) unawaited(openWindow());
+          if (wordFailed) unawaited(fetchWord());
+        },
         onClose: close,
       );
     } else if (captureProblem.value case final problem?) {
@@ -300,38 +336,58 @@ class MediaCaptureFlow extends HookConsumerWidget {
   }
 }
 
-/// Waits for the server's word, or explains why it could not be fetched.
-class _ChallengeGate extends StatelessWidget {
-  const _ChallengeGate({
-    required this.failed,
+/// What stopped capture from starting.
+enum _GateProblem { window, word }
+
+/// Waits for the capture window and the server's word, or explains which
+/// could not be fetched.
+class _CaptureGate extends StatelessWidget {
+  const _CaptureGate({
+    required this.waitingForWord,
+    required this.problem,
     required this.onRetry,
     required this.onClose,
   });
 
-  final bool failed;
+  final bool waitingForWord;
+  final _GateProblem? problem;
   final VoidCallback onRetry;
   final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final problem = this.problem;
+    if (problem == null) {
+      return _NightPage(
+        child: _NightWait(
+          label: waitingForWord
+              ? l10n.captureChallengeLoading
+              : l10n.captureWindowLoading,
+        ),
+      );
+    }
     return _NightPage(
-      child: failed
-          ? CaptureProblemPanel(
-              title: l10n.captureChallengeFailedTitle,
-              message: l10n.captureChallengeFailedBody,
-              action: CaptureProblemAction(
-                key: VerilyTestKeys.captureChallengeRetry,
-                label: l10n.movementCaptureTryAgain,
-                onPressed: onRetry,
-              ),
-              secondaryAction: CaptureProblemAction(
-                key: VerilyTestKeys.captureClose,
-                label: l10n.captureClose,
-                onPressed: onClose,
-              ),
-            )
-          : _NightWait(label: l10n.captureChallengeLoading),
+      child: CaptureProblemPanel(
+        title: switch (problem) {
+          _GateProblem.word => l10n.captureChallengeFailedTitle,
+          _GateProblem.window => l10n.captureWindowFailedTitle,
+        },
+        message: switch (problem) {
+          _GateProblem.word => l10n.captureChallengeFailedBody,
+          _GateProblem.window => l10n.captureWindowFailedBody,
+        },
+        action: CaptureProblemAction(
+          key: VerilyTestKeys.captureChallengeRetry,
+          label: l10n.movementCaptureTryAgain,
+          onPressed: onRetry,
+        ),
+        secondaryAction: CaptureProblemAction(
+          key: VerilyTestKeys.captureClose,
+          label: l10n.captureClose,
+          onPressed: onClose,
+        ),
+      ),
     );
   }
 }
