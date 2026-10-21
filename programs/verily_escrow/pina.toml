@@ -1,0 +1,14 @@
+[project]
+program = "."
+
+[clients]
+output = "clients"
+languages = ["dart"]
+
+# The Dart client is the `packages/verily_escrow_client` package. Pina resolves
+# configured paths inside the program directory, so the package root is pinned
+# with `--output packages` in `clients:generate`. The package's pubspec is
+# hand-written, so generation owns only the Dart sources it renders.
+[clients.dart]
+output = "verily_escrow_client"
+scaffold = false

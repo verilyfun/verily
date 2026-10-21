@@ -1,0 +1,26 @@
+{
+  "paths": [
+    "lib/src/generated/verily_escrow/accounts/accounts.dart",
+    "lib/src/generated/verily_escrow/accounts/reward_escrow.dart",
+    "lib/src/generated/verily_escrow/errors/errors.dart",
+    "lib/src/generated/verily_escrow/errors/verily_escrow.dart",
+    "lib/src/generated/verily_escrow/events/escrow_closed.dart",
+    "lib/src/generated/verily_escrow/events/escrow_ended.dart",
+    "lib/src/generated/verily_escrow/events/escrow_opened.dart",
+    "lib/src/generated/verily_escrow/events/event_log.dart",
+    "lib/src/generated/verily_escrow/events/events.dart",
+    "lib/src/generated/verily_escrow/events/payout_released.dart",
+    "lib/src/generated/verily_escrow/instructions/close_escrow.dart",
+    "lib/src/generated/verily_escrow/instructions/end_early.dart",
+    "lib/src/generated/verily_escrow/instructions/instructions.dart",
+    "lib/src/generated/verily_escrow/instructions/migrate.dart",
+    "lib/src/generated/verily_escrow/instructions/open_escrow.dart",
+    "lib/src/generated/verily_escrow/instructions/release_payout.dart",
+    "lib/src/generated/verily_escrow/pdas/pdas.dart",
+    "lib/src/generated/verily_escrow/pdas/reward_escrow.dart",
+    "lib/src/generated/verily_escrow/programs/programs.dart",
+    "lib/src/generated/verily_escrow/programs/verily_escrow.dart",
+    "lib/src/generated/verily_escrow/verily_escrow.dart",
+    "lib/verily_escrow.dart"
+  ]
+}

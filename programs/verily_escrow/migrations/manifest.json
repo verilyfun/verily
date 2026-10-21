@@ -1,0 +1,71 @@
+{
+	"abiVersion": "0.21",
+	"programId": "ANL35GQjGtSuCAHTbXGBjnevFqbEtKNf6wDGPKwuPN1p",
+	"versionType": "u8",
+	"contracts": {
+		"account:1:01": {
+			"rustName": "RewardEscrow",
+			"versions": [
+				{
+					"schema": {
+						"layout": "fixed",
+						"fields": [
+							{
+								"name": "creator",
+								"rustType": "Address"
+							},
+							{
+								"name": "arbiter",
+								"rustType": "Address"
+							},
+							{
+								"name": "mint",
+								"rustType": "Address"
+							},
+							{
+								"name": "vault",
+								"rustType": "Address"
+							},
+							{
+								"name": "pool_id",
+								"rustType": "[u8; 16]"
+							},
+							{
+								"name": "amount_per_payout",
+								"rustType": "u64"
+							},
+							{
+								"name": "max_payouts",
+								"rustType": "u16"
+							},
+							{
+								"name": "released_count",
+								"rustType": "u16"
+							},
+							{
+								"name": "expires_at",
+								"rustType": "i64"
+							},
+							{
+								"name": "refund_after",
+								"rustType": "i64"
+							},
+							{
+								"name": "refund_delay",
+								"rustType": "u32"
+							},
+							{
+								"name": "bump",
+								"rustType": "u8"
+							},
+							{
+								"name": "released",
+								"rustType": "[u8; 256]"
+							}
+						]
+					}
+				}
+			]
+		}
+	}
+}

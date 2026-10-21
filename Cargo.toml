@@ -1,0 +1,41 @@
+[workspace]
+resolver = "2"
+members = [
+  "programs/verily_escrow",
+  "programs/verily_escrow_sbf",
+]
+# The Mollusk suite runs the compiled program against the real SPL Token and
+# associated token account programs. Mollusk's host runtime pulls the Agave
+# validator graph (including crates `audit:rust` forbids), so it lives in its
+# own workspace and never reaches the program's SBF build or this lockfile.
+exclude = ["programs/verily_escrow/tests/mollusk"]
+
+[workspace.package]
+edition = "2024"
+license = "Apache-2.0"
+rust-version = "1.89.0"
+
+[workspace.dependencies]
+pina = { version = "=0.23.0", default-features = false, features = ["logs", "token", "derive", "validation", "account-resize"] }
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+
+[workspace.lints.clippy]
+correctness = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+overflow-checks = true
+
+# Build scripts and proc macros run on the host. On macOS, stripping their
+# symbols removes the metadata rustc loads a proc macro by, and the SBF build
+# fails with "can't find crate" for every derive. Only the deployed program is
+# stripped.
+[profile.release.build-override]
+strip = false

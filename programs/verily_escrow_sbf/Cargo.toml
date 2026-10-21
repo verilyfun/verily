@@ -1,0 +1,31 @@
+[package]
+name = "verily_escrow_sbf"
+version = "0.1.0"
+autotests = false
+edition.workspace = true
+license.workspace = true
+publish = false
+rust-version.workspace = true
+
+# Deploy-only package: Agave's `cargo-build-sbf --lto` rejects a package that
+# requests both `lib` and `cdylib`, and the host `lib` crate is required for
+# native tests and Pina linting. It compiles the same source as
+# `programs/verily_escrow`; `migrations` is a symlink to that crate's
+# manifest so the schema macros expand identically here.
+[lib]
+name = "verily_escrow"
+path = "../verily_escrow/src/lib.rs"
+crate-type = ["cdylib"]
+test = false
+doctest = false
+bench = false
+
+[features]
+default = []
+bpf-entrypoint = []
+
+[dependencies]
+pina = { workspace = true, features = ["logs", "token", "derive", "validation"] }
+
+[lints]
+workspace = true

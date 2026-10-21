@@ -1,0 +1,8 @@
+# Program keypairs are deploy secrets. `pina keys new` writes them below the
+# workspace's git-ignored `target/deploy/`; never commit one, wherever it lands.
+**/*-keypair.json
+**/keys/
+**/keypairs/
+
+# Build output of a program built from its own directory.
+**/target/
