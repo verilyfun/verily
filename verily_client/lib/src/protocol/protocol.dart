@@ -67,6 +67,10 @@ import 'action_verification/action_spoken_challenge_view.dart' as _iikyln3l;
 import 'action_verification/action_template.dart' as _i0iphegd;
 import 'action_verification/action_verification_policy.dart' as _i960u7rl;
 import 'action_verification/action_visibility.dart' as _ichxscv5;
+import 'action_verification/app_attest/app_attest_challenge_view.dart'
+    as _is45ib7e;
+import 'action_verification/app_attest/app_attest_exception.dart' as _i2aihltn;
+import 'action_verification/app_attest/app_attest_problem.dart' as _ia04kjr5;
 import 'action_verification/create_action_definition_request.dart' as _i5yjywpf;
 import 'action_verification/evidence_appeal_status.dart' as _i90o7tud;
 import 'action_verification/evidence_appeal_view.dart' as _iy27rorb;
@@ -165,6 +169,9 @@ export 'action_verification/action_spoken_challenge_view.dart';
 export 'action_verification/action_template.dart';
 export 'action_verification/action_verification_policy.dart';
 export 'action_verification/action_visibility.dart';
+export 'action_verification/app_attest/app_attest_challenge_view.dart';
+export 'action_verification/app_attest/app_attest_exception.dart';
+export 'action_verification/app_attest/app_attest_problem.dart';
 export 'action_verification/create_action_definition_request.dart';
 export 'action_verification/evidence_appeal_status.dart';
 export 'action_verification/evidence_appeal_view.dart';
@@ -349,6 +356,15 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _ichxscv5.ActionVisibility) {
       return _ichxscv5.ActionVisibility.fromJson(data) as T;
+    }
+    if (t == _is45ib7e.AppAttestChallengeView) {
+      return _is45ib7e.AppAttestChallengeView.fromJson(data) as T;
+    }
+    if (t == _i2aihltn.AppAttestException) {
+      return _i2aihltn.AppAttestException.fromJson(data) as T;
+    }
+    if (t == _ia04kjr5.AppAttestProblem) {
+      return _ia04kjr5.AppAttestProblem.fromJson(data) as T;
     }
     if (t == _i5yjywpf.CreateActionDefinitionRequest) {
       return _i5yjywpf.CreateActionDefinitionRequest.fromJson(data) as T;
@@ -696,6 +712,20 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_ichxscv5.ActionVisibility?>()) {
       return (data != null ? _ichxscv5.ActionVisibility.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_is45ib7e.AppAttestChallengeView?>()) {
+      return (data != null
+              ? _is45ib7e.AppAttestChallengeView.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_i2aihltn.AppAttestException?>()) {
+      return (data != null ? _i2aihltn.AppAttestException.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ia04kjr5.AppAttestProblem?>()) {
+      return (data != null ? _ia04kjr5.AppAttestProblem.fromJson(data) : null)
           as T;
     }
     if (t == _isc.getType<_i5yjywpf.CreateActionDefinitionRequest?>()) {
@@ -1209,6 +1239,9 @@ class Protocol extends _isc.SerializationManager {
       _i0iphegd.ActionTemplate => 'ActionTemplate',
       _i960u7rl.ActionVerificationPolicy => 'ActionVerificationPolicy',
       _ichxscv5.ActionVisibility => 'ActionVisibility',
+      _is45ib7e.AppAttestChallengeView => 'AppAttestChallengeView',
+      _i2aihltn.AppAttestException => 'AppAttestException',
+      _ia04kjr5.AppAttestProblem => 'AppAttestProblem',
       _i5yjywpf.CreateActionDefinitionRequest =>
         'CreateActionDefinitionRequest',
       _i90o7tud.EvidenceAppealStatus => 'EvidenceAppealStatus',
@@ -1350,6 +1383,12 @@ class Protocol extends _isc.SerializationManager {
         return 'ActionVerificationPolicy';
       case _ichxscv5.ActionVisibility():
         return 'ActionVisibility';
+      case _is45ib7e.AppAttestChallengeView():
+        return 'AppAttestChallengeView';
+      case _i2aihltn.AppAttestException():
+        return 'AppAttestException';
+      case _ia04kjr5.AppAttestProblem():
+        return 'AppAttestProblem';
       case _i5yjywpf.CreateActionDefinitionRequest():
         return 'CreateActionDefinitionRequest';
       case _i90o7tud.EvidenceAppealStatus():
@@ -1594,6 +1633,15 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'ActionVisibility') {
       return deserialize<_ichxscv5.ActionVisibility>(data['data']);
+    }
+    if (dataClassName == 'AppAttestChallengeView') {
+      return deserialize<_is45ib7e.AppAttestChallengeView>(data['data']);
+    }
+    if (dataClassName == 'AppAttestException') {
+      return deserialize<_i2aihltn.AppAttestException>(data['data']);
+    }
+    if (dataClassName == 'AppAttestProblem') {
+      return deserialize<_ia04kjr5.AppAttestProblem>(data['data']);
     }
     if (dataClassName == 'CreateActionDefinitionRequest') {
       return deserialize<_i5yjywpf.CreateActionDefinitionRequest>(data['data']);

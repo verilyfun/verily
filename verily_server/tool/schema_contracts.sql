@@ -137,6 +137,21 @@ ALTER TABLE verily_action_capture_challenge ADD CONSTRAINT verily_capture_expiry
     AND ("requestHash" IS NULL OR "requestHash" ~ '^[A-Za-z0-9_-]{43}$')
     AND ("evidenceBindingHash" IS NULL
       OR "evidenceBindingHash" ~ '^[0-9a-f]{64}$'));
+-- An App Attest key is registered against a single-use, short-lived
+-- challenge; the key's id is the SHA-256 of its P-256 point, and its
+-- assertion counter only ever grows from zero.
+ALTER TABLE verily_app_attest_challenge ADD CONSTRAINT verily_app_attest_challenge_check
+  CHECK ("expiresAt" > "createdAt"
+    AND "expiresAt" <= "createdAt" + interval '1 hour'
+    AND nonce ~ '^[A-Za-z0-9_-]{43}$'
+    AND ("usedAt" IS NULL OR "usedAt" >= "createdAt"));
+ALTER TABLE verily_app_attest_key ADD CONSTRAINT verily_app_attest_key_check
+  CHECK ("keyId" ~ '^[0-9a-f]{64}$'
+    AND length("publicKey") = 88
+    AND "signCount" >= 0
+    AND length(receipt) > 0
+    AND ("validationCategory" IS NULL OR "validationCategory" >= 0)
+    AND ("lastAssertedAt" IS NULL OR "lastAssertedAt" >= "registeredAt"));
 ALTER TABLE verily_action_qr_challenge ADD CONSTRAINT verily_qr_expiry_check
   CHECK ("expiresAt" > "createdAt");
 ALTER TABLE verily_action_spoken_challenge ADD CONSTRAINT verily_spoken_challenge_check

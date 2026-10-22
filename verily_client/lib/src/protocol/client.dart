@@ -34,6 +34,8 @@ import 'package:verily_client/src/protocol/action_verification/action_spoken_cha
     as _idk923ry;
 import 'package:verily_client/src/protocol/action_verification/action_template.dart'
     as _i6d3vqey;
+import 'package:verily_client/src/protocol/action_verification/app_attest/app_attest_challenge_view.dart'
+    as _ieyg8zz9;
 import 'package:verily_client/src/protocol/action_verification/create_action_definition_request.dart'
     as _ivnldkuj;
 import 'package:verily_client/src/protocol/action_verification/evidence_appeal_status.dart'
@@ -362,6 +364,44 @@ class EndpointActionVerification extends _isc.EndpointRef {
     'actionVerification',
     'listMyAttempts',
     {'limit': limit},
+  );
+}
+
+/// Registers the App Attest key an iPhone signs its captures with: one key
+/// per account per install, attested once against a server challenge.
+///
+/// Both methods throw [AppAttestException] with an [AppAttestProblem] that
+/// says what the phone should do next.
+/// {@category Endpoint}
+class EndpointAppAttest extends _isc.EndpointRef {
+  EndpointAppAttest(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'appAttest';
+
+  /// A single-use challenge, valid for five minutes, to attest the key
+  /// against with `clientDataHash = SHA-256(challenge bytes)`.
+  _ida.Future<_ieyg8zz9.AppAttestChallengeView> beginRegistration() =>
+      caller.callServerEndpoint<_ieyg8zz9.AppAttestChallengeView>(
+        'appAttest',
+        'beginRegistration',
+        {},
+      );
+
+  /// Verifies the attestation of [keyId] (base64, as `generateKey` returns
+  /// it) made against [challengeId], and registers the key to the caller.
+  _ida.Future<void> registerKey({
+    required _isc.UuidValue challengeId,
+    required String keyId,
+    required String attestationObject,
+  }) => caller.callServerEndpoint<void>(
+    'appAttest',
+    'registerKey',
+    {
+      'challengeId': challengeId,
+      'keyId': keyId,
+      'attestationObject': attestationObject,
+    },
   );
 }
 
@@ -1223,6 +1263,7 @@ class Client extends _isc.ServerpodClientShared {
        ) {
     accountLifecycle = EndpointAccountLifecycle(this);
     actionVerification = EndpointActionVerification(this);
+    appAttest = EndpointAppAttest(this);
     evidenceAppeal = EndpointEvidenceAppeal(this);
     evidenceReview = EndpointEvidenceReview(this);
     verilyApp = EndpointVerilyApp(this);
@@ -1240,6 +1281,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointAccountLifecycle accountLifecycle;
 
   late final EndpointActionVerification actionVerification;
+
+  late final EndpointAppAttest appAttest;
 
   late final EndpointEvidenceAppeal evidenceAppeal;
 
@@ -1269,6 +1312,7 @@ class Client extends _isc.ServerpodClientShared {
   Map<String, _isc.EndpointRef> get endpointRefLookup => {
     'accountLifecycle': accountLifecycle,
     'actionVerification': actionVerification,
+    'appAttest': appAttest,
     'evidenceAppeal': evidenceAppeal,
     'evidenceReview': evidenceReview,
     'verilyApp': verilyApp,

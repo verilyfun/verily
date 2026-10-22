@@ -246,20 +246,24 @@ abstract class ActionEvidence
 
   String? captureSignature;
 
-  /// The signing key and its id, read from the attested leaf certificate.
+  /// The signing key and its id (SHA-256 of the key, hex), read from the
+  /// attested leaf certificate or the registered App Attest key.
   String? capturePublicKey;
 
   String? captureKeyId;
 
-  /// `strongBox` or `trustedEnvironment`, from a trusted attestation only.
+  /// `strongBox` or `trustedEnvironment` from a trusted Android attestation,
+  /// or `secureEnclave` from a registered App Attest key.
   String? captureKeyStorage;
 
-  /// The attestation chain as submitted (base64 DER, leaf first), kept so a
-  /// later revocation can be checked against past proof.
+  /// The Android attestation chain as submitted (base64 DER, leaf first),
+  /// kept so a later revocation can be checked against past proof. An App
+  /// Attest key keeps its chain on its own row.
   List<String>? captureCertificateChain;
 
   /// SHA-256 of the remotely provisioned attestation key behind the capture
   /// key: a hardware-bound device pseudonym that rotates every few weeks.
+  /// App Attest gives none: its keys are per account, not per device.
   String? captureDeviceKeyId;
 
   DateTime capturedAt;
@@ -1037,20 +1041,24 @@ class ActionEvidenceTable extends _is.Table<_is.UuidValue?> {
 
   late final _is.ColumnString captureSignature;
 
-  /// The signing key and its id, read from the attested leaf certificate.
+  /// The signing key and its id (SHA-256 of the key, hex), read from the
+  /// attested leaf certificate or the registered App Attest key.
   late final _is.ColumnString capturePublicKey;
 
   late final _is.ColumnString captureKeyId;
 
-  /// `strongBox` or `trustedEnvironment`, from a trusted attestation only.
+  /// `strongBox` or `trustedEnvironment` from a trusted Android attestation,
+  /// or `secureEnclave` from a registered App Attest key.
   late final _is.ColumnString captureKeyStorage;
 
-  /// The attestation chain as submitted (base64 DER, leaf first), kept so a
-  /// later revocation can be checked against past proof.
+  /// The Android attestation chain as submitted (base64 DER, leaf first),
+  /// kept so a later revocation can be checked against past proof. An App
+  /// Attest key keeps its chain on its own row.
   late final _is.ColumnSerializable<List<String>> captureCertificateChain;
 
   /// SHA-256 of the remotely provisioned attestation key behind the capture
   /// key: a hardware-bound device pseudonym that rotates every few weeks.
+  /// App Attest gives none: its keys are per account, not per device.
   late final _is.ColumnString captureDeviceKeyId;
 
   late final _is.ColumnDateTime capturedAt;

@@ -81,6 +81,14 @@ import 'action_verification/action_spoken_challenge_view.dart' as _iikyln3l;
 import 'action_verification/action_template.dart' as _i0iphegd;
 import 'action_verification/action_verification_policy.dart' as _i960u7rl;
 import 'action_verification/action_visibility.dart' as _ichxscv5;
+import 'action_verification/app_attest/app_attest_challenge.dart' as _imltxoxl;
+import 'action_verification/app_attest/app_attest_challenge_view.dart'
+    as _is45ib7e;
+import 'action_verification/app_attest/app_attest_environment.dart'
+    as _i2t3r42m;
+import 'action_verification/app_attest/app_attest_exception.dart' as _i2aihltn;
+import 'action_verification/app_attest/app_attest_key.dart' as _ii8uuroy;
+import 'action_verification/app_attest/app_attest_problem.dart' as _ia04kjr5;
 import 'action_verification/create_action_definition_request.dart' as _i5yjywpf;
 import 'action_verification/evidence_appeal.dart' as _i9u1614a;
 import 'action_verification/evidence_appeal_status.dart' as _i90o7tud;
@@ -219,6 +227,12 @@ export 'action_verification/action_spoken_challenge_view.dart';
 export 'action_verification/action_template.dart';
 export 'action_verification/action_verification_policy.dart';
 export 'action_verification/action_visibility.dart';
+export 'action_verification/app_attest/app_attest_challenge.dart';
+export 'action_verification/app_attest/app_attest_challenge_view.dart';
+export 'action_verification/app_attest/app_attest_environment.dart';
+export 'action_verification/app_attest/app_attest_exception.dart';
+export 'action_verification/app_attest/app_attest_key.dart';
+export 'action_verification/app_attest/app_attest_problem.dart';
 export 'action_verification/create_action_definition_request.dart';
 export 'action_verification/evidence_appeal.dart';
 export 'action_verification/evidence_appeal_status.dart';
@@ -2538,6 +2552,231 @@ class Protocol extends _is.DatabaseSerializationManager {
             _isp.IndexElementDefinition(
               type: _isp.IndexElementDefinitionType.column,
               definition: 'createdAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'verily_app_attest_challenge',
+      dartName: 'AppAttestChallenge',
+      schema: 'public',
+      module: 'verily',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue?',
+          columnDefault: 'random_v7',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'nonce',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'expiresAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'usedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [
+        _isp.ForeignKeyDefinition(
+          constraintName: 'verily_app_attest_challenge_fk_0',
+          columns: ['authUserId'],
+          referenceTable: 'serverpod_auth_core_user',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.cascade,
+          matchType: null,
+        ),
+      ],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'verily_app_attest_challenge_nonce_unique_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'nonce',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'verily_app_attest_challenge_owner_created_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
+            ),
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'createdAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'verily_app_attest_challenge_expiry_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'expiresAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'verily_app_attest_key',
+      dartName: 'AppAttestKey',
+      schema: 'public',
+      module: 'verily',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue?',
+          columnDefault: 'random_v7',
+        ),
+        _isp.ColumnDefinition(
+          name: 'authUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'keyId',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'publicKey',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'environment',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'protocol:AppAttestEnvironment',
+        ),
+        _isp.ColumnDefinition(
+          name: 'signCount',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _isp.ColumnDefinition(
+          name: 'certificateChain',
+          columnType: _isp.ColumnType.json,
+          isNullable: false,
+          dartType: 'List<String>',
+        ),
+        _isp.ColumnDefinition(
+          name: 'receipt',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'validationCategory',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'bundleVersion',
+          columnType: _isp.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _isp.ColumnDefinition(
+          name: 'registeredAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'lastAssertedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+      ],
+      foreignKeys: [
+        _isp.ForeignKeyDefinition(
+          constraintName: 'verily_app_attest_key_fk_0',
+          columns: ['authUserId'],
+          referenceTable: 'serverpod_auth_core_user',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _isp.ForeignKeyAction.noAction,
+          onDelete: _isp.ForeignKeyAction.cascade,
+          matchType: null,
+        ),
+      ],
+      indexes: [
+        _isp.IndexDefinition(
+          indexName: 'verily_app_attest_key_key_id_unique_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'keyId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: false,
+        ),
+        _isp.IndexDefinition(
+          indexName: 'verily_app_attest_key_owner_idx',
+          tableSpace: null,
+          elements: [
+            _isp.IndexElementDefinition(
+              type: _isp.IndexElementDefinitionType.column,
+              definition: 'authUserId',
             ),
           ],
           type: 'btree',
@@ -5966,6 +6205,24 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _ichxscv5.ActionVisibility) {
       return _ichxscv5.ActionVisibility.fromJson(data) as T;
     }
+    if (t == _imltxoxl.AppAttestChallenge) {
+      return _imltxoxl.AppAttestChallenge.fromJson(data) as T;
+    }
+    if (t == _is45ib7e.AppAttestChallengeView) {
+      return _is45ib7e.AppAttestChallengeView.fromJson(data) as T;
+    }
+    if (t == _i2t3r42m.AppAttestEnvironment) {
+      return _i2t3r42m.AppAttestEnvironment.fromJson(data) as T;
+    }
+    if (t == _i2aihltn.AppAttestException) {
+      return _i2aihltn.AppAttestException.fromJson(data) as T;
+    }
+    if (t == _ii8uuroy.AppAttestKey) {
+      return _ii8uuroy.AppAttestKey.fromJson(data) as T;
+    }
+    if (t == _ia04kjr5.AppAttestProblem) {
+      return _ia04kjr5.AppAttestProblem.fromJson(data) as T;
+    }
     if (t == _i5yjywpf.CreateActionDefinitionRequest) {
       return _i5yjywpf.CreateActionDefinitionRequest.fromJson(data) as T;
     }
@@ -6447,6 +6704,33 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_ichxscv5.ActionVisibility?>()) {
       return (data != null ? _ichxscv5.ActionVisibility.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_imltxoxl.AppAttestChallenge?>()) {
+      return (data != null ? _imltxoxl.AppAttestChallenge.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_is45ib7e.AppAttestChallengeView?>()) {
+      return (data != null
+              ? _is45ib7e.AppAttestChallengeView.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_i2t3r42m.AppAttestEnvironment?>()) {
+      return (data != null
+              ? _i2t3r42m.AppAttestEnvironment.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_i2aihltn.AppAttestException?>()) {
+      return (data != null ? _i2aihltn.AppAttestException.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_ii8uuroy.AppAttestKey?>()) {
+      return (data != null ? _ii8uuroy.AppAttestKey.fromJson(data) : null) as T;
+    }
+    if (t == _is.getType<_ia04kjr5.AppAttestProblem?>()) {
+      return (data != null ? _ia04kjr5.AppAttestProblem.fromJson(data) : null)
           as T;
     }
     if (t == _is.getType<_i5yjywpf.CreateActionDefinitionRequest?>()) {
@@ -7093,6 +7377,12 @@ class Protocol extends _is.DatabaseSerializationManager {
       _i0iphegd.ActionTemplate => 'ActionTemplate',
       _i960u7rl.ActionVerificationPolicy => 'ActionVerificationPolicy',
       _ichxscv5.ActionVisibility => 'ActionVisibility',
+      _imltxoxl.AppAttestChallenge => 'AppAttestChallenge',
+      _is45ib7e.AppAttestChallengeView => 'AppAttestChallengeView',
+      _i2t3r42m.AppAttestEnvironment => 'AppAttestEnvironment',
+      _i2aihltn.AppAttestException => 'AppAttestException',
+      _ii8uuroy.AppAttestKey => 'AppAttestKey',
+      _ia04kjr5.AppAttestProblem => 'AppAttestProblem',
       _i5yjywpf.CreateActionDefinitionRequest =>
         'CreateActionDefinitionRequest',
       _i9u1614a.EvidenceAppeal => 'EvidenceAppeal',
@@ -7287,6 +7577,18 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'ActionVerificationPolicy';
       case _ichxscv5.ActionVisibility():
         return 'ActionVisibility';
+      case _imltxoxl.AppAttestChallenge():
+        return 'AppAttestChallenge';
+      case _is45ib7e.AppAttestChallengeView():
+        return 'AppAttestChallengeView';
+      case _i2t3r42m.AppAttestEnvironment():
+        return 'AppAttestEnvironment';
+      case _i2aihltn.AppAttestException():
+        return 'AppAttestException';
+      case _ii8uuroy.AppAttestKey():
+        return 'AppAttestKey';
+      case _ia04kjr5.AppAttestProblem():
+        return 'AppAttestProblem';
       case _i5yjywpf.CreateActionDefinitionRequest():
         return 'CreateActionDefinitionRequest';
       case _i9u1614a.EvidenceAppeal():
@@ -7626,6 +7928,24 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (dataClassName == 'ActionVisibility') {
       return deserialize<_ichxscv5.ActionVisibility>(data['data']);
+    }
+    if (dataClassName == 'AppAttestChallenge') {
+      return deserialize<_imltxoxl.AppAttestChallenge>(data['data']);
+    }
+    if (dataClassName == 'AppAttestChallengeView') {
+      return deserialize<_is45ib7e.AppAttestChallengeView>(data['data']);
+    }
+    if (dataClassName == 'AppAttestEnvironment') {
+      return deserialize<_i2t3r42m.AppAttestEnvironment>(data['data']);
+    }
+    if (dataClassName == 'AppAttestException') {
+      return deserialize<_i2aihltn.AppAttestException>(data['data']);
+    }
+    if (dataClassName == 'AppAttestKey') {
+      return deserialize<_ii8uuroy.AppAttestKey>(data['data']);
+    }
+    if (dataClassName == 'AppAttestProblem') {
+      return deserialize<_ia04kjr5.AppAttestProblem>(data['data']);
     }
     if (dataClassName == 'CreateActionDefinitionRequest') {
       return deserialize<_i5yjywpf.CreateActionDefinitionRequest>(data['data']);
@@ -7980,6 +8300,10 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _inly21qh.ActionRequirement.t;
       case _i14ro0o5.ActionSpokenChallenge:
         return _i14ro0o5.ActionSpokenChallenge.t;
+      case _imltxoxl.AppAttestChallenge:
+        return _imltxoxl.AppAttestChallenge.t;
+      case _ii8uuroy.AppAttestKey:
+        return _ii8uuroy.AppAttestKey.t;
       case _i9u1614a.EvidenceAppeal:
         return _i9u1614a.EvidenceAppeal.t;
       case _ii2t12jt.EvidenceDecision:

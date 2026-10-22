@@ -135,7 +135,9 @@ stateDiagram-v2
 
 Proof the phone vouches for is captured inside a **capture window** the server
 opens before the camera, microphone, sensors, or scanner start. This is Phase 1
-of [provenance and watermarking](provenance-and-watermarking.md#7-phased-plan).
+of [provenance and watermarking](provenance-and-watermarking.md#7-phased-plan)
+on Android; iPhones sign with App Attest from Phase 2 (see
+[Apple App Attest](#apple-app-attest)).
 
 ```mermaid
 sequenceDiagram
@@ -181,7 +183,8 @@ sequenceDiagram
    the request hash, binding, provider, and verdict.
 
 The phone never says where its key lives: the key, its id, and its storage
-level come only from the attestation chain.
+level come only from the attestation chain, or on an iPhone from the App
+Attest key the account registered.
 
 #### Android Key Attestation
 
@@ -218,6 +221,86 @@ synthetic test authority for every refusal.
 Refusals carry `capture_attestation_*` reason codes, which participants see
 as `capture_not_verified`.
 
+#### Apple App Attest
+
+An iPhone cannot attest a fresh key per window the way Android can: App
+Attest keys are made once per install and attested by Apple's servers, which
+Apple asks apps to call rarely. So an iPhone registers one key per account and
+install, then signs each window's manifest with an **assertion** by that key.
+
+```mermaid
+sequenceDiagram
+  participant App
+  participant Enclave as Secure Enclave (App Attest)
+  participant Server
+  Note over App,Server: once per account and install
+  App->>Server: appAttest.beginRegistration()
+  Server-->>App: challenge (32 bytes, 5 minutes, single use)
+  App->>Enclave: generateKey, attestKey(clientDataHash = SHA-256(challenge))
+  App->>Server: appAttest.registerKey(challengeId, keyId, attestation)
+  Server->>Server: verify, store key, receipt, counter 0
+  Note over App,Server: every capture
+  App->>Server: beginCapture(attemptId, requirementId)
+  App->>Enclave: generateAssertion(clientDataHash = SHA-256(manifest))
+  App->>Server: proof + manifest + assertion + keyId
+  Server->>Server: window, binding, signature, counter > last
+```
+
+- **Registration** (`appAttest.beginRegistration`, then
+  `appAttest.registerKey`). The challenge is 32 random bytes for the caller
+  only, valid for five minutes, used once whatever the outcome, and limited
+  to ten an hour. `app_attest/app_attest_verifier.dart` follows Apple's
+  [validation steps](https://developer.apple.com/documentation/devicecheck/validating-apps-that-connect-to-your-server):
+  the attestation is strict CBOR (`app_attest/cbor.dart` refuses indefinite
+  lengths, tags, floats, and repeated keys); the credential certificate
+  chains by name and signature to the pinned Apple App Attestation Root CA
+  (`apple_app_attestation_root.dart`), every certificate within its validity
+  (Apple writes three-day credential certificates); only the credential
+  certificate may carry the nonce extension (OID `1.2.840.113635.100.8.2`),
+  and it must equal `SHA-256(authData ‖ SHA-256(challenge))`; the
+  certificate's key hashes to the key id the app named, which is also the
+  authenticator data's credential id and its COSE key; `rpIdHash` is
+  `SHA-256(TeamID.BundleID)`; the counter is zero; `aaguid` is `appattest`
+  and seven zero bytes in production or `appattestdevelop` in Apple's
+  sandbox, whichever the server is configured for. When the authenticator
+  data reports Apple's validation category, production accepts only
+  TestFlight and App Store builds, and the sandbox only development-signed
+  and ad hoc builds; iOS versions that report none (iOS 18 and earlier) are
+  judged on the rest.
+- **Storage.** The `verily_app_attest_key` row keeps the public key, its id
+  (SHA-256 of the key, hex, the same `captureKeyId` evidence rows carry),
+  the environment, the certificate chain, Apple's receipt, the validation
+  category and bundle version, and the last counter. A key belongs to one
+  account: registering a key another account holds is refused, as Apple
+  advises. The receipt is stored but not yet verified or refreshed.
+- **Assertion.** The proof carries the manifest, the assertion as
+  `captureSignature`, and the key id as `captureAppAttestKeyId` (never with a
+  certificate chain). The server finds the caller's own key, checks the
+  ECDSA P-256 signature over
+  `SHA-256(authenticatorData ‖ SHA-256(manifest))`, the `rpIdHash`, and the
+  validation category, and then, under a row lock, that the counter is larger
+  than the last accepted one, which it stores. A replayed or reordered
+  assertion is refused with `capture_app_attest_replayed`.
+- **What it proves.** Apple vouches that a genuine Apple device running
+  Verily's app holds the key in its Secure Enclave, and the assertion binds
+  this window's manifest. App Attest has **no verified-boot or jailbreak
+  signal**, and its key is per install rather than per window, so a valid
+  assertion records `secureEnclaveAttested`, never `hardwareAttested`. A
+  jailbroken device can still serve assertions; reward sizing and review
+  stay the backstop.
+- **On the phone.** `AppAttestCaptureKeyStore` registers lazily when the first
+  window opens, keeping each account's key id in the Keychain (this device
+  only; App Attest keys do not survive a restore). A phone without App Attest
+  (`isSupported` false, such as the simulator) signs nothing, and the server
+  applies `VERILY_CAPTURE_SIGNATURE_MODE`. Apple's `serverUnavailable` keeps
+  the key for a retry; any other failure, or a key the server rejects,
+  discards it so the next window starts again.
+
+Refusals carry `capture_app_attest_*` reason codes (and
+`capture_signature_invalid`), which participants see as
+`capture_not_verified`. DeviceCheck's per-device bits and refreshing the
+fraud-risk receipt (attested keys per device) are not built yet.
+
 #### Play Integrity
 
 `device_integrity_verifier.dart` requires a verdict for this exact request,
@@ -249,32 +332,48 @@ Each proof records the strongest level the server verified:
 | `basic`                   | Bound to a capture window only                                                                                              |
 | `appAttested`             | Play Integrity vouched for the app and device                                                                               |
 | `deviceSigned`            | A key signed the capture but its attestation was not trusted (optional mode)                                                |
+| `secureEnclaveAttested`   | The account's App Attest key, in the Secure Enclave of a genuine Apple device running our app, asserted it (no boot signal) |
 | `hardwareAttested`        | A fresh key in the TEE or StrongBox of a locked, verified device running our signed app, created for this window, signed it |
 
 The evidence row keeps the manifest, signature, the attested public key and
-its id, `captureKeyStorage` (`strongBox` or `trustedEnvironment`, from a
-trusted attestation only), the certificate chain (so later revocations can be
-checked against past proof), and `captureDeviceKeyId`: the SHA-256 of the
-remotely provisioned attestation key that certified the capture key. That key
-is hardware-bound and rotates every few weeks, so it is the abuse gate's
-device pseudonym; factory-provisioned keys are shared by a batch of devices
-and give none.
+its id, `captureKeyStorage` (`strongBox` or `trustedEnvironment` from a
+trusted Android attestation, `secureEnclave` from a registered App Attest
+key), the Android certificate chain (so later revocations can be checked
+against past proof; an App Attest key keeps its chain on its own row), and
+`captureDeviceKeyId`: the SHA-256 of the remotely provisioned attestation key
+that certified the capture key. That key is hardware-bound and rotates every
+few weeks, so it is the abuse gate's device pseudonym; factory-provisioned
+keys are shared by a batch of devices and give none, and neither does App
+Attest, whose keys are per account.
 
 #### Configuration
 
 - `VERILY_CAPTURE_SIGNATURE_MODE`: `optional` (default) or `required`.
   `required` means every proof carries a manifest signed by a key whose
-  attestation verifies. `optional` records an untrusted attestation (an
-  emulator, a debug build signed with another certificate) as `deviceSigned`;
-  a manifest or signature that does not verify is refused in both modes.
+  attestation verifies: an attested Android key or a registered App Attest
+  key. `optional` records an untrusted Android attestation (an emulator, a
+  debug build signed with another certificate) as `deviceSigned`; a manifest
+  or signature that does not verify is refused in both modes. There is no
+  untrusted App Attest signature: an assertion verifies against a registered
+  key or is refused.
 - `VERILY_DEVICE_INTEGRITY_MODE`: `disabled` (default) or `required`.
 - `VERILY_ANDROID_SIGNING_CERT_SHA256`: hex SHA-256 of the release signing
   certificate (the Play app-signing certificate for Play builds),
   comma-separated during a rotation. Without it no attestation is trusted.
+- `VERILY_APPLE_TEAM_ID`: the ten-character Apple team id (App ID prefix).
+  Unset turns App Attest off: registration answers
+  `AppAttestException(unavailable)` and assertions are refused.
+- `VERILY_IOS_BUNDLE_ID`: the iOS bundle id (default `fun.verily.app`).
+- `VERILY_APP_ATTEST_ENVIRONMENT`: `production` (default) or `development`.
+  Builds from the App Store, TestFlight, or the enterprise program always use
+  production; Xcode builds without the App Attest entitlement (the app sets
+  none) use Apple's sandbox, which only a server running in development or
+  test may accept.
 
-A malformed value, or `required` signatures without a signing certificate,
-stops startup. Production readiness (the abuse-resistance gate) requires all
-three.
+A malformed value, `required` signatures without a signing certificate, or
+the sandbox outside development stops startup. Production readiness (the
+abuse-resistance gate) requires the first three. With signatures required,
+iPhones also need `VERILY_APPLE_TEAM_ID`, or their proof is refused.
 
 ### The live spoken challenge
 

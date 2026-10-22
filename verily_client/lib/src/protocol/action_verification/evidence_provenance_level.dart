@@ -24,6 +24,13 @@ enum EvidenceProvenanceLevel implements _isc.SerializableModel {
   /// (only when VERILY_CAPTURE_SIGNATURE_MODE is optional).
   deviceSigned,
 
+  /// An App Attest key, which Apple attested lives in the Secure Enclave of a
+  /// genuine Apple device running Verily's app and which this account
+  /// registered for this install, signed the capture's manifest with a
+  /// counter it had not used before. Apple gives no verified-boot or
+  /// jailbreak signal, so this claims less than hardwareAttested.
+  secureEnclaveAttested,
+
   /// A fresh key, attested by Google's chain to live in the TEE or StrongBox
   /// of a locked, verified device running Verily's signed app, and created
   /// for this capture's challenge, signed the capture.
@@ -37,6 +44,8 @@ enum EvidenceProvenanceLevel implements _isc.SerializableModel {
         return EvidenceProvenanceLevel.appAttested;
       case 'deviceSigned':
         return EvidenceProvenanceLevel.deviceSigned;
+      case 'secureEnclaveAttested':
+        return EvidenceProvenanceLevel.secureEnclaveAttested;
       case 'hardwareAttested':
         return EvidenceProvenanceLevel.hardwareAttested;
       default:

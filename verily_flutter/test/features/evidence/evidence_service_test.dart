@@ -117,7 +117,7 @@ class _Gateway implements EvidenceGateway {
   }
 }
 
-const _proof = CaptureProvenanceProof(
+const _proof = CaptureProvenanceProof.keystore(
   manifest: 'bWFuaWZlc3Q=',
   signature: 'c2lnbmF0dXJl',
   certificateChain: ['bGVhZg==', 'cm9vdA=='],

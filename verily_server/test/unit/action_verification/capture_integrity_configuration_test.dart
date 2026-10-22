@@ -31,11 +31,38 @@ void main() {
     );
   });
 
-  test('a malformed mode or digest stops startup', () {
+  test("Apple's sandbox is accepted only by development and test servers", () {
+    const sandbox = {
+      'VERILY_APPLE_TEAM_ID': 'TEAMID1234',
+      'VERILY_APP_ATTEST_ENVIRONMENT': 'development',
+    };
+
+    expect(
+      () => validateCaptureIntegrityConfiguration(
+        sandbox,
+        developmentRunMode: true,
+      ),
+      returnsNormally,
+    );
+    expect(
+      () => validateCaptureIntegrityConfiguration(sandbox),
+      throwsStateError,
+    );
+    expect(
+      () => validateCaptureIntegrityConfiguration(const {
+        'VERILY_APPLE_TEAM_ID': 'TEAMID1234',
+      }),
+      returnsNormally,
+    );
+  });
+
+  test('a malformed mode, digest, or App Attest value stops startup', () {
     for (final environment in [
       {'VERILY_CAPTURE_SIGNATURE_MODE': 'sometimes'},
       {'VERILY_DEVICE_INTEGRITY_MODE': 'maybe'},
       {'VERILY_ANDROID_SIGNING_CERT_SHA256': 'not-a-digest'},
+      {'VERILY_APPLE_TEAM_ID': 'not-a-team'},
+      {'VERILY_APP_ATTEST_ENVIRONMENT': 'staging'},
     ]) {
       expect(
         () => validateCaptureIntegrityConfiguration(environment),

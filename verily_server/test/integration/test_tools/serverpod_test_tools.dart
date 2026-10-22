@@ -40,6 +40,8 @@ import 'package:verily_server/src/generated/action_verification/action_spoken_ch
     as _i1u8vy1l;
 import 'package:verily_server/src/generated/action_verification/action_template.dart'
     as _icxixoim;
+import 'package:verily_server/src/generated/action_verification/app_attest/app_attest_challenge_view.dart'
+    as _iqotirq8;
 import 'package:verily_server/src/generated/action_verification/create_action_definition_request.dart'
     as _iknf9wff;
 import 'package:verily_server/src/generated/action_verification/evidence_appeal_status.dart'
@@ -249,6 +251,8 @@ class TestEndpoints {
 
   late final _ActionVerificationEndpoint actionVerification;
 
+  late final _AppAttestEndpoint appAttest;
+
   late final _EvidenceAppealEndpoint evidenceAppeal;
 
   late final _EvidenceReviewEndpoint evidenceReview;
@@ -284,6 +288,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     actionVerification = _ActionVerificationEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    appAttest = _AppAttestEndpoint(
       endpoints,
       serializationManager,
     );
@@ -1100,6 +1108,80 @@ class _ActionVerificationEndpoint {
           _localUniqueSession,
           _localCallContext.arguments,
         ) as _ida.Future<List<_iyvinv8z.ActionAttemptView>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _AppAttestEndpoint {
+  _AppAttestEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_iqotirq8.AppAttestChallengeView> beginRegistration(
+    _ist.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'appAttest',
+            method: 'beginRegistration',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'appAttest',
+          methodName: 'beginRegistration',
+          parameters: _ist.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<_iqotirq8.AppAttestChallengeView>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<void> registerKey(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required _is.UuidValue challengeId,
+    required String keyId,
+    required String attestationObject,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'appAttest',
+            method: 'registerKey',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'appAttest',
+          methodName: 'registerKey',
+          parameters: _ist.testObjectToJson({
+            'challengeId': challengeId,
+            'keyId': keyId,
+            'attestationObject': attestationObject,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<void>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

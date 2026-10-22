@@ -1,0 +1,5 @@
+### A refused App Attest registration. The message is safe to show.
+exception: AppAttestException
+fields:
+  problem: AppAttestProblem
+  message: String

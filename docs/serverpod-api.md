@@ -37,6 +37,21 @@ Local ports (see `devenv.nix`): API 8180, Insights 8181, web 8182, Postgres
 | `completeAttempt(attemptId)`                                                | Finish an attempt whose proof is accepted                                                                     |
 | `listMyAttempts(limit:)`                                                    | The caller's attempts                                                                                         |
 
+### `appAttest`
+
+How an iPhone registers the App Attest key it signs captures with (see
+[Apple App Attest](verification.md#apple-app-attest)).
+
+| Method                                                  | Purpose                                                                                 |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `beginRegistration()`                                   | A single-use, five-minute challenge (`AppAttestChallengeView`); ten an hour per account |
+| `registerKey(challengeId:, keyId:, attestationObject:)` | Verify Apple's attestation over `SHA-256(challenge)` and register the key to the caller |
+
+Both throw `AppAttestException` with an `AppAttestProblem`: `unavailable`
+(this server has no Apple team configured; do not retry), `rateLimited`,
+`challengeInvalid` (ask for a new challenge), or `keyRejected` (make a new
+key before trying again).
+
 ### `rewards` and `payoutWallet`
 
 | Method                                                              | Purpose                                                                          |
@@ -110,7 +125,8 @@ Typed, product-safe exceptions reach the client: `ResourceNotFoundException`
 (with a `MissingResource`: `action` or `app`; the message never says whether
 the thing is missing or hidden), `ActionAuthoringException`
 (with an `ActionAuthoringProblem`), `ActionDraftingUnavailableException`,
-`AppUnavailableException`, `AppPlatformException` (with an
+`AppUnavailableException`, `AppAttestException` (with an `AppAttestProblem`),
+`AppPlatformException` (with an
 `AppPlatformProblem`: `invalidWebhookUrl`, `webhooksUnavailable`,
 `invalidRedirectUri`, `tooManyRedirectUris`, `linkRequestInvalid`,
 `linkCodeInvalid`, `pullVerificationUnavailable`, `invalidReference`,
@@ -290,3 +306,25 @@ outright. See [capture integrity](verification.md#capture-integrity).
   `capture_attestation_*`, `device_integrity_not_strong`) reach participants
   as `capture_not_verified`; the review reasons `device_capture_risk` and
   `device_activity_risk` reach reviewers as `security_review`.
+
+## App Attest changes
+
+iPhone capture signing (Phase 2) is additive.
+
+- `appAttest.beginRegistration()` and `appAttest.registerKey(challengeId:,
+  keyId:, attestationObject:)` (new), with `AppAttestChallengeView`,
+  `AppAttestException`, and `AppAttestProblem`.
+- `ActionEvidenceInput.captureAppAttestKeyId` and
+  `MediaUploadConfirmation.captureAppAttestKeyId` (new, nullable): the
+  registered key id. An iPhone sends it with the manifest and its App Attest
+  assertion in `captureSignature`, and no `captureCertificateChain`; sending
+  both is refused.
+- `EvidenceProvenanceLevel.secureEnclaveAttested` (new): a registered App
+  Attest key asserted the capture. Exhaustive switches over the enum need the
+  new case.
+- `packages/verily_evidence` adds `appAttestRegistrationClientDataHash` and
+  `appAttestAssertionClientDataHash`, the two `clientDataHash` values both
+  sides compute.
+- New internal reason codes (`capture_app_attest_*`,
+  `capture_signature_ambiguous`) reach participants as
+  `capture_not_verified`.

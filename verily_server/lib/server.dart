@@ -95,7 +95,10 @@ Future<void> run(List<String> args) async {
     verifier: verifier,
     inferencePolicy: productionInferenceCostPolicyFromEnvironment(environment),
   );
-  validateCaptureIntegrityConfiguration(environment);
+  validateCaptureIntegrityConfiguration(
+    environment,
+    developmentRunMode: developmentLike,
+  );
   if (staticQrCodesAllowed(environment) && !developmentLike) {
     throw StateError(
       'Static venue codes are a local fixture; VERILY_STATIC_QR_ENABLED must '

@@ -6,6 +6,8 @@ import 'package:test/test.dart';
 import 'package:verily_evidence/verily_evidence.dart';
 import 'package:verily_server/src/action_verification/action_period.dart';
 import 'package:verily_server/src/action_verification/action_verification_service.dart';
+import 'package:verily_server/src/action_verification/app_attest/app_attest_service.dart';
+import 'package:verily_server/src/action_verification/app_attest/app_attest_verifier.dart';
 import 'package:verily_server/src/action_verification/capture_integrity.dart';
 import 'package:verily_server/src/action_verification/device_integrity_verifier.dart';
 import 'package:verily_server/src/action_verification/key_attestation/android_key_attestation_verifier.dart';
@@ -13,6 +15,7 @@ import 'package:verily_server/src/action_verification/key_attestation/attestatio
 import 'package:verily_server/src/generated/protocol.dart';
 import 'package:verily_server/src/security/secret_digest.dart';
 
+import 'test_tools/app_attest_test_authority.dart';
 import 'test_tools/key_attestation_test_chain.dart';
 import 'test_tools/serverpod_test_tools.dart';
 import 'test_tools/verily_fixtures.dart';
@@ -991,6 +994,400 @@ void main() {
           );
         },
       );
+
+      group('and an iPhone signs with its App Attest key', () {
+        final apple = TestAppAttestAuthority();
+        late AppAttestService appAttest;
+        late ActionVerificationService service;
+
+        setUp(() {
+          // Trusts the test authority's root the way production trusts
+          // Apple's.
+          appAttest = AppAttestService(
+            verifier: AppAttestVerifier(
+              policy: testAppAttestPolicy(),
+              trustAnchors: [apple.root],
+            ),
+          );
+          service = ActionVerificationService(
+            captureIntegrity: CaptureIntegrityEvaluator(
+              captureSignatureRequired: true,
+              deviceIntegrityVerifier: integrityVerifier,
+              keyAttestationVerifier: AndroidKeyAttestationVerifier(
+                policy: KeyAttestationPolicy(
+                  signingCertificateDigests: {testSigningCertificateDigest},
+                ),
+                statusSource: _NothingListed(),
+              ),
+              appAttest: appAttest,
+            ),
+          );
+        });
+
+        /// Registers a key for [who] the way the app does before its first
+        /// capture: a server challenge, then Apple's attestation over it.
+        Future<TestAppAttestKey> register(
+          TestSessionBuilder who,
+          UuidValue whoId, {
+          String keySeed = 'install',
+        }) async {
+          final session = who.build();
+          final challenge = await appAttest.beginRegistration(
+            session,
+            authUserId: whoId,
+          );
+          final key = apple.attest(
+            clientDataHash: appAttestRegistrationClientDataHash(
+              challenge.challenge,
+            ),
+            keySeed: keySeed,
+          );
+          await appAttest.registerKey(
+            session,
+            authUserId: whoId,
+            challengeId: challenge.id,
+            keyId: key.keyId,
+            attestationObject: key.encodedAttestation,
+          );
+          return key;
+        }
+
+        /// Scans a live venue code inside a new window and signs it with an
+        /// assertion by [key] at [counter].
+        Future<(EvidenceSubmissionResult, ActionCaptureChallengeView)> scan(
+          ActionAttemptView attempt,
+          TestAppAttestKey key, {
+          required int counter,
+          String? keyId,
+          List<String>? certificateChain,
+        }) async {
+          final window = await open(service, attempt);
+          final capturedAt = DateTime.now().toUtc();
+          final code = await liveCode();
+          final binding = bound(attempt, window, capturedAt, code);
+          final result = await service.submitEvidence(
+            participant.build(),
+            authUserId: participantId,
+            input: ActionEvidenceInput(
+              attemptId: attempt.id,
+              requirementId: venue.id,
+              capturedAt: capturedAt,
+              qrCode: code,
+              captureChallengeId: window.id,
+              captureManifest: base64Encode(binding.manifest),
+              captureSignature: key.encodedAssertion(
+                binding.manifest,
+                counter: counter,
+              ),
+              captureAppAttestKeyId: keyId ?? key.keyId,
+              captureCertificateChain: certificateChain,
+            ),
+          );
+          return (result, window);
+        }
+
+        Future<String?> verdictOf(ActionCaptureChallengeView window) async =>
+            (await ActionCaptureChallenge.db.findById(
+              participant.build(),
+              window.id,
+            ))!.verdict;
+
+        test(
+          'then a registered key asserting the manifest is recorded at the '
+          'Secure Enclave level, without a boot claim',
+          () async {
+            final key = await register(participant, participantId);
+            final attempt = await begin(participant);
+            final session = participant.build();
+
+            final (result, window) = await scan(attempt, key, counter: 1);
+
+            expect(result.status, EvidenceDecisionStatus.accepted);
+            expect(
+              result.provenanceLevel,
+              EvidenceProvenanceLevel.secureEnclaveAttested,
+            );
+            final evidence = await ActionEvidence.db.findFirstRow(
+              session,
+              where: (table) => table.attemptId.equals(attempt.id),
+            );
+            expect(
+              evidence!.provenanceLevel,
+              EvidenceProvenanceLevel.secureEnclaveAttested,
+            );
+            expect(evidence.capturePublicKey, base64Encode(key.publicKey));
+            expect(evidence.captureKeyId, capturePublicKeyId(key.publicKey));
+            expect(evidence.captureKeyStorage, 'secureEnclave');
+            expect(evidence.captureCertificateChain, isNull);
+            expect(evidence.captureDeviceKeyId, isNull);
+            final stored = await ActionCaptureChallenge.db.findById(
+              session,
+              window.id,
+            );
+            expect(stored!.usedAt, isNotNull);
+            expect(stored.provider, CaptureIntegrityProvider.appAttest);
+            expect(stored.verdict, AppAttestReason.valid);
+            final registered = await AppAttestKey.db.findFirstRow(
+              session,
+              where: (table) =>
+                  table.keyId.equals(capturePublicKeyId(key.publicKey)),
+            );
+            expect(registered!.authUserId, participantId);
+            expect(registered.signCount, 1);
+            expect(registered.lastAssertedAt, isNotNull);
+            expect(registered.environment, AppAttestEnvironment.production);
+            expect(registered.certificateChain, hasLength(2));
+            expect(registered.receipt, isNotEmpty);
+          },
+        );
+
+        test(
+          'then an assertion whose counter does not advance is refused',
+          () async {
+            final key = await register(participant, participantId);
+            final attempt = await begin(participant);
+            await scan(attempt, key, counter: 3);
+
+            final (replayed, window) = await scan(attempt, key, counter: 3);
+            final (earlier, earlierWindow) = await scan(
+              attempt,
+              key,
+              counter: 2,
+            );
+
+            expect(replayed.status, EvidenceDecisionStatus.rejected);
+            expect(replayed.reasonCode, 'capture_not_verified');
+            expect(await verdictOf(window), AppAttestReason.replayed);
+            expect(earlier.status, EvidenceDecisionStatus.rejected);
+            expect(await verdictOf(earlierWindow), AppAttestReason.replayed);
+            final (next, _) = await scan(attempt, key, counter: 4);
+            expect(next.status, EvidenceDecisionStatus.accepted);
+          },
+        );
+
+        test(
+          'then an assertion for another capture is refused',
+          () async {
+            final key = await register(participant, participantId);
+            final attempt = await begin(participant);
+            final window = await open(service, attempt);
+            final capturedAt = DateTime.now().toUtc();
+            final code = await liveCode();
+            final binding = bound(attempt, window, capturedAt, code);
+            final elsewhere = bound(attempt, window, capturedAt, 'another');
+
+            final result = await service.submitEvidence(
+              participant.build(),
+              authUserId: participantId,
+              input: ActionEvidenceInput(
+                attemptId: attempt.id,
+                requirementId: venue.id,
+                capturedAt: capturedAt,
+                qrCode: code,
+                captureChallengeId: window.id,
+                captureManifest: base64Encode(binding.manifest),
+                captureSignature: key.encodedAssertion(
+                  elsewhere.manifest,
+                  counter: 1,
+                ),
+                captureAppAttestKeyId: key.keyId,
+              ),
+            );
+
+            expect(result.status, EvidenceDecisionStatus.rejected);
+            expect(await verdictOf(window), AppAttestReason.signatureInvalid);
+          },
+        );
+
+        test(
+          'then a key registered to another account or to no one is '
+          'refused',
+          () async {
+            final theirs = await register(other, otherId, keySeed: 'theirs');
+            final unregistered = apple.attest(
+              clientDataHash: List.filled(32, 0),
+              keySeed: 'never-registered',
+            );
+            final attempt = await begin(participant);
+
+            final (borrowed, borrowedWindow) = await scan(
+              attempt,
+              theirs,
+              counter: 1,
+            );
+            final (unknown, unknownWindow) = await scan(
+              attempt,
+              unregistered,
+              counter: 1,
+            );
+
+            expect(borrowed.status, EvidenceDecisionStatus.rejected);
+            expect(await verdictOf(borrowedWindow), AppAttestReason.keyUnknown);
+            expect(unknown.status, EvidenceDecisionStatus.rejected);
+            expect(await verdictOf(unknownWindow), AppAttestReason.keyUnknown);
+          },
+        );
+
+        test(
+          'then a proof naming both an Android chain and an App Attest key '
+          'is refused',
+          () async {
+            final key = await register(participant, participantId);
+            final attempt = await begin(participant);
+
+            final (result, window) = await scan(
+              attempt,
+              key,
+              counter: 1,
+              certificateChain: authority
+                  .issue(challenge: List.filled(32, 0))
+                  .encodedChain,
+            );
+
+            expect(result.status, EvidenceDecisionStatus.rejected);
+            expect(await verdictOf(window), 'capture_signature_ambiguous');
+          },
+        );
+
+        test(
+          'then registration needs a fresh challenge of the caller and a '
+          'key no other account holds',
+          () async {
+            final session = participant.build();
+            final challenge = await appAttest.beginRegistration(
+              session,
+              authUserId: participantId,
+            );
+            final key = apple.attest(
+              clientDataHash: appAttestRegistrationClientDataHash(
+                challenge.challenge,
+              ),
+            );
+            Future<void> registerWith(
+              UuidValue challengeId,
+              TestAppAttestKey attested, {
+              UuidValue? as,
+            }) => appAttest.registerKey(
+              session,
+              authUserId: as ?? participantId,
+              challengeId: challengeId,
+              keyId: attested.keyId,
+              attestationObject: attested.encodedAttestation,
+            );
+            Matcher refused(AppAttestProblem problem) => throwsA(
+              isA<AppAttestException>().having(
+                (error) => error.problem,
+                'problem',
+                problem,
+              ),
+            );
+
+            // Another account cannot spend this account's challenge.
+            await expectLater(
+              registerWith(challenge.id, key, as: otherId),
+              refused(AppAttestProblem.challengeInvalid),
+            );
+            await registerWith(challenge.id, key);
+            // A challenge is used once.
+            await expectLater(
+              registerWith(challenge.id, key),
+              refused(AppAttestProblem.challengeInvalid),
+            );
+
+            // An attestation made for another challenge is refused, and
+            // its challenge is spent.
+            final next = await appAttest.beginRegistration(
+              session,
+              authUserId: participantId,
+            );
+            await expectLater(
+              registerWith(
+                next.id,
+                apple.attest(
+                  clientDataHash: List.filled(32, 9),
+                  keySeed: 'stale',
+                ),
+              ),
+              refused(AppAttestProblem.keyRejected),
+            );
+            final spent = await AppAttestChallenge.db.findById(
+              session,
+              next.id,
+            );
+            expect(spent!.usedAt, isNotNull);
+
+            // A key registered to this account cannot move to another.
+            final theirs = await appAttest.beginRegistration(
+              other.build(),
+              authUserId: otherId,
+            );
+            await expectLater(
+              appAttest.registerKey(
+                other.build(),
+                authUserId: otherId,
+                challengeId: theirs.id,
+                keyId: key.keyId,
+                attestationObject: apple
+                    .attest(
+                      clientDataHash: appAttestRegistrationClientDataHash(
+                        theirs.challenge,
+                      ),
+                    )
+                    .encodedAttestation,
+              ),
+              refused(AppAttestProblem.keyRejected),
+            );
+          },
+        );
+
+        test(
+          'then registration challenges are rate limited per account',
+          () async {
+            final session = participant.build();
+            for (
+              var index = 0;
+              index < maxAppAttestChallengesPerHour;
+              index += 1
+            ) {
+              await appAttest.beginRegistration(
+                session,
+                authUserId: participantId,
+              );
+            }
+
+            await expectLater(
+              appAttest.beginRegistration(session, authUserId: participantId),
+              throwsA(
+                isA<AppAttestException>().having(
+                  (error) => error.problem,
+                  'problem',
+                  AppAttestProblem.rateLimited,
+                ),
+              ),
+            );
+            await appAttest.beginRegistration(
+              other.build(),
+              authUserId: otherId,
+            );
+          },
+        );
+
+        test(
+          'then a server without an Apple team refuses registration',
+          () async {
+            await expectLater(
+              endpoints.appAttest.beginRegistration(participant),
+              throwsA(
+                isA<AppAttestException>().having(
+                  (error) => error.problem,
+                  'problem',
+                  AppAttestProblem.unavailable,
+                ),
+              ),
+            );
+          },
+        );
+      });
     });
 
     group('when a participant completes an attempt', () {

@@ -26,6 +26,7 @@ abstract final class ReceiptStatus {
 const Set<String> _signatureProviders = {
   CaptureIntegrityProvider.keyAttestation,
   CaptureIntegrityProvider.unattestedSignature,
+  CaptureIntegrityProvider.appAttest,
 };
 const _playIntegrityProvider = 'google-play-integrity';
 
@@ -118,11 +119,13 @@ Map<String, String> receiptChecks({
   String captureSignature() {
     final proof = primary;
     if (proof == null) return ReceiptCheck.notChecked;
-    if (proof.evidence.provenanceLevel ==
-            EvidenceProvenanceLevel.hardwareAttested ||
-        proof.evidence.provenanceLevel ==
-            EvidenceProvenanceLevel.deviceSigned) {
-      return ReceiptCheck.passed;
+    switch (proof.evidence.provenanceLevel) {
+      case EvidenceProvenanceLevel.hardwareAttested ||
+          EvidenceProvenanceLevel.secureEnclaveAttested ||
+          EvidenceProvenanceLevel.deviceSigned:
+        return ReceiptCheck.passed;
+      case EvidenceProvenanceLevel.appAttested || EvidenceProvenanceLevel.basic:
+        break;
     }
     if (proof.integrityFailed &&
         _signatureProviders.contains(proof.captureChallenge?.provider)) {

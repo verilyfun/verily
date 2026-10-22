@@ -512,7 +512,7 @@ EvidenceService fakeEvidenceService(FakeEvidenceGateway gateway) =>
       captureKeys: const NoCaptureKeys(),
     );
 
-/// A phone without a capture key store, like iOS today.
+/// A phone that cannot sign captures.
 final class NoCaptureKeys implements CaptureKeyStore {
   const NoCaptureKeys();
 

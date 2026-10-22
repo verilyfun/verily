@@ -4,6 +4,8 @@ import 'dart:typed_data';
 
 import 'package:serverpod/serverpod.dart';
 import 'package:verily_evidence/verily_evidence.dart';
+import 'package:verily_server/src/action_verification/app_attest/app_attest_service.dart';
+import 'package:verily_server/src/action_verification/app_attest/app_attest_verifier.dart';
 import 'package:verily_server/src/action_verification/capture_signature_verifier.dart';
 import 'package:verily_server/src/action_verification/device_integrity_verifier.dart';
 import 'package:verily_server/src/action_verification/key_attestation/android_key_attestation_verifier.dart';
@@ -22,6 +24,9 @@ abstract final class CaptureIntegrityProvider {
   /// A device key signed the capture, but its attestation was not trusted.
   static const unattestedSignature = 'android-keystore';
 
+  /// An iPhone's registered App Attest key asserted the capture's manifest.
+  static const appAttest = 'apple-app-attest';
+
   /// Only the capture challenge bound the proof.
   static const challengeOnly = 'capture-challenge';
 }
@@ -34,20 +39,27 @@ final class CaptureIntegrityMaterial {
     this.captureManifest,
     this.captureSignature,
     this.captureCertificateChain,
+    this.captureAppAttestKeyId,
   });
 
   final UuidValue? captureChallengeId;
   final String? deviceIntegrityToken;
   final String? captureManifest;
+
+  /// An Android key's P1363 signature, or an iPhone's App Attest assertion.
   final String? captureSignature;
 
-  /// Base64 DER certificates, leaf first.
+  /// The Android key's attestation: base64 DER certificates, leaf first.
   final List<String>? captureCertificateChain;
+
+  /// The iPhone's registered App Attest key identifier, base64.
+  final String? captureAppAttestKeyId;
 
   bool get hasSignatureMaterial =>
       [
         captureManifest,
         captureSignature,
+        captureAppAttestKeyId,
       ].any((value) => value?.trim().isNotEmpty ?? false) ||
       (captureCertificateChain?.isNotEmpty ?? false);
 }
@@ -99,13 +111,15 @@ final class CaptureIntegrityResult {
 
 /// Checks that a proof was captured inside one capture window the server
 /// opened before recording, and verifies the Play Integrity verdict and the
-/// attested capture-key signature that commit to the exact evidence
-/// fingerprint the server recomputed.
+/// device signature (an attested Android capture key, or an iPhone's App
+/// Attest assertion) that commit to the exact evidence fingerprint the server
+/// recomputed.
 class CaptureIntegrityEvaluator {
   CaptureIntegrityEvaluator({
     DeviceIntegrityVerifier? deviceIntegrityVerifier,
     bool? deviceIntegrityRequired,
     KeyAttestationVerifier? keyAttestationVerifier,
+    AppAttestService? appAttest,
     bool? captureSignatureRequired,
     DateTime Function()? clock,
   }) : deviceIntegrityVerifier =
@@ -121,6 +135,7 @@ class CaptureIntegrityEvaluator {
            AndroidKeyAttestationVerifier(
              policy: KeyAttestationPolicy.fromEnvironment(),
            ),
+       appAttest = appAttest ?? AppAttestService.fromEnvironment(),
        captureSignatureRequired =
            captureSignatureRequired ??
            captureSignatureRequiredFromEnvironment(),
@@ -129,10 +144,12 @@ class CaptureIntegrityEvaluator {
   final DeviceIntegrityVerifier deviceIntegrityVerifier;
   final bool deviceIntegrityRequired;
   final KeyAttestationVerifier keyAttestationVerifier;
+  final AppAttestService appAttest;
 
   /// When true, every proof needs a manifest signed by a key whose
-  /// attestation verifies. When false, an unattested signature is recorded
-  /// as `deviceSigned`, so emulators and debug builds still work.
+  /// attestation verifies: an attested Android key or a registered App
+  /// Attest key. When false, an unattested Android signature is recorded as
+  /// `deviceSigned`, so emulators and debug builds still work.
   final bool captureSignatureRequired;
   final DateTime Function() clock;
 
@@ -179,8 +196,12 @@ class CaptureIntegrityEvaluator {
     final manifest = material.captureManifest?.trim();
     final signature = material.captureSignature?.trim();
     final chain = material.captureCertificateChain;
+    final appAttestKeyId = material.captureAppAttestKeyId?.trim();
     if (manifest != null && manifest.length > 4096) {
       throw ArgumentError('Capture manifest is too large.');
+    }
+    if (signature != null && signature.length > 4096) {
+      throw ArgumentError('Capture signature is too large.');
     }
     if (chain != null &&
         (chain.length > _maxChainCertificates ||
@@ -259,15 +280,22 @@ class CaptureIntegrityEvaluator {
       }
     }
 
+    final hasChain = chain?.isNotEmpty ?? false;
+    final hasAppAttestKey = appAttestKeyId?.isNotEmpty ?? false;
+    final signatureProvider = hasAppAttestKey
+        ? CaptureIntegrityProvider.appAttest
+        : CaptureIntegrityProvider.keyAttestation;
+    // A signature names its key one way: an Android chain or an App Attest
+    // key, never both.
+    if (hasChain && hasAppAttestKey) {
+      return failure('capture_signature_ambiguous', signatureProvider);
+    }
     final hasCompleteSignature =
         (manifest?.isNotEmpty ?? false) &&
         (signature?.isNotEmpty ?? false) &&
-        (chain?.isNotEmpty ?? false);
+        (hasChain || hasAppAttestKey);
     if (hasSignatureMaterial && !hasCompleteSignature) {
-      return failure(
-        'capture_signature_incomplete',
-        CaptureIntegrityProvider.keyAttestation,
-      );
+      return failure('capture_signature_incomplete', signatureProvider);
     }
     if (!hasCompleteSignature && captureSignatureRequired) {
       return failure(
@@ -278,49 +306,57 @@ class CaptureIntegrityEvaluator {
 
     _SignedCapture? signed;
     if (hasCompleteSignature) {
-      final outcome = await _verifySignedCapture(
-        session,
-        attemptId: attemptId,
-        requirementId: requirementId,
-        nonce: challenge.nonce,
+      final expectedManifest = captureProvenanceManifest(
+        attemptId: attemptId.toString(),
+        requirementId: requirementId.toString(),
         requestHash: requestHash,
-        bindingHash: bindingHash,
-        manifest: manifest!,
-        signature: signature!,
-        chain: chain!,
-        now: now,
+        evidenceBindingHash: bindingHash,
       );
+      if (!constantTimeEquals(base64Encode(expectedManifest), manifest!)) {
+        return failure('capture_manifest_mismatch', signatureProvider);
+      }
+      final outcome = hasAppAttestKey
+          ? await _verifyAppAttestCapture(
+              session,
+              authUserId: authUserId,
+              manifest: expectedManifest,
+              assertion: signature!,
+              keyId: appAttestKeyId!,
+              now: now,
+            )
+          : await _verifyAttestedKeyCapture(
+              session,
+              attemptId: attemptId,
+              nonce: challenge.nonce,
+              manifest: expectedManifest,
+              signature: signature!,
+              chain: chain!,
+              now: now,
+            );
       switch (outcome) {
         case _SignatureRefused(:final reasonCode):
-          return failure(reasonCode, CaptureIntegrityProvider.keyAttestation);
+          return failure(reasonCode, signatureProvider);
         case final _SignedCapture capture:
           signed = capture;
       }
     }
 
     final integrityTrusted = integrityVerdict?.trusted ?? false;
-    final attested = signed?.attestation.trusted ?? false;
-    final provenanceLevel = attested
-        ? EvidenceProvenanceLevel.hardwareAttested
-        : signed != null
-        ? EvidenceProvenanceLevel.deviceSigned
-        : integrityTrusted
-        ? EvidenceProvenanceLevel.appAttested
-        : EvidenceProvenanceLevel.basic;
+    final provenanceLevel =
+        signed?.provenanceLevel ??
+        (integrityTrusted
+            ? EvidenceProvenanceLevel.appAttested
+            : EvidenceProvenanceLevel.basic);
     final providers = [
       if (integrityTrusted) integrityVerdict!.provider,
-      if (attested)
-        CaptureIntegrityProvider.keyAttestation
-      else if (signed != null)
-        CaptureIntegrityProvider.unattestedSignature,
+      ?signed?.provider,
     ];
-    final reasonCode = switch (provenanceLevel) {
-      EvidenceProvenanceLevel.hardwareAttested => KeyAttestationReason.valid,
-      EvidenceProvenanceLevel.deviceSigned => 'capture_signature_valid',
-      EvidenceProvenanceLevel.appAttested => integrityVerdict!.reasonCode,
-      EvidenceProvenanceLevel.basic => 'capture_challenge_bound',
-    };
-    final publicKey = signed?.attestation.publicKey;
+    final reasonCode =
+        signed?.reasonCode ??
+        (integrityTrusted
+            ? integrityVerdict!.reasonCode
+            : 'capture_challenge_bound');
+    final publicKey = signed?.publicKey;
     return CaptureIntegrityResult(
       trusted: true,
       reasonCode: reasonCode,
@@ -337,39 +373,23 @@ class CaptureIntegrityEvaluator {
       captureSignature: signed == null ? null : signature,
       capturePublicKey: publicKey == null ? null : base64Encode(publicKey),
       captureKeyId: publicKey == null ? null : capturePublicKeyId(publicKey),
-      captureKeyStorage: switch (signed?.attestation.securityLevel) {
-        KeySecurityLevel.strongBox => 'strongBox',
-        KeySecurityLevel.trustedEnvironment => 'trustedEnvironment',
-        KeySecurityLevel.software || null => null,
-      },
-      captureCertificateChain: signed == null ? null : chain,
-      captureDeviceKeyId: signed?.attestation.deviceKeyId,
+      captureKeyStorage: signed?.keyStorage,
+      captureCertificateChain: signed?.certificateChain,
+      captureDeviceKeyId: signed?.deviceKeyId,
     );
   }
 
-  /// Checks the manifest, the attestation of the key that signed it, and
+  /// Checks the attestation of the Android key that signed [manifest], and
   /// the signature itself.
-  Future<_SignatureOutcome> _verifySignedCapture(
+  Future<_SignatureOutcome> _verifyAttestedKeyCapture(
     Session session, {
     required UuidValue attemptId,
-    required UuidValue requirementId,
     required String nonce,
-    required String requestHash,
-    required String bindingHash,
-    required String manifest,
+    required List<int> manifest,
     required String signature,
     required List<String> chain,
     required DateTime now,
   }) async {
-    final expectedManifest = captureProvenanceManifest(
-      attemptId: attemptId.toString(),
-      requirementId: requirementId.toString(),
-      requestHash: requestHash,
-      evidenceBindingHash: bindingHash,
-    );
-    if (!constantTimeEquals(base64Encode(expectedManifest), manifest)) {
-      return const _SignatureRefused('capture_manifest_mismatch');
-    }
     final List<Uint8List> certificates;
     try {
       certificates = [for (final entry in chain) base64Decode(entry.trim())];
@@ -394,7 +414,7 @@ class CaptureIntegrityEvaluator {
       );
     }
     if (!verifyCaptureSignature(
-      manifest: expectedManifest,
+      manifest: manifest,
       encodedSignature: signature,
       publicKey: publicKey,
     )) {
@@ -409,8 +429,57 @@ class CaptureIntegrityEvaluator {
         '(${attestation.reasonCode}); recorded as an unattested signature.',
         level: LogLevel.info,
       );
+      return _SignedCapture(
+        provenanceLevel: EvidenceProvenanceLevel.deviceSigned,
+        provider: CaptureIntegrityProvider.unattestedSignature,
+        reasonCode: 'capture_signature_valid',
+        publicKey: publicKey,
+      );
     }
-    return _SignedCapture(attestation);
+    return _SignedCapture(
+      provenanceLevel: EvidenceProvenanceLevel.hardwareAttested,
+      provider: CaptureIntegrityProvider.keyAttestation,
+      reasonCode: KeyAttestationReason.valid,
+      publicKey: publicKey,
+      keyStorage: switch (attestation.securityLevel) {
+        KeySecurityLevel.strongBox => 'strongBox',
+        KeySecurityLevel.trustedEnvironment => 'trustedEnvironment',
+        KeySecurityLevel.software || null => null,
+      },
+      certificateChain: chain,
+      deviceKeyId: attestation.deviceKeyId,
+    );
+  }
+
+  /// Checks the App Attest assertion the caller's registered key made over
+  /// [manifest]. A registered key was attested in full, so there is no
+  /// untrusted App Attest signature: anything short of a verified assertion
+  /// is refused.
+  Future<_SignatureOutcome> _verifyAppAttestCapture(
+    Session session, {
+    required UuidValue authUserId,
+    required List<int> manifest,
+    required String assertion,
+    required String keyId,
+    required DateTime now,
+  }) async {
+    final verdict = await appAttest.verifyCaptureAssertion(
+      session,
+      authUserId: authUserId,
+      keyId: keyId,
+      assertion: assertion,
+      clientData: manifest,
+      now: now,
+    );
+    final publicKey = verdict.publicKey;
+    if (publicKey == null) return _SignatureRefused(verdict.reasonCode);
+    return _SignedCapture(
+      provenanceLevel: EvidenceProvenanceLevel.secureEnclaveAttested,
+      provider: CaptureIntegrityProvider.appAttest,
+      reasonCode: AppAttestReason.valid,
+      publicKey: publicKey,
+      keyStorage: 'secureEnclave',
+    );
   }
 }
 
@@ -424,10 +493,29 @@ final class _SignatureRefused extends _SignatureOutcome {
   final String reasonCode;
 }
 
+/// A verified device signature and what its key proved.
 final class _SignedCapture extends _SignatureOutcome {
-  const _SignedCapture(this.attestation);
+  const _SignedCapture({
+    required this.provenanceLevel,
+    required this.provider,
+    required this.reasonCode,
+    required this.publicKey,
+    this.keyStorage,
+    this.certificateChain,
+    this.deviceKeyId,
+  });
 
-  final KeyAttestationVerdict attestation;
+  final EvidenceProvenanceLevel provenanceLevel;
+  final String provider;
+  final String reasonCode;
+
+  /// `0x04 ‖ X ‖ Y`.
+  final Uint8List publicKey;
+  final String? keyStorage;
+
+  /// The Android chain as submitted; App Attest keeps its chain on the key.
+  final List<String>? certificateChain;
+  final String? deviceKeyId;
 }
 
 // A chain is a handful of certificates of one to two kilobytes each.
@@ -436,8 +524,15 @@ const _maxEncodedCertificate = 22000;
 
 /// Rejects capture configuration that is malformed or would refuse every
 /// proof: both modes must parse, the signing-certificate digests must be
-/// SHA-256 hex, and required signatures need at least one digest.
-void validateCaptureIntegrityConfiguration(Map<String, String> environment) {
+/// SHA-256 hex, required signatures need at least one digest, and the App
+/// Attest team, bundle, and environment must parse.
+///
+/// Apple's sandbox environment is a development aid: only a server running
+/// in development or test ([developmentRunMode]) may accept its keys.
+void validateCaptureIntegrityConfiguration(
+  Map<String, String> environment, {
+  bool developmentRunMode = false,
+}) {
   deviceIntegrityRequiredFromEnvironment(environment);
   final policy = KeyAttestationPolicy.fromEnvironment(environment);
   if (captureSignatureRequiredFromEnvironment(environment) &&
@@ -445,6 +540,14 @@ void validateCaptureIntegrityConfiguration(Map<String, String> environment) {
     throw StateError(
       'VERILY_CAPTURE_SIGNATURE_MODE=required needs '
       'VERILY_ANDROID_SIGNING_CERT_SHA256.',
+    );
+  }
+  final appAttest = AppAttestPolicy.fromEnvironment(environment);
+  if (appAttest?.environment == AppAttestEnvironment.development &&
+      !developmentRunMode) {
+    throw StateError(
+      'VERILY_APP_ATTEST_ENVIRONMENT=development is only for development '
+      'and test servers.',
     );
   }
 }
@@ -465,7 +568,8 @@ bool deviceIntegrityRequiredFromEnvironment([Map<String, String>? values]) {
 ///
 /// `required` means every proof carries a manifest signed by a fresh key
 /// whose Android Key Attestation verifies under
-/// `VERILY_ANDROID_SIGNING_CERT_SHA256`.
+/// `VERILY_ANDROID_SIGNING_CERT_SHA256`, or asserted by an App Attest key
+/// registered under `VERILY_APPLE_TEAM_ID`.
 bool captureSignatureRequiredFromEnvironment([Map<String, String>? values]) {
   return switch ((values ??
       Platform.environment)['VERILY_CAPTURE_SIGNATURE_MODE']) {

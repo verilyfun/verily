@@ -308,6 +308,12 @@ The randomized live prompt (beyond today's spoken word) and the PDQ registry are
 | C2PA manifests on published renditions, KMS-signed, soft-binding + custom verification assertion                      | `c2pa-rs`                                              | 1 week                                     |
 | Hash-chained fragmented MP4 + IMU trace capture; run IMU/flow correlation in **shadow mode** to measure false rejects | CameraX/Camera2, `sensors_plus`, OpenCV flow in worker | 1–2 weeks                                  |
 
+**Status (22 October 2026).** The App Attest part of the first row is built; [Apple App Attest](verification.md#apple-app-attest) describes it as shipped.
+
+- An iPhone registers one App Attest key per account and install through `appAttest.registerKey`, attested against a single-use server challenge. The Dart verifier in `verily_server/lib/src/action_verification/app_attest/` checks the CBOR object, the chain to the pinned Apple App Attestation Root CA, the nonce, `rpIdHash`, the zero counter, the environment's `aaguid`, and Apple's validation category. It is tested against Apple's two published sample attestations, a recorded iOS 27 attestation with two assertions, and a synthetic authority.
+- Each capture is signed with an assertion over the window's `verily-capture-manifest-v1`; the server requires a strictly increasing counter per key. A valid assertion records the new `secureEnclaveAttested` level, below `hardwareAttested`, because App Attest gives no verified-boot or jailbreak signal and its key is per install rather than per capture.
+- Not built yet: DeviceCheck's two per-device bits, verifying and refreshing the fraud-risk receipt (it is stored), and a run on a physical iPhone.
+
 ### Phase 3: standards-grade capture credentials (quarter-scale, higher uncertainty)
 
 - On-device C2PA signing at capture, following the Pixel blueprint. Verily runs a small CA that issues short-lived certificates only to keys whose attestation verifies, then signs `c2pa.hash.bmff.v3` manifests with Merkle chunks. This uses `c2pa-rs` via `flutter_rust_bridge` or `c2pa-android`/`c2pa-swift`. Then pursue C2PA Conformance (AL2 on Android) so any C2PA verifier recognizes Verily captures. Estimate 6–10 weeks plus program lead time.

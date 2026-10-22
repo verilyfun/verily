@@ -13,7 +13,14 @@ fields:
   captureChallengeId: UuidValue?
   deviceIntegrityToken: String?
   captureManifest: String?
+  ### The device's signature over the manifest: from an Android capture key,
+  ### IEEE P1363 `r ‖ s`; from an iPhone, the App Attest assertion object
+  ### (CBOR). Both base64.
   captureSignature: String?
-  ### The capture key's Android Key Attestation chain: base64 DER, leaf
+  ### The Android capture key's Key Attestation chain: base64 DER, leaf
   ### first. The key, its id, and where it lives come only from here.
   captureCertificateChain: List<String>?
+  ### The iPhone's App Attest key identifier (base64, as `generateKey`
+  ### returns it), registered through `appAttest.registerKey`. Send it or
+  ### `captureCertificateChain`, never both.
+  captureAppAttestKeyId: String?

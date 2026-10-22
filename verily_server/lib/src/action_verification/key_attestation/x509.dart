@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:pointycastle/ecc/ecc_fp.dart' as fp;
@@ -149,6 +150,15 @@ final class X509Certificate {
 
   bool isValidAt(DateTime instant) =>
       !instant.isBefore(notBefore) && !instant.isAfter(notAfter);
+}
+
+/// Parses one PEM `CERTIFICATE` block.
+X509Certificate certificateFromPem(String pem) {
+  final body = pem
+      .replaceAll('-----BEGIN CERTIFICATE-----', '')
+      .replaceAll('-----END CERTIFICATE-----', '')
+      .replaceAll(RegExp(r'\s+'), '');
+  return X509Certificate.parse(base64.decode(body));
 }
 
 /// A distinguished name, compared the way certificate path validation does.
