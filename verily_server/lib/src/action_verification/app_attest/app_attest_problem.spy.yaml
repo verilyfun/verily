@@ -1,0 +1,14 @@
+### Why an App Attest registration was refused.
+enum: AppAttestProblem
+serialized: byName
+values:
+  ### This server does not accept App Attest keys; do not retry.
+  - unavailable
+  ### Too many registration challenges this hour.
+  - rateLimited
+  ### The challenge expired, was used, or belongs to someone else; ask for a
+  ### new one.
+  - challengeInvalid
+  ### The attestation did not verify, or the key belongs to another account;
+  ### generate a new key before trying again.
+  - keyRejected

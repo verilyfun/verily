@@ -92,6 +92,34 @@ List<int> captureKeyAttestationChallenge({
   ]).bytes;
 }
 
+/// The `clientDataHash` an iPhone passes to App Attest's `attestKey` when it
+/// registers its key: SHA-256 of the registration challenge's 32 raw bytes.
+///
+/// The server issues [registrationChallenge] before the phone asks Apple to
+/// attest the key, so the attestation proves it was made for this request.
+List<int> appAttestRegistrationClientDataHash(String registrationChallenge) {
+  return sha256
+      .convert(
+        base64Url.decode(
+          base64Url.normalize(normalizeCaptureChallenge(registrationChallenge)),
+        ),
+      )
+      .bytes;
+}
+
+/// The `clientDataHash` an iPhone passes to App Attest's `generateAssertion`
+/// for one capture: SHA-256 of the canonical [manifest] bytes from
+/// [captureProvenanceManifest].
+///
+/// The manifest commits to the capture window and the evidence fingerprint,
+/// so an assertion over it can vouch for this capture only.
+List<int> appAttestAssertionClientDataHash(List<int> manifest) {
+  if (manifest.isEmpty) {
+    throw ArgumentError.value(manifest, 'manifest', 'Must not be empty.');
+  }
+  return sha256.convert(manifest).bytes;
+}
+
 /// Validates a server capture challenge: 32 random bytes, unpadded base64url.
 String normalizeCaptureChallenge(String value) {
   final normalized = value.trim();

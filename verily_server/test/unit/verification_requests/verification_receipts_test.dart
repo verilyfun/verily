@@ -146,6 +146,22 @@ void main() {
       expect(checks['deviceIntegrity'], 'notChecked');
     });
 
+    test('when an iPhone asserted the capture with App Attest then the '
+        'signature passes', () {
+      final checks = receiptChecks(
+        request: _request(),
+        primary: _proof(
+          provenance: EvidenceProvenanceLevel.secureEnclaveAttested,
+          challengeProvider: 'apple-app-attest',
+          challengeVerdict: 'capture_app_attest_valid',
+        ),
+      );
+
+      expect(checks['liveCapture'], 'passed');
+      expect(checks['captureSignature'], 'passed');
+      expect(checks['deviceIntegrity'], 'notChecked');
+    });
+
     test('when the claims are built then they match platform.md and carry no '
         'place, path, or account', () {
       final claims = receiptClaims(
@@ -221,6 +237,23 @@ void main() {
 
       expect(checks['liveCapture'], 'failed');
       expect(checks['deviceIntegrity'], 'notChecked');
+      expect(checks['captureSignature'], 'failed');
+    });
+
+    test('when an App Attest assertion was replayed then captureSignature '
+        'failed', () {
+      final checks = receiptChecks(
+        request: _request(),
+        primary: _proof(
+          decision: EvidenceDecisionStatus.rejected,
+          verifierType: 'apple-app-attest',
+          reasonCode: 'capture_app_attest_replayed',
+          challengeProvider: 'apple-app-attest',
+          challengeVerdict: 'capture_app_attest_replayed',
+        ),
+      );
+
+      expect(checks['liveCapture'], 'failed');
       expect(checks['captureSignature'], 'failed');
     });
 

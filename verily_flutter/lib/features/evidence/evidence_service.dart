@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import 'package:verily_client/verily_client.dart';
 import 'package:verily_evidence/verily_evidence.dart';
 
@@ -99,7 +101,7 @@ class ServerpodEvidenceGateway implements EvidenceGateway {
 }
 
 /// A capture window the server opened before anything was recorded, and
-/// the fresh device key being generated for it.
+/// the device key being readied for it.
 class CaptureSession {
   const CaptureSession._({
     required this.attemptId,
@@ -121,16 +123,17 @@ class CaptureSession {
 /// Sends proof to the server, bound to this device.
 ///
 /// Before anything is captured, [beginCapture] asks the server to open a
-/// capture window and generates a fresh attested key for it. Every
-/// submission then attaches a Play Integrity token and a signature from that
-/// key, both committing to the window and the exact evidence fingerprint. A
-/// token or signature for one capture can never vouch for another, nor for
-/// anything recorded before the window opened.
+/// capture window and readies the device key: a fresh attested key on
+/// Android, the account's registered App Attest key on iOS. Every submission
+/// then attaches a Play Integrity token and a signature from that key, both
+/// committing to the window and the exact evidence fingerprint. A token or
+/// signature for one capture can never vouch for another, nor for anything
+/// recorded before the window opened.
 class EvidenceService {
   const EvidenceService({
     required this._gateway,
+    required this._captureKeys,
     this._deviceIntegrity = requestPlayIntegrityToken,
-    this._captureKeys = const AndroidCaptureKeyStore(),
   });
 
   final EvidenceGateway _gateway;
@@ -138,7 +141,7 @@ class EvidenceService {
   final CaptureKeyStore _captureKeys;
 
   /// Opens a capture window for [requirement]. Call it before the camera,
-  /// microphone, sensors, or scanner start; the key is generated while they
+  /// microphone, sensors, or scanner start; the key is readied while they
   /// warm up.
   Future<CaptureSession> beginCapture({
     required ActionAttemptView attempt,
@@ -194,6 +197,7 @@ class EvidenceService {
         captureManifest: integrity.provenance?.manifest,
         captureSignature: integrity.provenance?.signature,
         captureCertificateChain: integrity.provenance?.certificateChain,
+        captureAppAttestKeyId: integrity.provenance?.appAttestKeyId,
       ),
     );
   }
@@ -224,6 +228,7 @@ class EvidenceService {
         captureManifest: integrity.provenance?.manifest,
         captureSignature: integrity.provenance?.signature,
         captureCertificateChain: integrity.provenance?.certificateChain,
+        captureAppAttestKeyId: integrity.provenance?.appAttestKeyId,
       ),
     );
   }
@@ -269,6 +274,7 @@ class EvidenceService {
         captureManifest: integrity.provenance?.manifest,
         captureSignature: integrity.provenance?.signature,
         captureCertificateChain: integrity.provenance?.certificateChain,
+        captureAppAttestKeyId: integrity.provenance?.appAttestKeyId,
       ),
     );
   }
@@ -328,6 +334,7 @@ class EvidenceService {
         captureManifest: integrity.provenance?.manifest,
         captureSignature: integrity.provenance?.signature,
         captureCertificateChain: integrity.provenance?.certificateChain,
+        captureAppAttestKeyId: integrity.provenance?.appAttestKeyId,
       ),
     );
   }
@@ -398,8 +405,24 @@ class _CaptureIntegrity {
 final evidenceServiceProvider = Provider<EvidenceService>(
   (ref) => EvidenceService(
     gateway: ServerpodEvidenceGateway(ref.watch(verilyClientProvider)),
+    captureKeys: ref.watch(captureKeyStoreProvider),
   ),
 );
+
+/// The device's capture signer: per-window attested keys on Android, the
+/// account's App Attest key on iOS, and none elsewhere.
+final captureKeyStoreProvider = Provider<CaptureKeyStore>((ref) {
+  if (kIsWeb) return const UnavailableCaptureKeyStore();
+  final client = ref.watch(verilyClientProvider);
+  return switch (defaultTargetPlatform) {
+    TargetPlatform.android => const AndroidCaptureKeyStore(),
+    TargetPlatform.iOS => AppAttestCaptureKeyStore(
+      registrar: ServerpodAppAttestRegistrar(client),
+      currentAccount: () => client.auth.authInfo?.authUserId,
+    ),
+    _ => const UnavailableCaptureKeyStore(),
+  };
+});
 
 final locationServiceProvider = Provider<LocationService>(
   (ref) => const GeolocatorLocationService(),

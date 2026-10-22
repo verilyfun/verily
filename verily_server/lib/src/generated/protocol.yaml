@@ -23,6 +23,9 @@ actionVerification:
   - getAppVerification:
   - completeAttempt:
   - listMyAttempts:
+appAttest:
+  - beginRegistration:
+  - registerKey:
 evidenceAppeal:
   - submit:
   - getMine:

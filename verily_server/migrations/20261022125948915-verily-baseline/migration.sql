@@ -43,7 +43,7 @@ language plpgsql
 volatile;
 
 --
--- Class AbuseRiskAssessment as table verily_abuse_risk_assessment
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_abuse_risk_assessment" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -64,7 +64,7 @@ CREATE UNIQUE INDEX "verily_abuse_assessment_key_idx" ON "verily_abuse_risk_asse
 CREATE INDEX "verily_abuse_assessment_action_time_idx" ON "verily_abuse_risk_assessment" USING btree ("actionDefinitionId", "createdAt");
 
 --
--- Class AccountClosure as table verily_account_closure
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_account_closure" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -79,7 +79,7 @@ CREATE UNIQUE INDEX "verily_account_closure_user_unique_idx" ON "verily_account_
 CREATE INDEX "verily_account_closure_requested_idx" ON "verily_account_closure" USING btree ("requestedAt");
 
 --
--- Class ActionAttempt as table verily_action_attempt
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_action_attempt" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -106,7 +106,7 @@ CREATE INDEX "verily_action_attempt_participant_idx" ON "verily_action_attempt" 
 CREATE INDEX "verily_action_attempt_status_idx" ON "verily_action_attempt" USING btree ("actionDefinitionId", "status", "updatedAt");
 
 --
--- Class ActionCaptureChallenge as table verily_action_capture_challenge
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_action_capture_challenge" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -132,7 +132,7 @@ CREATE INDEX "verily_action_capture_challenge_requirement_fk_idx" ON "verily_act
 CREATE INDEX "verily_action_capture_challenge_expiry_idx" ON "verily_action_capture_challenge" USING btree ("expiresAt");
 
 --
--- Class ActionDefinition as table verily_action_definition
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_action_definition" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -161,7 +161,7 @@ CREATE INDEX "verily_action_definition_creator_updated_idx" ON "verily_action_de
 CREATE INDEX "verily_action_definition_status_created_idx" ON "verily_action_definition" USING btree ("status", "createdAt");
 
 --
--- Class ActionEvidence as table verily_action_evidence
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_action_evidence" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -210,7 +210,7 @@ CREATE INDEX "verily_action_evidence_spoken_challenge_idx" ON "verily_action_evi
 CREATE INDEX "verily_action_evidence_location_idx" ON "verily_action_evidence" USING gist ("location");
 
 --
--- Class ActionExternalRule as table verily_action_external_rule
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_action_external_rule" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -224,7 +224,7 @@ CREATE UNIQUE INDEX "verily_action_external_rule_requirement_idx" ON "verily_act
 CREATE INDEX "verily_action_external_rule_app_idx" ON "verily_action_external_rule" USING btree ("appId");
 
 --
--- Class ActionLocationRule as table verily_action_location_rule
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_action_location_rule" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -239,7 +239,7 @@ CREATE UNIQUE INDEX "verily_action_location_rule_requirement_idx" ON "verily_act
 CREATE INDEX "verily_action_location_rule_location_idx" ON "verily_action_location_rule" USING gist ("location");
 
 --
--- Class ActionMediaRule as table verily_action_media_rule
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_action_media_rule" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -263,7 +263,7 @@ CREATE TABLE "verily_action_media_rule" (
 CREATE UNIQUE INDEX "verily_action_media_rule_requirement_idx" ON "verily_action_media_rule" USING btree ("requirementId");
 
 --
--- Class ActionMotionRule as table verily_action_motion_rule
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_action_motion_rule" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -286,7 +286,7 @@ CREATE TABLE "verily_action_motion_rule" (
 CREATE UNIQUE INDEX "verily_action_motion_rule_requirement_idx" ON "verily_action_motion_rule" USING btree ("requirementId");
 
 --
--- Class ActionQrChallenge as table verily_action_qr_challenge
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_action_qr_challenge" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -305,7 +305,7 @@ CREATE INDEX "verily_action_qr_challenge_requirement_expiry_idx" ON "verily_acti
 CREATE INDEX "verily_action_qr_challenge_used_attempt_idx" ON "verily_action_qr_challenge" USING btree ("usedByAttemptId");
 
 --
--- Class ActionQrRule as table verily_action_qr_rule
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_action_qr_rule" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -318,7 +318,7 @@ CREATE TABLE "verily_action_qr_rule" (
 CREATE UNIQUE INDEX "verily_action_qr_rule_requirement_idx" ON "verily_action_qr_rule" USING btree ("requirementId");
 
 --
--- Class ActionRequirement as table verily_action_requirement
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_action_requirement" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -337,7 +337,7 @@ CREATE UNIQUE INDEX "verily_action_requirement_key_idx" ON "verily_action_requir
 CREATE UNIQUE INDEX "verily_action_requirement_position_idx" ON "verily_action_requirement" USING btree ("actionDefinitionId", "position");
 
 --
--- Class ActionSpokenChallenge as table verily_action_spoken_challenge
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_action_spoken_challenge" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -355,7 +355,7 @@ CREATE INDEX "verily_action_spoken_challenge_attempt_requirement_idx" ON "verily
 CREATE INDEX "verily_action_spoken_challenge_expiry_idx" ON "verily_action_spoken_challenge" USING btree ("expiresAt");
 
 --
--- Class AiUsageRequest as table verily_ai_usage_request
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_ai_usage_request" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -372,7 +372,7 @@ CREATE INDEX "verily_ai_usage_user_operation_created_idx" ON "verily_ai_usage_re
 CREATE INDEX "verily_ai_usage_active_idx" ON "verily_ai_usage_request" USING btree ("authUserId", "operation", "status", "createdAt");
 
 --
--- Class VerilyApp as table verily_app
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_app" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -395,7 +395,46 @@ CREATE TABLE "verily_app" (
 CREATE INDEX "verily_app_creator_idx" ON "verily_app" USING btree ("creatorAuthUserId", "createdAt");
 
 --
--- Class AppConfirmation as table verily_app_confirmation
+-- ACTION CREATE TABLE
+--
+CREATE TABLE "verily_app_attest_challenge" (
+    "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
+    "authUserId" uuid NOT NULL,
+    "nonce" text NOT NULL,
+    "expiresAt" timestamp without time zone NOT NULL,
+    "usedAt" timestamp without time zone,
+    "createdAt" timestamp without time zone NOT NULL
+);
+
+-- Indexes
+CREATE UNIQUE INDEX "verily_app_attest_challenge_nonce_unique_idx" ON "verily_app_attest_challenge" USING btree ("nonce");
+CREATE INDEX "verily_app_attest_challenge_owner_created_idx" ON "verily_app_attest_challenge" USING btree ("authUserId", "createdAt");
+CREATE INDEX "verily_app_attest_challenge_expiry_idx" ON "verily_app_attest_challenge" USING btree ("expiresAt");
+
+--
+-- ACTION CREATE TABLE
+--
+CREATE TABLE "verily_app_attest_key" (
+    "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
+    "authUserId" uuid NOT NULL,
+    "keyId" text NOT NULL,
+    "publicKey" text NOT NULL,
+    "environment" text NOT NULL,
+    "signCount" bigint NOT NULL,
+    "certificateChain" json NOT NULL,
+    "receipt" text NOT NULL,
+    "validationCategory" bigint,
+    "bundleVersion" text,
+    "registeredAt" timestamp without time zone NOT NULL,
+    "lastAssertedAt" timestamp without time zone
+);
+
+-- Indexes
+CREATE UNIQUE INDEX "verily_app_attest_key_key_id_unique_idx" ON "verily_app_attest_key" USING btree ("keyId");
+CREATE INDEX "verily_app_attest_key_owner_idx" ON "verily_app_attest_key" USING btree ("authUserId");
+
+--
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_app_confirmation" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -419,7 +458,7 @@ CREATE INDEX "verily_app_confirmation_received_idx" ON "verily_app_confirmation"
 CREATE INDEX "verily_app_confirmation_attempt_idx" ON "verily_app_confirmation" USING btree ("attemptId");
 
 --
--- Class AppEvent as table verily_app_event
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_app_event" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -446,7 +485,7 @@ CREATE INDEX "verily_app_event_due_idx" ON "verily_app_event" USING btree ("stat
 CREATE INDEX "verily_app_event_app_idx" ON "verily_app_event" USING btree ("appId", "id");
 
 --
--- Class VerilyAppKey as table verily_app_key
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_app_key" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -463,7 +502,7 @@ CREATE UNIQUE INDEX "verily_app_key_id_idx" ON "verily_app_key" USING btree ("ke
 CREATE INDEX "verily_app_key_app_idx" ON "verily_app_key" USING btree ("appId", "createdAt");
 
 --
--- Class VerilyAppLink as table verily_app_link
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_app_link" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -478,7 +517,7 @@ CREATE UNIQUE INDEX "verily_app_link_subject_idx" ON "verily_app_link" USING btr
 CREATE UNIQUE INDEX "verily_app_link_account_idx" ON "verily_app_link" USING btree ("appId", "authUserId");
 
 --
--- Class VerilyAppLinkCode as table verily_app_link_code
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_app_link_code" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -497,7 +536,7 @@ CREATE UNIQUE INDEX "verily_app_link_code_hash_idx" ON "verily_app_link_code" US
 CREATE INDEX "verily_app_link_code_expiry_idx" ON "verily_app_link_code" USING btree ("expiresAt");
 
 --
--- Class AppPullCheck as table verily_app_pull_check
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_app_pull_check" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -523,7 +562,7 @@ CREATE UNIQUE INDEX "verily_app_pull_check_event_idx" ON "verily_app_pull_check"
 CREATE INDEX "verily_app_pull_check_due_idx" ON "verily_app_pull_check" USING btree ("status", "nextCallAt");
 
 --
--- Class VerilyAppRateWindow as table verily_app_rate_window
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_app_rate_window" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -537,7 +576,7 @@ CREATE TABLE "verily_app_rate_window" (
 CREATE UNIQUE INDEX "verily_app_rate_window_bucket_idx" ON "verily_app_rate_window" USING btree ("appId", "bucket");
 
 --
--- Class VerilyAppRedirectUri as table verily_app_redirect_uri
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_app_redirect_uri" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -550,7 +589,7 @@ CREATE TABLE "verily_app_redirect_uri" (
 CREATE UNIQUE INDEX "verily_app_redirect_uri_idx" ON "verily_app_redirect_uri" USING btree ("appId", "uri");
 
 --
--- Class AppWebhookDelivery as table verily_app_webhook_delivery
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_app_webhook_delivery" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -570,7 +609,7 @@ CREATE INDEX "verily_app_webhook_delivery_app_idx" ON "verily_app_webhook_delive
 CREATE INDEX "verily_app_webhook_delivery_event_idx" ON "verily_app_webhook_delivery" USING btree ("eventId", "attemptNumber");
 
 --
--- Class EvidenceAppeal as table verily_evidence_appeal
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_evidence_appeal" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -594,7 +633,7 @@ CREATE INDEX "verily_evidence_appeal_participant_idx" ON "verily_evidence_appeal
 CREATE INDEX "verily_evidence_appeal_attempt_idx" ON "verily_evidence_appeal" USING btree ("attemptId");
 
 --
--- Class EvidenceDecision as table verily_evidence_decision
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_evidence_decision" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -615,7 +654,7 @@ CREATE INDEX "verily_evidence_decision_created_idx" ON "verily_evidence_decision
 CREATE INDEX "verily_evidence_decision_reviewer_idx" ON "verily_evidence_decision" USING btree ("reviewedByAuthUserId", "createdAt");
 
 --
--- Class EvidenceUploadReservation as table verily_evidence_upload_reservation
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_evidence_upload_reservation" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -648,7 +687,7 @@ CREATE INDEX "verily_evidence_upload_requirement_fk_idx" ON "verily_evidence_upl
 CREATE INDEX "verily_evidence_upload_spoken_challenge_idx" ON "verily_evidence_upload_reservation" USING btree ("spokenChallengeId");
 
 --
--- Class EvidenceVerificationJob as table verily_evidence_verification_job
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_evidence_verification_job" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -667,7 +706,7 @@ CREATE UNIQUE INDEX "verily_evidence_verification_evidence_unique_idx" ON "veril
 CREATE INDEX "verily_evidence_verification_queue_idx" ON "verily_evidence_verification_job" USING btree ("status", "createdAt");
 
 --
--- Class EvidenceVerificationVote as table verily_evidence_verification_vote
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_evidence_verification_vote" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -693,7 +732,7 @@ CREATE UNIQUE INDEX "verily_evidence_verification_vote_decision_model_idx" ON "v
 CREATE INDEX "verily_evidence_verification_vote_evidence_created_idx" ON "verily_evidence_verification_vote" USING btree ("evidenceId", "createdAt");
 
 --
--- Class InferenceCostReservation as table verily_inference_cost_reservation
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_inference_cost_reservation" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -710,7 +749,7 @@ CREATE UNIQUE INDEX "verily_inference_reservation_reference_idx" ON "verily_infe
 CREATE INDEX "verily_inference_reservation_created_idx" ON "verily_inference_cost_reservation" USING btree ("createdAt");
 
 --
--- Class ModerationAuditEntry as table verily_moderation_audit_entry
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_moderation_audit_entry" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -726,7 +765,7 @@ CREATE TABLE "verily_moderation_audit_entry" (
 CREATE INDEX "verily_moderation_audit_case_time_idx" ON "verily_moderation_audit_entry" USING btree ("caseId", "createdAt");
 
 --
--- Class ModerationCase as table verily_moderation_case
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_moderation_case" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -753,7 +792,7 @@ CREATE INDEX "verily_moderation_case_action_pause_idx" ON "verily_moderation_cas
 CREATE INDEX "verily_moderation_case_queue_idx" ON "verily_moderation_case" USING btree ("status", "createdAt");
 
 --
--- Class PayoutWallet as table verily_payout_wallet
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_payout_wallet" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -768,7 +807,7 @@ CREATE UNIQUE INDEX "verily_payout_wallet_user_idx" ON "verily_payout_wallet" US
 CREATE UNIQUE INDEX "verily_payout_wallet_address_idx" ON "verily_payout_wallet" USING btree ("walletAddress");
 
 --
--- Class PayoutWalletLinkChallenge as table verily_payout_wallet_link_challenge
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_payout_wallet_link_challenge" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -787,7 +826,7 @@ CREATE INDEX "verily_payout_wallet_link_user_created_idx" ON "verily_payout_wall
 CREATE INDEX "verily_payout_wallet_link_expiry_idx" ON "verily_payout_wallet_link_challenge" USING btree ("expiresAt");
 
 --
--- Class RewardPayout as table verily_reward_payout
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_reward_payout" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -815,7 +854,7 @@ CREATE INDEX "verily_reward_payout_recipient_idx" ON "verily_reward_payout" USIN
 CREATE INDEX "verily_reward_payout_status_idx" ON "verily_reward_payout" USING btree ("status", "updatedAt");
 
 --
--- Class RewardPool as table verily_reward_pool
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_reward_pool" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -851,7 +890,7 @@ CREATE UNIQUE INDEX "verily_reward_pool_escrow_idx" ON "verily_reward_pool" USIN
 CREATE INDEX "verily_reward_pool_status_idx" ON "verily_reward_pool" USING btree ("status", "expiresAt");
 
 --
--- Class VerificationRequest as table verily_verification_request
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "verily_verification_request" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -889,7 +928,7 @@ CREATE UNIQUE INDEX "verily_verification_request_code_idx" ON "verily_verificati
 CREATE INDEX "verily_verification_request_attempt_idx" ON "verily_verification_request" USING btree ("attemptId");
 
 --
--- Class CloudStorageEntry as table serverpod_cloud_storage
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_cloud_storage" (
     "id" bigserial PRIMARY KEY,
@@ -911,7 +950,7 @@ CREATE UNIQUE INDEX "serverpod_cloud_storage_path_idx" ON "serverpod_cloud_stora
 CREATE INDEX "serverpod_cloud_storage_expiration" ON "serverpod_cloud_storage" USING btree ("expiration");
 
 --
--- Class CloudStorageDirectDownloadEntry as table serverpod_cloud_storage_direct_download
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_cloud_storage_direct_download" (
     "id" bigserial PRIMARY KEY,
@@ -928,7 +967,7 @@ CREATE UNIQUE INDEX "serverpod_cloud_storage_direct_download_auth_key" ON "serve
 CREATE INDEX "serverpod_cloud_storage_direct_download_expiration" ON "serverpod_cloud_storage_direct_download" USING btree ("expiration");
 
 --
--- Class CloudStorageDirectUploadEntry as table serverpod_cloud_storage_direct_upload
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_cloud_storage_direct_upload" (
     "id" bigserial PRIMARY KEY,
@@ -950,7 +989,7 @@ CREATE TABLE "serverpod_cloud_storage_direct_upload" (
 CREATE UNIQUE INDEX "serverpod_cloud_storage_direct_upload_storage_path" ON "serverpod_cloud_storage_direct_upload" USING btree ("storageId", "path");
 
 --
--- Class FutureCallEntry as table serverpod_future_call
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_future_call" (
     "id" bigserial PRIMARY KEY,
@@ -968,7 +1007,7 @@ CREATE INDEX "serverpod_future_call_serverId_idx" ON "serverpod_future_call" USI
 CREATE INDEX "serverpod_future_call_identifier_idx" ON "serverpod_future_call" USING btree ("identifier");
 
 --
--- Class FutureCallClaimEntry as table serverpod_future_call_claim
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_future_call_claim" (
     "id" bigserial PRIMARY KEY,
@@ -980,7 +1019,7 @@ CREATE TABLE "serverpod_future_call_claim" (
 CREATE UNIQUE INDEX "future_call_unique_idx" ON "serverpod_future_call_claim" USING btree ("futureCallId");
 
 --
--- Class ServerHealthConnectionInfo as table serverpod_health_connection_info
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_health_connection_info" (
     "id" bigserial PRIMARY KEY,
@@ -996,7 +1035,7 @@ CREATE TABLE "serverpod_health_connection_info" (
 CREATE UNIQUE INDEX "serverpod_health_connection_info_timestamp_idx" ON "serverpod_health_connection_info" USING btree ("timestamp", "serverId", "granularity");
 
 --
--- Class ServerHealthMetric as table serverpod_health_metric
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_health_metric" (
     "id" bigserial PRIMARY KEY,
@@ -1012,7 +1051,7 @@ CREATE TABLE "serverpod_health_metric" (
 CREATE UNIQUE INDEX "serverpod_health_metric_timestamp_idx" ON "serverpod_health_metric" USING btree ("timestamp", "serverId", "name", "granularity");
 
 --
--- Class LogEntry as table serverpod_log
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_log" (
     "id" bigserial PRIMARY KEY,
@@ -1032,7 +1071,7 @@ CREATE TABLE "serverpod_log" (
 CREATE INDEX "serverpod_log_sessionLogId_idx" ON "serverpod_log" USING btree ("sessionLogId", "order");
 
 --
--- Class MessageLogEntry as table serverpod_message_log
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_message_log" (
     "id" bigserial PRIMARY KEY,
@@ -1052,7 +1091,7 @@ CREATE TABLE "serverpod_message_log" (
 CREATE INDEX "serverpod_message_log_sessionLogId_idx" ON "serverpod_message_log" USING btree ("sessionLogId", "order");
 
 --
--- Class MethodInfo as table serverpod_method
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_method" (
     "id" bigserial PRIMARY KEY,
@@ -1064,7 +1103,7 @@ CREATE TABLE "serverpod_method" (
 CREATE UNIQUE INDEX "serverpod_method_endpoint_method_idx" ON "serverpod_method" USING btree ("endpoint", "method");
 
 --
--- Class DatabaseMigrationVersion as table serverpod_migrations
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_migrations" (
     "id" bigserial PRIMARY KEY,
@@ -1077,7 +1116,7 @@ CREATE TABLE "serverpod_migrations" (
 CREATE UNIQUE INDEX "serverpod_migrations_ids" ON "serverpod_migrations" USING btree ("module");
 
 --
--- Class QueryLogEntry as table serverpod_query_log
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_query_log" (
     "id" bigserial PRIMARY KEY,
@@ -1097,7 +1136,7 @@ CREATE TABLE "serverpod_query_log" (
 CREATE INDEX "serverpod_query_log_sessionLogId_idx" ON "serverpod_query_log" USING btree ("sessionLogId", "order");
 
 --
--- Class ReadWriteTestEntry as table serverpod_readwrite_test
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_readwrite_test" (
     "id" bigserial PRIMARY KEY,
@@ -1105,7 +1144,7 @@ CREATE TABLE "serverpod_readwrite_test" (
 );
 
 --
--- Class RuntimeSettings as table serverpod_runtime_settings
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_runtime_settings" (
     "id" bigserial PRIMARY KEY,
@@ -1116,7 +1155,7 @@ CREATE TABLE "serverpod_runtime_settings" (
 );
 
 --
--- Class SessionLogEntry as table serverpod_session_log
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_session_log" (
     "id" bigserial PRIMARY KEY,
@@ -1143,7 +1182,7 @@ CREATE INDEX "serverpod_session_log_touched_idx" ON "serverpod_session_log" USIN
 CREATE INDEX "serverpod_session_log_isopen_idx" ON "serverpod_session_log" USING btree ("isOpen");
 
 --
--- Class RefreshToken as table serverpod_auth_core_jwt_refresh_token
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_core_jwt_refresh_token" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1161,7 +1200,7 @@ CREATE TABLE "serverpod_auth_core_jwt_refresh_token" (
 CREATE INDEX "serverpod_auth_core_jwt_refresh_token_last_updated_at" ON "serverpod_auth_core_jwt_refresh_token" USING btree ("lastUpdatedAt");
 
 --
--- Class UserProfile as table serverpod_auth_core_profile
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_core_profile" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1177,7 +1216,7 @@ CREATE TABLE "serverpod_auth_core_profile" (
 CREATE UNIQUE INDEX "serverpod_auth_profile_user_profile_email_auth_user_id" ON "serverpod_auth_core_profile" USING btree ("authUserId");
 
 --
--- Class UserProfileImage as table serverpod_auth_core_profile_image
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_core_profile_image" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1189,7 +1228,7 @@ CREATE TABLE "serverpod_auth_core_profile_image" (
 );
 
 --
--- Class ServerSideSession as table serverpod_auth_core_session
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_core_session" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1205,7 +1244,7 @@ CREATE TABLE "serverpod_auth_core_session" (
 );
 
 --
--- Class AuthUser as table serverpod_auth_core_user
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_core_user" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1215,7 +1254,7 @@ CREATE TABLE "serverpod_auth_core_user" (
 );
 
 --
--- Class AnonymousAccount as table serverpod_auth_idp_anonymous_account
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_idp_anonymous_account" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1224,7 +1263,7 @@ CREATE TABLE "serverpod_auth_idp_anonymous_account" (
 );
 
 --
--- Class AppleAccount as table serverpod_auth_idp_apple_account
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_idp_apple_account" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1245,7 +1284,7 @@ CREATE TABLE "serverpod_auth_idp_apple_account" (
 CREATE UNIQUE INDEX "serverpod_auth_apple_account_identifier" ON "serverpod_auth_idp_apple_account" USING btree ("userIdentifier");
 
 --
--- Class EmailAccount as table serverpod_auth_idp_email_account
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_idp_email_account" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1259,7 +1298,7 @@ CREATE TABLE "serverpod_auth_idp_email_account" (
 CREATE UNIQUE INDEX "serverpod_auth_idp_email_account_email" ON "serverpod_auth_idp_email_account" USING btree ("email");
 
 --
--- Class EmailAccountPasswordResetRequest as table serverpod_auth_idp_email_account_password_reset_request
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_idp_email_account_password_reset_request" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1270,7 +1309,7 @@ CREATE TABLE "serverpod_auth_idp_email_account_password_reset_request" (
 );
 
 --
--- Class EmailAccountRequest as table serverpod_auth_idp_email_account_request
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_idp_email_account_request" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1284,7 +1323,7 @@ CREATE TABLE "serverpod_auth_idp_email_account_request" (
 CREATE UNIQUE INDEX "serverpod_auth_idp_email_account_request_email" ON "serverpod_auth_idp_email_account_request" USING btree ("email");
 
 --
--- Class FacebookAccount as table serverpod_auth_idp_facebook_account
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_idp_facebook_account" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1301,7 +1340,7 @@ CREATE TABLE "serverpod_auth_idp_facebook_account" (
 CREATE UNIQUE INDEX "serverpod_auth_facebook_account_user_identifier" ON "serverpod_auth_idp_facebook_account" USING btree ("userIdentifier");
 
 --
--- Class FirebaseAccount as table serverpod_auth_idp_firebase_account
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_idp_firebase_account" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1316,7 +1355,7 @@ CREATE TABLE "serverpod_auth_idp_firebase_account" (
 CREATE UNIQUE INDEX "serverpod_auth_firebase_account_user_identifier" ON "serverpod_auth_idp_firebase_account" USING btree ("userIdentifier");
 
 --
--- Class GitHubAccount as table serverpod_auth_idp_github_account
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_idp_github_account" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1330,7 +1369,7 @@ CREATE TABLE "serverpod_auth_idp_github_account" (
 CREATE UNIQUE INDEX "serverpod_auth_github_account_user_identifier" ON "serverpod_auth_idp_github_account" USING btree ("userIdentifier");
 
 --
--- Class GoogleAccount as table serverpod_auth_idp_google_account
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_idp_google_account" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1344,7 +1383,7 @@ CREATE TABLE "serverpod_auth_idp_google_account" (
 CREATE UNIQUE INDEX "serverpod_auth_google_account_user_identifier" ON "serverpod_auth_idp_google_account" USING btree ("userIdentifier");
 
 --
--- Class MicrosoftAccount as table serverpod_auth_idp_microsoft_account
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_idp_microsoft_account" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1358,7 +1397,7 @@ CREATE TABLE "serverpod_auth_idp_microsoft_account" (
 CREATE UNIQUE INDEX "serverpod_auth_microsoft_account_user_identifier" ON "serverpod_auth_idp_microsoft_account" USING btree ("userIdentifier");
 
 --
--- Class PasskeyAccount as table serverpod_auth_idp_passkey_account
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_idp_passkey_account" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1375,7 +1414,7 @@ CREATE TABLE "serverpod_auth_idp_passkey_account" (
 CREATE UNIQUE INDEX "serverpod_auth_idp_passkey_account_key_id_base64" ON "serverpod_auth_idp_passkey_account" USING btree ("keyIdBase64");
 
 --
--- Class PasskeyChallenge as table serverpod_auth_idp_passkey_challenge
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_idp_passkey_challenge" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1384,7 +1423,7 @@ CREATE TABLE "serverpod_auth_idp_passkey_challenge" (
 );
 
 --
--- Class RateLimitedRequestAttempt as table serverpod_auth_idp_rate_limited_request_attempt
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_idp_rate_limited_request_attempt" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1400,7 +1439,7 @@ CREATE TABLE "serverpod_auth_idp_rate_limited_request_attempt" (
 CREATE INDEX "serverpod_auth_idp_rate_limited_request_attempt_composite" ON "serverpod_auth_idp_rate_limited_request_attempt" USING btree ("domain", "source", "key", "attemptedAt");
 
 --
--- Class SecretChallenge as table serverpod_auth_idp_secret_challenge
+-- ACTION CREATE TABLE
 --
 CREATE TABLE "serverpod_auth_idp_secret_challenge" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid_v7(),
@@ -1408,7 +1447,7 @@ CREATE TABLE "serverpod_auth_idp_secret_challenge" (
 );
 
 --
--- Foreign relations for "verily_abuse_risk_assessment" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_abuse_risk_assessment"
     ADD CONSTRAINT "verily_abuse_risk_assessment_fk_0"
@@ -1418,7 +1457,7 @@ ALTER TABLE ONLY "verily_abuse_risk_assessment"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_account_closure" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_account_closure"
     ADD CONSTRAINT "verily_account_closure_fk_0"
@@ -1428,7 +1467,7 @@ ALTER TABLE ONLY "verily_account_closure"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_action_attempt" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_action_attempt"
     ADD CONSTRAINT "verily_action_attempt_fk_0"
@@ -1444,7 +1483,7 @@ ALTER TABLE ONLY "verily_action_attempt"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_action_capture_challenge" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_action_capture_challenge"
     ADD CONSTRAINT "verily_action_capture_challenge_fk_0"
@@ -1466,7 +1505,7 @@ ALTER TABLE ONLY "verily_action_capture_challenge"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_action_definition" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_action_definition"
     ADD CONSTRAINT "verily_action_definition_fk_0"
@@ -1476,7 +1515,7 @@ ALTER TABLE ONLY "verily_action_definition"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_action_evidence" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_action_evidence"
     ADD CONSTRAINT "verily_action_evidence_fk_0"
@@ -1498,7 +1537,7 @@ ALTER TABLE ONLY "verily_action_evidence"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_action_external_rule" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_action_external_rule"
     ADD CONSTRAINT "verily_action_external_rule_fk_0"
@@ -1514,7 +1553,7 @@ ALTER TABLE ONLY "verily_action_external_rule"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_action_location_rule" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_action_location_rule"
     ADD CONSTRAINT "verily_action_location_rule_fk_0"
@@ -1524,7 +1563,7 @@ ALTER TABLE ONLY "verily_action_location_rule"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_action_media_rule" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_action_media_rule"
     ADD CONSTRAINT "verily_action_media_rule_fk_0"
@@ -1534,7 +1573,7 @@ ALTER TABLE ONLY "verily_action_media_rule"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_action_motion_rule" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_action_motion_rule"
     ADD CONSTRAINT "verily_action_motion_rule_fk_0"
@@ -1544,7 +1583,7 @@ ALTER TABLE ONLY "verily_action_motion_rule"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_action_qr_challenge" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_action_qr_challenge"
     ADD CONSTRAINT "verily_action_qr_challenge_fk_0"
@@ -1566,7 +1605,7 @@ ALTER TABLE ONLY "verily_action_qr_challenge"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_action_qr_rule" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_action_qr_rule"
     ADD CONSTRAINT "verily_action_qr_rule_fk_0"
@@ -1576,7 +1615,7 @@ ALTER TABLE ONLY "verily_action_qr_rule"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_action_requirement" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_action_requirement"
     ADD CONSTRAINT "verily_action_requirement_fk_0"
@@ -1586,7 +1625,7 @@ ALTER TABLE ONLY "verily_action_requirement"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_action_spoken_challenge" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_action_spoken_challenge"
     ADD CONSTRAINT "verily_action_spoken_challenge_fk_0"
@@ -1608,7 +1647,7 @@ ALTER TABLE ONLY "verily_action_spoken_challenge"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_ai_usage_request" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_ai_usage_request"
     ADD CONSTRAINT "verily_ai_usage_request_fk_0"
@@ -1618,7 +1657,7 @@ ALTER TABLE ONLY "verily_ai_usage_request"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_app" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_app"
     ADD CONSTRAINT "verily_app_fk_0"
@@ -1628,7 +1667,27 @@ ALTER TABLE ONLY "verily_app"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_app_confirmation" table
+-- ACTION CREATE FOREIGN KEY
+--
+ALTER TABLE ONLY "verily_app_attest_challenge"
+    ADD CONSTRAINT "verily_app_attest_challenge_fk_0"
+    FOREIGN KEY("authUserId")
+    REFERENCES "serverpod_auth_core_user"("id")
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION;
+
+--
+-- ACTION CREATE FOREIGN KEY
+--
+ALTER TABLE ONLY "verily_app_attest_key"
+    ADD CONSTRAINT "verily_app_attest_key_fk_0"
+    FOREIGN KEY("authUserId")
+    REFERENCES "serverpod_auth_core_user"("id")
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION;
+
+--
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_app_confirmation"
     ADD CONSTRAINT "verily_app_confirmation_fk_0"
@@ -1650,7 +1709,7 @@ ALTER TABLE ONLY "verily_app_confirmation"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_app_event" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_app_event"
     ADD CONSTRAINT "verily_app_event_fk_0"
@@ -1660,7 +1719,7 @@ ALTER TABLE ONLY "verily_app_event"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_app_key" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_app_key"
     ADD CONSTRAINT "verily_app_key_fk_0"
@@ -1670,7 +1729,7 @@ ALTER TABLE ONLY "verily_app_key"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_app_link" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_app_link"
     ADD CONSTRAINT "verily_app_link_fk_0"
@@ -1686,7 +1745,7 @@ ALTER TABLE ONLY "verily_app_link"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_app_link_code" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_app_link_code"
     ADD CONSTRAINT "verily_app_link_code_fk_0"
@@ -1702,7 +1761,7 @@ ALTER TABLE ONLY "verily_app_link_code"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_app_pull_check" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_app_pull_check"
     ADD CONSTRAINT "verily_app_pull_check_fk_0"
@@ -1724,7 +1783,7 @@ ALTER TABLE ONLY "verily_app_pull_check"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_app_rate_window" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_app_rate_window"
     ADD CONSTRAINT "verily_app_rate_window_fk_0"
@@ -1734,7 +1793,7 @@ ALTER TABLE ONLY "verily_app_rate_window"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_app_redirect_uri" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_app_redirect_uri"
     ADD CONSTRAINT "verily_app_redirect_uri_fk_0"
@@ -1744,7 +1803,7 @@ ALTER TABLE ONLY "verily_app_redirect_uri"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_app_webhook_delivery" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_app_webhook_delivery"
     ADD CONSTRAINT "verily_app_webhook_delivery_fk_0"
@@ -1754,7 +1813,7 @@ ALTER TABLE ONLY "verily_app_webhook_delivery"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_evidence_appeal" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_evidence_appeal"
     ADD CONSTRAINT "verily_evidence_appeal_fk_0"
@@ -1788,7 +1847,7 @@ ALTER TABLE ONLY "verily_evidence_appeal"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_evidence_decision" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_evidence_decision"
     ADD CONSTRAINT "verily_evidence_decision_fk_0"
@@ -1804,7 +1863,7 @@ ALTER TABLE ONLY "verily_evidence_decision"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_evidence_upload_reservation" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_evidence_upload_reservation"
     ADD CONSTRAINT "verily_evidence_upload_reservation_fk_0"
@@ -1832,7 +1891,7 @@ ALTER TABLE ONLY "verily_evidence_upload_reservation"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_evidence_verification_job" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_evidence_verification_job"
     ADD CONSTRAINT "verily_evidence_verification_job_fk_0"
@@ -1842,7 +1901,7 @@ ALTER TABLE ONLY "verily_evidence_verification_job"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_evidence_verification_vote" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_evidence_verification_vote"
     ADD CONSTRAINT "verily_evidence_verification_vote_fk_0"
@@ -1858,7 +1917,7 @@ ALTER TABLE ONLY "verily_evidence_verification_vote"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_inference_cost_reservation" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_inference_cost_reservation"
     ADD CONSTRAINT "verily_inference_cost_reservation_fk_0"
@@ -1868,7 +1927,7 @@ ALTER TABLE ONLY "verily_inference_cost_reservation"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_moderation_audit_entry" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_moderation_audit_entry"
     ADD CONSTRAINT "verily_moderation_audit_entry_fk_0"
@@ -1884,7 +1943,7 @@ ALTER TABLE ONLY "verily_moderation_audit_entry"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_moderation_case" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_moderation_case"
     ADD CONSTRAINT "verily_moderation_case_fk_0"
@@ -1912,7 +1971,7 @@ ALTER TABLE ONLY "verily_moderation_case"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_payout_wallet" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_payout_wallet"
     ADD CONSTRAINT "verily_payout_wallet_fk_0"
@@ -1922,7 +1981,7 @@ ALTER TABLE ONLY "verily_payout_wallet"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_payout_wallet_link_challenge" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_payout_wallet_link_challenge"
     ADD CONSTRAINT "verily_payout_wallet_link_challenge_fk_0"
@@ -1932,7 +1991,7 @@ ALTER TABLE ONLY "verily_payout_wallet_link_challenge"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_reward_payout" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_reward_payout"
     ADD CONSTRAINT "verily_reward_payout_fk_0"
@@ -1954,7 +2013,7 @@ ALTER TABLE ONLY "verily_reward_payout"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_reward_pool" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_reward_pool"
     ADD CONSTRAINT "verily_reward_pool_fk_0"
@@ -1964,7 +2023,7 @@ ALTER TABLE ONLY "verily_reward_pool"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "verily_verification_request" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "verily_verification_request"
     ADD CONSTRAINT "verily_verification_request_fk_0"
@@ -1992,7 +2051,7 @@ ALTER TABLE ONLY "verily_verification_request"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_future_call_claim" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_future_call_claim"
     ADD CONSTRAINT "serverpod_future_call_claim_fk_0"
@@ -2002,7 +2061,7 @@ ALTER TABLE ONLY "serverpod_future_call_claim"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_log" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_log"
     ADD CONSTRAINT "serverpod_log_fk_0"
@@ -2012,7 +2071,7 @@ ALTER TABLE ONLY "serverpod_log"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_message_log" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_message_log"
     ADD CONSTRAINT "serverpod_message_log_fk_0"
@@ -2022,7 +2081,7 @@ ALTER TABLE ONLY "serverpod_message_log"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_query_log" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_query_log"
     ADD CONSTRAINT "serverpod_query_log_fk_0"
@@ -2032,7 +2091,7 @@ ALTER TABLE ONLY "serverpod_query_log"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_auth_core_jwt_refresh_token" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_auth_core_jwt_refresh_token"
     ADD CONSTRAINT "serverpod_auth_core_jwt_refresh_token_fk_0"
@@ -2042,7 +2101,7 @@ ALTER TABLE ONLY "serverpod_auth_core_jwt_refresh_token"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_auth_core_profile" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_auth_core_profile"
     ADD CONSTRAINT "serverpod_auth_core_profile_fk_0"
@@ -2059,7 +2118,7 @@ ALTER TABLE ONLY "serverpod_auth_core_profile"
     DEFERRABLE INITIALLY DEFERRED;
 
 --
--- Foreign relations for "serverpod_auth_core_profile_image" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_auth_core_profile_image"
     ADD CONSTRAINT "serverpod_auth_core_profile_image_fk_0"
@@ -2069,7 +2128,7 @@ ALTER TABLE ONLY "serverpod_auth_core_profile_image"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_auth_core_session" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_auth_core_session"
     ADD CONSTRAINT "serverpod_auth_core_session_fk_0"
@@ -2079,7 +2138,7 @@ ALTER TABLE ONLY "serverpod_auth_core_session"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_auth_idp_anonymous_account" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_auth_idp_anonymous_account"
     ADD CONSTRAINT "serverpod_auth_idp_anonymous_account_fk_0"
@@ -2089,7 +2148,7 @@ ALTER TABLE ONLY "serverpod_auth_idp_anonymous_account"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_auth_idp_apple_account" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_auth_idp_apple_account"
     ADD CONSTRAINT "serverpod_auth_idp_apple_account_fk_0"
@@ -2099,7 +2158,7 @@ ALTER TABLE ONLY "serverpod_auth_idp_apple_account"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_auth_idp_email_account" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_auth_idp_email_account"
     ADD CONSTRAINT "serverpod_auth_idp_email_account_fk_0"
@@ -2109,7 +2168,7 @@ ALTER TABLE ONLY "serverpod_auth_idp_email_account"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_auth_idp_email_account_password_reset_request" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_auth_idp_email_account_password_reset_request"
     ADD CONSTRAINT "serverpod_auth_idp_email_account_password_reset_request_fk_0"
@@ -2131,7 +2190,7 @@ ALTER TABLE ONLY "serverpod_auth_idp_email_account_password_reset_request"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_auth_idp_email_account_request" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_auth_idp_email_account_request"
     ADD CONSTRAINT "serverpod_auth_idp_email_account_request_fk_0"
@@ -2147,7 +2206,7 @@ ALTER TABLE ONLY "serverpod_auth_idp_email_account_request"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_auth_idp_facebook_account" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_auth_idp_facebook_account"
     ADD CONSTRAINT "serverpod_auth_idp_facebook_account_fk_0"
@@ -2157,7 +2216,7 @@ ALTER TABLE ONLY "serverpod_auth_idp_facebook_account"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_auth_idp_firebase_account" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_auth_idp_firebase_account"
     ADD CONSTRAINT "serverpod_auth_idp_firebase_account_fk_0"
@@ -2167,7 +2226,7 @@ ALTER TABLE ONLY "serverpod_auth_idp_firebase_account"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_auth_idp_github_account" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_auth_idp_github_account"
     ADD CONSTRAINT "serverpod_auth_idp_github_account_fk_0"
@@ -2177,7 +2236,7 @@ ALTER TABLE ONLY "serverpod_auth_idp_github_account"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_auth_idp_google_account" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_auth_idp_google_account"
     ADD CONSTRAINT "serverpod_auth_idp_google_account_fk_0"
@@ -2187,7 +2246,7 @@ ALTER TABLE ONLY "serverpod_auth_idp_google_account"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_auth_idp_microsoft_account" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_auth_idp_microsoft_account"
     ADD CONSTRAINT "serverpod_auth_idp_microsoft_account_fk_0"
@@ -2197,7 +2256,7 @@ ALTER TABLE ONLY "serverpod_auth_idp_microsoft_account"
     ON UPDATE NO ACTION;
 
 --
--- Foreign relations for "serverpod_auth_idp_passkey_account" table
+-- ACTION CREATE FOREIGN KEY
 --
 ALTER TABLE ONLY "serverpod_auth_idp_passkey_account"
     ADD CONSTRAINT "serverpod_auth_idp_passkey_account_fk_0"
@@ -2211,9 +2270,9 @@ ALTER TABLE ONLY "serverpod_auth_idp_passkey_account"
 -- MIGRATION VERSION FOR verily
 --
 INSERT INTO "serverpod_migrations" ("module", "version", "timestamp")
-    VALUES ('verily', '20261021215105708-verily-baseline', now())
+    VALUES ('verily', '20261022125948915-verily-baseline', now())
     ON CONFLICT ("module")
-    DO UPDATE SET "version" = '20261021215105708-verily-baseline', "timestamp" = now();
+    DO UPDATE SET "version" = '20261022125948915-verily-baseline', "timestamp" = now();
 
 --
 -- MIGRATION VERSION FOR serverpod
@@ -2380,6 +2439,21 @@ ALTER TABLE verily_action_capture_challenge ADD CONSTRAINT verily_capture_expiry
     AND ("requestHash" IS NULL OR "requestHash" ~ '^[A-Za-z0-9_-]{43}$')
     AND ("evidenceBindingHash" IS NULL
       OR "evidenceBindingHash" ~ '^[0-9a-f]{64}$'));
+-- An App Attest key is registered against a single-use, short-lived
+-- challenge; the key's id is the SHA-256 of its P-256 point, and its
+-- assertion counter only ever grows from zero.
+ALTER TABLE verily_app_attest_challenge ADD CONSTRAINT verily_app_attest_challenge_check
+  CHECK ("expiresAt" > "createdAt"
+    AND "expiresAt" <= "createdAt" + interval '1 hour'
+    AND nonce ~ '^[A-Za-z0-9_-]{43}$'
+    AND ("usedAt" IS NULL OR "usedAt" >= "createdAt"));
+ALTER TABLE verily_app_attest_key ADD CONSTRAINT verily_app_attest_key_check
+  CHECK ("keyId" ~ '^[0-9a-f]{64}$'
+    AND length("publicKey") = 88
+    AND "signCount" >= 0
+    AND length(receipt) > 0
+    AND ("validationCategory" IS NULL OR "validationCategory" >= 0)
+    AND ("lastAssertedAt" IS NULL OR "lastAssertedAt" >= "registeredAt"));
 ALTER TABLE verily_action_qr_challenge ADD CONSTRAINT verily_qr_expiry_check
   CHECK ("expiresAt" > "createdAt");
 ALTER TABLE verily_action_spoken_challenge ADD CONSTRAINT verily_spoken_challenge_check

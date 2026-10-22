@@ -14,13 +14,26 @@ class ActionCaptureChallengeCleanupFutureCall
     final cutoff = DateTime.now().toUtc().subtract(
       actionCaptureChallengeRetention,
     );
+    final limit = task.batchSize.clamp(1, 1000);
     final expired = await ActionCaptureChallenge.db.find(
       session,
       where: (table) => table.expiresAt <= cutoff,
       orderBy: (table) => table.expiresAt,
-      limit: task.batchSize.clamp(1, 1000),
+      limit: limit,
     );
-    if (expired.isEmpty) return;
-    await ActionCaptureChallenge.db.delete(session, expired);
+    if (expired.isNotEmpty) {
+      await ActionCaptureChallenge.db.delete(session, expired);
+    }
+    // App Attest registration challenges are capture setup too, and expire
+    // on the same schedule.
+    final expiredRegistrations = await AppAttestChallenge.db.find(
+      session,
+      where: (table) => table.expiresAt <= cutoff,
+      orderBy: (table) => table.expiresAt,
+      limit: limit,
+    );
+    if (expiredRegistrations.isNotEmpty) {
+      await AppAttestChallenge.db.delete(session, expiredRegistrations);
+    }
   }
 }

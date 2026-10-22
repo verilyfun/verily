@@ -1,0 +1,36 @@
+### One account's App Attest key on one iPhone install, registered once with an
+### attestation Apple signed. Captures from that install are then signed with
+### assertions this key makes, each with a larger counter than the last.
+class: AppAttestKey
+serverOnly: true
+table: verily_app_attest_key
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  ### The account that registered the key. Apple's guidance is one key per
+  ### account per install, so a key never moves to another account.
+  authUser: module:auth:AuthUser?, relation(onDelete=Cascade)
+  ### SHA-256 of the public key, hex: the id evidence rows carry as
+  ### `captureKeyId`. Apple's key identifier is the same digest in base64.
+  keyId: String
+  ### The attested P-256 key, `0x04 ‖ X ‖ Y`, base64.
+  publicKey: String
+  environment: AppAttestEnvironment
+  ### The counter of the last accepted assertion; zero after registration.
+  signCount: int
+  ### The attestation's certificate chain (base64 DER, credential certificate
+  ### first) and Apple's receipt (base64), kept for audit and for the
+  ### fraud-risk metric. The receipt is not verified yet.
+  certificateChain: List<String>
+  receipt: String
+  ### Apple's validation category and bundle version from the attestation;
+  ### null on iOS versions that do not report them.
+  validationCategory: int?
+  bundleVersion: String?
+  registeredAt: DateTime
+  lastAssertedAt: DateTime?
+indexes:
+  verily_app_attest_key_key_id_unique_idx:
+    fields: keyId
+    unique: true
+  verily_app_attest_key_owner_idx:
+    fields: authUserId

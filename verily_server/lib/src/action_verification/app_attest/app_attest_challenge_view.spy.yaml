@@ -1,0 +1,8 @@
+### The challenge an iPhone attests its App Attest key against.
+class: AppAttestChallengeView
+fields:
+  id: UuidValue
+  ### 32 random bytes, unpadded base64url. Pass `SHA-256(these bytes)` to
+  ### `attestKey` as `clientDataHash`.
+  challenge: String
+  expiresAt: DateTime

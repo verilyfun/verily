@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:verily_server/src/action_verification/key_attestation/x509.dart';
 
 /// Google's Android Key Attestation roots, pinned from
@@ -23,15 +21,6 @@ final List<X509Certificate> googleAttestationRoots = List.unmodifiable(
     _keyAttestationCa1,
   ].map(certificateFromPem),
 );
-
-/// Parses one PEM `CERTIFICATE` block.
-X509Certificate certificateFromPem(String pem) {
-  final body = pem
-      .replaceAll('-----BEGIN CERTIFICATE-----', '')
-      .replaceAll('-----END CERTIFICATE-----', '')
-      .replaceAll(RegExp(r'\s+'), '');
-  return X509Certificate.parse(base64.decode(body));
-}
 
 const _legacyRsaRoot = '''
 -----BEGIN CERTIFICATE-----

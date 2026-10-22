@@ -37,16 +37,20 @@ fields:
   provenanceLevel: EvidenceProvenanceLevel, default=basic
   captureManifest: String?
   captureSignature: String?
-  ### The signing key and its id, read from the attested leaf certificate.
+  ### The signing key and its id (SHA-256 of the key, hex), read from the
+  ### attested leaf certificate or the registered App Attest key.
   capturePublicKey: String?
   captureKeyId: String?
-  ### `strongBox` or `trustedEnvironment`, from a trusted attestation only.
+  ### `strongBox` or `trustedEnvironment` from a trusted Android attestation,
+  ### or `secureEnclave` from a registered App Attest key.
   captureKeyStorage: String?
-  ### The attestation chain as submitted (base64 DER, leaf first), kept so a
-  ### later revocation can be checked against past proof.
+  ### The Android attestation chain as submitted (base64 DER, leaf first),
+  ### kept so a later revocation can be checked against past proof. An App
+  ### Attest key keeps its chain on its own row.
   captureCertificateChain: List<String>?
   ### SHA-256 of the remotely provisioned attestation key behind the capture
   ### key: a hardware-bound device pseudonym that rotates every few weeks.
+  ### App Attest gives none: its keys are per account, not per device.
   captureDeviceKeyId: String?
   capturedAt: DateTime
   submittedAt: DateTime, defaultModel=now

@@ -86,6 +86,11 @@ before changing capture, upload, or verification.
 - Google's attestation roots are pinned in code. The test vectors under
   `verily_server/test/unit/action_verification/key_attestation/vectors` come
   from `android/keyattestation`; keep them byte-identical.
+- An iPhone signs with the App Attest key its account registered, never one
+  per window, so App Attest proof is `secureEnclaveAttested` and never claims
+  a verified boot. Apple's App Attestation root is pinned in code, an
+  assertion's counter must exceed the last one accepted for its key, and the
+  vectors under `.../app_attest/vectors` stay byte-identical.
 - Evidence originals are private, hash-pinned to an immutable storage version,
   and never modified. Derived renditions may be watermarked; originals never.
 - A watermark is a lookup key, not proof. Never describe a watermark or a

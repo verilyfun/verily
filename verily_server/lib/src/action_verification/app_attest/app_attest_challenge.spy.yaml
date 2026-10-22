@@ -1,0 +1,22 @@
+### A single-use challenge an iPhone attests its App Attest key against, so the
+### attestation proves it was made for this registration.
+class: AppAttestChallenge
+serverOnly: true
+table: verily_app_attest_challenge
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  authUser: module:auth:AuthUser?, relation(onDelete=Cascade)
+  ### 32 random bytes, unpadded base64url. The phone attests with
+  ### `clientDataHash = SHA-256(these bytes)`.
+  nonce: String
+  expiresAt: DateTime
+  usedAt: DateTime?
+  createdAt: DateTime, defaultModel=now
+indexes:
+  verily_app_attest_challenge_nonce_unique_idx:
+    fields: nonce
+    unique: true
+  verily_app_attest_challenge_owner_created_idx:
+    fields: authUserId, createdAt
+  verily_app_attest_challenge_expiry_idx:
+    fields: expiresAt

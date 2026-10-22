@@ -252,6 +252,35 @@ void main() {
     });
   });
 
+  group('Given App Attest client data', () {
+    test('when registering then it is SHA-256 of the raw challenge', () {
+      expect(
+        appAttestRegistrationClientDataHash(challenge),
+        sha256.convert(List<int>.generate(32, (index) => index)).bytes,
+      );
+    });
+
+    test('when registering with a malformed challenge then it is refused', () {
+      for (final malformed in ['', 'short', '$challenge=']) {
+        expect(
+          () => appAttestRegistrationClientDataHash(malformed),
+          throwsArgumentError,
+          reason: malformed,
+        );
+      }
+    });
+
+    test('when asserting then it is SHA-256 of the manifest bytes', () {
+      final manifest = utf8.encode('verily-capture-manifest-v1\nattempt');
+
+      expect(
+        appAttestAssertionClientDataHash(manifest),
+        sha256.convert(manifest).bytes,
+      );
+      expect(() => appAttestAssertionClientDataHash([]), throwsArgumentError);
+    });
+  });
+
   group('Given a capture manifest', () {
     test('when built then it commits one signature to one challenge and '
         'proof', () {

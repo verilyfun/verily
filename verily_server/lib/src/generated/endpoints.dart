@@ -29,6 +29,8 @@ import 'package:verily_server/src/generated/future_calls.dart' as _ic0hj7xj;
 
 import '../account/account_lifecycle_endpoint.dart' as _ilf52cbk;
 import '../action_verification/action_verification_endpoint.dart' as _il8ja9q3;
+import '../action_verification/app_attest/app_attest_endpoint.dart'
+    as _igev3eit;
 import '../action_verification/evidence_appeal_endpoint.dart' as _ia38af11;
 import '../action_verification/evidence_review_endpoint.dart' as _i96y5npp;
 import '../apps/verily_app_endpoint.dart' as _iqeqjjry;
@@ -57,6 +59,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'actionVerification',
+          null,
+        ),
+      'appAttest': _igev3eit.AppAttestEndpoint()
+        ..initialize(
+          server,
+          'appAttest',
           null,
         ),
       'evidenceAppeal': _ia38af11.EvidenceAppealEndpoint()
@@ -699,6 +707,53 @@ class Endpoints extends _is.EndpointDispatch {
                         session,
                         limit: params['limit'],
                       ),
+        ),
+      },
+    );
+    connectors['appAttest'] = _is.EndpointConnector(
+      name: 'appAttest',
+      endpoint: endpoints['appAttest']!,
+      methodConnectors: {
+        'beginRegistration': _is.MethodConnector(
+          name: 'beginRegistration',
+          params: {},
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['appAttest'] as _igev3eit.AppAttestEndpoint)
+                  .beginRegistration(session),
+        ),
+        'registerKey': _is.MethodConnector(
+          name: 'registerKey',
+          params: {
+            'challengeId': _is.ParameterDescription(
+              name: 'challengeId',
+              type: _is.getType<_is.UuidValue>(),
+              nullable: false,
+            ),
+            'keyId': _is.ParameterDescription(
+              name: 'keyId',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'attestationObject': _is.ParameterDescription(
+              name: 'attestationObject',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['appAttest'] as _igev3eit.AppAttestEndpoint)
+                  .registerKey(
+                    session,
+                    challengeId: params['challengeId'],
+                    keyId: params['keyId'],
+                    attestationObject: params['attestationObject'],
+                  ),
         ),
       },
     );

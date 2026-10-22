@@ -36,6 +36,7 @@ abstract class MediaUploadConfirmation
     this.captureManifest,
     this.captureSignature,
     this.captureCertificateChain,
+    this.captureAppAttestKeyId,
   });
 
   factory MediaUploadConfirmation({
@@ -53,6 +54,7 @@ abstract class MediaUploadConfirmation
     String? captureManifest,
     String? captureSignature,
     List<String>? captureCertificateChain,
+    String? captureAppAttestKeyId,
   }) = _MediaUploadConfirmationImpl;
 
   factory MediaUploadConfirmation.fromJson(
@@ -94,6 +96,8 @@ abstract class MediaUploadConfirmation
           : _itf691yl.Protocol().deserialize<List<String>>(
               jsonSerialization['captureCertificateChain'],
             ),
+      captureAppAttestKeyId:
+          jsonSerialization['captureAppAttestKeyId'] as String?,
     );
   }
 
@@ -123,11 +127,19 @@ abstract class MediaUploadConfirmation
 
   String? captureManifest;
 
+  /// The device's signature over the manifest: from an Android capture key,
+  /// IEEE P1363 `r ‖ s`; from an iPhone, the App Attest assertion object
+  /// (CBOR). Both base64.
   String? captureSignature;
 
-  /// The capture key's Android Key Attestation chain: base64 DER, leaf
+  /// The Android capture key's Key Attestation chain: base64 DER, leaf
   /// first. The key, its id, and where it lives come only from here.
   List<String>? captureCertificateChain;
+
+  /// The iPhone's App Attest key identifier (base64, as `generateKey`
+  /// returns it), registered through `appAttest.registerKey`. Send it or
+  /// `captureCertificateChain`, never both.
+  String? captureAppAttestKeyId;
 
   /// Returns a shallow copy of this [MediaUploadConfirmation]
   /// with some or all fields replaced by the given arguments.
@@ -147,6 +159,7 @@ abstract class MediaUploadConfirmation
     String? captureManifest,
     String? captureSignature,
     List<String>? captureCertificateChain,
+    String? captureAppAttestKeyId,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -172,6 +185,8 @@ abstract class MediaUploadConfirmation
       if (captureSignature != null) 'captureSignature': captureSignature,
       if (captureCertificateChain != null)
         'captureCertificateChain': captureCertificateChain?.toJson(),
+      if (captureAppAttestKeyId != null)
+        'captureAppAttestKeyId': captureAppAttestKeyId,
     };
   }
 
@@ -199,6 +214,8 @@ abstract class MediaUploadConfirmation
       if (captureSignature != null) 'captureSignature': captureSignature,
       if (captureCertificateChain != null)
         'captureCertificateChain': captureCertificateChain?.toJson(),
+      if (captureAppAttestKeyId != null)
+        'captureAppAttestKeyId': captureAppAttestKeyId,
     };
   }
 
@@ -226,6 +243,7 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
     String? captureManifest,
     String? captureSignature,
     List<String>? captureCertificateChain,
+    String? captureAppAttestKeyId,
   }) : super._(
          attemptId: attemptId,
          requirementId: requirementId,
@@ -241,6 +259,7 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
          captureManifest: captureManifest,
          captureSignature: captureSignature,
          captureCertificateChain: captureCertificateChain,
+         captureAppAttestKeyId: captureAppAttestKeyId,
        );
 
   /// Returns a shallow copy of this [MediaUploadConfirmation]
@@ -262,6 +281,7 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
     Object? captureManifest = _Undefined,
     Object? captureSignature = _Undefined,
     Object? captureCertificateChain = _Undefined,
+    Object? captureAppAttestKeyId = _Undefined,
   }) {
     return MediaUploadConfirmation(
       attemptId: attemptId ?? this.attemptId,
@@ -296,6 +316,9 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
       captureCertificateChain: captureCertificateChain is List<String>?
           ? captureCertificateChain
           : this.captureCertificateChain?.map((e0) => e0).toList(),
+      captureAppAttestKeyId: captureAppAttestKeyId is String?
+          ? captureAppAttestKeyId
+          : this.captureAppAttestKeyId,
     );
   }
 }

@@ -9,6 +9,8 @@ const _constraintFragments = <String, List<String>>{
   'verily_requirement_position_check': ['"position"', '"requirementKey"'],
   'verily_capture_expiry_check': ['"expiresAt"', '"evidenceBindingHash"'],
   'verily_qr_expiry_check': ['"expiresAt"', '"createdAt"'],
+  'verily_app_attest_challenge_check': ['nonce', '"usedAt"'],
+  'verily_app_attest_key_check': ['"keyId"', '"signCount"'],
   'verily_decision_confidence_check': ['confidence'],
   'verily_verification_retry_check': ['"attemptCount"'],
   'verily_moderation_audit_check': ['event', 'note'],

@@ -1,0 +1,12 @@
+### Which App Attest service attested a key. Keys from one environment never
+### work in the other.
+enum: AppAttestEnvironment
+serverOnly: true
+serialized: byName
+values:
+  ### Builds from the App Store, TestFlight, or an enterprise program
+  ### (`aaguid` is `appattest` and seven zero bytes).
+  - production
+  ### Apple's sandbox, which development builds use by default
+  ### (`aaguid` is `appattestdevelop`).
+  - development
