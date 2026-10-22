@@ -6,6 +6,7 @@ import 'dart:math' as math;
 
 import 'package:serverpod/serverpod.dart';
 import 'package:verily_server/src/account/account_access.dart';
+import 'package:verily_server/src/action_verification/action_draft_refusal.dart';
 import 'package:verily_server/src/action_verification/action_key_lock.dart';
 import 'package:verily_server/src/action_verification/action_period.dart';
 import 'package:verily_server/src/action_verification/action_requirement_rules.dart';
@@ -177,7 +178,9 @@ class ActionAuthoringService {
           if (item.draft.kind == ActionRequirementKind.qrCode &&
               item.draft.qrCode == null &&
               !storedVenueCodes.containsKey(item.key)) {
-            throw ArgumentError('Enter the venue code for "${item.title}".');
+            throw ActionDraftRefusal(
+              'Enter the venue code for requirement ${item.position + 1}.',
+            );
           }
         }
 
@@ -591,6 +594,8 @@ class ActionAuthoringService {
   }) async {
     if (appIds.isEmpty) return;
     final unique = appIds.toSet();
+    // A draft that repeats an app is refused before it is stored, so a
+    // repeat here is a bug.
     if (unique.length != appIds.length) {
       throw ArgumentError('Each app can confirm only one proof in an action.');
     }
@@ -652,29 +657,27 @@ class ActionAuthoringService {
     );
   }
 
+  /// Checks everything the client sent, before any database work. Throws
+  /// [ActionDraftRefusal] for a broken rule.
   _ValidatedRequest _validatedRequest(
     CreateActionDefinitionRequest request,
     DateTime now,
   ) {
     final requirements = request.requirements;
     if (requirements.isEmpty || requirements.length > maxActionRequirements) {
-      throw ArgumentError.value(
-        requirements.length,
-        'requirements',
+      throw const ActionDraftRefusal(
         'An action needs between 1 and $maxActionRequirements requirements.',
       );
     }
     if (request.maxVerifiedCompletions case final maximum? when maximum <= 0) {
-      throw ArgumentError.value(
-        maximum,
-        'maxVerifiedCompletions',
-        'Must be greater than zero.',
+      throw const ActionDraftRefusal(
+        'maxVerifiedCompletions must be greater than zero.',
       );
     }
     if (request.opensAt case final opensAt?) {
       if (request.closesAt case final closesAt?
           when !closesAt.isAfter(opensAt)) {
-        throw ArgumentError('closesAt must be after opensAt.');
+        throw const ActionDraftRefusal('closesAt must be after opensAt.');
       }
     }
     final validated = <ValidatedRequirement>[];
@@ -682,23 +685,32 @@ class ActionAuthoringService {
     for (var index = 0; index < requirements.length; index += 1) {
       final requirement = validateRequirementDraft(requirements[index], index);
       if (!keys.add(requirement.key)) {
-        throw ArgumentError('Requirement keys must be unique.');
+        throw const ActionDraftRefusal('Requirement keys must be unique.');
       }
       validated.add(requirement);
     }
     // Completion checks only required proof, so an action whose proof is all
     // optional would verify with none and pay its reward to anyone.
     if (!requirements.any((requirement) => requirement.isRequired)) {
-      throw ArgumentError(
+      throw const ActionDraftRefusal(
         'An action needs at least one required proof.',
-        'requirements',
+      );
+    }
+    final appIds = [
+      for (final requirement in requirements) ?requirement.appId,
+    ];
+    if (appIds.toSet().length != appIds.length) {
+      throw const ActionDraftRefusal(
+        'Each app can confirm only one proof in an action.',
       );
     }
     assertExternalProofNotMixed([
       for (final requirement in requirements) requirement.kind,
     ]);
     final timeZone = requiredText(request.timeZone, 'timeZone', maxLength: 64);
-    actionTimeZone(timeZone);
+    if (findActionTimeZone(timeZone) == null) {
+      throw const ActionDraftRefusal('timeZone must be an IANA time zone.');
+    }
     return _ValidatedRequest(
       actionKey: requiredSlug(request.actionKey, 'actionKey'),
       title: requiredText(request.title, 'title', maxLength: 120),

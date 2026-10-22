@@ -134,6 +134,7 @@ class EndpointActionVerification extends _isc.EndpointRef {
     {'prompt': prompt},
   );
 
+  /// Throws [ActionAuthoringException] when the creator can fix the request.
   _ida.Future<_ijjtlylw.ActionOpportunity> createAction(
     _ivnldkuj.CreateActionDefinitionRequest request,
   ) => caller.callServerEndpoint<_ijjtlylw.ActionOpportunity>(
@@ -142,6 +143,7 @@ class EndpointActionVerification extends _isc.EndpointRef {
     {'request': request},
   );
 
+  /// Throws [ActionAuthoringException] when the creator can fix the request.
   _ida.Future<_ijjtlylw.ActionOpportunity> saveActionDraft(
     _ivnldkuj.CreateActionDefinitionRequest request,
   ) => caller.callServerEndpoint<_ijjtlylw.ActionOpportunity>(

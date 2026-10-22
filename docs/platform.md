@@ -101,9 +101,11 @@ Content-Type: application/json
   them in the Verily app, then publishes with `expectedRevision`.
 - Codes: 403 `creator_inactive`; 404 for an action that is not this App's;
   409 `action_key_taken`, `revision_conflict`, `not_live`,
-  `revision_completed`, or `invalid_state`; 422 authoring refusals in
-  snake_case (`app_unavailable`, `external_proof_mixed`, `reward_not_funded`,
-  `unsafe_text`, `invalid_request`, …). At most 60 writes per minute per App.
+  `revision_completed`, or `invalid_state` (publishing an action held for
+  safety review); 422 authoring refusals in snake_case (`app_unavailable`,
+  `external_proof_mixed`, `reward_not_funded`, `unsafe_text`,
+  `invalid_request`, …). Any other failure is a 500 and is logged as an
+  error. At most 60 writes per minute per App.
 
 ### Linking participants
 

@@ -136,6 +136,18 @@ abstract class AppLocalizations {
   /// **'We couldn\'t find that. It may have ended or been removed.'**
   String get errorNotFound;
 
+  /// Shown when the server refuses an action draft for breaking an authoring rule the app did not catch first.
+  ///
+  /// In en, this message translates to:
+  /// **'Part of this action can\'t be saved yet. Check each step and try again.'**
+  String get errorActionInvalid;
+
+  /// Shown when the server refuses wording in an action, such as a proof check, as unsafe.
+  ///
+  /// In en, this message translates to:
+  /// **'Some of this text can\'t be used. Rephrase it and try again.'**
+  String get errorActionUnsafeText;
+
   /// Button that leaves a page for the Do tab.
   ///
   /// In en, this message translates to:

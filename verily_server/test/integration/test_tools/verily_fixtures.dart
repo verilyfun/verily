@@ -5,11 +5,13 @@ import 'package:bs58/bs58.dart';
 import 'package:ed25519_edwards/ed25519_edwards.dart' as ed;
 import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart';
+import 'package:test/test.dart';
 import 'package:verily_server/src/action_verification/media_evidence_verifier.dart';
 import 'package:verily_server/src/evidence_storage/evidence_media_types.dart';
 import 'package:verily_server/src/evidence_storage/evidence_object_access.dart';
 import 'package:verily_server/src/evidence_storage/local_evidence_storage.dart';
 import 'package:verily_server/src/generated/protocol.dart';
+import 'package:verily_server/src/rewards/reward_pool_service.dart';
 
 import 'serverpod_test_tools.dart';
 
@@ -133,6 +135,36 @@ CreateActionDefinitionRequest actionRequest({
   requirements: requirements,
   reward: reward,
 );
+
+/// Matches an authoring call refused with [reason], which the client
+/// receives as a typed exception rather than an internal server error.
+Matcher refusedAs(ActionAuthoringProblem reason) => throwsA(
+  isA<ActionAuthoringException>().having(
+    (error) => error.reason,
+    'reason',
+    reason,
+  ),
+);
+
+/// Reward pools whose draft-terms step throws [error], the way a bug would,
+/// after an authoring write has inserted the action and its rules.
+final class FailingDraftTerms extends RewardPoolService {
+  FailingDraftTerms(this.error);
+
+  final Error error;
+
+  @override
+  Future<void> applyDraftTerms(
+    Session session, {
+    required UuidValue creatorAuthUserId,
+    required String actionKey,
+    required ValidatedRewardTerms? terms,
+    required DateTime now,
+    required Transaction transaction,
+  }) async {
+    throw error;
+  }
+}
 
 /// Creates and publishes an action as [creator].
 Future<ActionOpportunity> publishedAction(

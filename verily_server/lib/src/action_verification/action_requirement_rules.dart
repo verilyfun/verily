@@ -1,5 +1,6 @@
 import 'package:serverpod/serverpod.dart';
 import 'package:verily_evidence/verily_evidence.dart';
+import 'package:verily_server/src/action_verification/action_draft_refusal.dart';
 import 'package:verily_server/src/action_verification/local_check/local_check_catalog.dart';
 import 'package:verily_server/src/action_verification/model_input_security.dart';
 import 'package:verily_server/src/action_verification/movement_verification_policy.dart';
@@ -40,6 +41,9 @@ final class ValidatedRequirement {
 /// Media verifier text is creator-written only for free-form proof; tracked
 /// movements derive theirs on the server. Every free-form policy passes the
 /// central model-input security check before it can be persisted.
+///
+/// Throws [ActionDraftRefusal] for a broken rule and
+/// [ModelInputSecurityException] for unsafe verifier text.
 ValidatedRequirement validateRequirementDraft(
   ActionRequirementDraft draft,
   int position,
@@ -52,7 +56,9 @@ ValidatedRequirement validateRequirementDraft(
   );
   if (draft.kind != ActionRequirementKind.externalApp &&
       (draft.appId != null || draft.appVerificationMode != null)) {
-    throw ArgumentError('Only app-confirmed requirements name an app.');
+    throw const ActionDraftRefusal(
+      'Only app-confirmed requirements name an app.',
+    );
   }
   final mediaKind = mediaKindOf(draft.kind);
   if (mediaKind == null &&
@@ -62,13 +68,17 @@ ValidatedRequirement validateRequirementDraft(
           draft.spokenChallengeRequired != null ||
           draft.movementKind != null ||
           draft.localCheck != null)) {
-    throw ArgumentError('Media verification settings need a media proof.');
+    throw const ActionDraftRefusal(
+      'Media verification settings need a media proof.',
+    );
   }
   var spokenChallengeRequired = false;
   switch (draft.kind) {
     case ActionRequirementKind.externalApp:
       if (draft.appId == null) {
-        throw ArgumentError('Choose the app that confirms this proof.');
+        throw const ActionDraftRefusal(
+          'Choose the app that confirms this proof.',
+        );
       }
     case ActionRequirementKind.location:
       final latitude = draft.latitude;
@@ -78,16 +88,22 @@ ValidatedRequirement validateRequirementDraft(
       if (latitude == null ||
           longitude == null ||
           !validCoordinates(latitude, longitude)) {
-        throw ArgumentError('Location requirements need valid coordinates.');
+        throw const ActionDraftRefusal(
+          'Location requirements need valid coordinates.',
+        );
       }
       if (radius == null || !radius.isFinite || radius < 10 || radius > 5000) {
-        throw ArgumentError('Location radius must be between 10m and 5km.');
+        throw const ActionDraftRefusal(
+          'Location radius must be between 10m and 5km.',
+        );
       }
       if (accuracy == null ||
           !accuracy.isFinite ||
           accuracy <= 0 ||
           accuracy > 1000) {
-        throw ArgumentError('Location accuracy must be between 0m and 1km.');
+        throw const ActionDraftRefusal(
+          'Location accuracy must be between 0m and 1km.',
+        );
       }
     case ActionRequirementKind.video ||
         ActionRequirementKind.photo ||
@@ -99,13 +115,17 @@ ValidatedRequirement validateRequirementDraft(
       if (draft.qrCode case final value?) {
         final code = requiredText(value, 'qrCode', maxLength: 512);
         if (code.length < _minimumQrCodeLength) {
-          throw ArgumentError(
+          throw const ActionDraftRefusal(
             'QR codes need at least $_minimumQrCodeLength characters.',
           );
         }
       }
     case ActionRequirementKind.motion:
-      const MotionEvidenceAnalyzer().validateRule(_motionRuleFromDraft(draft));
+      final rule = _motionRuleFromDraft(draft);
+      if (const MotionEvidenceAnalyzer().ruleProblem(rule)
+          case final problem?) {
+        throw ActionDraftRefusal(problem);
+      }
   }
   return ValidatedRequirement(
     draft: draft,
@@ -121,31 +141,34 @@ ValidatedRequirement validateRequirementDraft(
 bool _validateMediaDraft(ActionRequirementDraft draft, MediaEvidenceKind kind) {
   final movement = draft.movementKind;
   if (movement != null && kind != MediaEvidenceKind.video) {
-    throw ArgumentError('Tracked movements are recorded as video.');
+    throw const ActionDraftRefusal('Tracked movements are recorded as video.');
   }
   final localCheck = draft.localCheck;
   if (localCheck != null) {
     if (movement != null) {
-      throw ArgumentError('A tracked movement cannot also run a local check.');
+      throw const ActionDraftRefusal(
+        'A tracked movement cannot also run a local check.',
+      );
     }
     validateLocalCheck(localCheck, kind);
   }
   if (movement == null &&
       (localCheck == null || draft.verificationPrompt != null)) {
     if (draft.targetRepetitions != null) {
-      throw ArgumentError('Repetition targets need a movement.');
+      throw const ActionDraftRefusal('Repetition targets need a movement.');
     }
     ModelInputSecurity.validateVerificationPolicy(
       requiredText(
         draft.verificationPrompt ?? '',
         'verificationPrompt',
-        maxLength: 2000,
+        minLength: ModelInputSecurity.minVerificationPolicyLength,
+        maxLength: ModelInputSecurity.maxVerificationPolicyLength,
       ),
     );
   } else if (movement == null && draft.targetRepetitions != null) {
-    throw ArgumentError('Repetition targets need a movement.');
+    throw const ActionDraftRefusal('Repetition targets need a movement.');
   } else if (draft.verificationPrompt != null) {
-    throw ArgumentError(
+    throw const ActionDraftRefusal(
       'Movement checks are written by the server, not the creator.',
     );
   }
@@ -153,23 +176,27 @@ bool _validateMediaDraft(ActionRequirementDraft draft, MediaEvidenceKind kind) {
   final maximum = draft.maxDurationSeconds;
   if (kind == MediaEvidenceKind.photo) {
     if (minimum != null || maximum != null) {
-      throw ArgumentError('A photo has no duration.');
+      throw const ActionDraftRefusal('A photo has no duration.');
     }
     if (draft.spokenChallengeRequired ?? false) {
-      throw ArgumentError('A photo cannot carry a spoken challenge.');
+      throw const ActionDraftRefusal(
+        'A photo cannot carry a spoken challenge.',
+      );
     }
   } else {
     if (minimum == null ||
         maximum == null ||
         minimum < minRecordingSeconds ||
         maximum > maxRecordingSeconds) {
-      throw ArgumentError(
+      throw const ActionDraftRefusal(
         'Recordings must last between $minRecordingSeconds and '
         '$maxRecordingSeconds seconds.',
       );
     }
     if (maximum < minimum) {
-      throw ArgumentError('The longest recording must exceed the shortest.');
+      throw const ActionDraftRefusal(
+        'The longest recording must exceed the shortest.',
+      );
     }
   }
   final confidence = draft.minConfidence;
@@ -177,7 +204,9 @@ bool _validateMediaDraft(ActionRequirementDraft draft, MediaEvidenceKind kind) {
       !confidence.isFinite ||
       confidence < 0 ||
       confidence > 1) {
-    throw ArgumentError('Verification confidence must be between 0 and 1.');
+    throw const ActionDraftRefusal(
+      'Verification confidence must be between 0 and 1.',
+    );
   }
   if (movement != null) {
     validateMovementTarget(movement, draft.targetRepetitions, maximum!);
@@ -256,6 +285,8 @@ Future<void> insertRequirementRule(
           requirementId: requirementId,
           secretHash: switch (draft.qrCode) {
             final code? => secretSha256Hex(code),
+            // Authoring refuses a draft that leaves out a code it has no
+            // stored secret for, so a missing one here is a bug.
             null =>
               inheritedQrSecretHash ??
                   (throw ArgumentError('Enter the venue code for this proof.')),
@@ -342,7 +373,9 @@ MotionEvidenceRule _motionRuleFromDraft(ActionRequirementDraft draft) {
       maxFreeFall == null ||
       minPeakAcceleration == null ||
       maxPeakAcceleration == null) {
-    throw ArgumentError('Motion requirements need complete thresholds.');
+    throw const ActionDraftRefusal(
+      'Motion requirements need complete thresholds.',
+    );
   }
   return MotionEvidenceRule(
     type: MotionActionType.values.byName(motionType.name),
@@ -391,19 +424,31 @@ bool validCoordinates(double latitude, double longitude) {
       longitude <= 180;
 }
 
-String requiredText(String value, String name, {int maxLength = 1000}) {
+/// The trimmed draft text of field [name], refused with
+/// [ActionDraftRefusal] when it is empty or outside the length bounds.
+String requiredText(
+  String value,
+  String name, {
+  int minLength = 1,
+  int maxLength = 1000,
+}) {
   final normalized = value.trim();
-  if (normalized.isEmpty) throw ArgumentError('$name is required.');
+  if (normalized.isEmpty) throw ActionDraftRefusal('$name is required.');
+  if (normalized.length < minLength) {
+    throw ActionDraftRefusal('$name must be $minLength characters or more.');
+  }
   if (normalized.length > maxLength) {
-    throw ArgumentError('$name must be $maxLength characters or fewer.');
+    throw ActionDraftRefusal('$name must be $maxLength characters or fewer.');
   }
   return normalized;
 }
 
+/// The lowercase draft key of field [name], refused with
+/// [ActionDraftRefusal] unless it is a 3-64 character slug.
 String requiredSlug(String value, String name) {
   final normalized = requiredText(value, name).toLowerCase();
   if (!RegExp(r'^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$').hasMatch(normalized)) {
-    throw ArgumentError(
+    throw ActionDraftRefusal(
       '$name must contain 3-64 lowercase letters, numbers, or hyphens.',
     );
   }

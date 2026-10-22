@@ -686,7 +686,7 @@ void main() {
             creator,
             actionRequest(actionKey: 'venue', requirements: [qrRequirement()]),
           ),
-          throwsArgumentError,
+          refusedAs(ActionAuthoringProblem.invalidRequest),
         );
         await expectLater(
           endpoints.actionVerification.saveActionDraft(
@@ -696,7 +696,7 @@ void main() {
               requirements: [qrRequirement(qrCode: 'short')],
             ),
           ),
-          throwsArgumentError,
+          refusedAs(ActionAuthoringProblem.invalidRequest),
         );
       });
     });

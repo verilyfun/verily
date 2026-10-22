@@ -483,7 +483,7 @@ void main() {
             ],
           ),
         ),
-        throwsArgumentError,
+        refusedAs(ActionAuthoringProblem.invalidRequest),
       );
     });
 

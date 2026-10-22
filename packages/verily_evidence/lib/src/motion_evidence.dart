@@ -140,13 +140,16 @@ final class MotionEvidenceAnalyzer {
   ///
   /// Both clients and servers may use this for early feedback. The server must
   /// still call [analyze], which repeats validation before trusting a result.
-  void validateRule(MotionEvidenceRule rule) => _validateRule(rule);
+  /// Throws [ArgumentError] with the [ruleProblem].
+  void validateRule(MotionEvidenceRule rule) {
+    if (ruleProblem(rule) case final problem?) throw ArgumentError(problem);
+  }
 
   MotionEvidenceAnalysis analyze({
     required List<MotionEvidenceSample> samples,
     required MotionEvidenceRule rule,
   }) {
-    _validateRule(rule);
+    validateRule(rule);
     final trace = _validatedTrace(samples);
     final durationMilliseconds = (trace.last.elapsedMicroseconds / 1000)
         .round();
@@ -412,27 +415,28 @@ final class MotionEvidenceAnalyzer {
     return samples;
   }
 
-  void _validateRule(MotionEvidenceRule rule) {
+  /// Why creator-authored thresholds are invalid, in product-safe words, or
+  /// null when they are valid.
+  ///
+  /// For a caller that refuses a creator's draft with its own typed error.
+  /// [validateRule] throws the same reason instead.
+  String? ruleProblem(MotionEvidenceRule rule) {
     if (rule.minimumDurationSeconds < 1 ||
         rule.maximumDurationSeconds > maximumDuration.inSeconds ||
         rule.maximumDurationSeconds < rule.minimumDurationSeconds) {
-      throw ArgumentError('Motion duration bounds are invalid.');
+      return 'Motion duration bounds are invalid.';
     }
     if (rule.targetRepetitions < 1 ||
         rule.targetRepetitions > maximumRuleRepetitions) {
-      throw ArgumentError(
-        'Motion repetitions must be between 1 and $maximumRuleRepetitions.',
-      );
+      return 'Motion repetitions must be between 1 and $maximumRuleRepetitions.';
     }
     if (rule.type == MotionActionType.rotation && rule.axis == MotionAxis.any) {
-      throw ArgumentError('Counted rotations require a specific axis.');
+      return 'Counted rotations require a specific axis.';
     }
     if ((rule.type == MotionActionType.phoneToss ||
             rule.type == MotionActionType.stillness) &&
         (rule.axis != MotionAxis.any || rule.targetRepetitions != 1)) {
-      throw ArgumentError(
-        'Phone toss and stillness rules use any axis and one repetition.',
-      );
+      return 'Phone toss and stillness rules use any axis and one repetition.';
     }
     if (!rule.minimumAngularSpeedRadiansPerSecond.isFinite ||
         !rule.maximumAngularSpeedRadiansPerSecond.isFinite ||
@@ -440,17 +444,17 @@ final class MotionEvidenceAnalyzer {
         rule.maximumAngularSpeedRadiansPerSecond <
             rule.minimumAngularSpeedRadiansPerSecond ||
         rule.maximumAngularSpeedRadiansPerSecond > maximumRuleAngularSpeed) {
-      throw ArgumentError('Motion angular speed bounds are invalid.');
+      return 'Motion angular speed bounds are invalid.';
     }
     if (!rule.minimumAxisDominance.isFinite ||
         rule.minimumAxisDominance < 0.5 ||
         rule.minimumAxisDominance > 1) {
-      throw ArgumentError('Motion axis dominance is invalid.');
+      return 'Motion axis dominance is invalid.';
     }
     if (rule.minimumFreeFallMilliseconds < 100 ||
         rule.maximumFreeFallMilliseconds > maximumRuleFreeFall.inMilliseconds ||
         rule.maximumFreeFallMilliseconds < rule.minimumFreeFallMilliseconds) {
-      throw ArgumentError('Motion free-fall bounds are invalid.');
+      return 'Motion free-fall bounds are invalid.';
     }
     if (!rule.minimumPeakAccelerationMetersPerSecondSquared.isFinite ||
         !rule.maximumPeakAccelerationMetersPerSecondSquared.isFinite ||
@@ -459,18 +463,19 @@ final class MotionEvidenceAnalyzer {
             rule.minimumPeakAccelerationMetersPerSecondSquared ||
         rule.maximumPeakAccelerationMetersPerSecondSquared >
             maximumRulePeakAcceleration) {
-      throw ArgumentError('Motion acceleration bounds are invalid.');
+      return 'Motion acceleration bounds are invalid.';
     }
     if (rule.type == MotionActionType.phoneToss &&
         rule.minimumPeakAccelerationMetersPerSecondSquared <
             minimumPhoneTossPeakAcceleration) {
-      throw ArgumentError('Phone toss impulse threshold is unsafe.');
+      return 'Phone toss impulse threshold is unsafe.';
     }
     if (rule.type == MotionActionType.stillness &&
         rule.maximumAngularSpeedRadiansPerSecond >
             maximumStillnessAngularSpeed) {
-      throw ArgumentError('Stillness threshold is too permissive.');
+      return 'Stillness threshold is too permissive.';
     }
+    return null;
   }
 }
 

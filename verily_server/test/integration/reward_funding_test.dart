@@ -10,14 +10,6 @@ import 'test_tools/fake_reward_escrow_gateway.dart';
 import 'test_tools/serverpod_test_tools.dart';
 import 'test_tools/verily_fixtures.dart';
 
-Matcher _authoringProblem(ActionAuthoringProblem reason) => throwsA(
-  isA<ActionAuthoringException>().having(
-    (error) => error.reason,
-    'reason',
-    reason,
-  ),
-);
-
 Matcher _rewardProblem(RewardProblem problem) => throwsA(
   isA<RewardException>().having(
     (error) => error.problem,
@@ -94,7 +86,7 @@ void main() {
               reward: rewardTerms(),
             ),
           ),
-          _authoringProblem(ActionAuthoringProblem.rewardNeedsDraft),
+          refusedAs(ActionAuthoringProblem.rewardNeedsDraft),
         );
       });
 
@@ -126,7 +118,7 @@ void main() {
         for (final entry in invalid.entries) {
           await expectLater(
             saveDraft(entry.value),
-            throwsA(isA<ArgumentError>()),
+            refusedAs(ActionAuthoringProblem.invalidRequest),
             reason: entry.key,
           );
         }
@@ -175,7 +167,7 @@ void main() {
             actionId: draft.id,
             expectedRevision: draft.revision,
           ),
-          _authoringProblem(ActionAuthoringProblem.rewardNotFunded),
+          refusedAs(ActionAuthoringProblem.rewardNotFunded),
         );
         await endpoints.rewards.prepareRewardFunding(
           creator,
@@ -187,7 +179,7 @@ void main() {
             actionId: draft.id,
             expectedRevision: draft.revision,
           ),
-          _authoringProblem(ActionAuthoringProblem.rewardNotFunded),
+          refusedAs(ActionAuthoringProblem.rewardNotFunded),
         );
       });
     });
@@ -233,7 +225,7 @@ void main() {
 
           await expectLater(
             saveDraft(rewardTerms(amountPerPayout: 1, maxPayouts: 4)),
-            _authoringProblem(ActionAuthoringProblem.rewardTermsLocked),
+            refusedAs(ActionAuthoringProblem.rewardTermsLocked),
           );
           // Repeating the frozen terms is allowed.
           await saveDraft(terms);
@@ -660,7 +652,7 @@ void main() {
             actionId: draft.id,
             expectedRevision: draft.revision,
           ),
-          _authoringProblem(ActionAuthoringProblem.rewardNotFunded),
+          refusedAs(ActionAuthoringProblem.rewardNotFunded),
         );
       },
     );

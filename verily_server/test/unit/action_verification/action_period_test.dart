@@ -48,4 +48,12 @@ void main() {
       );
     });
   });
+
+  group('time zones', () {
+    test('an unknown name is not found, and is a bug when stored', () {
+      expect(findActionTimeZone('Europe/London')?.name, 'Europe/London');
+      expect(findActionTimeZone('Mars/Olympus_Mons'), isNull);
+      expect(() => actionTimeZone('Mars/Olympus_Mons'), throwsArgumentError);
+    });
+  });
 }

@@ -137,6 +137,14 @@ the thing is missing or hidden), `ActionAuthoringException`
 Anything else becomes a generic error; provider names, routes, and stack traces
 stay in server logs.
 
+`createAction` and `saveActionDraft` refuse a request that breaks an authoring
+rule with `ActionAuthoringProblem.invalidRequest`, and refuse unsafe wording
+with `unsafeText`. These are the RPC counterparts of the App API's
+`invalid_request` and `unsafe_text`. The `invalidRequest` message names the
+broken rule for developers, so the app shows its own copy instead. Only
+authoring validation produces these two; a server bug in the same call stays a
+generic error.
+
 ## Web routes
 
 | Route                                                   | Purpose                                                         |

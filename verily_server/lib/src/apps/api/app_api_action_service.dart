@@ -1,6 +1,7 @@
 import 'package:serverpod/serverpod.dart';
 import 'package:verily_server/src/account/account_access.dart';
 import 'package:verily_server/src/action_verification/action_authoring_service.dart';
+import 'package:verily_server/src/action_verification/action_draft_refusal.dart';
 import 'package:verily_server/src/action_verification/action_key_lock.dart';
 import 'package:verily_server/src/action_verification/model_input_security.dart';
 import 'package:verily_server/src/apps/api/app_api_action_request.dart';
@@ -173,13 +174,31 @@ class AppApiActionService {
         )) {
           return const _Done(_creatorInactive);
         }
-        final action = await ActionDefinition.db.findFirstRow(
+        final candidate = await ActionDefinition.db.findFirstRow(
           session,
           where: (table) =>
               table.id.equals(id) &
               table.creatorAuthUserId.equals(creatorId) &
               table.visibility.equals(ActionVisibility.public),
           transaction: transaction,
+        );
+        if (candidate == null) return const _Done(appApiNotFound);
+        // The key lock serializes this request with moderation holds and the
+        // key's other revisions, and the row lock with anything else that
+        // changes this revision's status. The checks below therefore still
+        // hold when authoring applies the change, which leaves authoring no
+        // lifecycle refusal to report.
+        await ActionKeyLock.acquire(
+          session,
+          creatorAuthUserId: creatorId,
+          actionKey: candidate.actionKey,
+          transaction: transaction,
+        );
+        final action = await ActionDefinition.db.findById(
+          session,
+          id,
+          transaction: transaction,
+          lockMode: LockMode.forUpdate,
         );
         if (action == null ||
             !await _boundToApp(session, action, app, transaction)) {
@@ -195,6 +214,14 @@ class AppApiActionService {
         }
         final conflict = _lifecycleConflict(action, publish: publish);
         if (conflict != null) return _Done(conflict);
+        if (publish &&
+            await authoring.moderationGate.isActionPaused(
+              session,
+              actionId: id,
+              transaction: transaction,
+            )) {
+          return const _Done(_invalidState);
+        }
         final changed = await _refusable(
           () => authoring.setPublicationIn(
             session,
@@ -294,22 +321,8 @@ class AppApiActionService {
           'message': 'Some of this text cannot be used. Rephrase it.',
         }),
       );
-      // Authoring validation reports with ArgumentError, as for the designer.
-      // ignore: avoid_catching_errors
-    } on ArgumentError catch (error) {
-      final message = error.message;
-      return _Refused(
-        appApiInvalid(
-          'invalid_request',
-          message is String && message.isNotEmpty
-              ? message
-              : 'The action is not valid.',
-        ),
-      );
-      // Business-rule refusals are StateErrors in this codebase.
-      // ignore: avoid_catching_errors
-    } on StateError {
-      return const _Refused(_invalidState);
+    } on ActionDraftRefusal catch (refusal) {
+      return _Refused(appApiInvalid('invalid_request', refusal.message));
     }
   }
 

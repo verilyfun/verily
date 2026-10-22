@@ -57,9 +57,7 @@ class EvidenceVerificationRecoveryFutureCall
     for (final job in jobs) {
       if (job.attemptCount >= evidenceVerificationMaximumAttempts) {
         final routed = await _routeToManualReview(session, job, now);
-        if (routed != null) {
-          await actions.completeIfReady(session, attemptId: routed);
-        }
+        if (routed != null) await _complete(session, routed);
         continue;
       }
       final queued = await DatabaseUtil.runInTransactionOrSavepoint(
@@ -104,7 +102,23 @@ class EvidenceVerificationRecoveryFutureCall
       limit: task.batchSize,
     );
     for (final attempt in stranded) {
-      await actions.completeIfReady(session, attemptId: attempt.id!);
+      await _complete(session, attempt.id!);
+    }
+  }
+
+  /// Completes one attempt the sweep found. A failure is logged as an error
+  /// and the sweep moves on, so one broken attempt cannot hold up the rest of
+  /// the batch on every run.
+  Future<void> _complete(Session session, UuidValue attemptId) async {
+    try {
+      await actions.completeIfReady(session, attemptId: attemptId);
+    } on Object catch (error, stackTrace) {
+      session.log(
+        'Recovery could not complete attempt $attemptId.',
+        level: LogLevel.error,
+        exception: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 
