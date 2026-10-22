@@ -298,7 +298,7 @@ class BallFirePainter extends CustomPainter {
     }
   }
 
-  /// Embers cool from white through yellow and orange to red as they rise.
+  /// Embers cool from white through cyan to deep blue as they rise.
   void _paintEmbers(
     Canvas canvas,
     Offset Function(double, double) at,
@@ -333,15 +333,15 @@ class BallFirePainter extends CustomPainter {
           ..blendMode = BlendMode.plus
           ..shader = RadialGradient(
             colors: [
-              VerilyColors.movementFlameCore.withValues(alpha: 0.5),
-              VerilyColors.movementFlameHot.withValues(
+              VerilyColors.movementFireCore.withValues(alpha: 0.5),
+              VerilyColors.movementFireGlow.withValues(
                 alpha: 0.25 + effects.heat * 0.25,
               ),
-              VerilyColors.movementFlameWarm.withValues(
+              VerilyColors.movementFireFlame.withValues(
                 alpha: 0.15 + effects.heat * 0.25,
               ),
-              VerilyColors.movementFlameEdge.withValues(alpha: 0.12),
-              VerilyColors.movementFlameEdge.withValues(alpha: 0),
+              VerilyColors.movementFireEdge.withValues(alpha: 0.12),
+              VerilyColors.movementFireEdge.withValues(alpha: 0),
             ],
             stops: const [0, 0.3, 0.55, 0.8, 1],
           ).createShader(Rect.fromCircle(center: center, radius: glow)),
@@ -352,7 +352,7 @@ class BallFirePainter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = math.max(radius * 0.14, 2)
-          ..color = VerilyColors.movementFlameCore.withValues(alpha: 0.9),
+          ..color = VerilyColors.movementFireCore.withValues(alpha: 0.9),
       );
   }
 
@@ -371,7 +371,7 @@ class BallFirePainter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 6 * (1 - progress) + 1
-        ..color = VerilyColors.movementFlameHot.withValues(
+        ..color = VerilyColors.movementFireGlow.withValues(
           alpha: 1 - progress,
         ),
     );
@@ -390,19 +390,19 @@ class BallFirePainter extends CustomPainter {
     final width = size.shortestSide * 0.035;
     final halo = Paint()
       ..blendMode = BlendMode.plus
-      ..color = VerilyColors.movementFlameWarm.withValues(alpha: 0.45 * power)
+      ..color = VerilyColors.movementFireFlame.withValues(alpha: 0.45 * power)
       ..strokeWidth = width * 4.5
       ..strokeCap = StrokeCap.round
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, width * 2.2);
     final aura = Paint()
       ..blendMode = BlendMode.plus
-      ..color = VerilyColors.movementFlameHot.withValues(alpha: 0.85 * power)
+      ..color = VerilyColors.movementFireGlow.withValues(alpha: 0.85 * power)
       ..strokeWidth = width * 2.2
       ..strokeCap = StrokeCap.round
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, width * 0.8);
     final core = Paint()
       ..blendMode = BlendMode.plus
-      ..color = VerilyColors.movementFlameCore.withValues(alpha: power)
+      ..color = VerilyColors.movementFireCore.withValues(alpha: power)
       ..strokeWidth = width * 0.6
       ..strokeCap = StrokeCap.round;
     for (final (a, b) in limbSegments(touch.limb)) {
@@ -415,13 +415,13 @@ class BallFirePainter extends CustomPainter {
     }
   }
 
-  /// White-hot at 0, through yellow and orange, to deep red at 1.
+  /// White-hot at 0, through ice cyan and flame blue, to deep blue at 1.
   static Color _flame(double t) {
     const stops = [
-      VerilyColors.movementFlameCore,
-      VerilyColors.movementFlameHot,
-      VerilyColors.movementFlameWarm,
-      VerilyColors.movementFlameEdge,
+      VerilyColors.movementFireCore,
+      VerilyColors.movementFireGlow,
+      VerilyColors.movementFireFlame,
+      VerilyColors.movementFireEdge,
     ];
     final scaled = t.clamp(0.0, 1.0) * (stops.length - 1);
     final index = scaled.floor().clamp(0, stops.length - 2);

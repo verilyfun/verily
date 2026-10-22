@@ -154,6 +154,10 @@ Verily sits on Skribble's paper and ink. Vermilion is ours.
 | `review`       | `#6B4FA0` | Proof waiting for a person, appeals                | 6.21:1 on paper, 4.92:1 on lilac          |
 | `reviewWash`   | `#E5DDF4` | Lilac: review chips, selection                     | ink on it 10.50:1                         |
 | `dusk`         | `#4A3B5E` | Fills and selections on night                      | —                                         |
+| `fireCore`     | `#F2FCFF` | The white-hot centre of the ball-skill flame       | — (light over footage, never text)        |
+| `fireGlow`     | `#9BEFFF` | Ice cyan: the flame's halo                         | — (light over footage, never text)        |
+| `fireFlame`    | `#3DB4FF` | Flame blue: the body of the flame                  | — (light over footage, never text)        |
+| `fireEdge`     | `#1E6BE6` | Deep blue: where the flame and embers fade         | — (light over footage, never text)        |
 
 Night variants of the role accents (`placeOnNight` `#86C7A0` 7.75:1,
 `rewardOnNight` `#E6BC5C` 8.49:1, `reviewOnNight` `#BBA6EC` 7.09:1) keep the
@@ -166,6 +170,9 @@ Rules:
   and checks that passed. Never for errors, warnings, or sales.
 - **Reward gold on butter is for large text and icons only** (3.84:1). Put
   ink text on the butter wash.
+- **Fire burns blue.** The ball-skill flame has its own family, so it is
+  never drawn in gold or vermilion, and fire blue is never used for anything
+  but fire.
 - **Never use colour alone for status.** A verified proof carries the stamp
   _and_ a word; a place carries a pin _and_ its name.
 
