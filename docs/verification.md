@@ -480,13 +480,39 @@ server with exactly the same model.
   `mp_media_decode_failed`, or `mp_replay_failed`).
 - **Runtime.** The server uses the published `mp_core`, `mp_vision`, and
   `mp_audio` 0.1.3 packages, whose build hook downloads the pinned native
-  MediaPipe runtime. It is published for macOS arm64 and Linux x64 only; the
-  replay was verified on macOS arm64 (a thumbs-up photo scores 0.73 for
-  `Thumb_Up`, cat and dog 0.82 and 0.89). The image installs `ffmpeg` and
-  `libstdc++6`. Its bundled Linux libraries need glibc 2.39 and the
-  libstdc++ of GCC 13 or newer, which Debian trixie provides.
-  `devenv shell test:server-image` replays the same fixtures inside the image
-  ([local CI](local-ci.md)); the Linux path has not been run yet.
+  MediaPipe runtime. It is published for macOS arm64 and Linux x64 only. The
+  image installs `ffmpeg` and `libstdc++6`; its bundled Linux libraries need
+  glibc 2.39 and the libstdc++ of GCC 13 or newer, which Debian trixie
+  provides.
+
+#### Replay scores by host
+
+The same pinned public fixtures, replayed with the pinned models. Linux x64 is
+the production image (`linux/amd64`, Debian trixie, ffmpeg 7.1.5), run by
+`devenv shell test:server-image` ([local CI](local-ci.md)) on 2026-10-22.
+
+| Fixture                   | Check      | macOS arm64        | Linux x64 (image)  |
+| ------------------------- | ---------- | ------------------ | ------------------ |
+| Thumbs-up photo           | `Thumb_Up` | 0.73               | 0.73               |
+| Thumbs-up photo           | `Victory`  | 0.00               | 0.00               |
+| Thumbs-up video, 2 s      | `Thumb_Up` | 0.73, 29/29 frames | 0.73, 29/29 frames |
+| Cat-and-dog photo         | `dog`      | 0.89               | 0.89               |
+| Cat-and-dog photo         | `cat`      | 0.82               | 0.80               |
+| Cat-and-dog photo         | `bicycle`  | 0.01               | 0.01               |
+| Speech clip (16 kHz mono) | `Speech`   | 1.00, 4/5 windows  | 1.00, 4/5 windows  |
+| Speech clip (16 kHz mono) | `Clapping` | 0.01               | 0.01               |
+
+Every verdict agrees; scores differ by at most 0.02 (the object detector on
+`cat`), well inside the 0.3 to 0.99 range creators may set. A video samples 29
+frames, not 30, because the last seek lands past the final decodable frame.
+
+The Linux run was emulated: Podman's Apple Silicon VM runs `linux/amd64` under
+QEMU user emulation (it disables Rosetta on kernel 6.13 and newer), so its
+timings say nothing about production. The replay suite took about 2 min 20 s
+there against 9 s natively on macOS, and a cold image build took 22 to 45
+minutes. Emulation changes speed, not scores, because QEMU runs the image's
+own x86 instructions; the `cat` difference is between the x86 and arm64
+builds of the runtime.
 
 ## Review, appeals, and moderation
 
@@ -568,4 +594,4 @@ Serverpod's development-mode schema check still passes. It enforces bounds on
 every value-bearing table, append-only receipts and audits, the no-mixing and
 creator-binding rules for Apps, frozen reward terms, and payout invariants.
 `dart run tool/verify_schema_contracts.dart` checks a live database read-only
-(40 constraints, 9 triggers).
+(42 constraints, 9 triggers).

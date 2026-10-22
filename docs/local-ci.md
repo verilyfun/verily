@@ -59,14 +59,26 @@ the escrow program, its client, or the server's Solana gateway.
 
 `test:server-image` needs a running Docker or Podman machine (Docker,
 OrbStack, or `podman machine`); without one it fails at once and says so. It
-is opt-in until it has passed on such a machine, then it becomes a default
-lane and a required status. Run it on any change to the Dockerfile, the
-compose file, native dependencies, or the local-check replay.
+stays opt-in: Podman runs one machine at a time, so another project's VM can
+block it, and a cold build under emulation takes 22 to 45 minutes. Run it on
+any change to the Dockerfile, the compose file, the server's dependencies or
+native libraries, the migrations, or the local-check replay.
+
+On this Mac the machine is `verily-linux` (6 CPUs, 8 GiB). Podman's default
+connection may name another machine, so select it explicitly:
+
+```sh
+podman machine start verily-linux
+CONTAINER_CONNECTION=verily-linux dart run tool/local_ci.dart --lane=test:server-image
+podman machine stop verily-linux
+```
 
 Production runs on Linux x64, the only Linux platform the MediaPipe runtime
-is published for, so the image is pinned to `linux/amd64`; Apple Silicon
-hosts build and run it under emulation (Rosetta in a podman machine), which
-is slow but exercises the same binaries. The lane:
+is published for, so the image is pinned to `linux/amd64`. Apple Silicon
+hosts build and run it under emulation: Podman's VM uses QEMU user emulation
+(it disables Rosetta on kernel 6.13 and newer). That is slow but runs the
+same binaries that deploy. With the build cached, the lane takes about 3.5
+minutes. The lane:
 
 1. Builds `verily_server/Dockerfile` twice from the same build stage: the
    `production` target (the default, what deploys) and `local-check-replay`,

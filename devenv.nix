@@ -725,6 +725,9 @@ in
             "\`podman machine start\`) and run this lane again." >&2
           exit 69
         fi
+        # Podman builds OCI images by default, which drop HEALTHCHECK; build
+        # the Docker format a deployment receives. Docker ignores this.
+        export BUILDAH_FORMAT=docker
         build() {
           docker build --platform linux/amd64 --file verily_server/Dockerfile \
             --target "$1" --tag "$2" .
@@ -746,24 +749,27 @@ in
         export VERILY_POSTGRES_PORT="$(free_port 18191)"
         export VERILY_SERVER_WEB_PORT="$(free_port 18182)"
         # Throwaway values for the secrets production requires. Backblaze is
-        # configured, as production demands, but never contacted.
+        # configured, as production demands, with a valid-shaped origin and
+        # keys that do not exist; booting never contacts the bucket.
         secret() { openssl rand -base64 "$1"; }
         export SERVERPOD_DATABASE_PASSWORD="$(secret 24)"
         export SERVERPOD_SERVICE_SECRET="$(secret 48)"
         export SERVERPOD_PASSWORD_emailSecretHashPepper="$(secret 48)"
         export SERVERPOD_PASSWORD_jwtHmacSha512PrivateKey="$(secret 64)"
         export SERVERPOD_PASSWORD_jwtRefreshTokenHashPepper="$(secret 48)"
-        export VERILY_EVIDENCE_B2_S3_ENDPOINT="https://s3.image-check.invalid"
-        export VERILY_EVIDENCE_B2_REGION="image-check"
+        export VERILY_EVIDENCE_B2_S3_ENDPOINT="https://s3.us-west-004.backblazeb2.com"
+        export VERILY_EVIDENCE_B2_REGION="us-west-004"
         export VERILY_EVIDENCE_B2_BUCKET_NAME="verily-image-check"
         export VERILY_EVIDENCE_B2_KEY_ID="image-check"
         export VERILY_EVIDENCE_B2_APPLICATION_KEY="$(secret 24)"
         export VERILY_WEBHOOK_SIGNING_MASTER_KEY="$(secret 48)"
         export VERILY_RECEIPT_SIGNING_KEY="$(secret 32)"
-        compose=(docker compose --file verily_server/docker-compose.yaml
+        # An absolute path: the cleanup trap runs after the cd below.
+        compose=(docker compose --file "$DEVENV_ROOT/${serverDir}/docker-compose.yaml"
           --project-name verily-image-check --profile server)
         trap '"''${compose[@]}" down --volumes >/dev/null 2>&1 || true' EXIT
         "''${compose[@]}" up --detach --no-build server
+        boot_started=$SECONDS
         healthy=false
         for _ in $(seq 1 90); do
           if curl --fail --silent --show-error \
@@ -778,7 +784,7 @@ in
           echo "The production image did not become healthy." >&2
           exit 1
         fi
-        echo "The production image is serving /healthz."
+        echo "The production image is serving /healthz after $((SECONDS - boot_started))s."
 
         echo "Checking the migrated schema contracts..."
         cd "$DEVENV_ROOT/${serverDir}"

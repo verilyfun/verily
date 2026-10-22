@@ -55,8 +55,8 @@ const List<LocalCiLane> localCiLanes = [
   LocalCiLane('test:flutter'),
   LocalCiLane('test:server'),
   LocalCiLane('test:escrow'),
-  // Needs a running Docker or Podman machine. Opt-in until it has passed on
-  // one; it then becomes a default lane.
+  // Needs a running Docker or Podman machine, which another project's VM can
+  // hold, and a cold emulated build takes most of an hour.
   LocalCiLane('test:server-image', optIn: true),
   // Starts a throwaway Solana validator and moves real (local) tokens.
   LocalCiLane('test:escrow:e2e', optIn: true),
