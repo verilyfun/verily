@@ -1,6 +1,3 @@
-@Timeout(Duration(minutes: 5))
-library;
-
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -118,41 +115,6 @@ void main() {
   final fixtures = <_Fixture, Uint8List>{};
   late MpLocalCheckReplayer replayer;
 
-  setUpAll(() async {
-    final supported =
-        (Platform.isMacOS || Platform.isLinux) &&
-        !Platform.version.contains('ia32');
-    if (!supported) {
-      skipReason = 'The MP runtime is not published for this host.';
-      return;
-    }
-    try {
-      if (Process.runSync('ffmpeg', ['-version']).exitCode != 0) {
-        skipReason = 'ffmpeg is not installed on this host.';
-        return;
-      }
-    } on ProcessException {
-      skipReason = 'ffmpeg is not installed on this host.';
-      return;
-    }
-    try {
-      for (final fixture in _Fixture.values) {
-        fixtures[fixture] = await _fixture(fixture);
-      }
-    } on Object catch (error) {
-      skipReason = 'Pinned fixtures are unavailable (offline?): $error';
-      return;
-    }
-    // The server image bakes the models in and names them with
-    // VERILY_LOCAL_CHECK_MODEL_CACHE; its replay check runs this suite there.
-    final environment = Platform.environment;
-    replayer = MpLocalCheckReplayer(
-      models: environment.containsKey('VERILY_LOCAL_CHECK_MODEL_CACHE')
-          ? PinnedLocalCheckModelStore.fromEnvironment(environment)
-          : PinnedLocalCheckModelStore(cacheDirectory: _cache),
-    );
-  });
-
   Future<LocalCheckReplay?> replay(
     ActionLocalCheck check,
     Uint8List media,
@@ -186,130 +148,175 @@ void main() {
     return result;
   }
 
-  group('Given the real MediaPipe runtime on this host', () {
-    test('when a thumbs-up photo is replayed then Thumb_Up matches', () async {
-      final result = await replay(
-        _check(LocalCheckTask.gesture, 'Thumb_Up', minScore: 0.6),
-        fixtures[_Fixture.thumbsUp] ?? Uint8List(0),
-        'image/jpeg',
+  group(
+    'Given the real MediaPipe runtime on this host',
+    () {
+      setUpAll(() async {
+        final supported =
+            (Platform.isMacOS || Platform.isLinux) &&
+            !Platform.version.contains('ia32');
+        if (!supported) {
+          skipReason = 'The MP runtime is not published for this host.';
+          return;
+        }
+        try {
+          if (Process.runSync('ffmpeg', ['-version']).exitCode != 0) {
+            skipReason = 'ffmpeg is not installed on this host.';
+            return;
+          }
+        } on ProcessException {
+          skipReason = 'ffmpeg is not installed on this host.';
+          return;
+        }
+        try {
+          for (final fixture in _Fixture.values) {
+            fixtures[fixture] = await _fixture(fixture);
+          }
+        } on Object catch (error) {
+          skipReason = 'Pinned fixtures are unavailable (offline?): $error';
+          return;
+        }
+        // The server image bakes the models in and names them with
+        // VERILY_LOCAL_CHECK_MODEL_CACHE; its replay check runs this suite there.
+        final environment = Platform.environment;
+        replayer = MpLocalCheckReplayer(
+          models: environment.containsKey('VERILY_LOCAL_CHECK_MODEL_CACHE')
+              ? PinnedLocalCheckModelStore.fromEnvironment(environment)
+              : PinnedLocalCheckModelStore(cacheDirectory: _cache),
+        );
+      });
+
+      test(
+        'when a thumbs-up photo is replayed then Thumb_Up matches',
+        () async {
+          final result = await replay(
+            _check(LocalCheckTask.gesture, 'Thumb_Up', minScore: 0.6),
+            fixtures[_Fixture.thumbsUp] ?? Uint8List(0),
+            'image/jpeg',
+          );
+          if (result == null) return;
+
+          expect(result, isA<LocalCheckReplayScores>());
+          final scores = result as LocalCheckReplayScores;
+          expect(scores.scores, hasLength(1));
+          expect(scores.best, greaterThan(0.6));
+        },
       );
-      if (result == null) return;
 
-      expect(result, isA<LocalCheckReplayScores>());
-      final scores = result as LocalCheckReplayScores;
-      expect(scores.scores, hasLength(1));
-      expect(scores.best, greaterThan(0.6));
-    });
+      test(
+        'when the same photo is asked for Victory then it does not match',
+        () async {
+          final result = await replay(
+            _check(LocalCheckTask.gesture, 'Victory', minScore: 0.6),
+            fixtures[_Fixture.thumbsUp] ?? Uint8List(0),
+            'image/jpeg',
+          );
+          if (result == null) return;
 
-    test(
-      'when the same photo is asked for Victory then it does not match',
-      () async {
+          final scores = result as LocalCheckReplayScores;
+          expect(scores.matching(0.6), 0);
+        },
+      );
+
+      test('when a video of the gesture is replayed then most sampled frames '
+          'match', () async {
+        if (skipReason != null) {
+          _skipOrFail(skipReason!);
+          return;
+        }
+        final video = await _videoFrom(fixtures[_Fixture.thumbsUp]!);
         final result = await replay(
-          _check(LocalCheckTask.gesture, 'Victory', minScore: 0.6),
-          fixtures[_Fixture.thumbsUp] ?? Uint8List(0),
-          'image/jpeg',
+          _check(LocalCheckTask.gesture, 'Thumb_Up', minScore: 0.6),
+          video,
+          'video/mp4',
         );
         if (result == null) return;
 
         final scores = result as LocalCheckReplayScores;
-        expect(scores.matching(0.6), 0);
-      },
-    );
-
-    test('when a video of the gesture is replayed then most sampled frames '
-        'match', () async {
-      if (skipReason != null) {
-        _skipOrFail(skipReason!);
-        return;
-      }
-      final video = await _videoFrom(fixtures[_Fixture.thumbsUp]!);
-      final result = await replay(
-        _check(LocalCheckTask.gesture, 'Thumb_Up', minScore: 0.6),
-        video,
-        'video/mp4',
-      );
-      if (result == null) return;
-
-      final scores = result as LocalCheckReplayScores;
-      // A sample that seeks past the last decodable frame is skipped.
-      expect(
-        scores.scores.length,
-        inInclusiveRange(
-          LocalCheckBounds.maxFrames - 2,
-          LocalCheckBounds.maxFrames,
-        ),
-      );
-      expect(scores.matching(0.6), greaterThanOrEqualTo(20));
-    });
-
-    test('when a cat-and-dog photo is replayed then dog and cat are found '
-        'and a bicycle is not', () async {
-      final photo = fixtures[_Fixture.catAndDog] ?? Uint8List(0);
-      final dog = await replay(
-        _check(LocalCheckTask.object, 'dog'),
-        photo,
-        'image/jpeg',
-      );
-      if (dog == null) return;
-      final cat = await replay(
-        _check(LocalCheckTask.object, 'cat'),
-        photo,
-        'image/jpeg',
-      );
-      final bicycle = await replay(
-        _check(LocalCheckTask.object, 'bicycle'),
-        photo,
-        'image/jpeg',
-      );
-
-      expect((dog as LocalCheckReplayScores).best, greaterThan(0.7));
-      expect((cat! as LocalCheckReplayScores).best, greaterThan(0.6));
-      expect((bicycle! as LocalCheckReplayScores).best, lessThan(0.3));
-    });
-
-    test(
-      'when a speech recording is replayed then YAMNet scores each window',
-      () async {
-        final recording = fixtures[_Fixture.speech] ?? Uint8List(0);
-        // Speech is not offered to creators; it proves the audio path runs.
-        final speech = await replay(
-          _check(LocalCheckTask.sound, 'Speech'),
-          recording,
-          'audio/wav',
+        // A sample that seeks past the last decodable frame is skipped.
+        expect(
+          scores.scores.length,
+          inInclusiveRange(
+            LocalCheckBounds.maxFrames - 2,
+            LocalCheckBounds.maxFrames,
+          ),
         );
-        if (speech == null) return;
-        final clapping = await replay(
-          _check(LocalCheckTask.sound, 'Clapping'),
-          recording,
-          'audio/wav',
+        expect(scores.matching(0.6), greaterThanOrEqualTo(20));
+      });
+
+      test('when a cat-and-dog photo is replayed then dog and cat are found '
+          'and a bicycle is not', () async {
+        final photo = fixtures[_Fixture.catAndDog] ?? Uint8List(0);
+        final dog = await replay(
+          _check(LocalCheckTask.object, 'dog'),
+          photo,
+          'image/jpeg',
+        );
+        if (dog == null) return;
+        final cat = await replay(
+          _check(LocalCheckTask.object, 'cat'),
+          photo,
+          'image/jpeg',
+        );
+        final bicycle = await replay(
+          _check(LocalCheckTask.object, 'bicycle'),
+          photo,
+          'image/jpeg',
         );
 
-        final windows = speech as LocalCheckReplayScores;
-        expect(windows.scores.length, greaterThanOrEqualTo(3));
-        expect(windows.best, greaterThan(0.8));
-        expect((clapping! as LocalCheckReplayScores).best, lessThan(0.2));
-      },
-    );
+        expect((dog as LocalCheckReplayScores).best, greaterThan(0.7));
+        expect((cat! as LocalCheckReplayScores).best, greaterThan(0.6));
+        expect((bicycle! as LocalCheckReplayScores).best, lessThan(0.3));
+      });
 
-    test('when the bytes are not decodable then the replay is unavailable, '
-        'never a verdict', () async {
-      final result = await replay(
-        _check(LocalCheckTask.gesture, 'Thumb_Up'),
-        Uint8List.fromList(List.filled(256, 3)),
-        'image/jpeg',
-      );
-      if (result == null) return;
+      test(
+        'when a speech recording is replayed then YAMNet scores each window',
+        () async {
+          final recording = fixtures[_Fixture.speech] ?? Uint8List(0);
+          // Speech is not offered to creators; it proves the audio path runs.
+          final speech = await replay(
+            _check(LocalCheckTask.sound, 'Speech'),
+            recording,
+            'audio/wav',
+          );
+          if (speech == null) return;
+          final clapping = await replay(
+            _check(LocalCheckTask.sound, 'Clapping'),
+            recording,
+            'audio/wav',
+          );
 
-      expect(
-        result,
-        isA<LocalCheckReplayUnavailable>().having(
-          (unavailable) => unavailable.code,
-          'code',
-          LocalCheckUnavailableCode.mediaDecodeFailed,
-        ),
+          final windows = speech as LocalCheckReplayScores;
+          expect(windows.scores.length, greaterThanOrEqualTo(3));
+          expect(windows.best, greaterThan(0.8));
+          expect((clapping! as LocalCheckReplayScores).best, lessThan(0.2));
+        },
       );
-    });
-  });
+
+      test('when the bytes are not decodable then the replay is unavailable, '
+          'never a verdict', () async {
+        final result = await replay(
+          _check(LocalCheckTask.gesture, 'Thumb_Up'),
+          Uint8List.fromList(List.filled(256, 3)),
+          'image/jpeg',
+        );
+        if (result == null) return;
+
+        expect(
+          result,
+          isA<LocalCheckReplayUnavailable>().having(
+            (unavailable) => unavailable.code,
+            'code',
+            LocalCheckUnavailableCode.mediaDecodeFailed,
+          ),
+        );
+      });
+    },
+    // Not a library @Timeout: the server image runs this suite as a compiled
+    // executable, which reads no annotations, and under emulation on Apple
+    // Silicon the video replay alone outlasts the 30-second default.
+    timeout: const Timeout(Duration(minutes: 5)),
+  );
 
   group('Given a model source that refuses the pinned model', () {
     test(
