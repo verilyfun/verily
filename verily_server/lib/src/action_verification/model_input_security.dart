@@ -24,19 +24,23 @@ abstract final class ModelInputSecurity {
     );
   }
 
+  /// Length bounds of a verification policy, after trimming.
+  static const minVerificationPolicyLength = 10;
+  static const maxVerificationPolicyLength = 2000;
+
   static String validateVerificationPolicy(String value) {
     return _validate(
       value,
       fieldName: 'verification policy',
-      minimumLength: 10,
-      maximumLength: 2000,
+      minimumLength: minVerificationPolicyLength,
+      maximumLength: maxVerificationPolicyLength,
     );
   }
 
   static bool isSafeVerificationPolicy(String value) {
     final normalized = value.trim();
-    return normalized.length >= 10 &&
-        normalized.length <= 2000 &&
+    return normalized.length >= minVerificationPolicyLength &&
+        normalized.length <= maxVerificationPolicyLength &&
         !_hasUnsafeContent(normalized);
   }
 

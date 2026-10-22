@@ -259,6 +259,37 @@ void main() {
         throwsArgumentError,
       );
     });
+
+    test('names the broken threshold without throwing', () {
+      expect(
+        analyzer.ruleProblem(_rule(type: MotionActionType.phoneToss)),
+        isNull,
+      );
+      expect(
+        analyzer.ruleProblem(
+          _rule(type: MotionActionType.rotation),
+        ),
+        'Counted rotations require a specific axis.',
+      );
+      expect(
+        analyzer.ruleProblem(
+          _rule(type: MotionActionType.stillness, maximumAngularSpeed: 3),
+        ),
+        'Stillness threshold is too permissive.',
+      );
+      expect(
+        () => analyzer.validateRule(
+          _rule(type: MotionActionType.rotation),
+        ),
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.message,
+            'message',
+            'Counted rotations require a specific axis.',
+          ),
+        ),
+      );
+    });
   });
 }
 

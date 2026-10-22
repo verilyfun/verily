@@ -1,5 +1,6 @@
 import 'package:serverpod/serverpod.dart';
 import 'package:verily_server/src/account/account_access.dart';
+import 'package:verily_server/src/action_verification/action_draft_refusal.dart';
 import 'package:verily_server/src/action_verification/action_key_lock.dart';
 import 'package:verily_server/src/auth/solana_auth_verify.dart';
 import 'package:verily_server/src/generated/protocol.dart';
@@ -42,47 +43,38 @@ class RewardPoolService {
   RewardConfiguration get configuration =>
       _configuration ?? RewardRuntime.current;
 
-  /// Validates a creator's terms against the escrow program's bounds.
+  /// Validates a creator's terms against the escrow program's bounds. Throws
+  /// [ActionDraftRefusal], since the terms are part of the action draft.
   ValidatedRewardTerms validateTerms(RewardTermsDraft draft, DateTime now) {
     if (draft.amountPerPayout < 1 ||
         draft.amountPerPayout > RewardBounds.maxAmountPerPayoutAtoms) {
-      throw ArgumentError.value(
-        draft.amountPerPayout,
-        'amountPerPayout',
+      throw const ActionDraftRefusal(
         'Each payout must be between 1 atom and 1,000,000 USDC.',
       );
     }
     if (draft.maxPayouts < 1 || draft.maxPayouts > RewardBounds.maxPayouts) {
-      throw ArgumentError.value(
-        draft.maxPayouts,
-        'maxPayouts',
+      throw const ActionDraftRefusal(
         'A reward pays between 1 and ${RewardBounds.maxPayouts} completions.',
       );
     }
     if (draft.maxWinsPerAccount < 1 ||
         draft.maxWinsPerAccount > RewardBounds.maxWinsPerAccount) {
-      throw ArgumentError.value(
-        draft.maxWinsPerAccount,
-        'maxWinsPerAccount',
+      throw const ActionDraftRefusal(
         'One account can win between 1 and '
-            '${RewardBounds.maxWinsPerAccount} payouts.',
+        '${RewardBounds.maxWinsPerAccount} payouts.',
       );
     }
     if (draft.refundDelayDays < RewardBounds.minRefundDelayDays ||
         draft.refundDelayDays > RewardBounds.maxRefundDelayDays) {
-      throw ArgumentError.value(
-        draft.refundDelayDays,
-        'refundDelayDays',
+      throw const ActionDraftRefusal(
         'The refund delay must be between ${RewardBounds.minRefundDelayDays} '
-            'and ${RewardBounds.maxRefundDelayDays} days.',
+        'and ${RewardBounds.maxRefundDelayDays} days.',
       );
     }
     final expiresAt = _wholeSeconds(draft.expiresAt);
     if (expiresAt.isBefore(now.add(RewardBounds.minLifetime)) ||
         expiresAt.isAfter(now.add(RewardBounds.maxLifetime))) {
-      throw ArgumentError.value(
-        draft.expiresAt,
-        'expiresAt',
+      throw const ActionDraftRefusal(
         'A reward must stay open for between an hour and a year.',
       );
     }

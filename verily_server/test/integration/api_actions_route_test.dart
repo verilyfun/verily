@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart';
 import 'package:test/test.dart';
+import 'package:verily_server/src/action_verification/action_authoring_service.dart';
 import 'package:verily_server/src/apps/api/app_api_action_service.dart';
 import 'package:verily_server/src/apps/app_confirmation_service.dart';
 import 'package:verily_server/src/generated/protocol.dart';
@@ -361,16 +362,23 @@ void main() {
       test(
         'then designer validation refuses it without echoing input',
         () async {
-          for (final extra in [
-            {'timeZone': 'Mars/Olympus_Mons'},
-            {
-              'opensAt': '2026-11-02T00:00:00Z',
-              'closesAt': '2026-11-01T00:00:00Z',
-            },
+          for (final (extra, rule) in [
+            (
+              {'timeZone': 'Mars/Olympus_Mons'},
+              'timeZone must be an IANA time zone.',
+            ),
+            (
+              {
+                'opensAt': '2026-11-02T00:00:00Z',
+                'closesAt': '2026-11-01T00:00:00Z',
+              },
+              'closesAt must be after opensAt.',
+            ),
           ]) {
             final response = await create(_actionBody(extra: extra));
             expect(response.status, 422, reason: '$extra');
             expect(response.body['error'], 'invalid_request');
+            expect(response.body['message'], rule);
             expect(
               jsonEncode(response.body),
               isNot(contains('Olympus')),
@@ -392,6 +400,30 @@ void main() {
           );
           expect(optional.status, 422);
           expect(optional.body['error'], 'invalid_request');
+          expect(
+            optional.body['message'],
+            'An action needs at least one required proof.',
+          );
+          expect(await actionCount(), 0);
+        },
+      );
+
+      test(
+        'then a bug inside the write is not reported as a refusal',
+        () async {
+          // Only typed refusals become 4xx answers; a programming error rolls
+          // the whole request back and surfaces as one.
+          final bug = StateError('A programming error inside the write.');
+          final broken = AppApiActionService(
+            authoring: ActionAuthoringService(
+              rewardPools: FailingDraftTerms(bug),
+            ),
+          );
+
+          await expectLater(
+            create(_actionBody(), using: broken),
+            throwsA(same(bug)),
+          );
           expect(await actionCount(), 0);
         },
       );
@@ -489,6 +521,31 @@ void main() {
         final replaced = await publish(id, 1);
         expect(replaced.status, 409);
         expect(replaced.body['error'], 'revision_completed');
+      });
+
+      test('then an action held for safety review cannot go live', () async {
+        final id = await draftId();
+        await publish(id, 1);
+        // A high-risk report holds every revision of the key at once.
+        final hold = await endpoints.moderation.report(
+          participant,
+          actionDefinitionId: UuidValue.withValidation(id),
+          category: 'dangerousActivity',
+          details: 'The action asks people to climb an electricity pylon.',
+          idempotencyKey: 'held-action',
+        );
+        expect(hold.pauseActive, isTrue);
+        final next = actionOf(await create(_actionBody()));
+
+        final refused = await publish(next['id']! as String, 2);
+
+        expect(refused.status, 409);
+        expect(refused.body['error'], 'invalid_state');
+        final stored = await ActionDefinition.db.findById(
+          sessionBuilder.build(),
+          UuidValue.withValidation(next['id']! as String),
+        );
+        expect(stored!.status, ActionDefinitionStatus.draft);
       });
 
       test('then actions it does not own read as missing', () async {

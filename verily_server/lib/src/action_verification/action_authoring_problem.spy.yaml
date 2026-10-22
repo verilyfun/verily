@@ -13,3 +13,8 @@ values:
   - rewardNotFunded
   ### Reward terms cannot change once funding has started.
   - rewardTermsLocked
+  ### The action or one of its proofs breaks an authoring rule, such as a
+  ### missing title, an out-of-range radius, or a duplicate requirement key.
+  - invalidRequest
+  ### Some text is refused at the model boundary (ModelInputSecurity).
+  - unsafeText

@@ -32,6 +32,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'We couldn\'t find that. It may have ended or been removed.';
 
   @override
+  String get errorActionInvalid =>
+      'Part of this action can\'t be saved yet. Check each step and try again.';
+
+  @override
+  String get errorActionUnsafeText =>
+      'Some of this text can\'t be used. Rephrase it and try again.';
+
+  @override
   String get navigationFindActions => 'Find actions';
 
   @override

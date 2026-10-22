@@ -47,8 +47,15 @@ DateTime? actionPeriodEnd(
   ).toUtc();
 }
 
-/// Resolves an IANA time zone, throwing [ArgumentError] for unknown names.
+/// Resolves a stored action's IANA time zone. Authoring refuses unknown
+/// names, so one here is a bug: throws [ArgumentError].
 timezone.Location actionTimeZone(String name) {
+  return findActionTimeZone(name) ??
+      (throw ArgumentError.value(name, 'timeZone', 'Unknown IANA time zone.'));
+}
+
+/// Resolves an IANA time zone, or null for an unknown name.
+timezone.Location? findActionTimeZone(String name) {
   if (!_timeZonesInitialized) {
     timezone_data.initializeTimeZones();
     _timeZonesInitialized = true;
@@ -56,6 +63,6 @@ timezone.Location actionTimeZone(String name) {
   try {
     return timezone.getLocation(name);
   } on timezone.LocationNotFoundException {
-    throw ArgumentError.value(name, 'timeZone', 'Unknown IANA time zone.');
+    return null;
   }
 }

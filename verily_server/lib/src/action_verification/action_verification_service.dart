@@ -273,7 +273,11 @@ class ActionVerificationService {
     required UuidValue actionId,
     required String idempotencyKey,
   }) async {
-    final key = requiredText(idempotencyKey, 'idempotencyKey', maxLength: 128);
+    final key = _requiredInput(
+      idempotencyKey,
+      'idempotencyKey',
+      maxLength: 128,
+    );
     final attempt = await DatabaseUtil.runInTransactionOrSavepoint(
       session.db,
       null,
@@ -1173,6 +1177,24 @@ class ActionVerificationService {
     required UuidValue authUserId,
     required UuidValue attemptId,
     Transaction? enclosingTransaction,
+  }) {
+    return _completeAttempt(
+      session,
+      authUserId: authUserId,
+      attemptId: attemptId,
+      enclosingTransaction: enclosingTransaction,
+      deferWhileHeld: false,
+    );
+  }
+
+  /// [completeAttempt]; with [deferWhileHeld] a hold throws
+  /// [_CompletionHeld] instead of the participant-facing refusal.
+  Future<ActionAttemptView> _completeAttempt(
+    Session session, {
+    required UuidValue authUserId,
+    required UuidValue attemptId,
+    required bool deferWhileHeld,
+    Transaction? enclosingTransaction,
   }) async {
     final appEventIds = <UuidValue>[];
     final completed = await DatabaseUtil.runInTransactionOrSavepoint(
@@ -1183,6 +1205,7 @@ class ActionVerificationService {
           session,
           authUserId: authUserId,
           attemptId: attemptId,
+          deferWhileHeld: deferWhileHeld,
           transaction: transaction,
         );
         appEventIds.addAll(
@@ -1216,6 +1239,11 @@ class ActionVerificationService {
   /// Completes [attemptId] on the participant's behalf once every required
   /// proof has been submitted. Used by the verification worker and recovery,
   /// so a participant never has to come back to finish a verified attempt.
+  ///
+  /// Returns null while the participant's account is blocked or the action
+  /// is paused for safety review: the decision itself is already durable,
+  /// and recovery completes the attempt once the hold lifts. Any other
+  /// failure propagates.
   Future<ActionAttemptView?> completeIfReady(
     Session session, {
     required UuidValue attemptId,
@@ -1232,19 +1260,15 @@ class ActionVerificationService {
     final readiness = await _requiredProofReadiness(session, attempt: attempt);
     if (!readiness.allSubmitted) return null;
     try {
-      return await completeAttempt(
+      return await _completeAttempt(
         session,
         authUserId: attempt.participantAuthUserId,
         attemptId: attemptId,
+        deferWhileHeld: true,
       );
-      // Business-rule refusals are StateErrors in this codebase; any other
-      // failure propagates.
-      // ignore: avoid_catching_errors
-    } on StateError catch (error) {
-      // A paused or blocked state is retried by recovery; the decision
-      // itself is already durable.
+    } on _CompletionHeld catch (held) {
       session.log(
-        'Attempt $attemptId could not complete yet: ${error.message}',
+        'Attempt $attemptId could not complete yet: ${held.reason}',
         level: LogLevel.info,
       );
       return null;
@@ -1255,8 +1279,19 @@ class ActionVerificationService {
     Session session, {
     required UuidValue authUserId,
     required UuidValue attemptId,
+    required bool deferWhileHeld,
     required Transaction transaction,
   }) async {
+    // Both holds are read under the locks that writers of the hold take,
+    // so they cannot lift or land before this transaction commits.
+    if (deferWhileHeld &&
+        !await AccountAccess.isActive(
+          session,
+          authUserId,
+          transaction: transaction,
+        )) {
+      throw const _CompletionHeld('the participant account is not active');
+    }
     await AccountAccess.requireActive(
       session,
       authUserId,
@@ -1281,6 +1316,14 @@ class ActionVerificationService {
       return (attempt: attempt, payout: payout);
     }
 
+    if (deferWhileHeld &&
+        await moderationGate.isActionPaused(
+          session,
+          actionId: attempt.actionDefinitionId,
+          transaction: transaction,
+        )) {
+      throw const _CompletionHeld('the action is paused for safety review');
+    }
     await moderationGate.assertActionAllowed(
       session,
       actionId: attempt.actionDefinitionId,
@@ -2016,7 +2059,11 @@ LIMIT 1;
           transaction: transaction,
         );
         if (rule == null) throw StateError('QR rule is missing.');
-        final code = requiredText(input.qrCode ?? '', 'qrCode', maxLength: 512);
+        final code = _requiredInput(
+          input.qrCode ?? '',
+          'qrCode',
+          maxLength: 512,
+        );
         final digest = secretSha256Hex(code);
         final now = clock().toUtc();
         final challenge = await ActionQrChallenge.db.findFirstRow(
@@ -2673,6 +2720,30 @@ _Evaluation _withCaptureIntegrity(
     summary: needsReviewSummary,
     confidence: 0,
   );
+}
+
+/// The trimmed participant input [name]. Throws [ArgumentError] when it is
+/// empty or longer than [maxLength]; authoring's [requiredText] refuses
+/// draft fields instead.
+String _requiredInput(String value, String name, {required int maxLength}) {
+  final normalized = value.trim();
+  if (normalized.isEmpty) throw ArgumentError('$name is required.');
+  if (normalized.length > maxLength) {
+    throw ArgumentError('$name must be $maxLength characters or fewer.');
+  }
+  return normalized;
+}
+
+/// A completion run for the participant found a hold that lifts later: the
+/// participant's account is blocked, or the action is paused for safety
+/// review. Thrown before anything is written.
+final class _CompletionHeld implements Exception {
+  const _CompletionHeld(this.reason);
+
+  final String reason;
+
+  @override
+  String toString() => 'Completion held: $reason';
 }
 
 class _Evaluation {

@@ -2,9 +2,12 @@ import 'dart:io';
 
 import 'package:test/test.dart';
 import 'package:verily_evidence/verily_evidence.dart';
+import 'package:verily_server/src/action_verification/action_draft_refusal.dart';
 import 'package:verily_server/src/action_verification/local_check/local_check_catalog.dart';
 import 'package:verily_server/src/action_verification/model_input_security.dart';
 import 'package:verily_server/src/generated/protocol.dart';
+
+final Matcher _refused = throwsA(isA<ActionDraftRefusal>());
 
 ActionLocalCheck _check({
   LocalCheckTask task = LocalCheckTask.gesture,
@@ -108,11 +111,11 @@ void main() {
           _check(task: LocalCheckTask.sound, label: 'Clapping'),
           MediaEvidenceKind.video,
         ),
-        throwsArgumentError,
+        _refused,
       );
       expect(
         () => validateLocalCheck(_check(), MediaEvidenceKind.audio),
-        throwsArgumentError,
+        _refused,
       );
     });
 
@@ -121,7 +124,7 @@ void main() {
         expect(
           () =>
               validateLocalCheck(_check(label: label), MediaEvidenceKind.photo),
-          throwsArgumentError,
+          _refused,
           reason: label,
         );
       }
@@ -134,7 +137,7 @@ void main() {
             _check(minScore: score),
             MediaEvidenceKind.video,
           ),
-          throwsArgumentError,
+          _refused,
           reason: '$score',
         );
       }
@@ -147,13 +150,13 @@ void main() {
             _check(minFrames: frames),
             MediaEvidenceKind.video,
           ),
-          throwsArgumentError,
+          _refused,
           reason: '$frames',
         );
       }
       expect(
         () => validateLocalCheck(_check(minFrames: 2), MediaEvidenceKind.photo),
-        throwsArgumentError,
+        _refused,
       );
     });
   });

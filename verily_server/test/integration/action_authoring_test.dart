@@ -3,8 +3,9 @@
 
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart';
 import 'package:test/test.dart';
+import 'package:verily_server/src/action_verification/action_authoring_service.dart';
+import 'package:verily_server/src/action_verification/action_verification_endpoint.dart';
 import 'package:verily_server/src/action_verification/action_views.dart';
-import 'package:verily_server/src/action_verification/model_input_security.dart';
 import 'package:verily_server/src/action_verification/movement_verification_policy.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 
@@ -574,7 +575,7 @@ void main() {
         ]) {
           await expectLater(
             endpoints.actionVerification.createAction(ada, request),
-            throwsArgumentError,
+            refusedAs(ActionAuthoringProblem.invalidRequest),
           );
         }
         expect(await definitionCount(), 0);
@@ -693,6 +694,9 @@ void main() {
           ],
           'confidence out of range': [video.copyWith(minConfidence: 1.5)],
           'missing verifier text': [video.copyWith(verificationPrompt: null)],
+          'verifier text too short': [
+            video.copyWith(verificationPrompt: 'Show it.'),
+          ],
           'repetitions without a movement': [
             video.copyWith(targetRepetitions: 10),
           ],
@@ -733,6 +737,28 @@ void main() {
               targetRepetitions: 3,
             ),
           ],
+          'unsafe motion thresholds': [
+            ActionRequirementDraft(
+              requirementKey: 'spin',
+              kind: ActionRequirementKind.motion,
+              title: 'Spin',
+              instructions: 'Spin the phone.',
+              isRequired: true,
+              minDurationSeconds: 1,
+              maxDurationSeconds: 10,
+              // A counted rotation needs one axis.
+              motionType: ActionMotionType.rotation,
+              motionAxis: ActionMotionAxis.any,
+              targetRepetitions: 3,
+              minAngularSpeedRadiansPerSecond: 1,
+              maxAngularSpeedRadiansPerSecond: 20,
+              minAxisDominance: 0.6,
+              minFreeFallMilliseconds: 180,
+              maxFreeFallMilliseconds: 700,
+              minPeakAccelerationMetersPerSecondSquared: 12,
+              maxPeakAccelerationMetersPerSecondSquared: 60,
+            ),
+          ],
           'external app without an app': [
             externalRequirement(appId: testId(0x999)).copyWith(appId: null),
           ],
@@ -747,8 +773,59 @@ void main() {
                 requirements: entry.value,
               ),
             ),
-            throwsArgumentError,
+            refusedAs(ActionAuthoringProblem.invalidRequest),
             reason: entry.key,
+          );
+        }
+        expect(await definitionCount(), 0);
+      });
+
+      test('then the refusal names the rule the creator broke', () async {
+        final photo = mediaRequirement(kind: ActionRequirementKind.photo);
+        await expectLater(
+          endpoints.actionVerification.createAction(
+            ada,
+            actionRequest(
+              actionKey: 'photo-without-confidence',
+              requirements: [photo.copyWith(minConfidence: null)],
+            ),
+          ),
+          throwsA(
+            isA<ActionAuthoringException>()
+                .having(
+                  (error) => error.reason,
+                  'reason',
+                  ActionAuthoringProblem.invalidRequest,
+                )
+                .having(
+                  (error) => error.message,
+                  'message',
+                  'Verification confidence must be between 0 and 1.',
+                ),
+          ),
+        );
+        expect(await definitionCount(), 0);
+      });
+
+      test('then a bug inside the write is not blamed on the draft', () async {
+        // A valid draft whose write hits a programming error after its rows
+        // are inserted. Only authoring refusals become invalidRequest.
+        final bug = ArgumentError('A programming error inside the write.');
+        final endpoint = ActionVerificationEndpoint(
+          authoring: ActionAuthoringService(
+            rewardPools: FailingDraftTerms(bug),
+          ),
+        );
+        for (final write in [endpoint.createAction, endpoint.saveActionDraft]) {
+          await expectLater(
+            write(
+              ada.build(),
+              actionRequest(
+                actionKey: 'broken-write',
+                requirements: [locationRequirement()],
+              ),
+            ),
+            throwsA(same(bug)),
           );
         }
         expect(await definitionCount(), 0);
@@ -769,7 +846,7 @@ void main() {
               ],
             ),
           ),
-          throwsA(isA<ModelInputSecurityException>()),
+          refusedAs(ActionAuthoringProblem.unsafeText),
         );
         expect(await definitionCount(), 0);
       });
@@ -788,7 +865,7 @@ void main() {
         ]) {
           await expectLater(
             endpoints.actionVerification.saveActionDraft(ada, request),
-            throwsArgumentError,
+            refusedAs(ActionAuthoringProblem.invalidRequest),
           );
         }
         expect(await definitionCount(), 0);

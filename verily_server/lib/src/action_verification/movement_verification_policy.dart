@@ -1,3 +1,4 @@
+import 'package:verily_server/src/action_verification/action_draft_refusal.dart';
 import 'package:verily_server/src/action_verification/model_input_security.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 
@@ -34,7 +35,8 @@ String movementVerificationPrompt(
 ///
 /// [maxDurationSeconds] is the requirement's recording limit; a target that
 /// would need more time than that at a brisk but safe pace can never be
-/// completed honestly, so it is refused before publication.
+/// completed honestly, so it is refused before publication. Throws
+/// [ActionDraftRefusal].
 void validateMovementTarget(
   ActionMovementKind kind,
   int? targetRepetitions,
@@ -43,7 +45,7 @@ void validateMovementTarget(
   if (targetRepetitions == null ||
       targetRepetitions < 1 ||
       targetRepetitions > maximumMovementRepetitions) {
-    throw ArgumentError(
+    throw const ActionDraftRefusal(
       'Movement targets must be between 1 and $maximumMovementRepetitions.',
     );
   }
@@ -51,7 +53,7 @@ void validateMovementTarget(
       (targetRepetitions * _movement(kind).minimumMillisecondsEach / 1000)
           .ceil();
   if (minimumSeconds > maxDurationSeconds) {
-    throw ArgumentError(
+    throw ActionDraftRefusal(
       'The recording limit is too short for $targetRepetitions repetitions.',
     );
   }

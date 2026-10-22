@@ -1,4 +1,5 @@
 import 'package:verily_evidence/verily_evidence.dart';
+import 'package:verily_server/src/action_verification/action_draft_refusal.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 
 export 'package:verily_evidence/verily_evidence.dart'
@@ -31,32 +32,36 @@ bool localCheckFitsKind(LocalCheckTask task, MediaEvidenceKind kind) =>
     task.model.media.contains(kind);
 
 /// Validates a creator's local check for a [kind] proof. Throws
-/// [ArgumentError] with product-safe text, like every authoring rule.
+/// [ActionDraftRefusal] with product-safe text, like every authoring rule.
 ActionLocalCheck validateLocalCheck(
   ActionLocalCheck check,
   MediaEvidenceKind kind,
 ) {
   if (!localCheckFitsKind(check.task, kind)) {
-    throw ArgumentError(
+    throw ActionDraftRefusal(
       check.task == LocalCheckTask.sound
           ? 'Sound checks need an audio proof.'
           : 'Gesture and object checks need a photo or video proof.',
     );
   }
   if (!check.task.model.labels.contains(check.label)) {
-    throw ArgumentError('Choose a label from the list for this check.');
+    throw const ActionDraftRefusal(
+      'Choose a label from the list for this check.',
+    );
   }
   final score = check.minScore;
   if (!score.isFinite ||
       score < LocalCheckBounds.minScore ||
       score > LocalCheckBounds.maxScore) {
-    throw ArgumentError('Local check scores must be between 0.3 and 0.99.');
+    throw const ActionDraftRefusal(
+      'Local check scores must be between 0.3 and 0.99.',
+    );
   }
   final frames = check.minFrames;
   if (frames < LocalCheckBounds.minFrames ||
       frames > LocalCheckBounds.maxFrames ||
       (kind == MediaEvidenceKind.photo && frames != 1)) {
-    throw ArgumentError(
+    throw ActionDraftRefusal(
       kind == MediaEvidenceKind.photo
           ? 'A photo is checked as one frame.'
           : 'Local checks need between 1 and 30 matching frames.',

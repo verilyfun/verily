@@ -248,7 +248,7 @@ void main() {
         );
         await expectLater(
           createExternalAction(foreign.app.id),
-          throwsA(_authoringProblem(ActionAuthoringProblem.appUnavailable)),
+          refusedAs(ActionAuthoringProblem.appUnavailable),
         );
 
         final retired = await createApp('Retired');
@@ -261,7 +261,7 @@ void main() {
               requirements: [externalRequirement(appId: retired.app.id)],
             ),
           ),
-          throwsA(_authoringProblem(ActionAuthoringProblem.appUnavailable)),
+          refusedAs(ActionAuthoringProblem.appUnavailable),
         );
       });
 
@@ -279,7 +279,7 @@ void main() {
               ],
             ),
           ),
-          throwsA(_authoringProblem(ActionAuthoringProblem.externalProofMixed)),
+          refusedAs(ActionAuthoringProblem.externalProofMixed),
         );
       });
 
@@ -303,7 +303,7 @@ void main() {
               ],
             ),
           ),
-          throwsA(isA<ArgumentError>()),
+          refusedAs(ActionAuthoringProblem.invalidRequest),
         );
         await expectLater(
           endpoints.actionVerification.saveActionDraft(
@@ -316,7 +316,7 @@ void main() {
               ],
             ),
           ),
-          throwsA(isA<ArgumentError>()),
+          refusedAs(ActionAuthoringProblem.invalidRequest),
         );
         await expectLater(
           endpoints.actionVerification.saveActionDraft(
@@ -328,7 +328,7 @@ void main() {
               ],
             ),
           ),
-          throwsA(isA<ArgumentError>()),
+          refusedAs(ActionAuthoringProblem.invalidRequest),
         );
       });
 
@@ -349,7 +349,7 @@ void main() {
             actionId: draft.id,
             expectedRevision: draft.revision,
           ),
-          throwsA(_authoringProblem(ActionAuthoringProblem.appUnavailable)),
+          refusedAs(ActionAuthoringProblem.appUnavailable),
         );
       });
 
@@ -584,10 +584,3 @@ void main() {
     });
   });
 }
-
-Matcher _authoringProblem(ActionAuthoringProblem reason) =>
-    isA<ActionAuthoringException>().having(
-      (error) => error.reason,
-      'reason',
-      reason,
-    );

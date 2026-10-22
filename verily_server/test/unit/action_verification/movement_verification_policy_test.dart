@@ -1,7 +1,10 @@
 import 'package:test/test.dart';
+import 'package:verily_server/src/action_verification/action_draft_refusal.dart';
 import 'package:verily_server/src/action_verification/model_input_security.dart';
 import 'package:verily_server/src/action_verification/movement_verification_policy.dart';
 import 'package:verily_server/src/generated/protocol.dart';
+
+final Matcher _refused = throwsA(isA<ActionDraftRefusal>());
 
 void main() {
   group('movementVerificationPrompt', () {
@@ -60,7 +63,7 @@ void main() {
       for (final target in [null, 0, -3, maximumMovementRepetitions + 1]) {
         expect(
           () => validateMovementTarget(ActionMovementKind.squats, target, 300),
-          throwsArgumentError,
+          _refused,
         );
       }
     });
@@ -69,7 +72,7 @@ void main() {
       // Burpees need at least 2.5 seconds each.
       expect(
         () => validateMovementTarget(ActionMovementKind.burpees, 50, 120),
-        throwsArgumentError,
+        _refused,
       );
       expect(
         () => validateMovementTarget(ActionMovementKind.burpees, 48, 120),

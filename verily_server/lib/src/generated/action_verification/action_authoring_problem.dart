@@ -29,7 +29,14 @@ enum ActionAuthoringProblem implements _is.SerializableModel {
   rewardNotFunded,
 
   /// Reward terms cannot change once funding has started.
-  rewardTermsLocked;
+  rewardTermsLocked,
+
+  /// The action or one of its proofs breaks an authoring rule, such as a
+  /// missing title, an out-of-range radius, or a duplicate requirement key.
+  invalidRequest,
+
+  /// Some text is refused at the model boundary (ModelInputSecurity).
+  unsafeText;
 
   static ActionAuthoringProblem fromJson(String name) {
     switch (name) {
@@ -45,6 +52,10 @@ enum ActionAuthoringProblem implements _is.SerializableModel {
         return ActionAuthoringProblem.rewardNotFunded;
       case 'rewardTermsLocked':
         return ActionAuthoringProblem.rewardTermsLocked;
+      case 'invalidRequest':
+        return ActionAuthoringProblem.invalidRequest;
+      case 'unsafeText':
+        return ActionAuthoringProblem.unsafeText;
       default:
         throw ArgumentError(
           'Value "$name" cannot be converted to "ActionAuthoringProblem"',

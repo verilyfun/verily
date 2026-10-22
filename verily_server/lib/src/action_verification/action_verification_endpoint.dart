@@ -2,6 +2,7 @@ import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart';
 import 'package:verily_server/src/action_verification/action_authoring_service.dart';
 import 'package:verily_server/src/action_verification/action_draft_generator.dart';
+import 'package:verily_server/src/action_verification/action_draft_refusal.dart';
 import 'package:verily_server/src/action_verification/action_verification_service.dart';
 import 'package:verily_server/src/action_verification/model_input_security.dart';
 import 'package:verily_server/src/ai_usage/ai_usage_guard.dart';
@@ -70,25 +71,33 @@ class ActionVerificationEndpoint extends Endpoint {
     }
   }
 
+  /// Throws [ActionAuthoringException] when the creator can fix the request.
   Future<ActionOpportunity> createAction(
     Session session,
     CreateActionDefinitionRequest request,
   ) {
-    return authoring.createAction(
+    return _refusingInvalidDrafts(
       session,
-      authUserId: _caller(session),
-      request: request,
+      () => authoring.createAction(
+        session,
+        authUserId: _caller(session),
+        request: request,
+      ),
     );
   }
 
+  /// Throws [ActionAuthoringException] when the creator can fix the request.
   Future<ActionOpportunity> saveActionDraft(
     Session session,
     CreateActionDefinitionRequest request,
   ) {
-    return authoring.saveActionDraft(
+    return _refusingInvalidDrafts(
       session,
-      authUserId: _caller(session),
-      request: request,
+      () => authoring.saveActionDraft(
+        session,
+        authUserId: _caller(session),
+        request: request,
+      ),
     );
   }
 
@@ -339,6 +348,39 @@ class ActionVerificationEndpoint extends Endpoint {
       session,
       authUserId: _caller(session),
       limit: limit,
+    );
+  }
+}
+
+/// Runs one authoring write and turns the refusals a creator can fix into a
+/// typed [ActionAuthoringException]: authoring validation reports a broken
+/// rule with [ActionDraftRefusal], and unsafe text with
+/// [ModelInputSecurityException]. Neither is serializable, so without this
+/// the app would see an internal server error. The App API maps the same two
+/// to `invalid_request` and `unsafe_text`. Anything else, including an
+/// [ArgumentError] or [StateError] from a bug, propagates as an error.
+Future<T> _refusingInvalidDrafts<T>(
+  Session session,
+  Future<T> Function() write,
+) async {
+  try {
+    return await write();
+  } on ModelInputSecurityException {
+    session.log('Refused unsafe action text.', level: LogLevel.info);
+    throw ActionAuthoringException(
+      reason: ActionAuthoringProblem.unsafeText,
+      message: 'Some of this text cannot be used. Rephrase it.',
+    );
+  } on ActionDraftRefusal catch (refusal) {
+    // The app validates the same rules first, so a refusal here usually
+    // means the two have drifted apart.
+    session.log(
+      'Refused an invalid action: ${refusal.message}',
+      level: LogLevel.info,
+    );
+    throw ActionAuthoringException(
+      reason: ActionAuthoringProblem.invalidRequest,
+      message: refusal.message,
     );
   }
 }
