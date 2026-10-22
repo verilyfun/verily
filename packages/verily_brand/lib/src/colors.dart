@@ -78,6 +78,23 @@ abstract final class VerilyBrandColors {
   /// Review violet on night, `#BBA6EC` (7.09:1).
   static const Color reviewOnNight = Color(0xFFBBA6EC);
 
+  /// Fire core, `#F2FCFF`: the white-hot centre of the ball-skill flame.
+  ///
+  /// Fire blue is the ball-skill flame, its embers, and the limb that
+  /// touches the ball, and nothing else. It burns blue so a flame can never
+  /// be read as reward gold or verified vermilion. It is light drawn over
+  /// live footage, never text or a surface, so it has no contrast pairs.
+  static const Color fireCore = Color(0xFFF2FCFF);
+
+  /// Fire glow, `#9BEFFF`: the ice-cyan halo around the core.
+  static const Color fireGlow = Color(0xFF9BEFFF);
+
+  /// Fire flame, `#3DB4FF`: the body of the flame.
+  static const Color fireFlame = Color(0xFF3DB4FF);
+
+  /// Fire edge, `#1E6BE6`: where the flame and its embers fade out.
+  static const Color fireEdge = Color(0xFF1E6BE6);
+
   /// The brand ink for [ink] on light paper.
   static Color onPaper(BrandInk ink) => switch (ink) {
     BrandInk.accent => stamp,

@@ -285,8 +285,50 @@ void main() {
         VerilyColors.movementHudInk,
         VerilyColors.movementHudMuted,
         VerilyColors.movementHudWash,
+        VerilyColors.movementFireCore,
+        VerilyColors.movementFireGlow,
+        VerilyColors.movementFireFlame,
+        VerilyColors.movementFireEdge,
       ]) {
         expect(roles, isNot(contains(hud)));
+      }
+    });
+
+    test('the fire burns blue, well away from every role accent', () {
+      double hueGap(Color a, Color b) {
+        final gap =
+            (HSVColor.fromColor(a).hue - HSVColor.fromColor(b).hue).abs() % 360;
+        return gap > 180 ? 360 - gap : gap;
+      }
+
+      const accents = [
+        VerilyBrandColors.stamp,
+        VerilyBrandColors.stampOnNight,
+        VerilyBrandColors.place,
+        VerilyBrandColors.placeOnNight,
+        VerilyBrandColors.reward,
+        VerilyBrandColors.rewardOnNight,
+        VerilyBrandColors.review,
+        VerilyBrandColors.reviewOnNight,
+      ];
+      for (final fire in [
+        VerilyColors.movementFireCore,
+        VerilyColors.movementFireGlow,
+        VerilyColors.movementFireFlame,
+        VerilyColors.movementFireEdge,
+      ]) {
+        expect(
+          HSVColor.fromColor(fire).hue,
+          inInclusiveRange(180, 230),
+          reason: '$fire is not blue',
+        );
+        for (final accent in accents) {
+          expect(
+            hueGap(fire, accent),
+            greaterThanOrEqualTo(30),
+            reason: '$fire is too close to $accent',
+          );
+        }
       }
     });
   });

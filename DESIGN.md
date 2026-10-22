@@ -19,6 +19,10 @@ colors:
   review: "#6B4FA0"
   review-wash: "#E5DDF4"
   review-on-night: "#BBA6EC"
+  fire-core: "#F2FCFF"
+  fire-glow: "#9BEFFF"
+  fire-flame: "#3DB4FF"
+  fire-edge: "#1E6BE6"
 typography:
   display:
     fontFamily: "SkribblePlayful (skribble_font_recursive)"
@@ -160,6 +164,11 @@ colour.
   coins, icons, and large amounts; text on butter is ink.
 - **Review violet** (`review`, `review-wash`, `review-on-night`): proof
   waiting for a person, appeals, and anything a human decides.
+- **Fire blue** (`fire-core`, `fire-glow`, `fire-flame`, `fire-edge`): the
+  ball-skill flame, its embers, and the limb that touches the ball. It burns
+  white through ice cyan to deep blue, a hotter fire than gold or vermilion,
+  so a flame is never read as a coin or a stamp. It is light drawn over the
+  camera, never text or a surface.
 
 ### Neutral
 
@@ -258,7 +267,7 @@ with dusk, and outlines in ink; the record, stop, and shutter button is the
 night page's primary action, ink on a paper fill. A counter reaching its
 target, a body at depth, or a quick check seeing its label says so in words
 and with a paper fill, never in gold, green, or vermilion: nothing on the HUD
-is a reward or a verdict yet.
+is a reward or a verdict yet. A ball skill's fire burns in fire blue.
 
 ### Proof checklist
 

@@ -34,6 +34,10 @@ abstract final class _Swatch {
   static const Color review = VerilyBrandColors.review;
   static const Color reviewWash = VerilyBrandColors.reviewWash;
   static const Color reviewOnNight = VerilyBrandColors.reviewOnNight;
+  static const Color fireCore = VerilyBrandColors.fireCore;
+  static const Color fireGlow = VerilyBrandColors.fireGlow;
+  static const Color fireFlame = VerilyBrandColors.fireFlame;
+  static const Color fireEdge = VerilyBrandColors.fireEdge;
 
   /// Skribble's peach: the quiet daytime wash for selections and active
   /// tracks. Not a brand colour, so it is not in `VerilyBrandColors`.
@@ -73,12 +77,12 @@ abstract final class VerilyColors {
   /// Quiet fills on the HUD: a meter before it is full, a resting glow.
   static const Color movementHudWash = _Swatch.dusk;
 
-  // Ball-skill fire effects, hottest first. The fire is an illustration,
-  // drawn in the only warm tints the brand has.
-  static const Color movementFlameCore = _Swatch.paper;
-  static const Color movementFlameHot = _Swatch.rewardWash;
-  static const Color movementFlameWarm = _Swatch.rewardOnNight;
-  static const Color movementFlameEdge = _Swatch.reward;
+  // The ball-skill fire, hottest first. Fire blue is the fire's own family,
+  // so a flame is never read as a reward or a verdict.
+  static const Color movementFireCore = _Swatch.fireCore;
+  static const Color movementFireGlow = _Swatch.fireGlow;
+  static const Color movementFireFlame = _Swatch.fireFlame;
+  static const Color movementFireEdge = _Swatch.fireEdge;
 }
 
 /// A meaning Verily gives a colour.
