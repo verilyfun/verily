@@ -37,6 +37,7 @@ abstract class MediaUploadConfirmation
     this.captureSignature,
     this.captureCertificateChain,
     this.captureAppAttestKeyId,
+    this.captureDeviceCheckToken,
   });
 
   factory MediaUploadConfirmation({
@@ -55,6 +56,7 @@ abstract class MediaUploadConfirmation
     String? captureSignature,
     List<String>? captureCertificateChain,
     String? captureAppAttestKeyId,
+    String? captureDeviceCheckToken,
   }) = _MediaUploadConfirmationImpl;
 
   factory MediaUploadConfirmation.fromJson(
@@ -98,6 +100,8 @@ abstract class MediaUploadConfirmation
             ),
       captureAppAttestKeyId:
           jsonSerialization['captureAppAttestKeyId'] as String?,
+      captureDeviceCheckToken:
+          jsonSerialization['captureDeviceCheckToken'] as String?,
     );
   }
 
@@ -141,6 +145,9 @@ abstract class MediaUploadConfirmation
   /// `captureCertificateChain`, never both.
   String? captureAppAttestKeyId;
 
+  /// Ephemeral DeviceCheck token bound into the App Attest assertion. Never stored.
+  String? captureDeviceCheckToken;
+
   /// Returns a shallow copy of this [MediaUploadConfirmation]
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
@@ -160,6 +167,7 @@ abstract class MediaUploadConfirmation
     String? captureSignature,
     List<String>? captureCertificateChain,
     String? captureAppAttestKeyId,
+    String? captureDeviceCheckToken,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -187,6 +195,8 @@ abstract class MediaUploadConfirmation
         'captureCertificateChain': captureCertificateChain?.toJson(),
       if (captureAppAttestKeyId != null)
         'captureAppAttestKeyId': captureAppAttestKeyId,
+      if (captureDeviceCheckToken != null)
+        'captureDeviceCheckToken': captureDeviceCheckToken,
     };
   }
 
@@ -216,6 +226,8 @@ abstract class MediaUploadConfirmation
         'captureCertificateChain': captureCertificateChain?.toJson(),
       if (captureAppAttestKeyId != null)
         'captureAppAttestKeyId': captureAppAttestKeyId,
+      if (captureDeviceCheckToken != null)
+        'captureDeviceCheckToken': captureDeviceCheckToken,
     };
   }
 
@@ -244,6 +256,7 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
     String? captureSignature,
     List<String>? captureCertificateChain,
     String? captureAppAttestKeyId,
+    String? captureDeviceCheckToken,
   }) : super._(
          attemptId: attemptId,
          requirementId: requirementId,
@@ -260,6 +273,7 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
          captureSignature: captureSignature,
          captureCertificateChain: captureCertificateChain,
          captureAppAttestKeyId: captureAppAttestKeyId,
+         captureDeviceCheckToken: captureDeviceCheckToken,
        );
 
   /// Returns a shallow copy of this [MediaUploadConfirmation]
@@ -282,6 +296,7 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
     Object? captureSignature = _Undefined,
     Object? captureCertificateChain = _Undefined,
     Object? captureAppAttestKeyId = _Undefined,
+    Object? captureDeviceCheckToken = _Undefined,
   }) {
     return MediaUploadConfirmation(
       attemptId: attemptId ?? this.attemptId,
@@ -319,6 +334,9 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
       captureAppAttestKeyId: captureAppAttestKeyId is String?
           ? captureAppAttestKeyId
           : this.captureAppAttestKeyId,
+      captureDeviceCheckToken: captureDeviceCheckToken is String?
+          ? captureDeviceCheckToken
+          : this.captureDeviceCheckToken,
     );
   }
 }

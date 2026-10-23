@@ -6,8 +6,10 @@ import 'package:test/test.dart';
 import 'package:verily_evidence/verily_evidence.dart';
 import 'package:verily_server/src/action_verification/action_period.dart';
 import 'package:verily_server/src/action_verification/action_verification_service.dart';
+import 'package:verily_server/src/action_verification/app_attest/app_attest_receipt.dart';
 import 'package:verily_server/src/action_verification/app_attest/app_attest_service.dart';
 import 'package:verily_server/src/action_verification/app_attest/app_attest_verifier.dart';
+import 'package:verily_server/src/action_verification/app_attest/apple_device_client.dart';
 import 'package:verily_server/src/action_verification/capture_integrity.dart';
 import 'package:verily_server/src/action_verification/device_integrity_verifier.dart';
 import 'package:verily_server/src/action_verification/key_attestation/android_key_attestation_verifier.dart';
@@ -16,6 +18,7 @@ import 'package:verily_server/src/generated/protocol.dart';
 import 'package:verily_server/src/security/secret_digest.dart';
 
 import 'test_tools/app_attest_test_authority.dart';
+import 'test_tools/apple_device_test_authority.dart';
 import 'test_tools/key_attestation_test_chain.dart';
 import 'test_tools/serverpod_test_tools.dart';
 import 'test_tools/verily_fixtures.dart';
@@ -997,13 +1000,20 @@ void main() {
 
       group('and an iPhone signs with its App Attest key', () {
         final apple = TestAppAttestAuthority();
+        late TestAppleDeviceClient deviceClient;
+        final deviceToken = base64Encode(utf8.encode('device-token'));
         late AppAttestService appAttest;
         late ActionVerificationService service;
 
         setUp(() {
+          deviceClient = TestAppleDeviceClient(apple.receipts);
           // Trusts the test authority's root the way production trusts
           // Apple's.
           appAttest = AppAttestService(
+            receiptVerifier: AppAttestReceiptVerifier(
+              root: apple.receipts.root,
+            ),
+            apple: deviceClient,
             verifier: AppAttestVerifier(
               policy: testAppAttestPolicy(),
               trustAnchors: [apple.root],
@@ -1060,6 +1070,8 @@ void main() {
           required int counter,
           String? keyId,
           List<String>? certificateChain,
+          String? sentToken,
+          bool legacy = false,
         }) async {
           final window = await open(service, attempt);
           final capturedAt = DateTime.now().toUtc();
@@ -1076,21 +1088,181 @@ void main() {
               captureChallengeId: window.id,
               captureManifest: base64Encode(binding.manifest),
               captureSignature: key.encodedAssertion(
-                binding.manifest,
+                legacy
+                    ? binding.manifest
+                    : appAttestDeviceClientData(binding.manifest, deviceToken),
                 counter: counter,
               ),
               captureAppAttestKeyId: keyId ?? key.keyId,
+              captureDeviceCheckToken: legacy ? null : sentToken ?? deviceToken,
               captureCertificateChain: certificateChain,
             ),
           );
           return (result, window);
         }
 
+        test(
+          'an expired receipt cannot reuse a previously low metric',
+          () async {
+            final key = await register(participant, participantId);
+            final attempt = await begin(participant);
+            final (first, _) = await scan(attempt, key, counter: 1);
+            expect(first.status, EvidenceDecisionStatus.accepted);
+            final row = (await AppAttestKey.db.findFirstRow(
+              participant.build(),
+            ))!;
+            await AppAttestKey.db.updateRow(
+              participant.build(),
+              row.copyWith(
+                receiptExpiresAt: DateTime.now().toUtc().subtract(
+                  const Duration(seconds: 1),
+                ),
+              ),
+            );
+            final (expired, _) = await scan(attempt, key, counter: 2);
+            expect(expired.status, EvidenceDecisionStatus.manualReview);
+            expect(deviceClient.refreshes, 1);
+          },
+        );
+
         Future<String?> verdictOf(ActionCaptureChallengeView window) async =>
             (await ActionCaptureChallenge.db.findById(
               participant.build(),
               window.id,
             ))!.verdict;
+
+        test(
+          'a high verified receipt metric holds automatic acceptance',
+          () async {
+            deviceClient.metric = 10;
+            final key = await register(participant, participantId);
+            final attempt = await begin(participant);
+            final (result, _) = await scan(attempt, key, counter: 1);
+            expect(result.status, EvidenceDecisionStatus.manualReview);
+            final stored = await AppAttestKey.db.findFirstRow(
+              participant.build(),
+            );
+            expect(stored!.riskMetric, 10);
+            final receipt = stored.receipt;
+            final (again, _) = await scan(attempt, key, counter: 2);
+            expect(again.status, EvidenceDecisionStatus.manualReview);
+            expect(deviceClient.refreshes, 1);
+            expect(
+              (await AppAttestKey.db.findById(
+                participant.build(),
+                stored.id!,
+              ))!.receipt,
+              receipt,
+            );
+          },
+        );
+
+        test(
+          'DeviceCheck ban survives a newly registered install key',
+          () async {
+            deviceClient.bits = const AppleDeviceBits(
+              banned: true,
+              reviewRequired: false,
+            );
+            final attempt = await begin(participant);
+            for (final seed in ['first-install', 'reinstalled']) {
+              final key = await register(
+                participant,
+                participantId,
+                keySeed: seed,
+              );
+              final (result, window) = await scan(attempt, key, counter: 1);
+              expect(result.status, EvidenceDecisionStatus.rejected);
+              expect(await verdictOf(window), 'capture_device_banned');
+            }
+          },
+        );
+
+        test(
+          'review bit and Apple outages hold the proof for a person',
+          () async {
+            final key = await register(participant, participantId);
+            final attempt = await begin(participant);
+            deviceClient.bits = const AppleDeviceBits(
+              banned: false,
+              reviewRequired: true,
+            );
+            final (review, _) = await scan(attempt, key, counter: 1);
+            expect(review.status, EvidenceDecisionStatus.manualReview);
+            deviceClient
+              ..bits = const AppleDeviceBits(
+                banned: false,
+                reviewRequired: false,
+              )
+              ..unavailable = true;
+            final (outage, _) = await scan(attempt, key, counter: 2);
+            expect(outage.status, EvidenceDecisionStatus.manualReview);
+          },
+        );
+
+        test(
+          'invalid refresh preserves the verified receipt and backs off',
+          () async {
+            final key = await register(participant, participantId);
+            final before = (await AppAttestKey.db.findFirstRow(
+              participant.build(),
+            ))!;
+            final attempt = await begin(participant);
+            deviceClient.invalidReceipt = true;
+            final (result, _) = await scan(attempt, key, counter: 1);
+            expect(result.status, EvidenceDecisionStatus.manualReview);
+            final after = (await AppAttestKey.db.findById(
+              participant.build(),
+              before.id!,
+            ))!;
+            expect(after.receipt, before.receipt);
+            expect(after.riskMetric, isNull);
+            expect(
+              after.receiptRefreshAfter.isAfter(before.receiptRefreshAfter),
+              isTrue,
+            );
+            final (again, _) = await scan(attempt, key, counter: 2);
+            expect(again.status, EvidenceDecisionStatus.manualReview);
+            expect(deviceClient.refreshes, 1);
+          },
+        );
+
+        test('token substitution fails the assertion; legacy clients cannot bypass review', () async {
+          final key = await register(participant, participantId);
+          final attempt = await begin(participant);
+          final (tampered, window) = await scan(
+            attempt,
+            key,
+            counter: 1,
+            sentToken: base64Encode(utf8.encode('another-phone')),
+          );
+          expect(tampered.status, EvidenceDecisionStatus.rejected);
+          expect(await verdictOf(window), AppAttestReason.signatureInvalid);
+          final (legacy, _) = await scan(
+            attempt,
+            key,
+            counter: 2,
+            legacy: true,
+          );
+          expect(legacy.status, EvidenceDecisionStatus.manualReview);
+          expect(deviceClient.refreshes, 0);
+        });
+
+        test(
+          'scheduled refresh maintains inactive keys and respects not-before',
+          () async {
+            final key = await register(participant, participantId);
+            await appAttest.refreshDueReceipts(participant.build());
+            final stored = (await AppAttestKey.db.findFirstRow(
+              participant.build(),
+            ))!;
+            expect(stored.keyId, capturePublicKeyId(key.publicKey));
+            expect(stored.riskMetric, 2);
+            expect(stored.signCount, 0);
+            await appAttest.refreshDueReceipts(participant.build());
+            expect(deviceClient.refreshes, 1);
+          },
+        );
 
         test(
           'then a registered key asserting the manifest is recorded at the '

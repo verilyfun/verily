@@ -241,9 +241,11 @@ sequenceDiagram
   Server->>Server: verify, store key, receipt, counter 0
   Note over App,Server: every capture
   App->>Server: beginCapture(attemptId, requirementId)
-  App->>Enclave: generateAssertion(clientDataHash = SHA-256(manifest))
-  App->>Server: proof + manifest + assertion + keyId
+  App->>App: DCDevice.generateToken, bind token hash to manifest
+  App->>Enclave: generateAssertion(clientDataHash = SHA-256(bound client data))
+  App->>Server: proof + manifest + assertion + keyId + DeviceCheck token
   Server->>Server: window, binding, signature, counter > last
+  Server->>Server: query durable bits, verify/refresh risk receipt, gate decision
 ```
 
 - **Registration** (`appAttest.beginRegistration`, then
@@ -272,15 +274,66 @@ sequenceDiagram
   the environment, the certificate chain, Apple's receipt, the validation
   category and bundle version, and the last counter. A key belongs to one
   account: registering a key another account holds is refused, as Apple
-  advises. The receipt is stored but not yet verified or refreshed.
+  advises. Receipt creation, refresh and expiration times and the verified
+  risk metric are stored with the latest verified receipt.
 - **Assertion.** The proof carries the manifest, the assertion as
   `captureSignature`, and the key id as `captureAppAttestKeyId` (never with a
-  certificate chain). The server finds the caller's own key, checks the
+  certificate chain), plus the ephemeral `captureDeviceCheckToken`. The
+  assertion signs `appAttestDeviceClientData(manifest, token)`: domain
+  `verily-apple-device-v1`, the manifest length and bytes, and SHA-256 of the
+  token. The server finds the caller's own key, checks the
   ECDSA P-256 signature over
-  `SHA-256(authenticatorData ‖ SHA-256(manifest))`, the `rpIdHash`, and the
+  `SHA-256(authenticatorData ‖ SHA-256(clientData))`, the `rpIdHash`, and the
   validation category, and then, under a row lock, that the counter is larger
   than the last accepted one, which it stores. A replayed or reordered
   assertion is refused with `capture_app_attest_replayed`.
+- **Fraud receipt.** Both the initial `ATTEST` and refreshed `RECEIPT` pass
+  PKCS#7 signature verification and a certificate path to the pinned Apple
+  Root CA - G3 (separate from the credential root). Bounded BER envelope
+  decoding handles Apple's fragmented payload without rewriting signed
+  payload bytes. Field 2 must equal `TeamID.BundleID`, field 12 must be at
+  most five minutes old and not in the future, and field 3's credential
+  certificate must contain the attested P-256 key. Only a verified `RECEIPT`
+  supplies field 17, the approximate number of attested keys on this device
+  in 30 days. A metric **at least 10** forces `device_activity_risk` manual
+  review; it never automatically bans a device. This starting threshold
+  needs tuning against legitimate reinstall and account use.
+- **Refresh.** Server-to-server requests use ES256 DeviceCheck JWTs and the
+  latest verified receipt at `data.appattest.apple.com`, or
+  `data-development.appattest.apple.com` for sandbox keys. A ten-minute
+  recurring task refreshes due rows in bounded batches; capture verification
+  can refresh too. The key row lock serializes both. Neither path refreshes
+  before field 19 or after field 21. Failed calls preserve the prior receipt
+  and back off for one hour. Missing, expired, invalid or due-but-unrefreshed
+  metrics hold automatic acceptance (`apple_device_risk_unavailable`), even
+  when a previous metric was low. If prolonged downtime lets a receipt
+  expire, the install needs a newly attested key; expired receipts cannot
+  restore automatic verification.
+- **Durable device restrictions.** `DCDevice.generateToken` supplies a fresh
+  token for each assertion. Apple stores bit 0 as an **active abuse ban**
+  (capture refused) and bit 1 as **review required** (manual review after
+  suspected abuse). Both flags survive app reinstalls; neither is an
+  identity or proof of unique personhood. Only `device-check.manage`
+  operators may query/update them through `deviceCheck`, using a fresh token
+  from the affected phone. Both bits are explicit on update; clearing a ban
+  does not implicitly clear the review flag. Update intent and completion
+  are audited, including operator, note and ephemeral token hash. An
+  interrupted update must be queried before deciding its outcome.
+  Participant APIs cannot choose or clear bit values. Raw tokens are never
+  logged or persisted. A missing token or failed Apple query holds proof for
+  review; an unsigned capture remains subject to capture-signature policy.
+  DeviceCheck provides no cryptographic way to prove its token and an App
+  Attest key came from the same phone: assertion binding prevents substitution
+  in transit, but a compromised device can still relay a clean phone's token.
+- **Credentials.** Provision a DeviceCheck-enabled Apple P-256 `.p8` key
+  through Monosecret as `VERILY_DEVICE_CHECK_PRIVATE_KEY`, with its
+  `VERILY_DEVICE_CHECK_KEY_ID` and `VERILY_APPLE_TEAM_ID`. Local private keys
+  belong in the ignored mode-0600 `.env` via the dotenv provider; deployment
+  receives environment values through Monosecret bootstrap. Never commit a
+  key or resolve it per request. No credential is configured by this change;
+  absent configuration holds verification honestly. HTTP clients and test
+  receipt authorities are injectable. Destinations are fixed, redirects are
+  disabled, responses and timeouts are bounded, and requests are not retried.
 - **What it proves.** Apple vouches that a genuine Apple device running
   Verily's app holds the key in its Secure Enclave, and the assertion binds
   this window's manifest. App Attest has **no verified-boot or jailbreak
@@ -298,8 +351,8 @@ sequenceDiagram
 
 Refusals carry `capture_app_attest_*` reason codes (and
 `capture_signature_invalid`), which participants see as
-`capture_not_verified`. DeviceCheck's per-device bits and refreshing the
-fraud-risk receipt (attested keys per device) are not built yet.
+`capture_not_verified`. Physical-iPhone and live Apple API acceptance testing
+remain outstanding; no physical iPhone was used for this implementation.
 
 #### Play Integrity
 

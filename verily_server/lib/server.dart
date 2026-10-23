@@ -8,6 +8,7 @@ import 'package:verily_server/src/action_verification/action_capture_challenge_c
 import 'package:verily_server/src/action_verification/action_qr_challenge_cleanup_future_call.dart';
 import 'package:verily_server/src/action_verification/action_spoken_challenge_cleanup_future_call.dart';
 import 'package:verily_server/src/action_verification/action_verification_service.dart';
+import 'package:verily_server/src/action_verification/app_attest/app_attest_receipt_refresh_future_call.dart';
 import 'package:verily_server/src/action_verification/capture_integrity.dart';
 import 'package:verily_server/src/action_verification/evidence_verification_recovery_future_call.dart';
 import 'package:verily_server/src/action_verification/media_evidence_verifier.dart';
@@ -63,6 +64,10 @@ Future<void> run(List<String> args) async {
         alias: 'evidenceB2ApplicationKey',
       ),
       (envName: 'VERILY_RESEND_API_KEY', alias: 'resendApiKey'),
+      (
+        envName: 'VERILY_DEVICE_CHECK_PRIVATE_KEY',
+        alias: 'deviceCheckPrivateKey',
+      ),
       (
         envName: 'VERILY_PLAY_INTEGRITY_SERVICE_ACCOUNT_JSON',
         alias: 'playIntegrityServiceAccountJson',
@@ -234,6 +239,14 @@ Future<void> run(List<String> args) async {
     await schedule();
   }
 
+  await recurring(
+    appAttestReceiptRefreshIdentifier,
+    () => futureCalls
+        .callRecurring(identifier: appAttestReceiptRefreshIdentifier)
+        .every(const Duration(minutes: 10))
+        .appAttestReceiptRefresh
+        .refresh(AppAttestReceiptRefreshTask(batchSize: 100)),
+  );
   await recurring(
     evidenceUploadCleanupIdentifier,
     () => futureCalls

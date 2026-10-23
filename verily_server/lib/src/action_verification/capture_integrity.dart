@@ -40,6 +40,7 @@ final class CaptureIntegrityMaterial {
     this.captureSignature,
     this.captureCertificateChain,
     this.captureAppAttestKeyId,
+    this.captureDeviceCheckToken,
   });
 
   final UuidValue? captureChallengeId;
@@ -54,6 +55,7 @@ final class CaptureIntegrityMaterial {
 
   /// The iPhone's registered App Attest key identifier, base64.
   final String? captureAppAttestKeyId;
+  final String? captureDeviceCheckToken;
 
   bool get hasSignatureMaterial =>
       [
@@ -322,6 +324,7 @@ class CaptureIntegrityEvaluator {
               manifest: expectedManifest,
               assertion: signature!,
               keyId: appAttestKeyId!,
+              deviceCheckToken: material.captureDeviceCheckToken,
               now: now,
             )
           : await _verifyAttestedKeyCapture(
@@ -368,7 +371,8 @@ class CaptureIntegrityEvaluator {
       evidenceBindingHash: bindingHash,
       tokenHash: tokenHash,
       provenanceLevel: provenanceLevel,
-      reviewReasonCode: integrityVerdict?.reviewReasonCode,
+      reviewReasonCode:
+          signed?.reviewReasonCode ?? integrityVerdict?.reviewReasonCode,
       captureManifest: signed == null ? null : manifest,
       captureSignature: signed == null ? null : signature,
       capturePublicKey: publicKey == null ? null : base64Encode(publicKey),
@@ -462,6 +466,7 @@ class CaptureIntegrityEvaluator {
     required String assertion,
     required String keyId,
     required DateTime now,
+    required String? deviceCheckToken,
   }) async {
     final verdict = await appAttest.verifyCaptureAssertion(
       session,
@@ -469,6 +474,7 @@ class CaptureIntegrityEvaluator {
       keyId: keyId,
       assertion: assertion,
       clientData: manifest,
+      deviceCheckToken: deviceCheckToken,
       now: now,
     );
     final publicKey = verdict.publicKey;
@@ -479,6 +485,7 @@ class CaptureIntegrityEvaluator {
       reasonCode: AppAttestReason.valid,
       publicKey: publicKey,
       keyStorage: 'secureEnclave',
+      reviewReasonCode: verdict.reviewReasonCode,
     );
   }
 }
@@ -503,6 +510,7 @@ final class _SignedCapture extends _SignatureOutcome {
     this.keyStorage,
     this.certificateChain,
     this.deviceKeyId,
+    this.reviewReasonCode,
   });
 
   final EvidenceProvenanceLevel provenanceLevel;
@@ -516,6 +524,7 @@ final class _SignedCapture extends _SignatureOutcome {
   /// The Android chain as submitted; App Attest keeps its chain on the key.
   final List<String>? certificateChain;
   final String? deviceKeyId;
+  final String? reviewReasonCode;
 }
 
 // A chain is a handful of certificates of one to two kilobytes each.

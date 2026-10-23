@@ -26,6 +26,9 @@ actionVerification:
 appAttest:
   - beginRegistration:
   - registerKey:
+deviceCheck:
+  - query:
+  - update:
 evidenceAppeal:
   - submit:
   - getMine:

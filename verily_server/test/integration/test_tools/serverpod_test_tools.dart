@@ -42,6 +42,10 @@ import 'package:verily_server/src/generated/action_verification/action_template.
     as _icxixoim;
 import 'package:verily_server/src/generated/action_verification/app_attest/app_attest_challenge_view.dart'
     as _iqotirq8;
+import 'package:verily_server/src/generated/action_verification/app_attest/app_attest_receipt_refresh_task.dart'
+    as _ikydhm6g;
+import 'package:verily_server/src/generated/action_verification/app_attest/device_check_bits.dart'
+    as _igwyixkk;
 import 'package:verily_server/src/generated/action_verification/create_action_definition_request.dart'
     as _iknf9wff;
 import 'package:verily_server/src/generated/action_verification/evidence_appeal_status.dart'
@@ -253,6 +257,8 @@ class TestEndpoints {
 
   late final _AppAttestEndpoint appAttest;
 
+  late final _DeviceCheckEndpoint deviceCheck;
+
   late final _EvidenceAppealEndpoint evidenceAppeal;
 
   late final _EvidenceReviewEndpoint evidenceReview;
@@ -292,6 +298,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     appAttest = _AppAttestEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    deviceCheck = _DeviceCheckEndpoint(
       endpoints,
       serializationManager,
     );
@@ -350,6 +360,8 @@ class _FutureCalls {
 
   late final actionSpokenChallengeCleanup =
       _ActionSpokenChallengeCleanupFutureCall();
+
+  late final appAttestReceiptRefresh = _AppAttestReceiptRefreshFutureCall();
 
   late final evidenceVerification = _EvidenceVerificationFutureCall();
 
@@ -1175,6 +1187,83 @@ class _AppAttestEndpoint {
             'challengeId': challengeId,
             'keyId': keyId,
             'attestationObject': attestationObject,
+          }),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<void>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _DeviceCheckEndpoint {
+  _DeviceCheckEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _is.EndpointDispatch _endpointDispatch;
+
+  final _is.SerializationManager _serializationManager;
+
+  _ida.Future<_igwyixkk.DeviceCheckBits> query(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required String deviceToken,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'deviceCheck',
+            method: 'query',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'deviceCheck',
+          methodName: 'query',
+          parameters: _ist.testObjectToJson({'deviceToken': deviceToken}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _ida.Future<_igwyixkk.DeviceCheckBits>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _ida.Future<void> update(
+    _ist.TestSessionBuilder sessionBuilder, {
+    required String deviceToken,
+    required bool banned,
+    required bool reviewRequired,
+    required String note,
+  }) async {
+    return _ist.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'deviceCheck',
+            method: 'update',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'deviceCheck',
+          methodName: 'update',
+          parameters: _ist.testObjectToJson({
+            'deviceToken': deviceToken,
+            'banned': banned,
+            'reviewRequired': reviewRequired,
+            'note': note,
           }),
           serializationManager: _serializationManager,
         );
@@ -3012,6 +3101,24 @@ class _ActionSpokenChallengeCleanupFutureCall {
         (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
     try {
       await _ic0hj7xj.ActionSpokenChallengeCleanupCleanupFutureCall().invoke(
+        _localUniqueSession,
+        task,
+      );
+    } finally {
+      await _localUniqueSession.close();
+    }
+  }
+}
+
+class _AppAttestReceiptRefreshFutureCall {
+  Future<void> refresh(
+    _ist.TestSessionBuilder sessionBuilder,
+    _ikydhm6g.AppAttestReceiptRefreshTask task,
+  ) async {
+    var _localUniqueSession =
+        (sessionBuilder as _ist.InternalTestSessionBuilder).internalBuild();
+    try {
+      await _ic0hj7xj.AppAttestReceiptRefreshRefreshFutureCall().invoke(
         _localUniqueSession,
         task,
       );

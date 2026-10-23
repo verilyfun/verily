@@ -1,0 +1,14 @@
+### Durable intent and completion record for an operator's Apple bit update.
+class: DeviceCheckAudit
+serverOnly: true
+table: verily_device_check_audit
+fields:
+  id: UuidValue?, defaultPersist=random_v7
+  operatorAuthUserId: UuidValue
+  ### Hash of the ephemeral token, for audit correlation only; not a device ID.
+  tokenHash: String
+  banned: bool
+  reviewRequired: bool
+  note: String
+  createdAt: DateTime
+  completedAt: DateTime?

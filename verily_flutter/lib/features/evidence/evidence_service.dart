@@ -198,6 +198,7 @@ class EvidenceService {
         captureSignature: integrity.provenance?.signature,
         captureCertificateChain: integrity.provenance?.certificateChain,
         captureAppAttestKeyId: integrity.provenance?.appAttestKeyId,
+        captureDeviceCheckToken: integrity.provenance?.deviceCheckToken,
       ),
     );
   }
@@ -229,6 +230,7 @@ class EvidenceService {
         captureSignature: integrity.provenance?.signature,
         captureCertificateChain: integrity.provenance?.certificateChain,
         captureAppAttestKeyId: integrity.provenance?.appAttestKeyId,
+        captureDeviceCheckToken: integrity.provenance?.deviceCheckToken,
       ),
     );
   }
@@ -275,6 +277,7 @@ class EvidenceService {
         captureSignature: integrity.provenance?.signature,
         captureCertificateChain: integrity.provenance?.certificateChain,
         captureAppAttestKeyId: integrity.provenance?.appAttestKeyId,
+        captureDeviceCheckToken: integrity.provenance?.deviceCheckToken,
       ),
     );
   }
@@ -335,6 +338,7 @@ class EvidenceService {
         captureSignature: integrity.provenance?.signature,
         captureCertificateChain: integrity.provenance?.certificateChain,
         captureAppAttestKeyId: integrity.provenance?.appAttestKeyId,
+        captureDeviceCheckToken: integrity.provenance?.deviceCheckToken,
       ),
     );
   }

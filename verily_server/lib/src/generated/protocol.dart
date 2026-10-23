@@ -89,6 +89,10 @@ import 'action_verification/app_attest/app_attest_environment.dart'
 import 'action_verification/app_attest/app_attest_exception.dart' as _i2aihltn;
 import 'action_verification/app_attest/app_attest_key.dart' as _ii8uuroy;
 import 'action_verification/app_attest/app_attest_problem.dart' as _ia04kjr5;
+import 'action_verification/app_attest/app_attest_receipt_refresh_task.dart'
+    as _i3x1l61r;
+import 'action_verification/app_attest/device_check_audit.dart' as _i3q3ksfy;
+import 'action_verification/app_attest/device_check_bits.dart' as _i4333s0z;
 import 'action_verification/create_action_definition_request.dart' as _i5yjywpf;
 import 'action_verification/evidence_appeal.dart' as _i9u1614a;
 import 'action_verification/evidence_appeal_status.dart' as _i90o7tud;
@@ -233,6 +237,9 @@ export 'action_verification/app_attest/app_attest_environment.dart';
 export 'action_verification/app_attest/app_attest_exception.dart';
 export 'action_verification/app_attest/app_attest_key.dart';
 export 'action_verification/app_attest/app_attest_problem.dart';
+export 'action_verification/app_attest/app_attest_receipt_refresh_task.dart';
+export 'action_verification/app_attest/device_check_audit.dart';
+export 'action_verification/app_attest/device_check_bits.dart';
 export 'action_verification/create_action_definition_request.dart';
 export 'action_verification/evidence_appeal.dart';
 export 'action_verification/evidence_appeal_status.dart';
@@ -2720,6 +2727,36 @@ class Protocol extends _is.DatabaseSerializationManager {
           dartType: 'String',
         ),
         _isp.ColumnDefinition(
+          name: 'receiptCreatedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'receiptRefreshAfter',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'receiptNotBefore',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'receiptExpiresAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'riskMetric',
+          columnType: _isp.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _isp.ColumnDefinition(
           name: 'validationCategory',
           columnType: _isp.ColumnType.bigint,
           isNullable: true,
@@ -3876,6 +3913,66 @@ class Protocol extends _is.DatabaseSerializationManager {
           isPrimary: false,
         ),
       ],
+      managed: true,
+    ),
+    _isp.TableDefinition(
+      name: 'verily_device_check_audit',
+      dartName: 'DeviceCheckAudit',
+      schema: 'public',
+      module: 'verily',
+      columns: [
+        _isp.ColumnDefinition(
+          name: 'id',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue?',
+          columnDefault: 'random_v7',
+        ),
+        _isp.ColumnDefinition(
+          name: 'operatorAuthUserId',
+          columnType: _isp.ColumnType.uuid,
+          isNullable: false,
+          dartType: 'UuidValue',
+        ),
+        _isp.ColumnDefinition(
+          name: 'tokenHash',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'banned',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+        ),
+        _isp.ColumnDefinition(
+          name: 'reviewRequired',
+          columnType: _isp.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+        ),
+        _isp.ColumnDefinition(
+          name: 'note',
+          columnType: _isp.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _isp.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _isp.ColumnDefinition(
+          name: 'completedAt',
+          columnType: _isp.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [],
       managed: true,
     ),
     _isp.TableDefinition(
@@ -6223,6 +6320,15 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (t == _ia04kjr5.AppAttestProblem) {
       return _ia04kjr5.AppAttestProblem.fromJson(data) as T;
     }
+    if (t == _i3x1l61r.AppAttestReceiptRefreshTask) {
+      return _i3x1l61r.AppAttestReceiptRefreshTask.fromJson(data) as T;
+    }
+    if (t == _i3q3ksfy.DeviceCheckAudit) {
+      return _i3q3ksfy.DeviceCheckAudit.fromJson(data) as T;
+    }
+    if (t == _i4333s0z.DeviceCheckBits) {
+      return _i4333s0z.DeviceCheckBits.fromJson(data) as T;
+    }
     if (t == _i5yjywpf.CreateActionDefinitionRequest) {
       return _i5yjywpf.CreateActionDefinitionRequest.fromJson(data) as T;
     }
@@ -6731,6 +6837,20 @@ class Protocol extends _is.DatabaseSerializationManager {
     }
     if (t == _is.getType<_ia04kjr5.AppAttestProblem?>()) {
       return (data != null ? _ia04kjr5.AppAttestProblem.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_i3x1l61r.AppAttestReceiptRefreshTask?>()) {
+      return (data != null
+              ? _i3x1l61r.AppAttestReceiptRefreshTask.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _is.getType<_i3q3ksfy.DeviceCheckAudit?>()) {
+      return (data != null ? _i3q3ksfy.DeviceCheckAudit.fromJson(data) : null)
+          as T;
+    }
+    if (t == _is.getType<_i4333s0z.DeviceCheckBits?>()) {
+      return (data != null ? _i4333s0z.DeviceCheckBits.fromJson(data) : null)
           as T;
     }
     if (t == _is.getType<_i5yjywpf.CreateActionDefinitionRequest?>()) {
@@ -7383,6 +7503,9 @@ class Protocol extends _is.DatabaseSerializationManager {
       _i2aihltn.AppAttestException => 'AppAttestException',
       _ii8uuroy.AppAttestKey => 'AppAttestKey',
       _ia04kjr5.AppAttestProblem => 'AppAttestProblem',
+      _i3x1l61r.AppAttestReceiptRefreshTask => 'AppAttestReceiptRefreshTask',
+      _i3q3ksfy.DeviceCheckAudit => 'DeviceCheckAudit',
+      _i4333s0z.DeviceCheckBits => 'DeviceCheckBits',
       _i5yjywpf.CreateActionDefinitionRequest =>
         'CreateActionDefinitionRequest',
       _i9u1614a.EvidenceAppeal => 'EvidenceAppeal',
@@ -7589,6 +7712,12 @@ class Protocol extends _is.DatabaseSerializationManager {
         return 'AppAttestKey';
       case _ia04kjr5.AppAttestProblem():
         return 'AppAttestProblem';
+      case _i3x1l61r.AppAttestReceiptRefreshTask():
+        return 'AppAttestReceiptRefreshTask';
+      case _i3q3ksfy.DeviceCheckAudit():
+        return 'DeviceCheckAudit';
+      case _i4333s0z.DeviceCheckBits():
+        return 'DeviceCheckBits';
       case _i5yjywpf.CreateActionDefinitionRequest():
         return 'CreateActionDefinitionRequest';
       case _i9u1614a.EvidenceAppeal():
@@ -7947,6 +8076,15 @@ class Protocol extends _is.DatabaseSerializationManager {
     if (dataClassName == 'AppAttestProblem') {
       return deserialize<_ia04kjr5.AppAttestProblem>(data['data']);
     }
+    if (dataClassName == 'AppAttestReceiptRefreshTask') {
+      return deserialize<_i3x1l61r.AppAttestReceiptRefreshTask>(data['data']);
+    }
+    if (dataClassName == 'DeviceCheckAudit') {
+      return deserialize<_i3q3ksfy.DeviceCheckAudit>(data['data']);
+    }
+    if (dataClassName == 'DeviceCheckBits') {
+      return deserialize<_i4333s0z.DeviceCheckBits>(data['data']);
+    }
     if (dataClassName == 'CreateActionDefinitionRequest') {
       return deserialize<_i5yjywpf.CreateActionDefinitionRequest>(data['data']);
     }
@@ -8304,6 +8442,8 @@ class Protocol extends _is.DatabaseSerializationManager {
         return _imltxoxl.AppAttestChallenge.t;
       case _ii8uuroy.AppAttestKey:
         return _ii8uuroy.AppAttestKey.t;
+      case _i3q3ksfy.DeviceCheckAudit:
+        return _i3q3ksfy.DeviceCheckAudit.t;
       case _i9u1614a.EvidenceAppeal:
         return _i9u1614a.EvidenceAppeal.t;
       case _ii2t12jt.EvidenceDecision:

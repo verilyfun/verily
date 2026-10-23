@@ -15,6 +15,12 @@ const deviceCaptureRiskReviewCode = 'device_capture_risk';
 /// recently, which is how farms of accounts show up.
 const deviceActivityRiskReviewCode = 'device_activity_risk';
 
+/// Apple risk checks could not complete; no automatic acceptance.
+const appleDeviceRiskUnavailableReviewCode = 'apple_device_risk_unavailable';
+
+/// A scoped operator set the device's durable review bit.
+const appleDeviceReviewCode = 'apple_device_review';
+
 class DeviceIntegrityVerdict {
   const DeviceIntegrityVerdict({
     required this.trusted,

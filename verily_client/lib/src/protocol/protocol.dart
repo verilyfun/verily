@@ -71,6 +71,9 @@ import 'action_verification/app_attest/app_attest_challenge_view.dart'
     as _is45ib7e;
 import 'action_verification/app_attest/app_attest_exception.dart' as _i2aihltn;
 import 'action_verification/app_attest/app_attest_problem.dart' as _ia04kjr5;
+import 'action_verification/app_attest/app_attest_receipt_refresh_task.dart'
+    as _i3x1l61r;
+import 'action_verification/app_attest/device_check_bits.dart' as _i4333s0z;
 import 'action_verification/create_action_definition_request.dart' as _i5yjywpf;
 import 'action_verification/evidence_appeal_status.dart' as _i90o7tud;
 import 'action_verification/evidence_appeal_view.dart' as _iy27rorb;
@@ -172,6 +175,8 @@ export 'action_verification/action_visibility.dart';
 export 'action_verification/app_attest/app_attest_challenge_view.dart';
 export 'action_verification/app_attest/app_attest_exception.dart';
 export 'action_verification/app_attest/app_attest_problem.dart';
+export 'action_verification/app_attest/app_attest_receipt_refresh_task.dart';
+export 'action_verification/app_attest/device_check_bits.dart';
 export 'action_verification/create_action_definition_request.dart';
 export 'action_verification/evidence_appeal_status.dart';
 export 'action_verification/evidence_appeal_view.dart';
@@ -365,6 +370,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _ia04kjr5.AppAttestProblem) {
       return _ia04kjr5.AppAttestProblem.fromJson(data) as T;
+    }
+    if (t == _i3x1l61r.AppAttestReceiptRefreshTask) {
+      return _i3x1l61r.AppAttestReceiptRefreshTask.fromJson(data) as T;
+    }
+    if (t == _i4333s0z.DeviceCheckBits) {
+      return _i4333s0z.DeviceCheckBits.fromJson(data) as T;
     }
     if (t == _i5yjywpf.CreateActionDefinitionRequest) {
       return _i5yjywpf.CreateActionDefinitionRequest.fromJson(data) as T;
@@ -726,6 +737,16 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_ia04kjr5.AppAttestProblem?>()) {
       return (data != null ? _ia04kjr5.AppAttestProblem.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_i3x1l61r.AppAttestReceiptRefreshTask?>()) {
+      return (data != null
+              ? _i3x1l61r.AppAttestReceiptRefreshTask.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_i4333s0z.DeviceCheckBits?>()) {
+      return (data != null ? _i4333s0z.DeviceCheckBits.fromJson(data) : null)
           as T;
     }
     if (t == _isc.getType<_i5yjywpf.CreateActionDefinitionRequest?>()) {
@@ -1242,6 +1263,8 @@ class Protocol extends _isc.SerializationManager {
       _is45ib7e.AppAttestChallengeView => 'AppAttestChallengeView',
       _i2aihltn.AppAttestException => 'AppAttestException',
       _ia04kjr5.AppAttestProblem => 'AppAttestProblem',
+      _i3x1l61r.AppAttestReceiptRefreshTask => 'AppAttestReceiptRefreshTask',
+      _i4333s0z.DeviceCheckBits => 'DeviceCheckBits',
       _i5yjywpf.CreateActionDefinitionRequest =>
         'CreateActionDefinitionRequest',
       _i90o7tud.EvidenceAppealStatus => 'EvidenceAppealStatus',
@@ -1389,6 +1412,10 @@ class Protocol extends _isc.SerializationManager {
         return 'AppAttestException';
       case _ia04kjr5.AppAttestProblem():
         return 'AppAttestProblem';
+      case _i3x1l61r.AppAttestReceiptRefreshTask():
+        return 'AppAttestReceiptRefreshTask';
+      case _i4333s0z.DeviceCheckBits():
+        return 'DeviceCheckBits';
       case _i5yjywpf.CreateActionDefinitionRequest():
         return 'CreateActionDefinitionRequest';
       case _i90o7tud.EvidenceAppealStatus():
@@ -1642,6 +1669,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'AppAttestProblem') {
       return deserialize<_ia04kjr5.AppAttestProblem>(data['data']);
+    }
+    if (dataClassName == 'AppAttestReceiptRefreshTask') {
+      return deserialize<_i3x1l61r.AppAttestReceiptRefreshTask>(data['data']);
+    }
+    if (dataClassName == 'DeviceCheckBits') {
+      return deserialize<_i4333s0z.DeviceCheckBits>(data['data']);
     }
     if (dataClassName == 'CreateActionDefinitionRequest') {
       return deserialize<_i5yjywpf.CreateActionDefinitionRequest>(data['data']);

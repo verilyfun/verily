@@ -33,7 +33,18 @@ final class CaptureProvenanceChannel {
     case "markAppAttestKeyRegistered": markRegistered(arguments, result: result)
     case "generateAppAttestAssertion": generateAssertion(arguments, result: result)
     case "discardAppAttestKey": discardKey(arguments, result: result)
+    case "generateDeviceCheckToken": generateDeviceCheckToken(result: result)
     default: result(FlutterMethodNotImplemented)
+    }
+  }
+
+  /// Ephemeral token for server-owned durable abuse flags. It is sent only
+  /// with the capture assertion; the server never stores it.
+  private func generateDeviceCheckToken(result: @escaping FlutterResult) {
+    let device = DCDevice.current
+    guard device.isSupported else { return result(Self.unsupported) }
+    device.generateToken { token, error in
+      DispatchQueue.main.async { Self.complete(result, data: token, error: error) }
     }
   }
 

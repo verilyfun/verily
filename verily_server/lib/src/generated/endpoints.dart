@@ -31,6 +31,8 @@ import '../account/account_lifecycle_endpoint.dart' as _ilf52cbk;
 import '../action_verification/action_verification_endpoint.dart' as _il8ja9q3;
 import '../action_verification/app_attest/app_attest_endpoint.dart'
     as _igev3eit;
+import '../action_verification/app_attest/device_check_endpoint.dart'
+    as _ieabcgy5;
 import '../action_verification/evidence_appeal_endpoint.dart' as _ia38af11;
 import '../action_verification/evidence_review_endpoint.dart' as _i96y5npp;
 import '../apps/verily_app_endpoint.dart' as _iqeqjjry;
@@ -65,6 +67,12 @@ class Endpoints extends _is.EndpointDispatch {
         ..initialize(
           server,
           'appAttest',
+          null,
+        ),
+      'deviceCheck': _ieabcgy5.DeviceCheckEndpoint()
+        ..initialize(
+          server,
+          'deviceCheck',
           null,
         ),
       'evidenceAppeal': _ia38af11.EvidenceAppealEndpoint()
@@ -754,6 +762,70 @@ class Endpoints extends _is.EndpointDispatch {
                     keyId: params['keyId'],
                     attestationObject: params['attestationObject'],
                   ),
+        ),
+      },
+    );
+    connectors['deviceCheck'] = _is.EndpointConnector(
+      name: 'deviceCheck',
+      endpoint: endpoints['deviceCheck']!,
+      methodConnectors: {
+        'query': _is.MethodConnector(
+          name: 'query',
+          params: {
+            'deviceToken': _is.ParameterDescription(
+              name: 'deviceToken',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['deviceCheck'] as _ieabcgy5.DeviceCheckEndpoint)
+                      .query(
+                        session,
+                        deviceToken: params['deviceToken'],
+                      ),
+        ),
+        'update': _is.MethodConnector(
+          name: 'update',
+          params: {
+            'deviceToken': _is.ParameterDescription(
+              name: 'deviceToken',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+            'banned': _is.ParameterDescription(
+              name: 'banned',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+            'reviewRequired': _is.ParameterDescription(
+              name: 'reviewRequired',
+              type: _is.getType<bool>(),
+              nullable: false,
+            ),
+            'note': _is.ParameterDescription(
+              name: 'note',
+              type: _is.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _is.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['deviceCheck'] as _ieabcgy5.DeviceCheckEndpoint)
+                      .update(
+                        session,
+                        deviceToken: params['deviceToken'],
+                        banned: params['banned'],
+                        reviewRequired: params['reviewRequired'],
+                        note: params['note'],
+                      ),
         ),
       },
     );

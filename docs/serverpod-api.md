@@ -336,3 +336,30 @@ iPhone capture signing (Phase 2) is additive.
 - New internal reason codes (`capture_app_attest_*`,
   `capture_signature_ambiguous`) reach participants as
   `capture_not_verified`.
+
+### Apple device risk and durable restrictions
+
+- `ActionEvidenceInput.captureDeviceCheckToken` and
+  `MediaUploadConfirmation.captureDeviceCheckToken` carry an ephemeral base64
+  DeviceCheck token. It is bound to the manifest through
+  `appAttestDeviceClientData` before `appAttestAssertionClientDataHash`; it is
+  never stored. Older assertions without a token can verify their signature
+  but always require manual review.
+- Initial registration now verifies the fraud receipt as well as the
+  attestation. An invalid receipt returns `AppAttestProblem.keyRejected`.
+  Verified refreshed metrics at least 10 require `device_activity_risk`
+  review. Unavailable/stale risk checks use
+  `apple_device_risk_unavailable`; bit 1 uses `apple_device_review`. All map
+  to the public `security_review`. Bit 0 refuses proof with
+  `capture_device_banned`, exposed as `capture_not_verified`.
+- `deviceCheck.query(deviceToken:)` returns `DeviceCheckBits(banned,
+  reviewRequired)`. `deviceCheck.update(deviceToken:, banned:,
+  reviewRequired:, note:)` explicitly sets both bits, with a nonempty audit
+  note of at most 1000 characters. Both require login, an active account and
+  the dedicated `device-check.manage` scope; ordinary participants and
+  evidence reviewers cannot update flags. Apple/configuration failures throw
+  `AppAttestException(unavailable)` and never return simulated success.
+- Internal `AppAttestReceiptRefreshTask` maintains receipts before expiration;
+  `DeviceCheckAudit` records update intent before HTTP and completion after
+  Apple's success. A missing completion can mean Apple applied the update:
+  query the bits before retrying. No raw token is retained.

@@ -34,6 +34,7 @@ abstract class ActionEvidenceInput
     this.captureSignature,
     this.captureCertificateChain,
     this.captureAppAttestKeyId,
+    this.captureDeviceCheckToken,
   });
 
   factory ActionEvidenceInput({
@@ -51,6 +52,7 @@ abstract class ActionEvidenceInput
     String? captureSignature,
     List<String>? captureCertificateChain,
     String? captureAppAttestKeyId,
+    String? captureDeviceCheckToken,
   }) = _ActionEvidenceInputImpl;
 
   factory ActionEvidenceInput.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -91,6 +93,8 @@ abstract class ActionEvidenceInput
             ),
       captureAppAttestKeyId:
           jsonSerialization['captureAppAttestKeyId'] as String?,
+      captureDeviceCheckToken:
+          jsonSerialization['captureDeviceCheckToken'] as String?,
     );
   }
 
@@ -130,6 +134,9 @@ abstract class ActionEvidenceInput
   /// `captureCertificateChain`, never both.
   String? captureAppAttestKeyId;
 
+  /// Ephemeral DeviceCheck token bound into the App Attest assertion. Never stored.
+  String? captureDeviceCheckToken;
+
   /// Returns a shallow copy of this [ActionEvidenceInput]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
@@ -148,6 +155,7 @@ abstract class ActionEvidenceInput
     String? captureSignature,
     List<String>? captureCertificateChain,
     String? captureAppAttestKeyId,
+    String? captureDeviceCheckToken,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -172,6 +180,8 @@ abstract class ActionEvidenceInput
         'captureCertificateChain': captureCertificateChain?.toJson(),
       if (captureAppAttestKeyId != null)
         'captureAppAttestKeyId': captureAppAttestKeyId,
+      if (captureDeviceCheckToken != null)
+        'captureDeviceCheckToken': captureDeviceCheckToken,
     };
   }
 
@@ -200,6 +210,8 @@ abstract class ActionEvidenceInput
         'captureCertificateChain': captureCertificateChain?.toJson(),
       if (captureAppAttestKeyId != null)
         'captureAppAttestKeyId': captureAppAttestKeyId,
+      if (captureDeviceCheckToken != null)
+        'captureDeviceCheckToken': captureDeviceCheckToken,
     };
   }
 
@@ -227,6 +239,7 @@ class _ActionEvidenceInputImpl extends ActionEvidenceInput {
     String? captureSignature,
     List<String>? captureCertificateChain,
     String? captureAppAttestKeyId,
+    String? captureDeviceCheckToken,
   }) : super._(
          attemptId: attemptId,
          requirementId: requirementId,
@@ -242,6 +255,7 @@ class _ActionEvidenceInputImpl extends ActionEvidenceInput {
          captureSignature: captureSignature,
          captureCertificateChain: captureCertificateChain,
          captureAppAttestKeyId: captureAppAttestKeyId,
+         captureDeviceCheckToken: captureDeviceCheckToken,
        );
 
   /// Returns a shallow copy of this [ActionEvidenceInput]
@@ -263,6 +277,7 @@ class _ActionEvidenceInputImpl extends ActionEvidenceInput {
     Object? captureSignature = _Undefined,
     Object? captureCertificateChain = _Undefined,
     Object? captureAppAttestKeyId = _Undefined,
+    Object? captureDeviceCheckToken = _Undefined,
   }) {
     return ActionEvidenceInput(
       attemptId: attemptId ?? this.attemptId,
@@ -295,6 +310,9 @@ class _ActionEvidenceInputImpl extends ActionEvidenceInput {
       captureAppAttestKeyId: captureAppAttestKeyId is String?
           ? captureAppAttestKeyId
           : this.captureAppAttestKeyId,
+      captureDeviceCheckToken: captureDeviceCheckToken is String?
+          ? captureDeviceCheckToken
+          : this.captureDeviceCheckToken,
     );
   }
 }

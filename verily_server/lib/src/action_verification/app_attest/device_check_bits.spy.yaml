@@ -1,0 +1,5 @@
+### Staff-facing durable device restrictions. Raw DeviceCheck tokens are never stored.
+class: DeviceCheckBits
+fields:
+  banned: bool
+  reviewRequired: bool
