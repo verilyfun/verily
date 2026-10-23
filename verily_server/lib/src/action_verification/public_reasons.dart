@@ -141,7 +141,9 @@ String publicReviewReason(String code) => switch (code) {
   'media_security_review_required' ||
   'media_prompt_injection_detected' ||
   deviceCaptureRiskReviewCode ||
-  deviceActivityRiskReviewCode => 'security_review',
+  deviceActivityRiskReviewCode ||
+  appleDeviceRiskUnavailableReviewCode ||
+  appleDeviceReviewCode => 'security_review',
   'spoken_challenge_unverified' => 'challenge_word_unclear',
   'location_travel_needs_review' => 'location_review',
   'abuse_review_required' => 'abuse_review',

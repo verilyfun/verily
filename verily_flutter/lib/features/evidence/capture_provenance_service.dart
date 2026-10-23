@@ -15,13 +15,15 @@ class CaptureProvenanceProof {
     required this.manifest,
     required this.signature,
     required List<String> this.certificateChain,
-  }) : appAttestKeyId = null;
+  }) : appAttestKeyId = null,
+       deviceCheckToken = null;
 
   /// An App Attest assertion by the account's registered key.
   const CaptureProvenanceProof.appAttest({
     required this.manifest,
     required String assertion,
     required String this.appAttestKeyId,
+    required String this.deviceCheckToken,
   }) : signature = assertion,
        certificateChain = null;
 
@@ -38,6 +40,9 @@ class CaptureProvenanceProof {
 
   /// The App Attest key identifier, as `generateKey` returned it.
   final String? appAttestKeyId;
+
+  /// Ephemeral, assertion-bound token. Never persisted by the server.
+  final String? deviceCheckToken;
 }
 
 /// Device keys that sign each capture's manifest.
@@ -273,12 +278,19 @@ class AppAttestCaptureKeyStore implements CaptureKeyStore {
     try {
       final stored = await _read(account);
       if (stored == null || !stored.registered) return null;
+      final deviceToken = await _channel.invokeMethod<Uint8List>(
+        'generateDeviceCheckToken',
+      );
+      if (deviceToken == null || deviceToken.isEmpty) return null;
+      final encodedToken = base64Encode(deviceToken);
       final assertion = await _channel.invokeMethod<Uint8List>(
         'generateAppAttestAssertion',
         {
           'keyId': stored.keyId,
           'clientDataHash': Uint8List.fromList(
-            appAttestAssertionClientDataHash(manifest),
+            appAttestAssertionClientDataHash(
+              appAttestDeviceClientData(manifest, encodedToken),
+            ),
           ),
         },
       );
@@ -287,6 +299,7 @@ class AppAttestCaptureKeyStore implements CaptureKeyStore {
         manifest: base64Encode(manifest),
         assertion: base64Encode(assertion),
         appAttestKeyId: stored.keyId,
+        deviceCheckToken: encodedToken,
       );
     } on PlatformException catch (error) {
       debugPrint('App Attest signing unavailable: ${error.code}');

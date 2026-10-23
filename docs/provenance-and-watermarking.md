@@ -150,7 +150,7 @@ Server verification:
 
 Per capture:
 
-- Call `generateAssertion(keyId, clientDataHash: SHA256(canonicalManifest))`. This signs the manifest digest with the attested key, so a separate CryptoKit key is unnecessary.
+- Generate a fresh DeviceCheck token, bind its hash to the canonical manifest with `appAttestDeviceClientData`, and call `generateAssertion` over the resulting client-data hash. A separate CryptoKit key is unnecessary.
 - The server verifies the signature and requires a strictly increasing counter.
 
 Limits:
@@ -160,6 +160,18 @@ Limits:
 - `isSupported` can be false, so the server must decide policy for unsupported devices.
 - Use the **fraud-risk receipt** (attested keys per device).
 - Use **DeviceCheck's two per-device bits** to persist bans across reinstalls.
+
+Implemented policy: verify every initial and refreshed PKCS#7 fraud receipt to
+the pinned Apple Root CA - G3, check the App ID, creation time (five minutes),
+and attested key, then record field 17 from refreshed receipts. A count of at
+least 10 goes to manual review. Scheduled refresh respects signed refresh and
+expiry times. Missing credentials and failed checks hold automatic acceptance.
+DeviceCheck bit 0 means active abuse ban; bit 1 means review required. Only
+dedicated operators may update them, with an audit trail. Raw tokens are
+ephemeral. Apple does not bind DeviceCheck tokens to App Attest keys, so a
+relay through a clean device remains possible. See
+[Apple App Attest](verification.md#apple-app-attest) for the operational policy
+and [Apple's risk receipt guidance](https://developer.apple.com/documentation/devicecheck/assessing-fraud-risk).
 
 ### Binding attestation to a _live_ capture (protocol)
 
@@ -308,11 +320,12 @@ The randomized live prompt (beyond today's spoken word) and the PDQ registry are
 | C2PA manifests on published renditions, KMS-signed, soft-binding + custom verification assertion                      | `c2pa-rs`                                              | 1 week                                     |
 | Hash-chained fragmented MP4 + IMU trace capture; run IMU/flow correlation in **shadow mode** to measure false rejects | CameraX/Camera2, `sensors_plus`, OpenCV flow in worker | 1–2 weeks                                  |
 
-**Status (22 October 2026).** The App Attest part of the first row is built; [Apple App Attest](verification.md#apple-app-attest) describes it as shipped.
+**Status (23 October 2026).** The iOS implementation of the first row is built; [Apple App Attest](verification.md#apple-app-attest) describes it. Physical-device and Apple-credential validation remain outstanding.
 
 - An iPhone registers one App Attest key per account and install through `appAttest.registerKey`, attested against a single-use server challenge. The Dart verifier in `verily_server/lib/src/action_verification/app_attest/` checks the CBOR object, the chain to the pinned Apple App Attestation Root CA, the nonce, `rpIdHash`, the zero counter, the environment's `aaguid`, and Apple's validation category. It is tested against Apple's two published sample attestations, a recorded iOS 27 attestation with two assertions, and a synthetic authority.
 - Each capture is signed with an assertion over the window's `verily-capture-manifest-v1`; the server requires a strictly increasing counter per key. A valid assertion records the new `secureEnclaveAttested` level, below `hardwareAttested`, because App Attest gives no verified-boot or jailbreak signal and its key is per install rather than per capture.
-- Not built yet: DeviceCheck's two per-device bits, verifying and refreshing the fraud-risk receipt (it is stored), and a run on a physical iPhone.
+- Initial and refreshed fraud receipts are verified, the refreshed risk metric gates manual review, and scheduled refresh maintains receipts before expiration. DeviceCheck queries enforce bit 0's durable abuse ban and bit 1's review requirement; scoped, audited endpoints update them. The Swift channel generates ephemeral tokens bound into each capture assertion. Apple HTTP is injectable; missing credentials fail closed.
+- Nothing in this follow-up ran on a physical iPhone or against the live Apple risk APIs. Hardware attestation, real DeviceCheck persistence across reinstalls, key provisioning and portal configuration still need device acceptance testing. The remaining Phase 2 rows are unchanged.
 
 ### Phase 3: standards-grade capture credentials (quarter-scale, higher uncertainty)
 

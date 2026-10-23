@@ -19,9 +19,16 @@ fields:
   signCount: int
   ### The attestation's certificate chain (base64 DER, credential certificate
   ### first) and Apple's receipt (base64), kept for audit and for the
-  ### fraud-risk metric. The receipt is not verified yet.
+  ### fraud-risk metric. Both initial and refreshed receipts are verified.
   certificateChain: List<String>
   receipt: String
+  receiptCreatedAt: DateTime
+  ### Next refresh attempt (signed not-before, or one-hour outage backoff).
+  receiptRefreshAfter: DateTime
+  receiptNotBefore: DateTime
+  receiptExpiresAt: DateTime
+  ### Verified 30-day attested-key count from Apple's refreshed receipt.
+  riskMetric: int?
   ### Apple's validation category and bundle version from the attestation;
   ### null on iOS versions that do not report them.
   validationCategory: int?

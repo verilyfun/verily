@@ -21,6 +21,8 @@ import 'package:verily_server/src/generated/action_verification/action_qr_challe
     as _iyeohdwe;
 import 'package:verily_server/src/generated/action_verification/action_spoken_challenge_cleanup_task.dart'
     as _i7i84atq;
+import 'package:verily_server/src/generated/action_verification/app_attest/app_attest_receipt_refresh_task.dart'
+    as _ikydhm6g;
 import 'package:verily_server/src/generated/action_verification/evidence_verification_recovery_task.dart'
     as _ikmo5pl9;
 import 'package:verily_server/src/generated/action_verification/evidence_verification_task.dart'
@@ -52,6 +54,8 @@ import '../action_verification/action_qr_challenge_cleanup_future_call.dart'
     as _ib19nitc;
 import '../action_verification/action_spoken_challenge_cleanup_future_call.dart'
     as _iggymanc;
+import '../action_verification/app_attest/app_attest_receipt_refresh_future_call.dart'
+    as _igm0eptp;
 import '../action_verification/evidence_verification_future_call.dart'
     as _i83aqavm;
 import '../action_verification/evidence_verification_recovery_future_call.dart'
@@ -120,6 +124,8 @@ class FutureCalls extends _is.FutureCallDispatch<_FutureCallRef> {
           ActionQrChallengeCleanupCleanupFutureCall(),
       'ActionSpokenChallengeCleanupCleanupFutureCall':
           ActionSpokenChallengeCleanupCleanupFutureCall(),
+      'AppAttestReceiptRefreshRefreshFutureCall':
+          AppAttestReceiptRefreshRefreshFutureCall(),
       'EvidenceVerificationVerifyFutureCall':
           EvidenceVerificationVerifyFutureCall(),
       'EvidenceVerificationRecoveryRecoverFutureCall':
@@ -269,6 +275,9 @@ class _FutureCallRef {
   late final actionSpokenChallengeCleanup =
       _ActionSpokenChallengeCleanupFutureCallDispatcher(_invokeFutureCall);
 
+  late final appAttestReceiptRefresh =
+      _AppAttestReceiptRefreshFutureCallDispatcher(_invokeFutureCall);
+
   late final evidenceVerification = _EvidenceVerificationFutureCallDispatcher(
     _invokeFutureCall,
   );
@@ -349,6 +358,19 @@ class _ActionSpokenChallengeCleanupFutureCallDispatcher {
   Future<void> cleanup(_i7i84atq.ActionSpokenChallengeCleanupTask task) {
     return _invokeFutureCall(
       'ActionSpokenChallengeCleanupCleanupFutureCall',
+      task,
+    );
+  }
+}
+
+class _AppAttestReceiptRefreshFutureCallDispatcher {
+  _AppAttestReceiptRefreshFutureCallDispatcher(this._invokeFutureCall);
+
+  final _InvokeFutureCall _invokeFutureCall;
+
+  Future<void> refresh(_ikydhm6g.AppAttestReceiptRefreshTask task) {
+    return _invokeFutureCall(
+      'AppAttestReceiptRefreshRefreshFutureCall',
       task,
     );
   }
@@ -551,6 +573,21 @@ class ActionSpokenChallengeCleanupCleanupFutureCall
     _i7i84atq.ActionSpokenChallengeCleanupTask? task,
   ) async {
     await _iggymanc.ActionSpokenChallengeCleanupFutureCall().cleanup(
+      session,
+      task!,
+    );
+  }
+}
+
+class AppAttestReceiptRefreshRefreshFutureCall
+    extends _is.FutureCall<_ikydhm6g.AppAttestReceiptRefreshTask>
+    implements _is.InvokableFutureCall<_ikydhm6g.AppAttestReceiptRefreshTask> {
+  @override
+  _ida.Future<void> invoke(
+    _is.Session session,
+    _ikydhm6g.AppAttestReceiptRefreshTask? task,
+  ) async {
+    await _igm0eptp.AppAttestReceiptRefreshFutureCall().refresh(
       session,
       task!,
     );

@@ -6,6 +6,7 @@ import 'package:verily_server/src/action_verification/app_attest/app_attest_veri
 import 'package:verily_server/src/action_verification/key_attestation/x509.dart';
 import 'package:verily_server/src/generated/protocol.dart';
 
+import 'apple_device_test_authority.dart';
 import 'cbor_writer.dart';
 import 'der_writer.dart';
 
@@ -39,6 +40,7 @@ final class TestAppAttestAuthority {
 
   /// The anchor a verifier under test should trust.
   late final X509Certificate root;
+  final receipts = TestReceiptAuthority();
 
   static final _validFrom = DateTime.utc(2026);
   static final _validUntil = DateTime.utc(2036);
@@ -142,7 +144,11 @@ final class TestAppAttestAuthority {
             Uint8List.fromList(credentialCertificate),
             Uint8List.fromList(ca),
           ],
-          'receipt': Uint8List.fromList(utf8.encode('test receipt')),
+          'receipt': receipts.issue(
+            credential: credentialCertificate,
+            appId: appId,
+            now: DateTime.now().toUtc(),
+          ),
         },
         'authData': authData,
       }),

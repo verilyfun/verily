@@ -34,6 +34,11 @@ abstract class AppAttestKey
     required this.signCount,
     required this.certificateChain,
     required this.receipt,
+    required this.receiptCreatedAt,
+    required this.receiptRefreshAfter,
+    required this.receiptNotBefore,
+    required this.receiptExpiresAt,
+    this.riskMetric,
     this.validationCategory,
     this.bundleVersion,
     required this.registeredAt,
@@ -50,6 +55,11 @@ abstract class AppAttestKey
     required int signCount,
     required List<String> certificateChain,
     required String receipt,
+    required DateTime receiptCreatedAt,
+    required DateTime receiptRefreshAfter,
+    required DateTime receiptNotBefore,
+    required DateTime receiptExpiresAt,
+    int? riskMetric,
     int? validationCategory,
     String? bundleVersion,
     required DateTime registeredAt,
@@ -79,6 +89,19 @@ abstract class AppAttestKey
         jsonSerialization['certificateChain'],
       ),
       receipt: jsonSerialization['receipt'] as String,
+      receiptCreatedAt: _is.DateTimeJsonExtension.fromJson(
+        jsonSerialization['receiptCreatedAt'],
+      ),
+      receiptRefreshAfter: _is.DateTimeJsonExtension.fromJson(
+        jsonSerialization['receiptRefreshAfter'],
+      ),
+      receiptNotBefore: _is.DateTimeJsonExtension.fromJson(
+        jsonSerialization['receiptNotBefore'],
+      ),
+      receiptExpiresAt: _is.DateTimeJsonExtension.fromJson(
+        jsonSerialization['receiptExpiresAt'],
+      ),
+      riskMetric: jsonSerialization['riskMetric'] as int?,
       validationCategory: jsonSerialization['validationCategory'] as int?,
       bundleVersion: jsonSerialization['bundleVersion'] as String?,
       registeredAt: _is.DateTimeJsonExtension.fromJson(
@@ -119,10 +142,22 @@ abstract class AppAttestKey
 
   /// The attestation's certificate chain (base64 DER, credential certificate
   /// first) and Apple's receipt (base64), kept for audit and for the
-  /// fraud-risk metric. The receipt is not verified yet.
+  /// fraud-risk metric. Both initial and refreshed receipts are verified.
   List<String> certificateChain;
 
   String receipt;
+
+  DateTime receiptCreatedAt;
+
+  /// Next refresh attempt (signed not-before, or one-hour outage backoff).
+  DateTime receiptRefreshAfter;
+
+  DateTime receiptNotBefore;
+
+  DateTime receiptExpiresAt;
+
+  /// Verified 30-day attested-key count from Apple's refreshed receipt.
+  int? riskMetric;
 
   /// Apple's validation category and bundle version from the attestation;
   /// null on iOS versions that do not report them.
@@ -150,6 +185,11 @@ abstract class AppAttestKey
     int? signCount,
     List<String>? certificateChain,
     String? receipt,
+    DateTime? receiptCreatedAt,
+    DateTime? receiptRefreshAfter,
+    DateTime? receiptNotBefore,
+    DateTime? receiptExpiresAt,
+    int? riskMetric,
     int? validationCategory,
     String? bundleVersion,
     DateTime? registeredAt,
@@ -168,6 +208,11 @@ abstract class AppAttestKey
       'signCount': signCount,
       'certificateChain': certificateChain.toJson(),
       'receipt': receipt,
+      'receiptCreatedAt': receiptCreatedAt.toJson(),
+      'receiptRefreshAfter': receiptRefreshAfter.toJson(),
+      'receiptNotBefore': receiptNotBefore.toJson(),
+      'receiptExpiresAt': receiptExpiresAt.toJson(),
+      if (riskMetric != null) 'riskMetric': riskMetric,
       if (validationCategory != null) 'validationCategory': validationCategory,
       if (bundleVersion != null) 'bundleVersion': bundleVersion,
       'registeredAt': registeredAt.toJson(),
@@ -221,6 +266,11 @@ class _AppAttestKeyImpl extends AppAttestKey {
     required int signCount,
     required List<String> certificateChain,
     required String receipt,
+    required DateTime receiptCreatedAt,
+    required DateTime receiptRefreshAfter,
+    required DateTime receiptNotBefore,
+    required DateTime receiptExpiresAt,
+    int? riskMetric,
     int? validationCategory,
     String? bundleVersion,
     required DateTime registeredAt,
@@ -235,6 +285,11 @@ class _AppAttestKeyImpl extends AppAttestKey {
          signCount: signCount,
          certificateChain: certificateChain,
          receipt: receipt,
+         receiptCreatedAt: receiptCreatedAt,
+         receiptRefreshAfter: receiptRefreshAfter,
+         receiptNotBefore: receiptNotBefore,
+         receiptExpiresAt: receiptExpiresAt,
+         riskMetric: riskMetric,
          validationCategory: validationCategory,
          bundleVersion: bundleVersion,
          registeredAt: registeredAt,
@@ -255,6 +310,11 @@ class _AppAttestKeyImpl extends AppAttestKey {
     int? signCount,
     List<String>? certificateChain,
     String? receipt,
+    DateTime? receiptCreatedAt,
+    DateTime? receiptRefreshAfter,
+    DateTime? receiptNotBefore,
+    DateTime? receiptExpiresAt,
+    Object? riskMetric = _Undefined,
     Object? validationCategory = _Undefined,
     Object? bundleVersion = _Undefined,
     DateTime? registeredAt,
@@ -273,6 +333,11 @@ class _AppAttestKeyImpl extends AppAttestKey {
       certificateChain:
           certificateChain ?? this.certificateChain.map((e0) => e0).toList(),
       receipt: receipt ?? this.receipt,
+      receiptCreatedAt: receiptCreatedAt ?? this.receiptCreatedAt,
+      receiptRefreshAfter: receiptRefreshAfter ?? this.receiptRefreshAfter,
+      receiptNotBefore: receiptNotBefore ?? this.receiptNotBefore,
+      receiptExpiresAt: receiptExpiresAt ?? this.receiptExpiresAt,
+      riskMetric: riskMetric is int? ? riskMetric : this.riskMetric,
       validationCategory: validationCategory is int?
           ? validationCategory
           : this.validationCategory,
@@ -333,6 +398,35 @@ class AppAttestKeyUpdateTable extends _is.UpdateTable<AppAttestKeyTable> {
     value,
   );
 
+  _is.ColumnValue<DateTime, DateTime> receiptCreatedAt(DateTime value) =>
+      _is.ColumnValue(
+        table.receiptCreatedAt,
+        value,
+      );
+
+  _is.ColumnValue<DateTime, DateTime> receiptRefreshAfter(DateTime value) =>
+      _is.ColumnValue(
+        table.receiptRefreshAfter,
+        value,
+      );
+
+  _is.ColumnValue<DateTime, DateTime> receiptNotBefore(DateTime value) =>
+      _is.ColumnValue(
+        table.receiptNotBefore,
+        value,
+      );
+
+  _is.ColumnValue<DateTime, DateTime> receiptExpiresAt(DateTime value) =>
+      _is.ColumnValue(
+        table.receiptExpiresAt,
+        value,
+      );
+
+  _is.ColumnValue<int, int> riskMetric(int? value) => _is.ColumnValue(
+    table.riskMetric,
+    value,
+  );
+
   _is.ColumnValue<int, int> validationCategory(int? value) => _is.ColumnValue(
     table.validationCategory,
     value,
@@ -390,6 +484,26 @@ class AppAttestKeyTable extends _is.Table<_is.UuidValue?> {
       'receipt',
       this,
     );
+    receiptCreatedAt = _is.ColumnDateTime(
+      'receiptCreatedAt',
+      this,
+    );
+    receiptRefreshAfter = _is.ColumnDateTime(
+      'receiptRefreshAfter',
+      this,
+    );
+    receiptNotBefore = _is.ColumnDateTime(
+      'receiptNotBefore',
+      this,
+    );
+    receiptExpiresAt = _is.ColumnDateTime(
+      'receiptExpiresAt',
+      this,
+    );
+    riskMetric = _is.ColumnInt(
+      'riskMetric',
+      this,
+    );
     validationCategory = _is.ColumnInt(
       'validationCategory',
       this,
@@ -430,10 +544,22 @@ class AppAttestKeyTable extends _is.Table<_is.UuidValue?> {
 
   /// The attestation's certificate chain (base64 DER, credential certificate
   /// first) and Apple's receipt (base64), kept for audit and for the
-  /// fraud-risk metric. The receipt is not verified yet.
+  /// fraud-risk metric. Both initial and refreshed receipts are verified.
   late final _is.ColumnSerializable<List<String>> certificateChain;
 
   late final _is.ColumnString receipt;
+
+  late final _is.ColumnDateTime receiptCreatedAt;
+
+  /// Next refresh attempt (signed not-before, or one-hour outage backoff).
+  late final _is.ColumnDateTime receiptRefreshAfter;
+
+  late final _is.ColumnDateTime receiptNotBefore;
+
+  late final _is.ColumnDateTime receiptExpiresAt;
+
+  /// Verified 30-day attested-key count from Apple's refreshed receipt.
+  late final _is.ColumnInt riskMetric;
 
   /// Apple's validation category and bundle version from the attestation;
   /// null on iOS versions that do not report them.
@@ -468,6 +594,11 @@ class AppAttestKeyTable extends _is.Table<_is.UuidValue?> {
     signCount,
     certificateChain,
     receipt,
+    receiptCreatedAt,
+    receiptRefreshAfter,
+    receiptNotBefore,
+    receiptExpiresAt,
+    riskMetric,
     validationCategory,
     bundleVersion,
     registeredAt,

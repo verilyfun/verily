@@ -17,6 +17,7 @@ const _challenge = 'AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA';
 final String _keyId = base64Encode(List.filled(32, 7));
 final _attestation = Uint8List.fromList(utf8.encode('attestation object'));
 final _assertion = Uint8List.fromList(utf8.encode('assertion object'));
+final _deviceToken = Uint8List.fromList(utf8.encode('device-token'));
 
 /// `DCAppAttestService` and the Keychain, as the Swift side exposes them.
 final class _FakeAppAttest {
@@ -26,12 +27,16 @@ final class _FakeAppAttest {
   final hashes = <String, List<int>>{};
   PlatformException? attestFailure;
   PlatformException? assertionFailure;
+  PlatformException? deviceCheckFailure;
 
   Future<Object?> handle(MethodCall call) async {
     calls.add(call.method);
     final arguments = (call.arguments as Map<Object?, Object?>?) ?? const {};
     final account = arguments['account'] as String?;
     switch (call.method) {
+      case 'generateDeviceCheckToken':
+        if (deviceCheckFailure case final failure?) throw failure;
+        return _deviceToken;
       case 'appAttestSupported':
         return supported;
       case 'readAppAttestKey':
@@ -151,11 +156,14 @@ void main() {
 
       expect(
         platform.hashes['assert'],
-        appAttestAssertionClientDataHash(manifest),
+        appAttestAssertionClientDataHash(
+          appAttestDeviceClientData(manifest, base64Encode(_deviceToken)),
+        ),
       );
       expect(proof!.manifest, base64Encode(manifest));
       expect(proof.signature, base64Encode(_assertion));
       expect(proof.appAttestKeyId, _keyId);
+      expect(proof.deviceCheckToken, base64Encode(_deviceToken));
       expect(proof.certificateChain, isNull);
     },
   );
@@ -169,6 +177,17 @@ void main() {
 
     expect(platform.calls, ['appAttestSupported', 'readAppAttestKey']);
     expect(registrar.registered, hasLength(1));
+  });
+
+  test('DeviceCheck failure cannot produce a capture assertion', () async {
+    await prepare();
+    platform.deviceCheckFailure = PlatformException(code: 'unavailable');
+    expect(
+      await store().sign(captureId: 'window', manifest: const [1]),
+      isNull,
+    );
+    expect(platform.hashes['assert'], isNull);
+    expect(platform.keychain[_account.toString()]!.registered, isTrue);
   });
 
   test('a phone without App Attest cannot sign', () async {

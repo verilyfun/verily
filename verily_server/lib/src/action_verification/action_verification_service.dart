@@ -640,6 +640,7 @@ class ActionVerificationService {
         captureSignature: input.captureSignature,
         captureCertificateChain: input.captureCertificateChain,
         captureAppAttestKeyId: input.captureAppAttestKeyId,
+        captureDeviceCheckToken: input.captureDeviceCheckToken,
       ),
       evidenceBindingHash: () => _deterministicBindingHash(requirement, input),
       capturedAt: input.capturedAt,
@@ -869,6 +870,7 @@ class ActionVerificationService {
         captureSignature: confirmation.captureSignature,
         captureCertificateChain: confirmation.captureCertificateChain,
         captureAppAttestKeyId: confirmation.captureAppAttestKeyId,
+        captureDeviceCheckToken: confirmation.captureDeviceCheckToken,
       ),
       capturedAt: capturedAt,
       requireStrongIntegrity: await _requiresStrongIntegrity(

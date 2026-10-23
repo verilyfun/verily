@@ -24,3 +24,5 @@ fields:
   ### returns it), registered through `appAttest.registerKey`. Send it or
   ### `captureCertificateChain`, never both.
   captureAppAttestKeyId: String?
+  ### Ephemeral DeviceCheck token bound into the App Attest assertion. Never stored.
+  captureDeviceCheckToken: String?

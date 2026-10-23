@@ -120,6 +120,19 @@ List<int> appAttestAssertionClientDataHash(List<int> manifest) {
   return sha256.convert(manifest).bytes;
 }
 
+/// Binds the ephemeral DeviceCheck token to this manifest's App Attest
+/// assertion. Length-prefixing avoids ambiguity; only the token hash is signed.
+/// This prevents token substitution, but Apple exposes no cryptographic link
+/// proving a DeviceCheck token and App Attest key came from the same phone.
+List<int> appAttestDeviceClientData(
+  List<int> manifest,
+  String deviceCheckToken,
+) => [
+  ...utf8.encode('verily-apple-device-v1|${manifest.length}|'),
+  ...manifest,
+  ...sha256.convert(utf8.encode(deviceCheckToken)).bytes,
+];
+
 /// Validates a server capture challenge: 32 random bytes, unpadded base64url.
 String normalizeCaptureChallenge(String value) {
   final normalized = value.trim();

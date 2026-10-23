@@ -36,6 +36,8 @@ import 'package:verily_client/src/protocol/action_verification/action_template.d
     as _i6d3vqey;
 import 'package:verily_client/src/protocol/action_verification/app_attest/app_attest_challenge_view.dart'
     as _ieyg8zz9;
+import 'package:verily_client/src/protocol/action_verification/app_attest/device_check_bits.dart'
+    as _i13izq45;
 import 'package:verily_client/src/protocol/action_verification/create_action_definition_request.dart'
     as _ivnldkuj;
 import 'package:verily_client/src/protocol/action_verification/evidence_appeal_status.dart'
@@ -403,6 +405,40 @@ class EndpointAppAttest extends _isc.EndpointRef {
       'challengeId': challengeId,
       'keyId': keyId,
       'attestationObject': attestationObject,
+    },
+  );
+}
+
+/// Staff query/update APIs for Apple's two persistent device bits. Both flags
+/// are set explicitly to avoid read/modify/write races. A fresh token must be
+/// obtained from the affected phone; App Attest key IDs are not device IDs.
+/// {@category Endpoint}
+class EndpointDeviceCheck extends _isc.EndpointRef {
+  EndpointDeviceCheck(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'deviceCheck';
+
+  _ida.Future<_i13izq45.DeviceCheckBits> query({required String deviceToken}) =>
+      caller.callServerEndpoint<_i13izq45.DeviceCheckBits>(
+        'deviceCheck',
+        'query',
+        {'deviceToken': deviceToken},
+      );
+
+  _ida.Future<void> update({
+    required String deviceToken,
+    required bool banned,
+    required bool reviewRequired,
+    required String note,
+  }) => caller.callServerEndpoint<void>(
+    'deviceCheck',
+    'update',
+    {
+      'deviceToken': deviceToken,
+      'banned': banned,
+      'reviewRequired': reviewRequired,
+      'note': note,
     },
   );
 }
@@ -1266,6 +1302,7 @@ class Client extends _isc.ServerpodClientShared {
     accountLifecycle = EndpointAccountLifecycle(this);
     actionVerification = EndpointActionVerification(this);
     appAttest = EndpointAppAttest(this);
+    deviceCheck = EndpointDeviceCheck(this);
     evidenceAppeal = EndpointEvidenceAppeal(this);
     evidenceReview = EndpointEvidenceReview(this);
     verilyApp = EndpointVerilyApp(this);
@@ -1285,6 +1322,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointActionVerification actionVerification;
 
   late final EndpointAppAttest appAttest;
+
+  late final EndpointDeviceCheck deviceCheck;
 
   late final EndpointEvidenceAppeal evidenceAppeal;
 
@@ -1315,6 +1354,7 @@ class Client extends _isc.ServerpodClientShared {
     'accountLifecycle': accountLifecycle,
     'actionVerification': actionVerification,
     'appAttest': appAttest,
+    'deviceCheck': deviceCheck,
     'evidenceAppeal': evidenceAppeal,
     'evidenceReview': evidenceReview,
     'verilyApp': verilyApp,
