@@ -353,6 +353,8 @@ Refusals carry `capture_app_attest_*` reason codes (and
 `capture_signature_invalid`), which participants see as
 `capture_not_verified`. Physical-iPhone and live Apple API acceptance testing
 remain outstanding; no physical iPhone was used for this implementation.
+Use the [physical iPhone acceptance checklist](iphone-acceptance.md) to record
+Monosecret provisioning, live receipt refresh and restrictions across reinstalls.
 
 #### Play Integrity
 
