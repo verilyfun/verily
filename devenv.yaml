@@ -6,9 +6,8 @@ inputs:
       nixpkgs:
         follows: nixpkgs
   ifiokjr-nixpkgs:
-    # Monosecret 0.4.3 adds the DigitalOcean Secrets Manager and Convex
-    # providers while keeping the batched 1Password reads from 0.3.4.
-    url: github:ifiokjr/nixpkgs/d19e07259478476c25d70e98caca25b647b2fed9
+    # Monosecret 0.5.0, matching the monosecret package the server pins.
+    url: github:ifiokjr/nixpkgs/72e10cc44b8f9c720874df349e064e05024ef62c
     inputs:
       nixpkgs:
         follows: nixpkgs
@@ -21,10 +20,8 @@ inputs:
       nixpkgs:
         follows: nixpkgs
   ifiokjr-nixpkgs-monochange:
-    # Monochange 0.15.0 adds release values and version schemes (build
-    # counters, calendar labels) plus the `monochange next` preview, without
-    # upgrading unrelated development tools.
-    url: github:ifiokjr/nixpkgs/c42c05779b3964c0c5ea42a6f3e3d048eeb4f477
+    # Monochange 0.21.0, without upgrading unrelated development tools.
+    url: github:ifiokjr/nixpkgs/72e10cc44b8f9c720874df349e064e05024ef62c
     inputs:
       nixpkgs:
         follows: nixpkgs

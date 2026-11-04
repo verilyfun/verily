@@ -5,10 +5,10 @@ packages:
     dependency: transitive
     description:
       name: _fe_analyzer_shared
-      sha256: a49d6cf99e8d8e7a8e93668d09ced0bbdb954d0b4fccc2f5f9241c6b87fad95c
+      sha256: "1b0e6a07425a3e460666e88bf1c949ccc7bb0116ad562ce94a1eca60fe820725"
       url: "https://pub.dev"
     source: hosted
-    version: "99.0.0"
+    version: "103.0.0"
   adaptive_number:
     dependency: transitive
     description:
@@ -29,34 +29,34 @@ packages:
     dependency: transitive
     description:
       name: analysis_server_plugin
-      sha256: "3960b28ee740004df39f85d5ebfc91785f7a90e51fd7c9a185e86a36b2f581b4"
+      sha256: c58b2a05b260a023eefd0848496ff6b113a318c6c95dad4215165a4bd54ae600
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.14"
+    version: "0.3.18"
   analyzer:
     dependency: transitive
     description:
       name: analyzer
-      sha256: "663efa951fb8a45e06f491223a604c93820598f20e6a99c25617a1576065e8b7"
+      sha256: "61c04d0c1bfed555c681ea079519933f071a5a026578ff73c4ff0df2d3462e5e"
       url: "https://pub.dev"
     source: hosted
-    version: "12.1.0"
+    version: "13.3.0"
   analyzer_plugin:
     dependency: transitive
     description:
       name: analyzer_plugin
-      sha256: "0057a98d64d7bb872b0c87dff6e73d2c2d80c77156e7a03f127a26f8aa240649"
+      sha256: c2a75baf1657171cc7872db96a12b07e385873cf7a73f2b4f7638e9d0701ee53
       url: "https://pub.dev"
     source: hosted
-    version: "0.14.8"
+    version: "0.14.12"
   analyzer_testing:
     dependency: transitive
     description:
       name: analyzer_testing
-      sha256: df9a63ae68657f2b04b26f9811124d19b06b129961d9573574dbb7971bc4ac22
+      sha256: "33ec8a3138134e9048969a70a670ac04a37e28337982c3ed6d04a3d28ac87665"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.5"
+    version: "0.3.2"
   animations:
     dependency: transitive
     description:
@@ -77,10 +77,10 @@ packages:
     dependency: transitive
     description:
       name: archive
-      sha256: "0d58d1fa1fddf6588251ccf2819f3fb3b6d0452c1b2813ac7413a05592bfbefe"
+      sha256: de5ac590b8155e4e676088d714bd41ea620449a6adc0f7950c5073874b287ddb
       url: "https://pub.dev"
     source: hosted
-    version: "4.5.2"
+    version: "4.6.0"
   args:
     dependency: transitive
     description:
@@ -93,10 +93,10 @@ packages:
     dependency: transitive
     description:
       name: asn1lib
-      sha256: "9a8f69025044eb466b9b60ef3bc3ac99b4dc6c158ae9c56d25eeccf5bc56d024"
+      sha256: cfb3cf6a53158918d52dda61bc26f0cc8612a0d3b9dc29e87eaa3423902ca636
       url: "https://pub.dev"
     source: hosted
-    version: "1.6.5"
+    version: "1.6.8"
   async:
     dependency: transitive
     description:
@@ -141,26 +141,26 @@ packages:
     dependency: transitive
     description:
       name: camera
-      sha256: "3f30ca0ff376f91534f23afa2a7aea06ebb6c889fd9e260642437b37e3d9f753"
+      sha256: "4a0863bc142f6fbfdca19161205574fd8a8f00d4753b48d214c4dfbdcc534c51"
       url: "https://pub.dev"
     source: hosted
-    version: "0.12.1"
+    version: "0.12.2"
   camera_android_camerax:
     dependency: transitive
     description:
       name: camera_android_camerax
-      sha256: "47645ffd20c597cb0edab4de20f3c89447b7eca90425ee13683b746275b18e2b"
+      sha256: b5e0a2a8e63f2788139379926a9abc3a64eed5e309c1384e5db25b74f15b7307
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.5+1"
+    version: "0.7.6+1"
   camera_avfoundation:
     dependency: transitive
     description:
       name: camera_avfoundation
-      sha256: e409a731fad3fca10daa9567cf981720398659e6390f871a4e0f576058ff8940
+      sha256: "971f7b4938ae761797dd667c078af92f1b6a1bb7760774c0cbcf9c9d4a14bdf1"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.3+1"
+    version: "0.11.1"
   camera_platform_interface:
     dependency: transitive
     description:
@@ -173,18 +173,18 @@ packages:
     dependency: transitive
     description:
       name: camera_web
-      sha256: "5aecf1ac4dd4a949c5a7820e590020acb2bc35425384ab87a030e1739bfe12e2"
+      sha256: "45063367478a53aa6f2d6e8a53b70fce3499f2b1e98d294c9e71c72bcd20ebf0"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.5+6"
+    version: "0.3.5+7"
   cbor:
     dependency: transitive
     description:
       name: cbor
-      sha256: "2c5c37650f0a2d25149f03e748ab7b2857787bde338f95fe947738b80d713da2"
+      sha256: "9e0745c45bc29e8ed4acb79801ecbc86aab51f952e503517e6c002c7f4ca9118"
       url: "https://pub.dev"
     source: hosted
-    version: "6.5.1"
+    version: "6.5.2"
   characters:
     dependency: transitive
     description:
@@ -301,10 +301,10 @@ packages:
     dependency: transitive
     description:
       name: crypto
-      sha256: c8ea0233063ba03258fbcf2ca4d6dadfefe14f02fab57702265467a19f27fadf
+      sha256: e3626ae6270383c9e3a549f34c9e4cd26c09ae6a9adaab2bf4737a00340efdc4
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.7"
+    version: "3.0.8"
   csslib:
     dependency: transitive
     description:
@@ -317,10 +317,10 @@ packages:
     dependency: transitive
     description:
       name: cupertino_ui
-      sha256: a47c4e7c66fd7444a063a602597fceb238f705c3f6b1322bc0053d0a2638ee6e
+      sha256: "369e39a1c5c030a6212589c3da1809920b1c2cfade7b02aade7695bfa4b88c3a"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.4"
+    version: "1.1.6"
   dart_jsonwebtoken:
     dependency: transitive
     description:
@@ -333,10 +333,10 @@ packages:
     dependency: transitive
     description:
       name: dart_style
-      sha256: a4c1ccfee44c7e75ed80484071a5c142a385345e658fd8bd7c4b5c97e7198f98
+      sha256: a0e4f65339b31eb6a9e6a12e14b4682a48d46fbc54a82f4a702396fbdbac63a7
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.8"
+    version: "3.1.14"
   dbus:
     dependency: transitive
     description:
@@ -381,10 +381,10 @@ packages:
     dependency: transitive
     description:
       name: equatable
-      sha256: "3bce007a596ff8b3119c45d68aaef631272537c03d30e5d4534dd24bf4c5eaa2"
+      sha256: ea36e500cbf0ec18361deabca755434f73e42fe53c5130021c7e2d6b5ebe1702
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.0"
+    version: "3.0.0"
   fake_async:
     dependency: transitive
     description:
@@ -540,10 +540,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_svg
-      sha256: "35882981abcbfb8c15b286f0cd690ff25bac12d95eff3e25ee207f37d4c42e7f"
+      sha256: "100c19dcc4ff60083e95a44a6f44f3a1bb887d353c5d86f6a9b688aa3cb46236"
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.0"
+    version: "2.3.2"
   flutter_test:
     dependency: transitive
     description: flutter
@@ -603,10 +603,10 @@ packages:
     dependency: transitive
     description:
       name: geolocator
-      sha256: "4e41ad6bc072364ff01822531dac47936c065e5bf8f928f240a25bb51256ada0"
+      sha256: "2b3bc0f7320d5a5fa02f8209ffcf1aaa7c2cabb7b2bedbc0cfeb5ff2778b8b09"
       url: "https://pub.dev"
     source: hosted
-    version: "14.1.1"
+    version: "14.1.2"
   geolocator_android:
     dependency: transitive
     description:
@@ -619,10 +619,10 @@ packages:
     dependency: transitive
     description:
       name: geolocator_apple
-      sha256: a596abaef55d63dd0a8a61acd96ad388f9b54017c88224741f54fd0400aa4ffe
+      sha256: a1e177f3081089724f2095856aeb96eb8d7d1c59e425aed8dd4de7aa2c11ab66
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.2"
+    version: "2.4.3"
   geolocator_linux:
     dependency: transitive
     description:
@@ -667,10 +667,10 @@ packages:
     dependency: transitive
     description:
       name: go_router
-      sha256: "530dcbb298dc7c319aea9e3b7c580a61effb2abee2c93825d2dd8d5af0e230f1"
+      sha256: "5a44b0bd6131888bda5f770be5db2e08a59063724c6fa534ea4ec7c9fc3f841b"
       url: "https://pub.dev"
     source: hosted
-    version: "18.0.2"
+    version: "18.1.3"
   google_cloud:
     dependency: transitive
     description:
@@ -739,10 +739,10 @@ packages:
     dependency: transitive
     description:
       name: googleapis_auth
-      sha256: d31822528becea550f7c7a9ab73a4518e31e48f201ab574be7e141f262923f27
+      sha256: e15d48204e2f3c852dc1091a49705a163a8ba5897823f9abe1c0795e512357c4
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.4"
+    version: "2.3.5"
   gsettings:
     dependency: transitive
     description:
@@ -848,10 +848,10 @@ packages:
     dependency: transitive
     description:
       name: jni
-      sha256: "6b9ca0602fef0230e83149afbe3f9f8227e94f2bbe84a1da4f14d699742f402d"
+      sha256: "2e91e6087291affd10b31b6c872f3e3ac7dc5d93b51b5ba485d930c8f08bde6c"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "1.1.2"
   jni_flutter:
     dependency: transitive
     description:
@@ -984,10 +984,10 @@ packages:
     dependency: transitive
     description:
       name: material_ui
-      sha256: e4031746f96c8316864d9b92bce375f1320a36ed56e166307e1e1bda9d90b4ab
+      sha256: a30f5d0625b6b83770f53ca3f7aafd6fd9d147cb3853f54a70668541046fe5d6
       url: "https://pub.dev"
     source: hosted
-    version: "1.8.0"
+    version: "1.10.0"
   meta:
     dependency: transitive
     description:
@@ -1008,18 +1008,18 @@ packages:
     dependency: transitive
     description:
       name: mobile_scanner
-      sha256: "5a51ea79f0cf8293f616a5d08baae185b59b5e6bb24df01f2a63037ade0bade0"
+      sha256: "175c62fc813c2bd762757359a2088f8cbdb72020cf85d4cd27fc4d3fe59be058"
       url: "https://pub.dev"
     source: hosted
-    version: "7.4.2"
+    version: "7.5.0"
   monosecret:
     dependency: transitive
     description:
       name: monosecret
-      sha256: df70c0327762b7268ac32475b56c2b5148f18c04bca461f6261338f78d4c9c46
+      sha256: "9637b3acdb7344180a72543d690a8f5c35e3ef4e6f1d1d629e198cade3fe5a78"
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.3"
+    version: "0.5.0"
   mp_audio:
     dependency: transitive
     description:
@@ -1192,26 +1192,26 @@ packages:
     dependency: transitive
     description:
       name: patrol
-      sha256: "662c50d517b2f159fedbc359a7fb8d0d30cbefea6d5c2a08392a0593079d64d1"
+      sha256: "6449bf2d2107f1f56a7134857c88e4bb0dd7c732e4368ad37bb3e18fbcfb3bd7"
       url: "https://pub.dev"
     source: hosted
-    version: "4.10.0"
+    version: "4.11.0"
   patrol_finders:
     dependency: transitive
     description:
       name: patrol_finders
-      sha256: "8608cdacaab90a3b00ecd7b09df11f13a62b01dea13c211b9f13fd86854e103a"
+      sha256: "3d451a1cede00d1b4223f88bf616fd4fab9d21af09c21bef859541788307a88a"
       url: "https://pub.dev"
     source: hosted
-    version: "3.6.0"
+    version: "3.7.0"
   patrol_log:
     dependency: transitive
     description:
       name: patrol_log
-      sha256: "3d91c93e8d0ed19cb12d4b27aa24eca7294e0a48d9d8445505c9775feb5fde2d"
+      sha256: eb7dbb4c7e679410bd9f4b349bbf0da4a56e5a2efe718613e268fa26f4b7bf41
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.1"
+    version: "0.10.2"
   petitparser:
     dependency: transitive
     description:
@@ -1264,18 +1264,18 @@ packages:
     dependency: transitive
     description:
       name: posix
-      sha256: bc1bad54ad2b735816e31f8d4600cfde6c7839975085ddfbca48b6c9f7c4044e
+      sha256: "613646d076944f3acc125830af935b48d4b8a57a388691547bbfd25b434f4d63"
       url: "https://pub.dev"
     source: hosted
-    version: "6.5.2"
+    version: "6.5.4"
   postgres:
     dependency: transitive
     description:
       name: postgres
-      sha256: f2571f6f4256e94d87334d7189fcf28407500c34cd0ebcb74cff21fab5f4e988
+      sha256: "45a7ea2d064526500a44b1a62680e21406d5b3f3f3b1c21feb8b3053c2bad95e"
       url: "https://pub.dev"
     source: hosted
-    version: "3.5.20"
+    version: "3.6.0"
   process:
     dependency: transitive
     description:
@@ -1304,10 +1304,10 @@ packages:
     dependency: transitive
     description:
       name: qr
-      sha256: "5a1d2586170e172b8a8c8470bbbffd5eb0cd38a66c0d77155ea138d3af3a4445"
+      sha256: "2c0189dca64a3ab08dda7acd7911c89af2374f08eb4eaded3e8ef4609f3b9c8b"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.2"
+    version: "3.0.3"
   qr_flutter:
     dependency: transitive
     description:
@@ -1400,26 +1400,34 @@ packages:
     dependency: transitive
     description:
       name: relic
-      sha256: "0239101113221b185c2467e7ff9b45e9100c900f52c8d1d9eba00e34da43be4b"
+      sha256: e0e296037aca90e34cebf0f76dd2bd9f177a966893f06c562b3034e568097761
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0-rc.2"
+    version: "2.0.0-rc.4"
   relic_core:
     dependency: transitive
     description:
       name: relic_core
-      sha256: d0c13d2c1821aa5057ce771923377ec35494cd4257de0901148e2055b6dd4c41
+      sha256: d00ec26a80dff797d10e05f6b61124469c3dec4438d12506508d72073bc121e5
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0-rc.2"
+    version: "2.0.0-rc.4"
+  relic_headers:
+    dependency: transitive
+    description:
+      name: relic_headers
+      sha256: "0433543d92b8c4b92dcd323ec9385ad981684867db4b210bbb83723ed2fa1a18"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0-rc.4"
   relic_io:
     dependency: transitive
     description:
       name: relic_io
-      sha256: fba5368494f615172a47b99d4ef49c83aa46b5abb91014a33085b2ea53f64c72
+      sha256: "97d63d57d49248d0ccac54d17c01068fcd60e0b27424445c6830072702f20989"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0-rc.2"
+    version: "2.0.0-rc.4"
   rfc_6901:
     dependency: transitive
     description:
@@ -1608,18 +1616,18 @@ packages:
     dependency: transitive
     description:
       name: shared_preferences_android
-      sha256: a67a1a6a62b241ad4ddd8a97f5a12bb547c445190930233b63cd28cc0a104a76
+      sha256: "33b38b07d9ac7d16aff0426c61418752fd3e7a8c7dc8be786c875d6ce673b002"
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.1"
+    version: "2.5.4"
   shared_preferences_foundation:
     dependency: transitive
     description:
       name: shared_preferences_foundation
-      sha256: c2c02dd59bd7b3bb6bfb77aa7ad4a7886b24ee40e95dcaea754b83274b567ff5
+      sha256: "4e396ac6f8751ab7d2d6e27f22f32c8350b07006028d534f5221503382f1fa69"
       url: "https://pub.dev"
     source: hosted
-    version: "2.6.0"
+    version: "2.6.1"
   shared_preferences_linux:
     dependency: transitive
     description:
@@ -1773,362 +1781,362 @@ packages:
     dependency: transitive
     description:
       name: solana_kit
-      sha256: ac08b61458d588ec9692c17b3efba3151e3882b6dfae242e6dd39eac72abbbf6
+      sha256: "7116057cfac2271e63fcf2879e90c888e0ffd188fe6e65330316571feb46e616"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_accounts:
     dependency: transitive
     description:
       name: solana_kit_accounts
-      sha256: "2b13d4c59aa4efdda6c9b710af44939c9edcc9d52287e70306fbcf170a147c1f"
+      sha256: "5e862c815dd6b94a84ff3c00480b3194f86cb138dc78989afe8ea4db1bacffcf"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_address:
     dependency: transitive
     description:
       name: solana_kit_address
-      sha256: e05873d47a690f6363c778416dbe24530c6c79e3448970401fc788576b1702b3
+      sha256: "82b93a19159f5995f633a7925ba7503608f503c63d95415c59ee079cb7776eba"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_address_constants:
     dependency: transitive
     description:
       name: solana_kit_address_constants
-      sha256: eb44a4978d910df1a3a20a175de1f62580f2e1da24d8cc614686893b46c0ed5a
+      sha256: "5c14cbd0a6367e8ad83b55fc860dc895ecb6310eb204315b453fdec497d9dd1d"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_addresses:
     dependency: transitive
     description:
       name: solana_kit_addresses
-      sha256: "6b1cd415b0c9e256d6914f900b72163f95d3426a9006443d92b822fa9f430d34"
+      sha256: "0d0f4fc63cfda874d619ca4d2ed5b555167df0529e2443d26363c088c25eea33"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_associated_token_account:
     dependency: transitive
     description:
       name: solana_kit_associated_token_account
-      sha256: "8ee0862af785b30a3d636a4fa9d5ad070758a17040905ca2bdaf309c3d23006b"
+      sha256: "17b0a6d15b73403832e04f376cbc31755bddbcfdd5866df7711ac7e59ba7a5e1"
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.0"
+    version: "0.9.1"
   solana_kit_codecs:
     dependency: transitive
     description:
       name: solana_kit_codecs
-      sha256: ec18809fcd9078db9523df66494f4b952b2a48711f581c8fae5f1c0efe0b965f
+      sha256: edd72cd7623618b3fb265d4a6b7c2aeb09b75583a1de1e3a78b3e183046dbe67
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_codecs_core:
     dependency: transitive
     description:
       name: solana_kit_codecs_core
-      sha256: fad5d542b20c5644cbf8a41dc8bb10bb21dbb83932b319fbf63e4ff9ac5490b7
+      sha256: d4476d6da5136503e81480ae1ffdba7e6c969ee3c3275c8c02abc3f552aa8c23
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_codecs_data_structures:
     dependency: transitive
     description:
       name: solana_kit_codecs_data_structures
-      sha256: e69ad68d1d5a71efacea76df18027eab2f588831c80f5c707ea398e42601b887
+      sha256: b0b577295340e90d3e31ed28b92c4cb881fb84dae3f8380ca8be7ebbe73445b1
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_codecs_numbers:
     dependency: transitive
     description:
       name: solana_kit_codecs_numbers
-      sha256: "927fa7fc95328483bf22b714015cd69d3556253d92042c52b17fde621f6c18fa"
+      sha256: "6794076c6fcbbd2177ecdafeb3ac2ec599227f0f05a44ccf41a322099406cdbb"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_codecs_strings:
     dependency: transitive
     description:
       name: solana_kit_codecs_strings
-      sha256: "095d4d3706ae4609a5d6c55aadb5e032d75d24388f21dd1aaf4ff3fc0831566b"
+      sha256: e93a7ec15e389b8a8887e69f64b64b8ad99169c62a7194ed7b311c0b4da78e9a
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_errors:
     dependency: transitive
     description:
       name: solana_kit_errors
-      sha256: "6223e5a3a4f0f40596c1703a04a61293a320f369424e781fd448ec75d6fd04ae"
+      sha256: c3327380f5cccc7839efaa06700b4c16d9a9d89d8c8e31408a6fec7d0bfd7284
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_fast_stable_stringify:
     dependency: transitive
     description:
       name: solana_kit_fast_stable_stringify
-      sha256: "18e04ad8918b41ee24cbb97c87320b8e668358592fd172a9d8001b3915e9c491"
+      sha256: "0e7dda616414379ca3cef091d6b19ac594a7b5d67a97d468554b25262564c57c"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_fixed_points:
     dependency: transitive
     description:
       name: solana_kit_fixed_points
-      sha256: "9d85612b6df10228a3dc3e0ed83dc4eb38b3703dd36ba9cfb84f3aea59a46437"
+      sha256: "10da4b92fcc9a4eef42db71336f89bb57ebf5e886d72dcf12a63757b058b68c8"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_instruction_plans:
     dependency: transitive
     description:
       name: solana_kit_instruction_plans
-      sha256: ea4448a1a89878e81b85db0f486992233fa127afcc16bf4a65130b0c983faeb5
+      sha256: edac9a9d7bc3b9c1d3f8ab74e1e803c4f207c7adea4d185c6002208c629c876c
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_instructions:
     dependency: transitive
     description:
       name: solana_kit_instructions
-      sha256: b73c04f28669fc1593c59c4c7b76653f4734751a81f36c2e05cc1c247b684839
+      sha256: "43a921d36464b954b9b74edeabf83b7a83f73297ae5232f4bf0570ed891f7039"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_keys:
     dependency: transitive
     description:
       name: solana_kit_keys
-      sha256: "26842a082dae515f3557c4e232ff9bb02fab27848cfb001b8ed655f571ea8bbf"
+      sha256: "1df10f5c5ebf8fd5167f0399f7d817c4a2df49b5ddf81038f4dbb2da572c7845"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_lints:
     dependency: transitive
     description:
       name: solana_kit_lints
-      sha256: "6cc9126e9a2802a8478dbb955b07ab9292707501ed0dcc860c5987e874c2a8d2"
+      sha256: "9c3ad6e12ba7b1f8effd6338ef685d7a4d9aef8869dbbb6fd2c94e7a8e8dce91"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_mobile_wallet_adapter:
     dependency: transitive
     description:
       name: solana_kit_mobile_wallet_adapter
-      sha256: "67825cc94fb65ed2fc4001b2bb9b107e396144c74e6e4015fd56dedb17553f53"
+      sha256: c8d2e630062392b6fbd874fc0c2202f52d9ad554cd40404203d9081cc5367ed4
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.0"
+    version: "0.7.1"
   solana_kit_mobile_wallet_adapter_protocol:
     dependency: transitive
     description:
       name: solana_kit_mobile_wallet_adapter_protocol
-      sha256: "4c672dc4e98800473f49821c84c3be2f16d83beba0e034ce2ba331a6abc5f73d"
+      sha256: ad00274ec1b65aec5b3cc953b432a0c0f7b0fe3942d7c0efe07512f494cca08c
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.0"
+    version: "0.7.1"
   solana_kit_offchain_messages:
     dependency: transitive
     description:
       name: solana_kit_offchain_messages
-      sha256: "1f61756289ebea246cb41a3cdc949d785211b3164895f2dbf56ef8b8a53bc3b5"
+      sha256: "8d660d32e42d014f1217c3cc78970d80d1cb923fe936d62a317eb928ad6d85c5"
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.0"
+    version: "0.7.1"
   solana_kit_options:
     dependency: transitive
     description:
       name: solana_kit_options
-      sha256: "9e8e3e5cf894803bb7bc7b5f08d791d870156f36fb8d358fcc5e62d2d8a189f9"
+      sha256: "0a3d0e12f6d76868c267eec4b5e2deb20c6b0731988b670e1a49dfe28d73ef05"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_program_client_core:
     dependency: transitive
     description:
       name: solana_kit_program_client_core
-      sha256: "84dca5b4536d1770f6fee906615b44abce94f92ba759357a702d113df2179345"
+      sha256: "983795d57321c9005e3d50387825f788758ad8130264461569d2245a3d21ec21"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_programs:
     dependency: transitive
     description:
       name: solana_kit_programs
-      sha256: f9f50cd895cc430ed3eadba306eb0d039954b6fe14fd12fd88d4bb75a086730c
+      sha256: "5c04bc0ce8f363c42e000548c95b70f8aba0f601f1eaea552f74d3c2c7b5a3db"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_rpc:
     dependency: transitive
     description:
       name: solana_kit_rpc
-      sha256: "8029ada9db55bdb9f4007efa1985e9b6a6cbe78960b0a07c203acb7c0ec58a95"
+      sha256: "12f407c3f3d711103cc0f43348515c1d183d7fa70d9551e93b28ed1d3dc723fd"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_rpc_api:
     dependency: transitive
     description:
       name: solana_kit_rpc_api
-      sha256: "2c66e996fd39879f7f4f30e83066110128564f618274f6e568f776cf592d4e01"
+      sha256: "995010541d22bee032c31f05c910debd5d6f38a65a6d97786c98f9e055ffb77e"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_rpc_parsed_types:
     dependency: transitive
     description:
       name: solana_kit_rpc_parsed_types
-      sha256: "4d935c359b33f585b0d3378c5f6c059ce4c1d7b1e9a0fa65ff118e63891c7073"
+      sha256: b056c7ccb1dc7aa667b60c1624e860d7cf4bffc2b5f09517b96e2caa104c3d2e
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_rpc_spec:
     dependency: transitive
     description:
       name: solana_kit_rpc_spec
-      sha256: "14ca893199de19731ef855d544a6f543c7ddf308b5e57ba9310059e25d2128e5"
+      sha256: "47688346d91491acfef72dd2e192f12383cb6678632c390348be940ab2d8698c"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_rpc_spec_types:
     dependency: transitive
     description:
       name: solana_kit_rpc_spec_types
-      sha256: "63446a0ff64e4a3dfb413dc0dbab6be37f0d9f73f1ecf9bd3208d8d718ccb556"
+      sha256: "621423164dd162775849a16961974be5832cf8a1871be8e74c8c03a346ed9d0f"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_rpc_subscriptions:
     dependency: transitive
     description:
       name: solana_kit_rpc_subscriptions
-      sha256: b895ff23173b0390dd65da52c971f5ae76f6ea40776b5f9384a5ff47c6584d96
+      sha256: "08aa268628296371f56ce3955ed21077b32eae052f9c93353328c9c0b37e9740"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_rpc_subscriptions_api:
     dependency: transitive
     description:
       name: solana_kit_rpc_subscriptions_api
-      sha256: "1787b9970d2bfedde78a8a6a828cdcc032fbca823748b0edcb058ebcce4e4a69"
+      sha256: c7efbbb7b37889bd194ff254c3545f4379381e6af9f7e425d3210be6446159cc
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_rpc_subscriptions_channel_websocket:
     dependency: transitive
     description:
       name: solana_kit_rpc_subscriptions_channel_websocket
-      sha256: "29c104b40721287473f73a4f5cde1abbf78c463906ca1ab873e362a035d80227"
+      sha256: f2da961002b4bc5525f8b1465401c9eadf551458a3a99384f2aec0864a99d120
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_rpc_transformers:
     dependency: transitive
     description:
       name: solana_kit_rpc_transformers
-      sha256: "7384668f1ce59ae83aea27bf3151cea604e25f240b5b4c8e2f487962941b6135"
+      sha256: "8f2eea7083289d714e141ea91ff036548e62159de8600cebe7100680796ba0ae"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_rpc_transport_http:
     dependency: transitive
     description:
       name: solana_kit_rpc_transport_http
-      sha256: fbe846e151000248c383b2f07f13519b0b389310b65a45d8c7f08941397b6a10
+      sha256: "87b2c9c942ef423f770a062411347735115e6c23740ba7408ffb7cc916d93223"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_rpc_types:
     dependency: transitive
     description:
       name: solana_kit_rpc_types
-      sha256: "5354cc1a9af0bf734d692431764820bea0367e12a7d7f7573e48d6b47e599df5"
+      sha256: "9b5439b5a372364f6e23f7112aa67d4c9e43aa7bc049ebb23e8e1435d470b9f4"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_signers:
     dependency: transitive
     description:
       name: solana_kit_signers
-      sha256: e5a98c49f3712be10d08947abc78f41fec957af06483f7249ccb21f5dbc489ca
+      sha256: "8c0073610c1fc86004f02f002d06afaa39697246e3f7db5fa6860f9b2685d488"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_subscribable:
     dependency: transitive
     description:
       name: solana_kit_subscribable
-      sha256: "47408c54bec8b2a1c2d30b82735cd4877b6df74ac2d0a286aadc1794cc62da69"
+      sha256: e8c2ebde99c2e0c62d659d65ce8903d46ff31777410f206adf4b1d9b121356e6
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_surfpool:
     dependency: transitive
     description:
       name: solana_kit_surfpool
-      sha256: "2649586cae45102d316693b892c484fe243f556f4823c2799530c44c060d662a"
+      sha256: "0636b0ac4a912b7f9fe813d44993d2c8b87d8a6c972c45fa0fa4606b190a4182"
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.0"
+    version: "0.5.1"
   solana_kit_system:
     dependency: transitive
     description:
       name: solana_kit_system
-      sha256: "2bf24346ce3f6e0a2555531dd2863d45749cddf9036770ad3653a6646cf119de"
+      sha256: "5ac7ebbef1c45216fa1617576d67781aeba498f52977c9cb436f2d9c4070dd53"
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.0"
+    version: "0.9.1"
   solana_kit_sysvars:
     dependency: transitive
     description:
       name: solana_kit_sysvars
-      sha256: "53079e8f8aee9ab6452b06e35345d86f0ac2575e39d58dc2dbda6659a60b1eb6"
+      sha256: d854e5f3a1bd5b0f5f7989d4879d6bfc57560f82b15932de51805c3cb88559a5
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.0"
+    version: "0.7.1"
   solana_kit_token:
     dependency: transitive
     description:
       name: solana_kit_token
-      sha256: "2bee4b2e68791fc5feeb9c6080657f920773af2727c44de33cad6f51f20f624e"
+      sha256: c65974da4ba71cd459d5062039ac6e2966dc429a5dcb57c17bf5530110de1faf
       url: "https://pub.dev"
     source: hosted
-    version: "0.9.0"
+    version: "0.10.1"
   solana_kit_transaction_confirmation:
     dependency: transitive
     description:
       name: solana_kit_transaction_confirmation
-      sha256: "597c64cd2e0d8d007d6c145256d984f41d08f558badbc26c7546633a6a5aedff"
+      sha256: "10043eea874e50250b6e9b1b05b048de8f0e69cb12d389ec0a80309f22a27742"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_transaction_introspection:
     dependency: transitive
     description:
       name: solana_kit_transaction_introspection
-      sha256: "814bee1754d7128fc7164c7f83162bf50ddeb7f939ee09fd72b1dd20296af220"
+      sha256: "6df5be8c64cc551a7fd0720113990ad64f44988c62e68f84c2bed6610ad02019"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_transaction_messages:
     dependency: transitive
     description:
       name: solana_kit_transaction_messages
-      sha256: "5ab9710d91ac809dbd943d49c22486685117b01420bbad3cf88213751c8df7cf"
+      sha256: c09edfa67bb7471a20b8a87b4716d7f4b717a8814082bbd5940eea85717cb365
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   solana_kit_transactions:
     dependency: transitive
     description:
       name: solana_kit_transactions
-      sha256: cd9d18dd027111eaa1a4f5e81c854e6a069d0ee0184945ff4ccdb73e16413bb3
+      sha256: f737de32ea99fed42e4929d2e4b23eceb30406b9500c6f3843fe8068d0ac852d
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.11.1"
   source_map_stack_trace:
     dependency: transitive
     description:
@@ -2157,18 +2165,18 @@ packages:
     dependency: transitive
     description:
       name: sqlite3
-      sha256: "144132790ec1947fad9f3ddceffd0af2ab80a1f0d1e81a4d094ee6707ec3df0b"
+      sha256: "5340531ad17f386ae444873f643f281060b6238cc702edeee6b1e90bc4c6874e"
       url: "https://pub.dev"
     source: hosted
-    version: "3.7.1"
+    version: "3.8.0"
   sqlite3_connection_pool:
     dependency: transitive
     description:
       name: sqlite3_connection_pool
-      sha256: ad8413d9100598ee9ef1a27628f5673b7d9212fb9d15b2742f7fde690f743832
+      sha256: af7dbfd341f760cda2d42fadf0be75e0e5932abd40a23b3589f3ed478789ee50
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.13"
+    version: "0.2.16"
   sqlite3_web:
     dependency: transitive
     description:
@@ -2301,10 +2309,10 @@ packages:
     dependency: transitive
     description:
       name: timezone
-      sha256: dd14a3b83cfd7cb19e7888f1cbc20f258b8d71b54c06f79ac585f14093a287d1
+      sha256: "9f4e5a1a0e4fef7dd3424842c0575db01bfb7a11730e8d55753fcd5c5c98767b"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.1"
+    version: "0.11.2"
   typed_data:
     dependency: transitive
     description:
@@ -2397,10 +2405,10 @@ packages:
     dependency: transitive
     description:
       name: vector_graphics
-      sha256: "0964703d02677ac8636b4aef95de0b7e816224ff0082908c2c950529cb9a2f5e"
+      sha256: "82885f6ac633044e7a4e4d8d745724a67aa0dc50af5d8a81ec29379f63c29035"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.4"
+    version: "1.2.6"
   vector_graphics_codec:
     dependency: transitive
     description:
@@ -2413,18 +2421,18 @@ packages:
     dependency: transitive
     description:
       name: vector_graphics_compiler
-      sha256: a8e2c19796144da2f81bcc96dad1bb19c4677b561c452081b97ee737b9faed65
+      sha256: "4c9d2e7121eea8b4f160e6e435900a0ae7214cfc97c2d6cf84c25532b789b50d"
       url: "https://pub.dev"
     source: hosted
-    version: "1.3.2"
+    version: "1.3.4"
   vector_math:
     dependency: transitive
     description:
       name: vector_math
-      sha256: "92b9910f66ed1057fd4da7b040ae7c74cafacf885bdc81be496928d5049b032d"
+      sha256: fa49e1674cb84acb900141714e6c6e1f9ae099827c24d141430ff6819db4e1bc
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.3"
+    version: "2.4.4"
   very_good_analysis:
     dependency: transitive
     description:
@@ -2453,10 +2461,10 @@ packages:
     dependency: transitive
     description:
       name: video_player_avfoundation
-      sha256: "4f8a845173377ab250a50f9b9dfe4a43500cc76a7c49dd8410d02d8fc29dfd8b"
+      sha256: "7d620d8c69d00c158a5c57bf3d2a051833b547631203ff724664fbf301024bc1"
       url: "https://pub.dev"
     source: hosted
-    version: "2.12.1"
+    version: "2.12.3"
   video_player_platform_interface:
     dependency: transitive
     description:
@@ -2493,10 +2501,10 @@ packages:
     dependency: transitive
     description:
       name: web
-      sha256: "868d88a33d8a87b18ffc05f9f030ba328ffefba92d6c127917a2ba740f9cfe4a"
+      sha256: e119e82ac4795c7925103b7cf3768191f33941b99e7ccffbd6c645201d9f606b
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.1"
+    version: "1.1.2"
   web_socket:
     dependency: transitive
     description:

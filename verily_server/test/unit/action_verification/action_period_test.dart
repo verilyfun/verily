@@ -55,5 +55,17 @@ void main() {
       expect(findActionTimeZone('Mars/Olympus_Mons'), isNull);
       expect(() => actionTimeZone('Mars/Olympus_Mons'), throwsArgumentError);
     });
+
+    test('IANA link names that devices still report are found', () {
+      for (final name in [
+        'UTC',
+        'GMT',
+        'US/Eastern',
+        'Europe/Kiev',
+        'Asia/Calcutta',
+      ]) {
+        expect(findActionTimeZone(name), isNotNull, reason: name);
+      }
+    });
   });
 }

@@ -8,7 +8,7 @@
 # Build stage. Only the server, the workspace packages it depends on, the
 # lockfile, and the Monosecret manifest are copied, so the image never needs
 # a Flutter SDK.
-FROM --platform=linux/amd64 dart:3.13.5 AS build
+FROM --platform=linux/amd64 dart:3.13.7 AS build
 WORKDIR /workspace
 COPY monosecret.toml pubspec.lock ./
 COPY packages/verily_escrow_client packages/verily_escrow_client
