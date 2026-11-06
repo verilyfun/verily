@@ -1,4 +1,7 @@
-import 'package:timezone/data/latest.dart' as timezone_data;
+// The full database: since timezone 0.11, `latest.dart` holds only common
+// canonical zones, without links such as `UTC` or `Europe/Kiev` that devices
+// still report and stored actions may carry.
+import 'package:timezone/data/latest_all.dart' as timezone_data;
 import 'package:timezone/timezone.dart' as timezone;
 import 'package:verily_server/src/generated/protocol.dart';
 

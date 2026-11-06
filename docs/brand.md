@@ -210,7 +210,7 @@ turned 8° anticlockwise, with a rubber-stamp texture (`VerifiedStamp`).
 
 ## Launch media and re-rendering
 
-From `packages/verily_brand` (Flutter 3.47.7; ffmpeg on `PATH`):
+From `packages/verily_brand` (Flutter 3.47.9; ffmpeg on `PATH`):
 
 ```bash
 # Promo video (with and without the sound bed) and the Slopper cover:

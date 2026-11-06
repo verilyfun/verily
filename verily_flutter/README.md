@@ -10,7 +10,7 @@ placeholder until the Serverpod client and the real screens land.
 ## Commands
 
 Run these from this directory with the pinned Flutter (`devenv shell flutter`
-or `~/fvm/versions/3.47.7/bin/flutter`).
+or `~/fvm/versions/3.47.9/bin/flutter`).
 
 ```sh
 flutter test                                   # unit and widget tests

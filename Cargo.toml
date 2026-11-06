@@ -16,7 +16,7 @@ license = "Apache-2.0"
 rust-version = "1.89.0"
 
 [workspace.dependencies]
-pina = { version = "=0.23.0", default-features = false, features = ["logs", "token", "derive", "validation", "account-resize"] }
+pina = { version = "=0.24.0", default-features = false, features = ["logs", "token", "derive", "validation", "account-resize"] }
 
 [workspace.lints.rust]
 unsafe_code = "deny"

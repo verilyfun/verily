@@ -77,7 +77,7 @@ final class _PinnedDependenciesVisitor extends SimpleAstVisitor<void> {
       return;
     }
 
-    final pubspec = packageRoot.getChildAssumingFile(_pubspecPath);
+    final pubspec = packageRoot.getFile(_pubspecPath);
     if (!pubspec.exists) {
       return;
     }
