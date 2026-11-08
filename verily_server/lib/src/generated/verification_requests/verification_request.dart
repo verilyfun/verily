@@ -11,6 +11,8 @@
 // ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'dart:async' as _ida;
+
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
@@ -234,7 +236,7 @@ abstract class VerificationRequest
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
   VerificationRequest copyWith({
-    _is.UuidValue? id,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? appId,
     _ix1e7zpf.VerificationRequestKind? kind,
     String? instructions,
@@ -248,17 +250,18 @@ abstract class VerificationRequest
     String? state,
     _icvl19bi.VerificationRequestStatus? status,
     DateTime? expiresAt,
-    _is.UuidValue? participantAuthUserId,
-    _iacs.AuthUser? participantAuthUser,
+    _is.UuidValue? participantAuthUserId = const _is.$UndefinedUuidValue(),
+    _iacs.AuthUser? participantAuthUser =
+        const _UndefinedVerificationRequest$participantAuthUser(),
     String? subject,
-    _is.UuidValue? actionDefinitionId,
-    _is.UuidValue? attemptId,
-    DateTime? acceptedAt,
+    _is.UuidValue? actionDefinitionId = const _is.$UndefinedUuidValue(),
+    _is.UuidValue? attemptId = const _is.$UndefinedUuidValue(),
+    DateTime? acceptedAt = const _is.$UndefinedDateTime(),
     bool? evidenceShared,
     String? codeHash,
-    DateTime? codeExpiresAt,
-    DateTime? codeUsedAt,
-    DateTime? completedAt,
+    DateTime? codeExpiresAt = const _is.$UndefinedDateTime(),
+    DateTime? codeUsedAt = const _is.$UndefinedDateTime(),
+    DateTime? completedAt = const _is.$UndefinedDateTime(),
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -338,6 +341,12 @@ abstract class VerificationRequest
 
 class _Undefined {}
 
+class _UndefinedVerificationRequest$participantAuthUser
+    extends _is.UndefinedSentinel
+    implements _iacs.AuthUser {
+  const _UndefinedVerificationRequest$participantAuthUser();
+}
+
 class _VerificationRequestImpl extends VerificationRequest {
   _VerificationRequestImpl({
     _is.UuidValue? id,
@@ -402,7 +411,7 @@ class _VerificationRequestImpl extends VerificationRequest {
   @_is.useResult
   @override
   VerificationRequest copyWith({
-    Object? id = _Undefined,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? appId,
     _ix1e7zpf.VerificationRequestKind? kind,
     Object? instructions = _Undefined,
@@ -416,22 +425,23 @@ class _VerificationRequestImpl extends VerificationRequest {
     Object? state = _Undefined,
     _icvl19bi.VerificationRequestStatus? status,
     DateTime? expiresAt,
-    Object? participantAuthUserId = _Undefined,
-    Object? participantAuthUser = _Undefined,
+    _is.UuidValue? participantAuthUserId = const _is.$UndefinedUuidValue(),
+    _iacs.AuthUser? participantAuthUser =
+        const _UndefinedVerificationRequest$participantAuthUser(),
     Object? subject = _Undefined,
-    Object? actionDefinitionId = _Undefined,
-    Object? attemptId = _Undefined,
-    Object? acceptedAt = _Undefined,
+    _is.UuidValue? actionDefinitionId = const _is.$UndefinedUuidValue(),
+    _is.UuidValue? attemptId = const _is.$UndefinedUuidValue(),
+    DateTime? acceptedAt = const _is.$UndefinedDateTime(),
     bool? evidenceShared,
     Object? codeHash = _Undefined,
-    Object? codeExpiresAt = _Undefined,
-    Object? codeUsedAt = _Undefined,
-    Object? completedAt = _Undefined,
+    DateTime? codeExpiresAt = const _is.$UndefinedDateTime(),
+    DateTime? codeUsedAt = const _is.$UndefinedDateTime(),
+    DateTime? completedAt = const _is.$UndefinedDateTime(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
     return VerificationRequest(
-      id: id is _is.UuidValue? ? id : this.id,
+      id: id is _is.UndefinedSentinel ? this.id : id,
       appId: appId ?? this.appId,
       kind: kind ?? this.kind,
       instructions: instructions is String? ? instructions : this.instructions,
@@ -451,25 +461,33 @@ class _VerificationRequestImpl extends VerificationRequest {
       state: state is String? ? state : this.state,
       status: status ?? this.status,
       expiresAt: expiresAt ?? this.expiresAt,
-      participantAuthUserId: participantAuthUserId is _is.UuidValue?
-          ? participantAuthUserId
-          : this.participantAuthUserId,
-      participantAuthUser: participantAuthUser is _iacs.AuthUser?
-          ? participantAuthUser
-          : this.participantAuthUser?.copyWith(),
+      participantAuthUserId: participantAuthUserId is _is.UndefinedSentinel
+          ? this.participantAuthUserId
+          : participantAuthUserId,
+      participantAuthUser: participantAuthUser is _is.UndefinedSentinel
+          ? this.participantAuthUser?.copyWith()
+          : participantAuthUser,
       subject: subject is String? ? subject : this.subject,
-      actionDefinitionId: actionDefinitionId is _is.UuidValue?
-          ? actionDefinitionId
-          : this.actionDefinitionId,
-      attemptId: attemptId is _is.UuidValue? ? attemptId : this.attemptId,
-      acceptedAt: acceptedAt is DateTime? ? acceptedAt : this.acceptedAt,
+      actionDefinitionId: actionDefinitionId is _is.UndefinedSentinel
+          ? this.actionDefinitionId
+          : actionDefinitionId,
+      attemptId: attemptId is _is.UndefinedSentinel
+          ? this.attemptId
+          : attemptId,
+      acceptedAt: acceptedAt is _is.UndefinedSentinel
+          ? this.acceptedAt
+          : acceptedAt,
       evidenceShared: evidenceShared ?? this.evidenceShared,
       codeHash: codeHash is String? ? codeHash : this.codeHash,
-      codeExpiresAt: codeExpiresAt is DateTime?
-          ? codeExpiresAt
-          : this.codeExpiresAt,
-      codeUsedAt: codeUsedAt is DateTime? ? codeUsedAt : this.codeUsedAt,
-      completedAt: completedAt is DateTime? ? completedAt : this.completedAt,
+      codeExpiresAt: codeExpiresAt is _is.UndefinedSentinel
+          ? this.codeExpiresAt
+          : codeExpiresAt,
+      codeUsedAt: codeUsedAt is _is.UndefinedSentinel
+          ? this.codeUsedAt
+          : codeUsedAt,
+      completedAt: completedAt is _is.UndefinedSentinel
+          ? this.completedAt
+          : completedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -942,6 +960,71 @@ class VerificationRequestRepository {
       include: include,
       lockMode: lockMode,
       lockBehavior: lockBehavior,
+    );
+  }
+
+  /// Emits [VerificationRequest]s matching the given query parameters every time the
+  /// source tables are modified.
+  ///
+  /// Use [where] to specify which items to include in the return value.
+  /// If none is specified, all items will be returned.
+  ///
+  /// To specify the order of the items use [orderBy] or [orderByList]
+  /// when sorting by multiple columns.
+  ///
+  /// The maximum number of items can be set by [limit]. If no limit is set,
+  /// all items matching the query will be returned.
+  ///
+  /// [offset] defines how many items to skip, after which [limit] (or all)
+  /// items are read from the database.
+  ///
+  /// Use [throttle] to specify the minimum interval between queries. It can
+  /// also be set to `null`, in which case the stream will only be throttled
+  /// when its subscription is paused.
+  ///
+  /// Source tables are collected from the queried table, [where], [orderBy],
+  /// [orderByList], and the [include] graph. [alsoTriggerOnTables] is added
+  /// to that set. Pass [Table] instances such as `VerificationRequest.t`.
+  ///
+  /// Raw [Expression] SQL is not inspected. Tables referenced only in raw
+  /// SQL must be passed via [alsoTriggerOnTables].
+  ///
+  /// The stream always reads committed state and never joins an ambient
+  /// [Transaction]. Emissions for a write fire after that write commits.
+  ///
+  /// Currently only supported on SQLite. Calling this method on PostgreSQL
+  /// throws an [UnsupportedError].
+  ///
+  /// ```dart
+  /// var subscription = Persons.db.watch(
+  ///   session,
+  ///   where: (t) => t.lastName.equals('Jones'),
+  ///   orderBy: (t) => t.firstName,
+  ///   limit: 100,
+  /// ).listen((persons) {
+  ///   // Handle the latest matching rows.
+  /// });
+  /// ```
+  _ida.Stream<List<VerificationRequest>> watch(
+    _is.DatabaseSession session, {
+    _is.WhereExpressionBuilder<VerificationRequestTable>? where,
+    int? limit,
+    int? offset,
+    _is.OrderByBuilder<VerificationRequestTable>? orderBy,
+    _is.OrderByListBuilder<VerificationRequestTable>? orderByList,
+    VerificationRequestInclude? include,
+    Duration? throttle = const Duration(milliseconds: 30),
+    Iterable<_is.Table>? alsoTriggerOnTables,
+  }) {
+    return session.db.watch<VerificationRequest>(
+      where: where?.call(VerificationRequest.t),
+      orderBy: orderBy?.call(VerificationRequest.t),
+      orderByList: orderByList?.call(VerificationRequest.t),
+      limit: limit,
+      offset: offset,
+      include: include,
+      throttle: throttle,
+      alsoTriggerOnTables: alsoTriggerOnTables,
     );
   }
 

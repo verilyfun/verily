@@ -11,6 +11,8 @@
 // ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'dart:async' as _ida;
+
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:verily_server/src/generated/protocol.dart' as _itf691yl;
 
@@ -84,9 +86,10 @@ abstract class ActionLocationRule
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
   ActionLocationRule copyWith({
-    _is.UuidValue? id,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? requirementId,
-    _id3goxt7.ActionRequirement? requirement,
+    _id3goxt7.ActionRequirement? requirement =
+        const _UndefinedActionLocationRule$requirement(),
     _is.GeographyPoint? location,
     double? radiusMeters,
     double? maxAccuracyMeters,
@@ -139,7 +142,10 @@ abstract class ActionLocationRule
   }
 }
 
-class _Undefined {}
+class _UndefinedActionLocationRule$requirement extends _is.UndefinedSentinel
+    implements _id3goxt7.ActionRequirement {
+  const _UndefinedActionLocationRule$requirement();
+}
 
 class _ActionLocationRuleImpl extends ActionLocationRule {
   _ActionLocationRuleImpl({
@@ -163,19 +169,20 @@ class _ActionLocationRuleImpl extends ActionLocationRule {
   @_is.useResult
   @override
   ActionLocationRule copyWith({
-    Object? id = _Undefined,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? requirementId,
-    Object? requirement = _Undefined,
+    _id3goxt7.ActionRequirement? requirement =
+        const _UndefinedActionLocationRule$requirement(),
     _is.GeographyPoint? location,
     double? radiusMeters,
     double? maxAccuracyMeters,
   }) {
     return ActionLocationRule(
-      id: id is _is.UuidValue? ? id : this.id,
+      id: id is _is.UndefinedSentinel ? this.id : id,
       requirementId: requirementId ?? this.requirementId,
-      requirement: requirement is _id3goxt7.ActionRequirement?
-          ? requirement
-          : this.requirement?.copyWith(),
+      requirement: requirement is _is.UndefinedSentinel
+          ? this.requirement?.copyWith()
+          : requirement,
       location: location ?? this.location,
       radiusMeters: radiusMeters ?? this.radiusMeters,
       maxAccuracyMeters: maxAccuracyMeters ?? this.maxAccuracyMeters,
@@ -362,6 +369,71 @@ class ActionLocationRuleRepository {
       include: include,
       lockMode: lockMode,
       lockBehavior: lockBehavior,
+    );
+  }
+
+  /// Emits [ActionLocationRule]s matching the given query parameters every time the
+  /// source tables are modified.
+  ///
+  /// Use [where] to specify which items to include in the return value.
+  /// If none is specified, all items will be returned.
+  ///
+  /// To specify the order of the items use [orderBy] or [orderByList]
+  /// when sorting by multiple columns.
+  ///
+  /// The maximum number of items can be set by [limit]. If no limit is set,
+  /// all items matching the query will be returned.
+  ///
+  /// [offset] defines how many items to skip, after which [limit] (or all)
+  /// items are read from the database.
+  ///
+  /// Use [throttle] to specify the minimum interval between queries. It can
+  /// also be set to `null`, in which case the stream will only be throttled
+  /// when its subscription is paused.
+  ///
+  /// Source tables are collected from the queried table, [where], [orderBy],
+  /// [orderByList], and the [include] graph. [alsoTriggerOnTables] is added
+  /// to that set. Pass [Table] instances such as `ActionLocationRule.t`.
+  ///
+  /// Raw [Expression] SQL is not inspected. Tables referenced only in raw
+  /// SQL must be passed via [alsoTriggerOnTables].
+  ///
+  /// The stream always reads committed state and never joins an ambient
+  /// [Transaction]. Emissions for a write fire after that write commits.
+  ///
+  /// Currently only supported on SQLite. Calling this method on PostgreSQL
+  /// throws an [UnsupportedError].
+  ///
+  /// ```dart
+  /// var subscription = Persons.db.watch(
+  ///   session,
+  ///   where: (t) => t.lastName.equals('Jones'),
+  ///   orderBy: (t) => t.firstName,
+  ///   limit: 100,
+  /// ).listen((persons) {
+  ///   // Handle the latest matching rows.
+  /// });
+  /// ```
+  _ida.Stream<List<ActionLocationRule>> watch(
+    _is.DatabaseSession session, {
+    _is.WhereExpressionBuilder<ActionLocationRuleTable>? where,
+    int? limit,
+    int? offset,
+    _is.OrderByBuilder<ActionLocationRuleTable>? orderBy,
+    _is.OrderByListBuilder<ActionLocationRuleTable>? orderByList,
+    ActionLocationRuleInclude? include,
+    Duration? throttle = const Duration(milliseconds: 30),
+    Iterable<_is.Table>? alsoTriggerOnTables,
+  }) {
+    return session.db.watch<ActionLocationRule>(
+      where: where?.call(ActionLocationRule.t),
+      orderBy: orderBy?.call(ActionLocationRule.t),
+      orderByList: orderByList?.call(ActionLocationRule.t),
+      limit: limit,
+      offset: offset,
+      include: include,
+      throttle: throttle,
+      alsoTriggerOnTables: alsoTriggerOnTables,
     );
   }
 

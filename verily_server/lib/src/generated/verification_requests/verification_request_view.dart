@@ -150,7 +150,8 @@ abstract class VerificationRequestView
     _icvl19bi.VerificationRequestStatus? status,
     bool? declinedByViewer,
     DateTime? expiresAt,
-    _iwflznil.ActionOpportunity? action,
+    _iwflznil.ActionOpportunity? action =
+        const _UndefinedVerificationRequestView$action(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -201,6 +202,11 @@ abstract class VerificationRequestView
 }
 
 class _Undefined {}
+
+class _UndefinedVerificationRequestView$action extends _is.UndefinedSentinel
+    implements _iwflznil.ActionOpportunity {
+  const _UndefinedVerificationRequestView$action();
+}
 
 class _VerificationRequestViewImpl extends VerificationRequestView {
   _VerificationRequestViewImpl({
@@ -253,7 +259,8 @@ class _VerificationRequestViewImpl extends VerificationRequestView {
     _icvl19bi.VerificationRequestStatus? status,
     bool? declinedByViewer,
     DateTime? expiresAt,
-    Object? action = _Undefined,
+    _iwflznil.ActionOpportunity? action =
+        const _UndefinedVerificationRequestView$action(),
   }) {
     return VerificationRequestView(
       id: id ?? this.id,
@@ -271,9 +278,9 @@ class _VerificationRequestViewImpl extends VerificationRequestView {
       status: status ?? this.status,
       declinedByViewer: declinedByViewer ?? this.declinedByViewer,
       expiresAt: expiresAt ?? this.expiresAt,
-      action: action is _iwflznil.ActionOpportunity?
-          ? action
-          : this.action?.copyWith(),
+      action: action is _is.UndefinedSentinel
+          ? this.action?.copyWith()
+          : action,
     );
   }
 }

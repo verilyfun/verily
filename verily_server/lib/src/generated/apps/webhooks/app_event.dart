@@ -10,6 +10,8 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'dart:async' as _ida;
+
 import 'package:serverpod/serverpod.dart' as _is;
 
 import '../../apps/webhooks/app_event_status.dart' as _i9zhna0j;
@@ -137,7 +139,7 @@ abstract class AppEvent
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
   AppEvent copyWith({
-    _is.UuidValue? id,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? appId,
     String? eventId,
     String? type,
@@ -146,10 +148,10 @@ abstract class AppEvent
     _i9zhna0j.AppEventStatus? status,
     int? attemptCount,
     DateTime? nextAttemptAt,
-    DateTime? leaseExpiresAt,
+    DateTime? leaseExpiresAt = const _is.$UndefinedDateTime(),
     int? lastStatusCode,
     String? lastErrorCode,
-    DateTime? deliveredAt,
+    DateTime? deliveredAt = const _is.$UndefinedDateTime(),
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -250,7 +252,7 @@ class _AppEventImpl extends AppEvent {
   @_is.useResult
   @override
   AppEvent copyWith({
-    Object? id = _Undefined,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? appId,
     String? eventId,
     String? type,
@@ -259,15 +261,15 @@ class _AppEventImpl extends AppEvent {
     _i9zhna0j.AppEventStatus? status,
     int? attemptCount,
     DateTime? nextAttemptAt,
-    Object? leaseExpiresAt = _Undefined,
+    DateTime? leaseExpiresAt = const _is.$UndefinedDateTime(),
     Object? lastStatusCode = _Undefined,
     Object? lastErrorCode = _Undefined,
-    Object? deliveredAt = _Undefined,
+    DateTime? deliveredAt = const _is.$UndefinedDateTime(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
     return AppEvent(
-      id: id is _is.UuidValue? ? id : this.id,
+      id: id is _is.UndefinedSentinel ? this.id : id,
       appId: appId ?? this.appId,
       eventId: eventId ?? this.eventId,
       type: type ?? this.type,
@@ -276,16 +278,18 @@ class _AppEventImpl extends AppEvent {
       status: status ?? this.status,
       attemptCount: attemptCount ?? this.attemptCount,
       nextAttemptAt: nextAttemptAt ?? this.nextAttemptAt,
-      leaseExpiresAt: leaseExpiresAt is DateTime?
-          ? leaseExpiresAt
-          : this.leaseExpiresAt,
+      leaseExpiresAt: leaseExpiresAt is _is.UndefinedSentinel
+          ? this.leaseExpiresAt
+          : leaseExpiresAt,
       lastStatusCode: lastStatusCode is int?
           ? lastStatusCode
           : this.lastStatusCode,
       lastErrorCode: lastErrorCode is String?
           ? lastErrorCode
           : this.lastErrorCode,
-      deliveredAt: deliveredAt is DateTime? ? deliveredAt : this.deliveredAt,
+      deliveredAt: deliveredAt is _is.UndefinedSentinel
+          ? this.deliveredAt
+          : deliveredAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -565,6 +569,69 @@ class AppEventRepository {
       transaction: transaction,
       lockMode: lockMode,
       lockBehavior: lockBehavior,
+    );
+  }
+
+  /// Emits [AppEvent]s matching the given query parameters every time the
+  /// source tables are modified.
+  ///
+  /// Use [where] to specify which items to include in the return value.
+  /// If none is specified, all items will be returned.
+  ///
+  /// To specify the order of the items use [orderBy] or [orderByList]
+  /// when sorting by multiple columns.
+  ///
+  /// The maximum number of items can be set by [limit]. If no limit is set,
+  /// all items matching the query will be returned.
+  ///
+  /// [offset] defines how many items to skip, after which [limit] (or all)
+  /// items are read from the database.
+  ///
+  /// Use [throttle] to specify the minimum interval between queries. It can
+  /// also be set to `null`, in which case the stream will only be throttled
+  /// when its subscription is paused.
+  ///
+  /// Source tables are collected from the queried table, [where], [orderBy],
+  /// [orderByList], and the [include] graph. [alsoTriggerOnTables] is added
+  /// to that set. Pass [Table] instances such as `AppEvent.t`.
+  ///
+  /// Raw [Expression] SQL is not inspected. Tables referenced only in raw
+  /// SQL must be passed via [alsoTriggerOnTables].
+  ///
+  /// The stream always reads committed state and never joins an ambient
+  /// [Transaction]. Emissions for a write fire after that write commits.
+  ///
+  /// Currently only supported on SQLite. Calling this method on PostgreSQL
+  /// throws an [UnsupportedError].
+  ///
+  /// ```dart
+  /// var subscription = Persons.db.watch(
+  ///   session,
+  ///   where: (t) => t.lastName.equals('Jones'),
+  ///   orderBy: (t) => t.firstName,
+  ///   limit: 100,
+  /// ).listen((persons) {
+  ///   // Handle the latest matching rows.
+  /// });
+  /// ```
+  _ida.Stream<List<AppEvent>> watch(
+    _is.DatabaseSession session, {
+    _is.WhereExpressionBuilder<AppEventTable>? where,
+    int? limit,
+    int? offset,
+    _is.OrderByBuilder<AppEventTable>? orderBy,
+    _is.OrderByListBuilder<AppEventTable>? orderByList,
+    Duration? throttle = const Duration(milliseconds: 30),
+    Iterable<_is.Table>? alsoTriggerOnTables,
+  }) {
+    return session.db.watch<AppEvent>(
+      where: where?.call(AppEvent.t),
+      orderBy: orderBy?.call(AppEvent.t),
+      orderByList: orderByList?.call(AppEvent.t),
+      limit: limit,
+      offset: offset,
+      throttle: throttle,
+      alsoTriggerOnTables: alsoTriggerOnTables,
     );
   }
 

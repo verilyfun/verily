@@ -144,7 +144,7 @@ abstract class RewardPoolView
     String? creatorWallet,
     String? escrowAddress,
     String? fundingSignature,
-    DateTime? fundedAt,
+    DateTime? fundedAt = const _is.$UndefinedDateTime(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -262,7 +262,7 @@ class _RewardPoolViewImpl extends RewardPoolView {
     Object? creatorWallet = _Undefined,
     Object? escrowAddress = _Undefined,
     Object? fundingSignature = _Undefined,
-    Object? fundedAt = _Undefined,
+    DateTime? fundedAt = const _is.$UndefinedDateTime(),
   }) {
     return RewardPoolView(
       poolId: poolId ?? this.poolId,
@@ -287,7 +287,7 @@ class _RewardPoolViewImpl extends RewardPoolView {
       fundingSignature: fundingSignature is String?
           ? fundingSignature
           : this.fundingSignature,
-      fundedAt: fundedAt is DateTime? ? fundedAt : this.fundedAt,
+      fundedAt: fundedAt is _is.UndefinedSentinel ? this.fundedAt : fundedAt,
     );
   }
 }

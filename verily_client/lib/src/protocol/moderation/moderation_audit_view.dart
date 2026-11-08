@@ -62,7 +62,7 @@ abstract class ModerationAuditView
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
   ModerationAuditView copyWith({
-    _isc.UuidValue? actorAuthUserId,
+    _isc.UuidValue? actorAuthUserId = const _isc.$UndefinedUuidValue(),
     String? event,
     String? note,
     bool? pauseActive,
@@ -98,8 +98,6 @@ abstract class ModerationAuditView
   }
 }
 
-class _Undefined {}
-
 class _ModerationAuditViewImpl extends ModerationAuditView {
   _ModerationAuditViewImpl({
     _isc.UuidValue? actorAuthUserId,
@@ -120,16 +118,16 @@ class _ModerationAuditViewImpl extends ModerationAuditView {
   @_isc.useResult
   @override
   ModerationAuditView copyWith({
-    Object? actorAuthUserId = _Undefined,
+    _isc.UuidValue? actorAuthUserId = const _isc.$UndefinedUuidValue(),
     String? event,
     String? note,
     bool? pauseActive,
     DateTime? createdAt,
   }) {
     return ModerationAuditView(
-      actorAuthUserId: actorAuthUserId is _isc.UuidValue?
-          ? actorAuthUserId
-          : this.actorAuthUserId,
+      actorAuthUserId: actorAuthUserId is _isc.UndefinedSentinel
+          ? this.actorAuthUserId
+          : actorAuthUserId,
       event: event ?? this.event,
       note: note ?? this.note,
       pauseActive: pauseActive ?? this.pauseActive,

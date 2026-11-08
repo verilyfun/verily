@@ -46,7 +46,7 @@ abstract class AppLinkRedirect
   @_is.useResult
   AppLinkRedirect copyWith({
     String? redirectUrl,
-    DateTime? codeExpiresAt,
+    DateTime? codeExpiresAt = const _is.$UndefinedDateTime(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -72,8 +72,6 @@ abstract class AppLinkRedirect
   }
 }
 
-class _Undefined {}
-
 class _AppLinkRedirectImpl extends AppLinkRedirect {
   _AppLinkRedirectImpl({
     required String redirectUrl,
@@ -89,13 +87,13 @@ class _AppLinkRedirectImpl extends AppLinkRedirect {
   @override
   AppLinkRedirect copyWith({
     String? redirectUrl,
-    Object? codeExpiresAt = _Undefined,
+    DateTime? codeExpiresAt = const _is.$UndefinedDateTime(),
   }) {
     return AppLinkRedirect(
       redirectUrl: redirectUrl ?? this.redirectUrl,
-      codeExpiresAt: codeExpiresAt is DateTime?
-          ? codeExpiresAt
-          : this.codeExpiresAt,
+      codeExpiresAt: codeExpiresAt is _is.UndefinedSentinel
+          ? this.codeExpiresAt
+          : codeExpiresAt,
     );
   }
 }

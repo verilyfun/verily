@@ -20,25 +20,25 @@ dependencies:
     sdk: flutter
   flutter_driver:
     sdk: flutter
-  flutter_hooks: 0.21.3+1
+  flutter_hooks: 0.21.4
   flutter_localizations:
     sdk: flutter
   flutter_native_splash: 2.4.8
   flutter_timezone: 5.1.1
   geolocator: 14.1.2
   go_router: 18.1.3
-  hooks_riverpod: 3.4.3
+  hooks_riverpod: 3.5.0
   intl: 0.20.3
   mobile_scanner: 7.5.0
-  mp_camera: 0.1.3
-  mp_core: 0.1.3
-  mp_vision: 0.1.3
+  mp_camera: 0.1.4
+  mp_core: 0.1.4
+  mp_vision: 0.1.4
   path_provider: 2.1.6
   qr_flutter: 4.1.0
   record: 7.1.2
   sensors_plus: 7.1.1
-  serverpod_auth_idp_flutter: 4.0.4
-  serverpod_flutter: 4.0.4
+  serverpod_auth_idp_flutter: 4.1.1
+  serverpod_flutter: 4.1.1
   shared_preferences: 2.5.6
   skribble: 0.3.1
   skribble_emoji: 0.3.1

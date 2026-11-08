@@ -170,12 +170,13 @@ abstract class ActionAttemptView
     int? verifiedRank,
     String? rejectionCode,
     DateTime? startedAt,
-    DateTime? submittedAt,
-    DateTime? verifiedAt,
+    DateTime? submittedAt = const _isc.$UndefinedDateTime(),
+    DateTime? verifiedAt = const _isc.$UndefinedDateTime(),
     DateTime? updatedAt,
     _ilgf73sw.RewardOutcome? rewardOutcome,
     _i8tvbfry.RewardPayoutStatus? payoutStatus,
-    List<_isc.UuidValue>? acceptedRequirementIds,
+    List<_isc.UuidValue>? acceptedRequirementIds =
+        const _isc.$UndefinedList<_isc.UuidValue>(),
     bool? rewardValueReview,
   });
   @override
@@ -294,12 +295,13 @@ class _ActionAttemptViewImpl extends ActionAttemptView {
     Object? verifiedRank = _Undefined,
     Object? rejectionCode = _Undefined,
     DateTime? startedAt,
-    Object? submittedAt = _Undefined,
-    Object? verifiedAt = _Undefined,
+    DateTime? submittedAt = const _isc.$UndefinedDateTime(),
+    DateTime? verifiedAt = const _isc.$UndefinedDateTime(),
     DateTime? updatedAt,
     Object? rewardOutcome = _Undefined,
     Object? payoutStatus = _Undefined,
-    Object? acceptedRequirementIds = _Undefined,
+    List<_isc.UuidValue>? acceptedRequirementIds =
+        const _isc.$UndefinedList<_isc.UuidValue>(),
     bool? rewardValueReview,
   }) {
     return ActionAttemptView(
@@ -317,8 +319,12 @@ class _ActionAttemptViewImpl extends ActionAttemptView {
           ? rejectionCode
           : this.rejectionCode,
       startedAt: startedAt ?? this.startedAt,
-      submittedAt: submittedAt is DateTime? ? submittedAt : this.submittedAt,
-      verifiedAt: verifiedAt is DateTime? ? verifiedAt : this.verifiedAt,
+      submittedAt: submittedAt is _isc.UndefinedSentinel
+          ? this.submittedAt
+          : submittedAt,
+      verifiedAt: verifiedAt is _isc.UndefinedSentinel
+          ? this.verifiedAt
+          : verifiedAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rewardOutcome: rewardOutcome is _ilgf73sw.RewardOutcome?
           ? rewardOutcome
@@ -326,9 +332,9 @@ class _ActionAttemptViewImpl extends ActionAttemptView {
       payoutStatus: payoutStatus is _i8tvbfry.RewardPayoutStatus?
           ? payoutStatus
           : this.payoutStatus,
-      acceptedRequirementIds: acceptedRequirementIds is List<_isc.UuidValue>?
-          ? acceptedRequirementIds
-          : this.acceptedRequirementIds?.map((e0) => e0).toList(),
+      acceptedRequirementIds: acceptedRequirementIds is _isc.UndefinedSentinel
+          ? this.acceptedRequirementIds?.map((e0) => e0).toList()
+          : acceptedRequirementIds,
       rewardValueReview: rewardValueReview ?? this.rewardValueReview,
     );
   }

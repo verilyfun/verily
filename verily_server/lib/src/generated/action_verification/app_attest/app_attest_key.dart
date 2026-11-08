@@ -11,6 +11,8 @@
 // ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'dart:async' as _ida;
+
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
@@ -176,9 +178,9 @@ abstract class AppAttestKey
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
   AppAttestKey copyWith({
-    _is.UuidValue? id,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? authUserId,
-    _iacs.AuthUser? authUser,
+    _iacs.AuthUser? authUser = const _UndefinedAppAttestKey$authUser(),
     String? keyId,
     String? publicKey,
     _i2fus16r.AppAttestEnvironment? environment,
@@ -193,7 +195,7 @@ abstract class AppAttestKey
     int? validationCategory,
     String? bundleVersion,
     DateTime? registeredAt,
-    DateTime? lastAssertedAt,
+    DateTime? lastAssertedAt = const _is.$UndefinedDateTime(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -255,6 +257,11 @@ abstract class AppAttestKey
 
 class _Undefined {}
 
+class _UndefinedAppAttestKey$authUser extends _is.UndefinedSentinel
+    implements _iacs.AuthUser {
+  const _UndefinedAppAttestKey$authUser();
+}
+
 class _AppAttestKeyImpl extends AppAttestKey {
   _AppAttestKeyImpl({
     _is.UuidValue? id,
@@ -301,9 +308,9 @@ class _AppAttestKeyImpl extends AppAttestKey {
   @_is.useResult
   @override
   AppAttestKey copyWith({
-    Object? id = _Undefined,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? authUserId,
-    Object? authUser = _Undefined,
+    _iacs.AuthUser? authUser = const _UndefinedAppAttestKey$authUser(),
     String? keyId,
     String? publicKey,
     _i2fus16r.AppAttestEnvironment? environment,
@@ -318,14 +325,14 @@ class _AppAttestKeyImpl extends AppAttestKey {
     Object? validationCategory = _Undefined,
     Object? bundleVersion = _Undefined,
     DateTime? registeredAt,
-    Object? lastAssertedAt = _Undefined,
+    DateTime? lastAssertedAt = const _is.$UndefinedDateTime(),
   }) {
     return AppAttestKey(
-      id: id is _is.UuidValue? ? id : this.id,
+      id: id is _is.UndefinedSentinel ? this.id : id,
       authUserId: authUserId ?? this.authUserId,
-      authUser: authUser is _iacs.AuthUser?
-          ? authUser
-          : this.authUser?.copyWith(),
+      authUser: authUser is _is.UndefinedSentinel
+          ? this.authUser?.copyWith()
+          : authUser,
       keyId: keyId ?? this.keyId,
       publicKey: publicKey ?? this.publicKey,
       environment: environment ?? this.environment,
@@ -345,9 +352,9 @@ class _AppAttestKeyImpl extends AppAttestKey {
           ? bundleVersion
           : this.bundleVersion,
       registeredAt: registeredAt ?? this.registeredAt,
-      lastAssertedAt: lastAssertedAt is DateTime?
-          ? lastAssertedAt
-          : this.lastAssertedAt,
+      lastAssertedAt: lastAssertedAt is _is.UndefinedSentinel
+          ? this.lastAssertedAt
+          : lastAssertedAt,
     );
   }
 }
@@ -696,6 +703,71 @@ class AppAttestKeyRepository {
       include: include,
       lockMode: lockMode,
       lockBehavior: lockBehavior,
+    );
+  }
+
+  /// Emits [AppAttestKey]s matching the given query parameters every time the
+  /// source tables are modified.
+  ///
+  /// Use [where] to specify which items to include in the return value.
+  /// If none is specified, all items will be returned.
+  ///
+  /// To specify the order of the items use [orderBy] or [orderByList]
+  /// when sorting by multiple columns.
+  ///
+  /// The maximum number of items can be set by [limit]. If no limit is set,
+  /// all items matching the query will be returned.
+  ///
+  /// [offset] defines how many items to skip, after which [limit] (or all)
+  /// items are read from the database.
+  ///
+  /// Use [throttle] to specify the minimum interval between queries. It can
+  /// also be set to `null`, in which case the stream will only be throttled
+  /// when its subscription is paused.
+  ///
+  /// Source tables are collected from the queried table, [where], [orderBy],
+  /// [orderByList], and the [include] graph. [alsoTriggerOnTables] is added
+  /// to that set. Pass [Table] instances such as `AppAttestKey.t`.
+  ///
+  /// Raw [Expression] SQL is not inspected. Tables referenced only in raw
+  /// SQL must be passed via [alsoTriggerOnTables].
+  ///
+  /// The stream always reads committed state and never joins an ambient
+  /// [Transaction]. Emissions for a write fire after that write commits.
+  ///
+  /// Currently only supported on SQLite. Calling this method on PostgreSQL
+  /// throws an [UnsupportedError].
+  ///
+  /// ```dart
+  /// var subscription = Persons.db.watch(
+  ///   session,
+  ///   where: (t) => t.lastName.equals('Jones'),
+  ///   orderBy: (t) => t.firstName,
+  ///   limit: 100,
+  /// ).listen((persons) {
+  ///   // Handle the latest matching rows.
+  /// });
+  /// ```
+  _ida.Stream<List<AppAttestKey>> watch(
+    _is.DatabaseSession session, {
+    _is.WhereExpressionBuilder<AppAttestKeyTable>? where,
+    int? limit,
+    int? offset,
+    _is.OrderByBuilder<AppAttestKeyTable>? orderBy,
+    _is.OrderByListBuilder<AppAttestKeyTable>? orderByList,
+    AppAttestKeyInclude? include,
+    Duration? throttle = const Duration(milliseconds: 30),
+    Iterable<_is.Table>? alsoTriggerOnTables,
+  }) {
+    return session.db.watch<AppAttestKey>(
+      where: where?.call(AppAttestKey.t),
+      orderBy: orderBy?.call(AppAttestKey.t),
+      orderByList: orderByList?.call(AppAttestKey.t),
+      limit: limit,
+      offset: offset,
+      include: include,
+      throttle: throttle,
+      alsoTriggerOnTables: alsoTriggerOnTables,
     );
   }
 

@@ -107,10 +107,11 @@ abstract class CreateActionDefinitionRequest
     _ivhzgwse.ActionRecurrence? recurrence,
     String? timeZone,
     int? maxVerifiedCompletions,
-    DateTime? opensAt,
-    DateTime? closesAt,
+    DateTime? opensAt = const _isc.$UndefinedDateTime(),
+    DateTime? closesAt = const _isc.$UndefinedDateTime(),
     List<_igizvm0h.ActionRequirementDraft>? requirements,
-    _ixpcxx5a.RewardTermsDraft? reward,
+    _ixpcxx5a.RewardTermsDraft? reward =
+        const _UndefinedCreateActionDefinitionRequest$reward(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -158,6 +159,12 @@ abstract class CreateActionDefinitionRequest
 
 class _Undefined {}
 
+class _UndefinedCreateActionDefinitionRequest$reward
+    extends _isc.UndefinedSentinel
+    implements _ixpcxx5a.RewardTermsDraft {
+  const _UndefinedCreateActionDefinitionRequest$reward();
+}
+
 class _CreateActionDefinitionRequestImpl extends CreateActionDefinitionRequest {
   _CreateActionDefinitionRequestImpl({
     required String actionKey,
@@ -194,10 +201,11 @@ class _CreateActionDefinitionRequestImpl extends CreateActionDefinitionRequest {
     _ivhzgwse.ActionRecurrence? recurrence,
     String? timeZone,
     Object? maxVerifiedCompletions = _Undefined,
-    Object? opensAt = _Undefined,
-    Object? closesAt = _Undefined,
+    DateTime? opensAt = const _isc.$UndefinedDateTime(),
+    DateTime? closesAt = const _isc.$UndefinedDateTime(),
     List<_igizvm0h.ActionRequirementDraft>? requirements,
-    Object? reward = _Undefined,
+    _ixpcxx5a.RewardTermsDraft? reward =
+        const _UndefinedCreateActionDefinitionRequest$reward(),
   }) {
     return CreateActionDefinitionRequest(
       actionKey: actionKey ?? this.actionKey,
@@ -208,13 +216,13 @@ class _CreateActionDefinitionRequestImpl extends CreateActionDefinitionRequest {
       maxVerifiedCompletions: maxVerifiedCompletions is int?
           ? maxVerifiedCompletions
           : this.maxVerifiedCompletions,
-      opensAt: opensAt is DateTime? ? opensAt : this.opensAt,
-      closesAt: closesAt is DateTime? ? closesAt : this.closesAt,
+      opensAt: opensAt is _isc.UndefinedSentinel ? this.opensAt : opensAt,
+      closesAt: closesAt is _isc.UndefinedSentinel ? this.closesAt : closesAt,
       requirements:
           requirements ?? this.requirements.map((e0) => e0.copyWith()).toList(),
-      reward: reward is _ixpcxx5a.RewardTermsDraft?
-          ? reward
-          : this.reward?.copyWith(),
+      reward: reward is _isc.UndefinedSentinel
+          ? this.reward?.copyWith()
+          : reward,
     );
   }
 }

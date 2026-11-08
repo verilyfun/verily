@@ -11,6 +11,8 @@
 // ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'dart:async' as _ida;
+
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
@@ -210,9 +212,10 @@ abstract class RewardPool
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
   RewardPool copyWith({
-    _is.UuidValue? id,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? creatorAuthUserId,
-    _iacs.AuthUser? creatorAuthUser,
+    _iacs.AuthUser? creatorAuthUser =
+        const _UndefinedRewardPool$creatorAuthUser(),
     String? actionKey,
     _ifrvw135.RewardCluster? cluster,
     String? mint,
@@ -231,9 +234,9 @@ abstract class RewardPool
     DateTime? refundAfter,
     _i2n7u226.RewardPoolStatus? status,
     String? fundingSignature,
-    DateTime? fundedAt,
-    DateTime? endedAt,
-    DateTime? closedAt,
+    DateTime? fundedAt = const _is.$UndefinedDateTime(),
+    DateTime? endedAt = const _is.$UndefinedDateTime(),
+    DateTime? closedAt = const _is.$UndefinedDateTime(),
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -305,6 +308,11 @@ abstract class RewardPool
 
 class _Undefined {}
 
+class _UndefinedRewardPool$creatorAuthUser extends _is.UndefinedSentinel
+    implements _iacs.AuthUser {
+  const _UndefinedRewardPool$creatorAuthUser();
+}
+
 class _RewardPoolImpl extends RewardPool {
   _RewardPoolImpl({
     _is.UuidValue? id,
@@ -367,9 +375,10 @@ class _RewardPoolImpl extends RewardPool {
   @_is.useResult
   @override
   RewardPool copyWith({
-    Object? id = _Undefined,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? creatorAuthUserId,
-    Object? creatorAuthUser = _Undefined,
+    _iacs.AuthUser? creatorAuthUser =
+        const _UndefinedRewardPool$creatorAuthUser(),
     String? actionKey,
     _ifrvw135.RewardCluster? cluster,
     String? mint,
@@ -388,18 +397,18 @@ class _RewardPoolImpl extends RewardPool {
     DateTime? refundAfter,
     _i2n7u226.RewardPoolStatus? status,
     Object? fundingSignature = _Undefined,
-    Object? fundedAt = _Undefined,
-    Object? endedAt = _Undefined,
-    Object? closedAt = _Undefined,
+    DateTime? fundedAt = const _is.$UndefinedDateTime(),
+    DateTime? endedAt = const _is.$UndefinedDateTime(),
+    DateTime? closedAt = const _is.$UndefinedDateTime(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
     return RewardPool(
-      id: id is _is.UuidValue? ? id : this.id,
+      id: id is _is.UndefinedSentinel ? this.id : id,
       creatorAuthUserId: creatorAuthUserId ?? this.creatorAuthUserId,
-      creatorAuthUser: creatorAuthUser is _iacs.AuthUser?
-          ? creatorAuthUser
-          : this.creatorAuthUser?.copyWith(),
+      creatorAuthUser: creatorAuthUser is _is.UndefinedSentinel
+          ? this.creatorAuthUser?.copyWith()
+          : creatorAuthUser,
       actionKey: actionKey ?? this.actionKey,
       cluster: cluster ?? this.cluster,
       mint: mint ?? this.mint,
@@ -426,9 +435,9 @@ class _RewardPoolImpl extends RewardPool {
       fundingSignature: fundingSignature is String?
           ? fundingSignature
           : this.fundingSignature,
-      fundedAt: fundedAt is DateTime? ? fundedAt : this.fundedAt,
-      endedAt: endedAt is DateTime? ? endedAt : this.endedAt,
-      closedAt: closedAt is DateTime? ? closedAt : this.closedAt,
+      fundedAt: fundedAt is _is.UndefinedSentinel ? this.fundedAt : fundedAt,
+      endedAt: endedAt is _is.UndefinedSentinel ? this.endedAt : endedAt,
+      closedAt: closedAt is _is.UndefinedSentinel ? this.closedAt : closedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -872,6 +881,71 @@ class RewardPoolRepository {
       include: include,
       lockMode: lockMode,
       lockBehavior: lockBehavior,
+    );
+  }
+
+  /// Emits [RewardPool]s matching the given query parameters every time the
+  /// source tables are modified.
+  ///
+  /// Use [where] to specify which items to include in the return value.
+  /// If none is specified, all items will be returned.
+  ///
+  /// To specify the order of the items use [orderBy] or [orderByList]
+  /// when sorting by multiple columns.
+  ///
+  /// The maximum number of items can be set by [limit]. If no limit is set,
+  /// all items matching the query will be returned.
+  ///
+  /// [offset] defines how many items to skip, after which [limit] (or all)
+  /// items are read from the database.
+  ///
+  /// Use [throttle] to specify the minimum interval between queries. It can
+  /// also be set to `null`, in which case the stream will only be throttled
+  /// when its subscription is paused.
+  ///
+  /// Source tables are collected from the queried table, [where], [orderBy],
+  /// [orderByList], and the [include] graph. [alsoTriggerOnTables] is added
+  /// to that set. Pass [Table] instances such as `RewardPool.t`.
+  ///
+  /// Raw [Expression] SQL is not inspected. Tables referenced only in raw
+  /// SQL must be passed via [alsoTriggerOnTables].
+  ///
+  /// The stream always reads committed state and never joins an ambient
+  /// [Transaction]. Emissions for a write fire after that write commits.
+  ///
+  /// Currently only supported on SQLite. Calling this method on PostgreSQL
+  /// throws an [UnsupportedError].
+  ///
+  /// ```dart
+  /// var subscription = Persons.db.watch(
+  ///   session,
+  ///   where: (t) => t.lastName.equals('Jones'),
+  ///   orderBy: (t) => t.firstName,
+  ///   limit: 100,
+  /// ).listen((persons) {
+  ///   // Handle the latest matching rows.
+  /// });
+  /// ```
+  _ida.Stream<List<RewardPool>> watch(
+    _is.DatabaseSession session, {
+    _is.WhereExpressionBuilder<RewardPoolTable>? where,
+    int? limit,
+    int? offset,
+    _is.OrderByBuilder<RewardPoolTable>? orderBy,
+    _is.OrderByListBuilder<RewardPoolTable>? orderByList,
+    RewardPoolInclude? include,
+    Duration? throttle = const Duration(milliseconds: 30),
+    Iterable<_is.Table>? alsoTriggerOnTables,
+  }) {
+    return session.db.watch<RewardPool>(
+      where: where?.call(RewardPool.t),
+      orderBy: orderBy?.call(RewardPool.t),
+      orderByList: orderByList?.call(RewardPool.t),
+      limit: limit,
+      offset: offset,
+      include: include,
+      throttle: throttle,
+      alsoTriggerOnTables: alsoTriggerOnTables,
     );
   }
 

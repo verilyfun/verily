@@ -160,12 +160,13 @@ abstract class MediaUploadConfirmation
     DateTime? capturedAt,
     int? deviceRepetitionCount,
     String? deviceTrackerVersion,
-    _ikz5p9kp.DeviceLocalCheckResult? deviceLocalCheck,
-    _is.UuidValue? captureChallengeId,
+    _ikz5p9kp.DeviceLocalCheckResult? deviceLocalCheck =
+        const _UndefinedMediaUploadConfirmation$deviceLocalCheck(),
+    _is.UuidValue? captureChallengeId = const _is.$UndefinedUuidValue(),
     String? deviceIntegrityToken,
     String? captureManifest,
     String? captureSignature,
-    List<String>? captureCertificateChain,
+    List<String>? captureCertificateChain = const _is.$UndefinedList<String>(),
     String? captureAppAttestKeyId,
     String? captureDeviceCheckToken,
   });
@@ -239,6 +240,12 @@ abstract class MediaUploadConfirmation
 
 class _Undefined {}
 
+class _UndefinedMediaUploadConfirmation$deviceLocalCheck
+    extends _is.UndefinedSentinel
+    implements _ikz5p9kp.DeviceLocalCheckResult {
+  const _UndefinedMediaUploadConfirmation$deviceLocalCheck();
+}
+
 class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
   _MediaUploadConfirmationImpl({
     required _is.UuidValue attemptId,
@@ -289,12 +296,13 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
     DateTime? capturedAt,
     Object? deviceRepetitionCount = _Undefined,
     Object? deviceTrackerVersion = _Undefined,
-    Object? deviceLocalCheck = _Undefined,
-    Object? captureChallengeId = _Undefined,
+    _ikz5p9kp.DeviceLocalCheckResult? deviceLocalCheck =
+        const _UndefinedMediaUploadConfirmation$deviceLocalCheck(),
+    _is.UuidValue? captureChallengeId = const _is.$UndefinedUuidValue(),
     Object? deviceIntegrityToken = _Undefined,
     Object? captureManifest = _Undefined,
     Object? captureSignature = _Undefined,
-    Object? captureCertificateChain = _Undefined,
+    List<String>? captureCertificateChain = const _is.$UndefinedList<String>(),
     Object? captureAppAttestKeyId = _Undefined,
     Object? captureDeviceCheckToken = _Undefined,
   }) {
@@ -313,12 +321,12 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
       deviceTrackerVersion: deviceTrackerVersion is String?
           ? deviceTrackerVersion
           : this.deviceTrackerVersion,
-      deviceLocalCheck: deviceLocalCheck is _ikz5p9kp.DeviceLocalCheckResult?
-          ? deviceLocalCheck
-          : this.deviceLocalCheck?.copyWith(),
-      captureChallengeId: captureChallengeId is _is.UuidValue?
-          ? captureChallengeId
-          : this.captureChallengeId,
+      deviceLocalCheck: deviceLocalCheck is _is.UndefinedSentinel
+          ? this.deviceLocalCheck?.copyWith()
+          : deviceLocalCheck,
+      captureChallengeId: captureChallengeId is _is.UndefinedSentinel
+          ? this.captureChallengeId
+          : captureChallengeId,
       deviceIntegrityToken: deviceIntegrityToken is String?
           ? deviceIntegrityToken
           : this.deviceIntegrityToken,
@@ -328,9 +336,9 @@ class _MediaUploadConfirmationImpl extends MediaUploadConfirmation {
       captureSignature: captureSignature is String?
           ? captureSignature
           : this.captureSignature,
-      captureCertificateChain: captureCertificateChain is List<String>?
-          ? captureCertificateChain
-          : this.captureCertificateChain?.map((e0) => e0).toList(),
+      captureCertificateChain: captureCertificateChain is _is.UndefinedSentinel
+          ? this.captureCertificateChain?.map((e0) => e0).toList()
+          : captureCertificateChain,
       captureAppAttestKeyId: captureAppAttestKeyId is String?
           ? captureAppAttestKeyId
           : this.captureAppAttestKeyId,

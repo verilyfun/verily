@@ -48,7 +48,7 @@ abstract class VerificationRequestRedirect
   @_is.useResult
   VerificationRequestRedirect copyWith({
     String? redirectUrl,
-    DateTime? codeExpiresAt,
+    DateTime? codeExpiresAt = const _is.$UndefinedDateTime(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -74,8 +74,6 @@ abstract class VerificationRequestRedirect
   }
 }
 
-class _Undefined {}
-
 class _VerificationRequestRedirectImpl extends VerificationRequestRedirect {
   _VerificationRequestRedirectImpl({
     required String redirectUrl,
@@ -91,13 +89,13 @@ class _VerificationRequestRedirectImpl extends VerificationRequestRedirect {
   @override
   VerificationRequestRedirect copyWith({
     String? redirectUrl,
-    Object? codeExpiresAt = _Undefined,
+    DateTime? codeExpiresAt = const _is.$UndefinedDateTime(),
   }) {
     return VerificationRequestRedirect(
       redirectUrl: redirectUrl ?? this.redirectUrl,
-      codeExpiresAt: codeExpiresAt is DateTime?
-          ? codeExpiresAt
-          : this.codeExpiresAt,
+      codeExpiresAt: codeExpiresAt is _is.UndefinedSentinel
+          ? this.codeExpiresAt
+          : codeExpiresAt,
     );
   }
 }

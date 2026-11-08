@@ -10,6 +10,8 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'dart:async' as _ida;
+
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:verily_server/src/generated/protocol.dart' as _itf691yl;
 
@@ -277,7 +279,7 @@ abstract class ActionEvidence
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
   ActionEvidence copyWith({
-    _is.UuidValue? id,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? attemptId,
     _is.UuidValue? requirementId,
     _iws572ni.ActionRequirementKind? kind,
@@ -287,7 +289,7 @@ abstract class ActionEvidence
     String? sha256Digest,
     int? byteLength,
     int? durationSeconds,
-    _is.GeographyPoint? location,
+    _is.GeographyPoint? location = const _is.$UndefinedGeographyPoint(),
     double? accuracyMeters,
     String? motionTraceJson,
     String? motionTraceSha256,
@@ -296,7 +298,7 @@ abstract class ActionEvidence
     String? motionAnalysisJson,
     int? deviceRepetitionCount,
     String? deviceTrackerVersion,
-    _is.UuidValue? spokenChallengeId,
+    _is.UuidValue? spokenChallengeId = const _is.$UndefinedUuidValue(),
     String? spokenChallengeWord,
     String? deviceLocalCheckModelId,
     String? deviceLocalCheckModelSha256,
@@ -309,7 +311,7 @@ abstract class ActionEvidence
     String? capturePublicKey,
     String? captureKeyId,
     String? captureKeyStorage,
-    List<String>? captureCertificateChain,
+    List<String>? captureCertificateChain = const _is.$UndefinedList<String>(),
     String? captureDeviceKeyId,
     DateTime? capturedAt,
     DateTime? submittedAt,
@@ -485,7 +487,7 @@ class _ActionEvidenceImpl extends ActionEvidence {
   @_is.useResult
   @override
   ActionEvidence copyWith({
-    Object? id = _Undefined,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? attemptId,
     _is.UuidValue? requirementId,
     _iws572ni.ActionRequirementKind? kind,
@@ -495,7 +497,7 @@ class _ActionEvidenceImpl extends ActionEvidence {
     Object? sha256Digest = _Undefined,
     Object? byteLength = _Undefined,
     Object? durationSeconds = _Undefined,
-    Object? location = _Undefined,
+    _is.GeographyPoint? location = const _is.$UndefinedGeographyPoint(),
     Object? accuracyMeters = _Undefined,
     Object? motionTraceJson = _Undefined,
     Object? motionTraceSha256 = _Undefined,
@@ -504,7 +506,7 @@ class _ActionEvidenceImpl extends ActionEvidence {
     Object? motionAnalysisJson = _Undefined,
     Object? deviceRepetitionCount = _Undefined,
     Object? deviceTrackerVersion = _Undefined,
-    Object? spokenChallengeId = _Undefined,
+    _is.UuidValue? spokenChallengeId = const _is.$UndefinedUuidValue(),
     Object? spokenChallengeWord = _Undefined,
     Object? deviceLocalCheckModelId = _Undefined,
     Object? deviceLocalCheckModelSha256 = _Undefined,
@@ -517,13 +519,13 @@ class _ActionEvidenceImpl extends ActionEvidence {
     Object? capturePublicKey = _Undefined,
     Object? captureKeyId = _Undefined,
     Object? captureKeyStorage = _Undefined,
-    Object? captureCertificateChain = _Undefined,
+    List<String>? captureCertificateChain = const _is.$UndefinedList<String>(),
     Object? captureDeviceKeyId = _Undefined,
     DateTime? capturedAt,
     DateTime? submittedAt,
   }) {
     return ActionEvidence(
-      id: id is _is.UuidValue? ? id : this.id,
+      id: id is _is.UndefinedSentinel ? this.id : id,
       attemptId: attemptId ?? this.attemptId,
       requirementId: requirementId ?? this.requirementId,
       kind: kind ?? this.kind,
@@ -537,7 +539,7 @@ class _ActionEvidenceImpl extends ActionEvidence {
       durationSeconds: durationSeconds is int?
           ? durationSeconds
           : this.durationSeconds,
-      location: location is _is.GeographyPoint? ? location : this.location,
+      location: location is _is.UndefinedSentinel ? this.location : location,
       accuracyMeters: accuracyMeters is double?
           ? accuracyMeters
           : this.accuracyMeters,
@@ -562,9 +564,9 @@ class _ActionEvidenceImpl extends ActionEvidence {
       deviceTrackerVersion: deviceTrackerVersion is String?
           ? deviceTrackerVersion
           : this.deviceTrackerVersion,
-      spokenChallengeId: spokenChallengeId is _is.UuidValue?
-          ? spokenChallengeId
-          : this.spokenChallengeId,
+      spokenChallengeId: spokenChallengeId is _is.UndefinedSentinel
+          ? this.spokenChallengeId
+          : spokenChallengeId,
       spokenChallengeWord: spokenChallengeWord is String?
           ? spokenChallengeWord
           : this.spokenChallengeWord,
@@ -597,9 +599,9 @@ class _ActionEvidenceImpl extends ActionEvidence {
       captureKeyStorage: captureKeyStorage is String?
           ? captureKeyStorage
           : this.captureKeyStorage,
-      captureCertificateChain: captureCertificateChain is List<String>?
-          ? captureCertificateChain
-          : this.captureCertificateChain?.map((e0) => e0).toList(),
+      captureCertificateChain: captureCertificateChain is _is.UndefinedSentinel
+          ? this.captureCertificateChain?.map((e0) => e0).toList()
+          : captureCertificateChain,
       captureDeviceKeyId: captureDeviceKeyId is String?
           ? captureDeviceKeyId
           : this.captureDeviceKeyId,
@@ -1180,6 +1182,69 @@ class ActionEvidenceRepository {
       transaction: transaction,
       lockMode: lockMode,
       lockBehavior: lockBehavior,
+    );
+  }
+
+  /// Emits [ActionEvidence]s matching the given query parameters every time the
+  /// source tables are modified.
+  ///
+  /// Use [where] to specify which items to include in the return value.
+  /// If none is specified, all items will be returned.
+  ///
+  /// To specify the order of the items use [orderBy] or [orderByList]
+  /// when sorting by multiple columns.
+  ///
+  /// The maximum number of items can be set by [limit]. If no limit is set,
+  /// all items matching the query will be returned.
+  ///
+  /// [offset] defines how many items to skip, after which [limit] (or all)
+  /// items are read from the database.
+  ///
+  /// Use [throttle] to specify the minimum interval between queries. It can
+  /// also be set to `null`, in which case the stream will only be throttled
+  /// when its subscription is paused.
+  ///
+  /// Source tables are collected from the queried table, [where], [orderBy],
+  /// [orderByList], and the [include] graph. [alsoTriggerOnTables] is added
+  /// to that set. Pass [Table] instances such as `ActionEvidence.t`.
+  ///
+  /// Raw [Expression] SQL is not inspected. Tables referenced only in raw
+  /// SQL must be passed via [alsoTriggerOnTables].
+  ///
+  /// The stream always reads committed state and never joins an ambient
+  /// [Transaction]. Emissions for a write fire after that write commits.
+  ///
+  /// Currently only supported on SQLite. Calling this method on PostgreSQL
+  /// throws an [UnsupportedError].
+  ///
+  /// ```dart
+  /// var subscription = Persons.db.watch(
+  ///   session,
+  ///   where: (t) => t.lastName.equals('Jones'),
+  ///   orderBy: (t) => t.firstName,
+  ///   limit: 100,
+  /// ).listen((persons) {
+  ///   // Handle the latest matching rows.
+  /// });
+  /// ```
+  _ida.Stream<List<ActionEvidence>> watch(
+    _is.DatabaseSession session, {
+    _is.WhereExpressionBuilder<ActionEvidenceTable>? where,
+    int? limit,
+    int? offset,
+    _is.OrderByBuilder<ActionEvidenceTable>? orderBy,
+    _is.OrderByListBuilder<ActionEvidenceTable>? orderByList,
+    Duration? throttle = const Duration(milliseconds: 30),
+    Iterable<_is.Table>? alsoTriggerOnTables,
+  }) {
+    return session.db.watch<ActionEvidence>(
+      where: where?.call(ActionEvidence.t),
+      orderBy: orderBy?.call(ActionEvidence.t),
+      orderByList: orderByList?.call(ActionEvidence.t),
+      limit: limit,
+      offset: offset,
+      throttle: throttle,
+      alsoTriggerOnTables: alsoTriggerOnTables,
     );
   }
 
