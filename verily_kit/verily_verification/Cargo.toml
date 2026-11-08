@@ -1,0 +1,22 @@
+[package]
+name = "verily_verification"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+license = "Apache-2.0"
+publish = false
+description = "Server-side Verily verification. Fail closed. Mounted by verily_backend."
+
+# Standalone until the shell workspace lists this member. Dependencies are
+# pinned in this manifest so `cargo test` does not wait on that file.
+[workspace]
+resolver = "2"
+
+[dependencies]
+base64 = "0.22"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+getrandom = "0.2"
+p256 = { version = "0.13", features = ["ecdsa"] }
+regex = "1"
+sha2 = "0.10"
+thiserror = "2"
