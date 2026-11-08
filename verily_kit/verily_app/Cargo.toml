@@ -1,0 +1,29 @@
+[package]
+name = "verily_app"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+description = "Verily screens for doing, capturing, creating, reviewing, and account."
+
+[dependencies]
+leptoskit = { workspace = true, features = ["l10n", "query", "rpc"] }
+leptoskit_bridge = { workspace = true, optional = true }
+leptoskit_l10n = { workspace = true }
+leptoskit_router = { workspace = true }
+schemars = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+
+[features]
+default = []
+# Browser host. The capture screen still refuses a file picker.
+web = ["leptoskit/web", "leptoskit_l10n/web", "leptoskit_router/web"]
+# Native guest. Android is the first phone target; iOS uses the same guest.
+guest = ["leptoskit/guest", "dep:leptoskit_bridge"]
+android = ["guest"]
+ios = ["guest"]
+
+[dev-dependencies]
+any_spawner = { workspace = true, features = ["futures-executor"] }
+leptoskit = { workspace = true, features = ["leptos"] }
