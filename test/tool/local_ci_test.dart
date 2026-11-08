@@ -62,12 +62,12 @@ void main() {
 
   test('github repositories are read from ssh and https remotes', () {
     expect(
-      githubRepository('git@github.com:ifiokjr/verily.git'),
-      'ifiokjr/verily',
+      githubRepository('git@github.com:verilyfun/verily.git'),
+      'verilyfun/verily',
     );
     expect(
-      githubRepository('https://github.com/ifiokjr/verily'),
-      'ifiokjr/verily',
+      githubRepository('https://github.com/verilyfun/verily'),
+      'verilyfun/verily',
     );
     expect(githubRepository('https://gitlab.com/a/b.git'), isNull);
   });
