@@ -11,7 +11,7 @@
 use std::fmt::Write as _;
 
 use base64::Engine;
-use base64::engine::general_purpose::{URL_SAFE, URL_SAFE_NO_PAD};
+use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use chrono::{DateTime, Utc};
 use sha2::{Digest, Sha256};
 use thiserror::Error;
@@ -372,21 +372,16 @@ fn canonical_identifier(value: &str, parameter: &'static str) -> Result<String, 
 
 fn decode_challenge(value: &str) -> Result<[u8; 32], EvidenceError> {
 	let normalized = normalize_capture_challenge(value)?;
-	let bytes = URL_SAFE_NO_PAD
-		.decode(normalized)
-		.or_else(|_| URL_SAFE.decode(normalized))
-		.map_err(|_| {
-			invalid(
-				"captureChallenge",
-				"Must be 32 bytes as unpadded base64url.",
-			)
-		})?;
-	bytes.try_into().map_err(|_| {
+	let bytes = URL_SAFE_NO_PAD.decode(normalized).map_err(|_| {
 		invalid(
 			"captureChallenge",
 			"Must be 32 bytes as unpadded base64url.",
 		)
-	})
+	})?;
+	// A valid 43-character unpadded base64url string is always 32 bytes.
+	Ok(bytes
+		.try_into()
+		.expect("unpadded base64url of length 43 is 32 bytes"))
 }
 
 fn is_unpadded_base64url_32(value: &str) -> bool {

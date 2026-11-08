@@ -77,4 +77,56 @@ fn a_missing_review_threshold_does_not_auto_release() {
 	assert_eq!(payout_needs_person(1_000_000, None), None);
 	assert_eq!(payout_needs_person(1_000_000, Some(1_000_000)), Some(false));
 	assert_eq!(payout_needs_person(1_000_001, Some(1_000_000)), Some(true));
+	assert_eq!(payout_needs_person(-1, Some(1)), None);
+	assert_eq!(payout_needs_person(1, Some(-1)), None);
+}
+
+#[test]
+fn reward_term_defaults_and_funded_escrow_are_verified() {
+	let terms: RewardTermsDraft = serde_json::from_value(json!({
+		"amountPerPayout": 1_000_000,
+		"maxPayouts": 10,
+		"expiresAt": "2026-12-08T12:00:00Z",
+	}))
+	.expect("defaults");
+	assert_eq!(terms.max_wins_per_account, 1);
+	assert_eq!(terms.refund_delay_days, 7);
+
+	for status in ["funded", "ended", "closed"] {
+		let pool: RewardPoolView = serde_json::from_value(json!({
+			"poolId": "018f4a3e-7c21-7a4e-9c3a-6b1d2e0f4a50",
+			"status": status,
+			"cluster": "mainnet",
+			"mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+			"tokenSymbol": "USDC",
+			"decimals": 6,
+			"amountPerPayout": 1_000_000,
+			"maxPayouts": 10,
+			"maxWinsPerAccount": 1,
+			"payoutsReserved": 0,
+			"payoutsReleased": 0,
+			"expiresAt": "2026-12-08T12:00:00Z",
+			"refundAfter": "2026-12-11T12:00:00Z",
+		}))
+		.expect(status);
+		assert!(pool.escrow_verified(), "{status}");
+	}
+
+	let draft: RewardPoolView = serde_json::from_value(json!({
+		"poolId": "018f4a3e-7c21-7a4e-9c3a-6b1d2e0f4a50",
+		"status": "draft",
+		"cluster": "devnet",
+		"mint": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+		"tokenSymbol": "USDC",
+		"decimals": 6,
+		"amountPerPayout": 1_000_000,
+		"maxPayouts": 10,
+		"maxWinsPerAccount": 1,
+		"payoutsReserved": 0,
+		"payoutsReleased": 0,
+		"expiresAt": "2026-12-08T12:00:00Z",
+		"refundAfter": "2026-12-11T12:00:00Z",
+	}))
+	.expect("draft");
+	assert!(!draft.escrow_verified());
 }
