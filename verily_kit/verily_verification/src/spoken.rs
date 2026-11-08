@@ -43,13 +43,22 @@ pub fn issue(
 	entropy: u64,
 	now: DateTime<Utc>,
 ) -> Result<SpokenChallenge, SpokenError> {
+	issue_from(SPOKEN_CHALLENGE_WORDS, existing, issued_count, entropy, now)
+}
+
+fn issue_from(
+	words: &[&str],
+	existing: Option<&SpokenChallenge>,
+	issued_count: u32,
+	entropy: u64,
+	now: DateTime<Utc>,
+) -> Result<SpokenChallenge, SpokenError> {
 	if let Some(current) = existing.filter(|challenge| challenge.expires_at > now) {
 		return Ok(current.clone());
 	}
 	if issued_count >= MAX_ISSUED_PER_PROOF {
 		return Err(SpokenError::Exhausted);
 	}
-	let words = SPOKEN_CHALLENGE_WORDS;
 	if words.is_empty() {
 		return Err(SpokenError::Unavailable);
 	}
@@ -73,6 +82,10 @@ mod tests {
 		let again = issue(Some(&first), 1, 99, now).unwrap();
 		assert_eq!(again.word, first.word);
 		assert_eq!(issue(None, 5, 1, now), Err(SpokenError::Exhausted));
+		assert_eq!(
+			issue_from(&[], None, 0, 1, now),
+			Err(SpokenError::Unavailable)
+		);
 	}
 
 	#[test]

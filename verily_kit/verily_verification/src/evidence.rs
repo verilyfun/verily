@@ -196,6 +196,23 @@ pub fn digest_stored_bytes(bytes: &[u8]) -> String {
 	crate::binding::sha256_hex(bytes)
 }
 
+#[cfg(test)]
+pub(crate) fn seal_for_test(
+	storage_path: &str,
+	storage_version_id: &str,
+	sha256_digest: &str,
+	byte_length: u64,
+	content_type: &str,
+) -> Result<Seal, EvidenceError> {
+	seal(
+		storage_path,
+		storage_version_id,
+		sha256_digest,
+		byte_length,
+		content_type,
+	)
+}
+
 fn seal(
 	storage_path: &str,
 	storage_version_id: &str,

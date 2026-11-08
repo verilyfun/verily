@@ -36,18 +36,27 @@ pub fn normalize_sha256(value: &str) -> Result<String, BindingError> {
 }
 
 pub fn normalize_capture_challenge(value: &str) -> Result<String, BindingError> {
+	Ok(capture_challenge_bytes(value)?.0)
+}
+
+/// Decodes the 32-byte capture challenge. Returns the trimmed challenge text too.
+pub fn capture_challenge_bytes(value: &str) -> Result<(String, [u8; 32]), BindingError> {
 	let normalized = value.trim();
-	if normalized.len() != 43 || !normalized.bytes().all(is_base64url) {
+	if normalized.len() != 43 {
 		return Err(BindingError::Invalid);
 	}
 	let decoded = URL_SAFE_NO_PAD
 		.decode(normalized)
 		.map_err(|_| BindingError::Invalid)?;
-	if decoded.len() == 32 {
-		Ok(normalized.to_string())
-	} else {
-		Err(BindingError::Invalid)
-	}
+	challenge_from_decoded(normalized, decoded)
+}
+
+fn challenge_from_decoded(
+	normalized: &str,
+	decoded: Vec<u8>,
+) -> Result<(String, [u8; 32]), BindingError> {
+	let bytes: [u8; 32] = decoded.try_into().map_err(|_| BindingError::Invalid)?;
+	Ok((normalized.to_string(), bytes))
 }
 
 pub fn canonical_identifier(value: &str) -> Result<String, BindingError> {
@@ -64,9 +73,7 @@ pub fn android_attestation_challenge(
 	capture_challenge: &str,
 	attempt_id: &str,
 ) -> Result<[u8; 32], BindingError> {
-	let nonce = URL_SAFE_NO_PAD
-		.decode(normalize_capture_challenge(capture_challenge)?)
-		.map_err(|_| BindingError::Invalid)?;
+	let (_, nonce) = capture_challenge_bytes(capture_challenge)?;
 	let attempt = canonical_identifier(attempt_id)?;
 	let mut hasher = Sha256::new();
 	hasher.update(nonce);
@@ -214,9 +221,7 @@ pub fn app_attest_device_client_data(manifest: &[u8], device_check_token: &str) 
 pub fn app_attest_registration_client_data_hash(
 	registration_challenge: &str,
 ) -> Result<[u8; 32], BindingError> {
-	let nonce = URL_SAFE_NO_PAD
-		.decode(normalize_capture_challenge(registration_challenge)?)
-		.map_err(|_| BindingError::Invalid)?;
+	let (_, nonce) = capture_challenge_bytes(registration_challenge)?;
 	Ok(Sha256::digest(nonce).into())
 }
 
@@ -290,5 +295,11 @@ mod tests {
 		assert_eq!(normalize_sha256(&stored.to_uppercase()).unwrap(), stored);
 		assert!(normalize_sha256("not-a-digest").is_err());
 		assert_ne!(stored, "aa".repeat(32));
+	}
+
+	#[test]
+	fn a_challenge_must_decode_to_exactly_thirty_two_bytes() {
+		assert!(challenge_from_decoded("x", vec![0; 31]).is_err());
+		assert!(challenge_from_decoded("x", vec![0; 32]).is_ok());
 	}
 }

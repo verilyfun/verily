@@ -25,3 +25,6 @@ pub mod review;
 pub mod spoken;
 
 pub use ops::Verification;
+
+#[cfg(test)]
+mod coverage;

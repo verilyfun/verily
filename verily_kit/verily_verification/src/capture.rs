@@ -53,7 +53,7 @@ pub fn begin_capture(
 	let requirement_id =
 		binding::canonical_identifier(requirement_id).map_err(|_| CaptureError::Refused)?;
 	let mut nonce = [0_u8; 32];
-	getrandom::getrandom(&mut nonce).map_err(|_| CaptureError::Unavailable)?;
+	fill_nonce(&mut nonce)?;
 	Ok(CaptureWindow {
 		attempt_id,
 		requirement_id,
@@ -61,6 +61,35 @@ pub fn begin_capture(
 		opened_at: now,
 		expires_at: now + WINDOW,
 	})
+}
+
+fn fill_nonce(nonce: &mut [u8; 32]) -> Result<(), CaptureError> {
+	#[cfg(test)]
+	{
+		return test_entropy(nonce);
+	}
+	#[cfg(not(test))]
+	{
+		getrandom::getrandom(nonce).map_err(random_unavailable)
+	}
+}
+
+fn random_unavailable(_error: getrandom::Error) -> CaptureError {
+	CaptureError::Unavailable
+}
+
+#[cfg(test)]
+fn test_entropy(nonce: &mut [u8; 32]) -> Result<(), CaptureError> {
+	if FAIL_NONCE.with(|flag| flag.get()) {
+		return Err(CaptureError::Unavailable);
+	}
+	nonce.fill(7);
+	Ok(())
+}
+
+#[cfg(test)]
+std::thread_local! {
+	static FAIL_NONCE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
 }
 
 pub fn captured_before_window(captured_at: DateTime<Utc>, opened_at: DateTime<Utc>) -> bool {
@@ -118,7 +147,7 @@ pub fn signature_mode(value: Option<&str>) -> Result<SignatureMode, CaptureError
 /// `DeviceSigned` when the signature verifies and the chain does not.
 /// Missing attestation never becomes a success.
 pub fn verify_android_capture(
-	attestation: &impl AndroidAttestation,
+	attestation: &dyn AndroidAttestation,
 	chain_der: &[&[u8]],
 	capture_challenge: &str,
 	attempt_id: &str,
@@ -324,5 +353,75 @@ mod tests {
 		let early = opened - Duration::from_secs(121);
 		assert!(captured_before_window(early, opened));
 		assert!(!captured_before_window(opened - CLOCK_TOLERANCE, opened));
+	}
+
+	#[test]
+	fn random_and_signature_failures_are_refused() {
+		assert_eq!(
+			random_unavailable(getrandom::Error::UNSUPPORTED),
+			CaptureError::Unavailable
+		);
+		FAIL_NONCE.with(|flag| flag.set(true));
+		assert_eq!(
+			begin_capture(
+				"attempt-1",
+				"requirement-1",
+				DateTime::from_timestamp(1, 0).unwrap()
+			),
+			Err(CaptureError::Unavailable)
+		);
+		FAIL_NONCE.with(|flag| flag.set(false));
+		let (signing, public) = keypair();
+		assert!(verify_p256(b"msg", &[0; 64], &[0; 33]).is_err());
+		assert!(verify_p256(b"msg", &[0; 16], &public).is_err());
+		let signature: Signature = signing.sign(b"other");
+		assert!(verify_p256(b"msg", &signature.to_bytes(), &public).is_err());
+		let attestation = Scripted {
+			key: ParsedAndroidKey {
+				public_sec1: public,
+				trusted: false,
+				storage: None,
+				reason: "debug",
+			},
+		};
+		assert_eq!(
+			verify_android_capture(
+				&attestation,
+				&[&[1]],
+				"ERERERERERERERERERERERERERERERERERERERERERE",
+				"attempt-1",
+				b"msg",
+				&signature.to_bytes(),
+				SignatureMode::Optional,
+			),
+			Err(CaptureError::Refused)
+		);
+	}
+
+	#[test]
+	fn a_mismatched_attestation_challenge_is_refused() {
+		let (signing, public) = keypair();
+		let manifest = b"manifest";
+		let signature: Signature = signing.sign(manifest);
+		let attestation = Scripted {
+			key: ParsedAndroidKey {
+				public_sec1: public,
+				trusted: true,
+				storage: Some(KeyStorage::StrongBox),
+				reason: "ok",
+			},
+		};
+		assert_eq!(
+			verify_android_capture(
+				&attestation,
+				&[&[1]],
+				"ERERERERERERERERERERERERERERERERERERERERERE",
+				"other-attempt",
+				manifest,
+				&signature.to_bytes(),
+				SignatureMode::Optional,
+			),
+			Err(CaptureError::Refused)
+		);
 	}
 }

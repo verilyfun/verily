@@ -48,10 +48,10 @@ pub fn authorize(request: PayoutRequest) -> Result<PayoutAuthorization, PayoutEr
 			Err(PayoutError::NeedsPerson)
 		};
 	}
-	Ok(match request.basis {
-		AcceptanceBasis::Person => PayoutAuthorization::PersonAccepted,
-		AcceptanceBasis::Deterministic => PayoutAuthorization::Automatic,
-		AcceptanceBasis::Model => unreachable!(),
+	Ok(if request.basis == AcceptanceBasis::Person {
+		PayoutAuthorization::PersonAccepted
+	} else {
+		PayoutAuthorization::Automatic
 	})
 }
 
