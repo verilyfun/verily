@@ -1,0 +1,28 @@
+[package]
+name = "verily_shared"
+version = "0.1.0"
+edition = "2024"
+publish = false
+license = "Apache-2.0"
+description = "Domain records and evidence digests shared by the Verily app and backend."
+
+# The repository-root Cargo.toml is the escrow workspace and must not gain
+# members. This empty table lets `cargo check --manifest-path` compile this
+# package on its own. Delete it once verily_kit/Cargo.toml lists the crate;
+# a member cannot also be a workspace root.
+[workspace]
+
+[dependencies]
+base64 = "0.22"
+chrono = { version = "0.4", default-features = false, features = ["std", "clock", "serde"] }
+serde = { version = "1", features = ["derive"] }
+sha2 = "0.10"
+thiserror = "2"
+uuid = { version = "1", features = ["serde"] }
+
+[dev-dependencies]
+serde_json = "1"
+
+[lints.rust]
+unsafe_code = "deny"
+missing_docs = "warn"
