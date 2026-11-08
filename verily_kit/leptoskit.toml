@@ -49,3 +49,11 @@ keys_env = "AUTH_ENCRYPTION_KEYS"
 [auth.idp]
 consent_page = "/consent"
 device_page = "/device"
+
+# A capitalized function that returns a view is a component, so it carries
+# `#[component]`. `lk lint` denies a missing attribute.
+[lint]
+markup = "view"
+
+[lint.rules]
+component_attribute = "deny"

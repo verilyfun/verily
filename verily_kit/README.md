@@ -5,6 +5,7 @@ Verily's LeptosKit workspace. The shell serves `verily_backend` and mounts `veri
 ```sh
 lk doctor
 lk dev
+lk lint
 lk db check
 lk db migration create <name>
 lk build

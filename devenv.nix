@@ -822,6 +822,7 @@ in
         lint:analyze
         lint:programs
         lint:native
+        lint:kit
       '';
       description = "Run all lint checks.";
       binary = "bash";
@@ -830,7 +831,21 @@ in
         config.scripts."lint:analyze".scriptPackage
         config.scripts."lint:programs".scriptPackage
         config.scripts."lint:native".scriptPackage
+        config.scripts."lint:kit".scriptPackage
       ];
+    };
+    "lint:kit" = {
+      exec = ''
+        set -euo pipefail
+        if ! command -v lk >/dev/null 2>&1; then
+          echo "lk is not on PATH. Install leptoskit_cli from ifiokjr/leptoskit at rev dd174162dfd43b30f06f7e21c69784c1e1e52394." >&2
+          exit 1
+        fi
+        cd "$DEVENV_ROOT/verily_kit"
+        lk lint
+      '';
+      description = "Lint the verily_kit workspace with the LeptosKit CLI.";
+      binary = "bash";
     };
     "audit:rust" = {
       exec = ''
