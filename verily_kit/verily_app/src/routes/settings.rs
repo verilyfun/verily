@@ -1,4 +1,4 @@
-//! Settings: appearance, sign-out, and closing the account.
+//! Appearance and account, `/settings`.
 //!
 //! Nothing on this screen is a token, a key, or a chain address.
 
@@ -19,12 +19,12 @@ use crate::chrome;
 use crate::l10n::use_l10n;
 use crate::ops::CloseAccount;
 use crate::ops::SignOut;
-use crate::route::Navigation;
+use crate::routes::Navigation;
 use crate::theme;
 
 /// Appearance and account actions.
 #[component]
-pub fn Settings(navigation: &Navigation) -> Element {
+pub fn Page(navigation: &Navigation) -> Element {
 	let _ = navigation;
 	let l10n = use_l10n();
 	let notice = RwSignal::new(String::new());

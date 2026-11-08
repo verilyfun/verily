@@ -1,4 +1,4 @@
-//! Review: a person accepts or rejects proof.
+//! The review queue, `/review`.
 //!
 //! The screen says what was checked. It does not say a scene is real, and it
 //! does not show a model, a score, or a storage path.
@@ -25,12 +25,12 @@ use crate::model::ProofKind;
 use crate::model::ReviewRow;
 use crate::ops::ListReviewQueue;
 use crate::ops::ReviewAttempt;
-use crate::route::Navigation;
+use crate::routes::Navigation;
 use crate::theme;
 
 /// The queue.
 #[component]
-pub fn ReviewQueue(navigation: &Navigation) -> Element {
+pub fn Page(navigation: &Navigation) -> Element {
 	let _ = navigation;
 	let l10n = use_l10n();
 	let queue = use_rpc_query(|| ListReviewQueue {});

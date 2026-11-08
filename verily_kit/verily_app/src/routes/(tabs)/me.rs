@@ -1,4 +1,4 @@
-//! Me: attempts, payouts, and whether a wallet is linked.
+//! Attempts and payouts, `/me`.
 //!
 //! The wallet card does not show an address, a key, or a signature.
 
@@ -28,13 +28,13 @@ use crate::ops::ListMyAttempts;
 use crate::ops::ListMyPayouts;
 use crate::ops::SubmitAppeal;
 use crate::ops::WalletStatus;
-use crate::route::AppRoute;
-use crate::route::Navigation;
+use crate::routes::Navigation;
+use crate::routes::Route;
 use crate::theme;
 
 /// Attempts, payouts, the wallet card, and the way into review and settings.
 #[component]
-pub fn Me(navigation: &Navigation) -> Element {
+pub fn Page(navigation: &Navigation) -> Element {
 	let l10n = use_l10n();
 	let attempts = use_rpc_query(|| ListMyAttempts {});
 	let payouts = use_rpc_query(|| ListMyPayouts {});
@@ -80,10 +80,10 @@ pub fn Me(navigation: &Navigation) -> Element {
 				|row| view! { <PayoutTile row=row /> },
 			)}
 			<View class=theme::ROW>
-				<Button class=theme::QUIET on:press=move || review.navigate(AppRoute::Review)>
+				<Button class=theme::QUIET on:press=move || review.navigate(Route::Review)>
 					{l10n.me_link_review()}
 				</Button>
-				<Button class=theme::QUIET on:press=move || settings.navigate(AppRoute::Settings)>
+				<Button class=theme::QUIET on:press=move || settings.navigate(Route::Settings)>
 					{l10n.settings_title()}
 				</Button>
 			</View>

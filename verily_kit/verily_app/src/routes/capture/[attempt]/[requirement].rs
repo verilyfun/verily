@@ -1,4 +1,4 @@
-//! Live capture.
+//! Live capture, `/capture/:attempt/:requirement`.
 //!
 //! The frame is a `Vector` drawing: this rev has no viewfinder widget, and a
 //! camera surface belongs in LeptosKit. The sensor opens only after
@@ -32,9 +32,16 @@ use crate::ops::CompleteAttempt;
 use crate::ops::IssueSpokenChallenge;
 use crate::ops::SubmitAttestation;
 use crate::ops::SubmitLiveProof;
-use crate::route::CapturePage;
-use crate::route::Navigation;
+use leptoskit_router::Route;
+
+use crate::routes::Navigation;
 use crate::theme;
+
+#[derive(Route, Clone, Debug, PartialEq)]
+pub struct Capture {
+	pub attempt: String,
+	pub requirement: String,
+}
 
 /// What the capture screen is waiting on.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -49,11 +56,11 @@ enum Phase {
 
 /// The capture screen for one requirement.
 #[component]
-pub fn Capture(navigation: &Navigation, page: &CapturePage) -> Element {
+pub fn Page(route: &Capture, navigation: &Navigation) -> Element {
 	let _ = navigation;
 	let l10n = use_l10n();
-	let attempt_id = page.attempt.clone();
-	let requirement_id = page.requirement.clone();
+	let attempt_id = route.attempt.clone();
+	let requirement_id = route.requirement.clone();
 	let phase = RwSignal::new(Phase::Ready);
 	let digest = RwSignal::new(String::new());
 	let spoken = use_rpc_query({
@@ -226,7 +233,7 @@ pub fn Capture(navigation: &Navigation, page: &CapturePage) -> Element {
 
 /// Hatched frame. It describes the capture area. It is not a camera image.
 #[component]
-pub fn Viewfinder(label: impl Into<String>) -> Element {
+fn Viewfinder(label: impl Into<String>) -> Element {
 	let label = label.into();
 	let ink = theme::stamp_on_night();
 	let frame = ViewBox::new(0.0, 0.0, 120.0, 120.0).expect("viewfinder box");

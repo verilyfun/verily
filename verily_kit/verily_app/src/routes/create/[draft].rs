@@ -1,117 +1,43 @@
-//! Create: the creator's list, and an editor that does not treat a draft as funded.
+//! The editor, `/create/:draft`. `new` starts a blank draft.
 
 use leptoskit::component;
 use leptoskit::prelude::Button;
 use leptoskit::prelude::Element;
-use leptoskit::prelude::For;
 use leptoskit::prelude::Get;
 use leptoskit::prelude::RwSignal;
 use leptoskit::prelude::Set;
 use leptoskit::prelude::Show;
-use leptoskit::prelude::Text;
 use leptoskit::prelude::TextInput;
 use leptoskit::prelude::View;
 use leptoskit::query::use_mutation;
 use leptoskit::rpc::client::mutation_scope;
-use leptoskit::rpc::client::use_rpc_query;
 use leptoskit::view;
+use leptoskit_router::Route;
 
 use crate::chrome;
 use crate::l10n::use_l10n;
 use crate::model::DraftInput;
-use crate::model::DraftRow;
 use crate::model::ProofKind;
-use crate::ops::ListMyActions;
 use crate::ops::PublishAction;
 use crate::ops::SaveAction;
-use crate::route::EditorPage;
-use crate::route::Navigation;
+use crate::routes::Navigation;
 use crate::theme;
 
-/// Drafts and live actions.
-#[component]
-pub fn CreateHub(navigation: &Navigation) -> Element {
-	let l10n = use_l10n();
-	let rows = use_rpc_query(|| ListMyActions {});
-	let open_editor = navigation.clone();
-	let navigation = navigation.clone();
-	view! {
-		<View class="flex flex-col gap-4">
-			<chrome::Title text=l10n.hub_title() />
-			<chrome::Muted text=l10n.hub_subtitle() />
-			<Button
-				class=theme::PRIMARY
-				on:press=move || {
-					open_editor.navigate(EditorPage {
-						draft: "new".into(),
-					});
-				}
-			>
-				{l10n.hub_post_action()}
-			</Button>
-			{Show(
-				move || rows.is_loading(),
-				move || view! { <chrome::Muted text=l10n.hub_loading() /> },
-			)}
-			{Show(
-				move || rows.is_error(),
-				move || view! { <chrome::Title text=l10n.hub_load_failed_title() /> },
-			)}
-			{Show(
-				move || rows.data().is_some_and(|list| list.is_empty()),
-				move || {
-					view! {
-						<View class=theme::CARD>
-							<chrome::Title text=l10n.hub_empty_title() />
-							<chrome::Muted text=l10n.hub_empty_body() />
-						</View>
-					}
-				},
-			)}
-			{For(
-				move || rows.data().unwrap_or_default(),
-				|row: &DraftRow| row.id.clone(),
-				move |row| view! { <DraftCard navigation=navigation.clone() row=row /> },
-			)}
-		</View>
-	}
-}
-
-#[component]
-fn DraftCard(navigation: Navigation, row: DraftRow) -> Element {
-	let l10n = use_l10n();
-	let id = row.id.clone();
-	let status = if row.live && row.funded {
-		l10n.hub_status_live()
-	} else if row.funded {
-		l10n.hub_reward_funded()
-	} else {
-		l10n.hub_reward_needs_funding()
-	};
-	view! {
-		<View class=theme::CARD>
-			<Text class="font-semibold">{row.title}</Text>
-			<chrome::Muted text=status />
-			<Button
-				class=theme::QUIET
-				on:press=move || navigation.navigate(EditorPage { draft: id.clone() })
-			>
-				{l10n.hub_edit()}
-			</Button>
-		</View>
-	}
+#[derive(Route, Clone, Debug, PartialEq)]
+pub struct Editor {
+	pub draft: String,
 }
 
 /// Title, summary, place name, radius, reward, and one live proof.
 #[component]
-pub fn Editor(navigation: &Navigation, page: &EditorPage) -> Element {
+pub fn Page(route: &Editor, navigation: &Navigation) -> Element {
 	let l10n = use_l10n();
 	let title = RwSignal::new(String::new());
 	let summary = RwSignal::new(String::new());
 	let place = RwSignal::new(String::new());
 	let reward = RwSignal::new(String::new());
 	let notice = RwSignal::new(String::new());
-	let draft_id = page.draft.clone();
+	let draft_id = route.draft.clone();
 	let saved_id = RwSignal::new(if draft_id == "new" {
 		None
 	} else {

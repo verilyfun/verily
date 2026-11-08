@@ -4,6 +4,7 @@ use leptoskit::prelude::Tailwind;
 use leptoskit::rpc::Kind;
 use leptoskit::rpc::Operation;
 use leptoskit::view;
+use leptoskit_router::Routable;
 use verily_app::model::ActionFilter;
 use verily_app::model::EvidenceSource;
 use verily_app::model::ProofKind;
@@ -74,26 +75,51 @@ fn the_wallet_record_has_no_address() {
 }
 
 #[test]
+fn routes_round_trip() {
+	let routes = [
+		verily_app::Route::Do,
+		verily_app::Route::Action(verily_app::Action {
+			action: "plant-a-tree".into(),
+		}),
+		verily_app::Route::Capture(verily_app::Capture {
+			attempt: "attempt-1".into(),
+			requirement: "photo".into(),
+		}),
+		verily_app::Route::Create,
+		verily_app::Route::Editor(verily_app::Editor {
+			draft: "new".into(),
+		}),
+		verily_app::Route::Me,
+		verily_app::Route::Review,
+		verily_app::Route::Settings,
+	];
+	for route in routes {
+		let parsed = verily_app::Route::parse(route.href().as_str()).expect("href parses");
+		assert_eq!(parsed, route);
+	}
+}
+
+#[test]
 fn the_do_screen_builds() {
 	let _ = any_spawner::Executor::init_futures_executor();
 	let owner = leptoskit::leptos::prelude::Owner::new();
 	owner.with(|| {
 		let routes = [
-			verily_app::AppRoute::Do,
-			verily_app::AppRoute::Action(verily_app::ActionPage {
+			verily_app::Route::Do,
+			verily_app::Route::Action(verily_app::Action {
 				action: "plant-a-tree".into(),
 			}),
-			verily_app::AppRoute::Capture(verily_app::CapturePage {
+			verily_app::Route::Capture(verily_app::Capture {
 				attempt: "attempt".into(),
 				requirement: "photo".into(),
 			}),
-			verily_app::AppRoute::Create,
-			verily_app::AppRoute::Editor(verily_app::EditorPage {
+			verily_app::Route::Create,
+			verily_app::Route::Editor(verily_app::Editor {
 				draft: "new".into(),
 			}),
-			verily_app::AppRoute::Me,
-			verily_app::AppRoute::Review,
-			verily_app::AppRoute::Settings,
+			verily_app::Route::Me,
+			verily_app::Route::Review,
+			verily_app::Route::Settings,
 		];
 		for route in routes {
 			let navigation = verily_app::Navigation::new(route);
