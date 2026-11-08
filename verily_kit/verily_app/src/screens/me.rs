@@ -2,6 +2,7 @@
 //!
 //! The wallet card does not show an address, a key, or a signature.
 
+use leptoskit::component;
 use leptoskit::prelude::Button;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::For;
@@ -15,6 +16,7 @@ use leptoskit::prelude::View;
 use leptoskit::query::use_mutation;
 use leptoskit::rpc::client::mutation_scope;
 use leptoskit::rpc::client::use_rpc_query;
+use leptoskit::view;
 
 use crate::chrome;
 use crate::l10n::use_l10n;
@@ -31,97 +33,100 @@ use crate::route::Navigation;
 use crate::theme;
 
 /// Attempts, payouts, the wallet card, and the way into review and settings.
-pub fn me(navigation: &Navigation) -> Element {
+#[component]
+pub fn Me(navigation: &Navigation) -> Element {
 	let l10n = use_l10n();
 	let attempts = use_rpc_query(|| ListMyAttempts {});
 	let payouts = use_rpc_query(|| ListMyPayouts {});
 	let wallet = use_rpc_query(|| WalletStatus {});
-	let navigation = navigation.clone();
-	View()
-		.class("flex flex-col gap-4")
-		.child(chrome::title(l10n.me_title()))
-		.child(chrome::muted(l10n.me_subtitle()))
-		.child(wallet_card(wallet))
-		.child(chrome::title(l10n.me_attempts_title()))
-		.child(Show(
-			move || attempts.is_loading(),
-			move || chrome::muted(l10n.me_loading_attempts()),
-		))
-		.child(Show(
-			move || attempts.is_error(),
-			move || chrome::title(l10n.me_load_failed_title()),
-		))
-		.child(Show(
-			move || attempts.data().is_some_and(|rows| rows.is_empty()),
-			move || chrome::muted(l10n.me_attempts_empty()),
-		))
-		.child(For(
-			move || attempts.data().unwrap_or_default(),
-			|row: &AttemptRow| row.id.clone(),
-			|row| attempt_row(row),
-		))
-		.child(appeal())
-		.child(chrome::title(l10n.me_payouts_title()))
-		.child(Show(
-			move || payouts.is_loading(),
-			move || chrome::muted(l10n.me_loading_payouts()),
-		))
-		.child(Show(
-			move || payouts.data().is_some_and(|rows| rows.is_empty()),
-			move || chrome::muted(l10n.me_payouts_empty()),
-		))
-		.child(For(
-			move || payouts.data().unwrap_or_default(),
-			|row: &PayoutRow| row.id.clone(),
-			|row| payout_row(row),
-		))
-		.child(
-			View()
-				.class(theme::ROW)
-				.child(
-					Button(l10n.me_link_review().to_owned())
-						.class(theme::QUIET)
-						.on_press({
-							let navigation = navigation.clone();
-							move || navigation.navigate(AppRoute::Review)
-						}),
-				)
-				.child(
-					Button(l10n.settings_title().to_owned())
-						.class(theme::QUIET)
-						.on_press(move || navigation.navigate(AppRoute::Settings)),
-				),
-		)
+	let review = navigation.clone();
+	let settings = navigation.clone();
+	view! {
+		<View class="flex flex-col gap-4">
+			<chrome::Title text=l10n.me_title() />
+			<chrome::Muted text=l10n.me_subtitle() />
+			<WalletCard wallet=wallet />
+			<chrome::Title text=l10n.me_attempts_title() />
+			{Show(
+				move || attempts.is_loading(),
+				move || view! { <chrome::Muted text=l10n.me_loading_attempts() /> },
+			)}
+			{Show(
+				move || attempts.is_error(),
+				move || view! { <chrome::Title text=l10n.me_load_failed_title() /> },
+			)}
+			{Show(
+				move || attempts.data().is_some_and(|rows| rows.is_empty()),
+				move || view! { <chrome::Muted text=l10n.me_attempts_empty() /> },
+			)}
+			{For(
+				move || attempts.data().unwrap_or_default(),
+				|row: &AttemptRow| row.id.clone(),
+				|row| view! { <AttemptTile row=row /> },
+			)}
+			<AppealForm />
+			<chrome::Title text=l10n.me_payouts_title() />
+			{Show(
+				move || payouts.is_loading(),
+				move || view! { <chrome::Muted text=l10n.me_loading_payouts() /> },
+			)}
+			{Show(
+				move || payouts.data().is_some_and(|rows| rows.is_empty()),
+				move || view! { <chrome::Muted text=l10n.me_payouts_empty() /> },
+			)}
+			{For(
+				move || payouts.data().unwrap_or_default(),
+				|row: &PayoutRow| row.id.clone(),
+				|row| view! { <PayoutTile row=row /> },
+			)}
+			<View class=theme::ROW>
+				<Button class=theme::QUIET on:press=move || review.navigate(AppRoute::Review)>
+					{l10n.me_link_review()}
+				</Button>
+				<Button class=theme::QUIET on:press=move || settings.navigate(AppRoute::Settings)>
+					{l10n.settings_title()}
+				</Button>
+			</View>
+		</View>
+	}
 }
 
-fn wallet_card(
+#[component]
+fn WalletCard(
 	wallet: leptoskit::query::QueryHandle<crate::model::WalletLink, leptoskit::rpc::FnError>,
 ) -> Element {
 	let l10n = use_l10n();
-	View()
-		.class(theme::REWARD)
-		.child(Text(l10n.me_wallet_title()).class("font-semibold"))
-		.child(Show(
-			move || wallet.data().is_some_and(|link| link.linked),
-			move || {
-				View()
-					.class("flex flex-col gap-2")
-					.child(chrome::muted(l10n.me_wallet_linked()))
-					.child(chrome::muted(l10n.me_wallet_linked_body()))
-			},
-		))
-		.child(Show(
-			move || wallet.data().is_some_and(|link| !link.linked) || wallet.data().is_none(),
-			move || {
-				View()
-					.class("flex flex-col gap-2")
-					.child(chrome::muted(l10n.me_wallet_unlinked_title()))
-					.child(chrome::muted(l10n.me_wallet_unlinked_body()))
-			},
-		))
+	view! {
+		<View class=theme::REWARD>
+			<Text class="font-semibold">{l10n.me_wallet_title()}</Text>
+			{Show(
+				move || wallet.data().is_some_and(|link| link.linked),
+				move || {
+					view! {
+						<View class="flex flex-col gap-2">
+							<chrome::Muted text=l10n.me_wallet_linked() />
+							<chrome::Muted text=l10n.me_wallet_linked_body() />
+						</View>
+					}
+				},
+			)}
+			{Show(
+				move || wallet.data().is_some_and(|link| !link.linked) || wallet.data().is_none(),
+				move || {
+					view! {
+						<View class="flex flex-col gap-2">
+							<chrome::Muted text=l10n.me_wallet_unlinked_title() />
+							<chrome::Muted text=l10n.me_wallet_unlinked_body() />
+						</View>
+					}
+				},
+			)}
+		</View>
+	}
 }
 
-fn attempt_row(row: AttemptRow) -> Element {
+#[component]
+fn AttemptTile(row: AttemptRow) -> Element {
 	let l10n = use_l10n();
 	let status = match row.status {
 		AttemptStatus::CollectingEvidence => l10n.attempt_status_collecting_evidence(),
@@ -131,31 +136,38 @@ fn attempt_row(row: AttemptRow) -> Element {
 		AttemptStatus::Rejected => l10n.attempt_status_rejected(),
 		AttemptStatus::CapacityReached => l10n.attempt_status_capacity_reached(),
 	};
-	View()
-		.class(theme::CARD)
-		.child(Text(row.action_title).class("font-semibold"))
-		.child(chrome::muted(l10n.do_your_attempt(status)))
+	let status = l10n.do_your_attempt(status);
+	view! {
+		<View class=theme::CARD>
+			<Text class="font-semibold">{row.action_title}</Text>
+			<chrome::Muted text=status />
+		</View>
+	}
 }
 
-fn payout_row(row: PayoutRow) -> Element {
+#[component]
+fn PayoutTile(row: PayoutRow) -> Element {
 	let l10n = use_l10n();
-	let amount = row.amount_label.as_str();
+	let amount = row.amount_label.clone();
 	let status = match row.status {
-		PayoutStatus::AwaitingWallet => l10n.payout_awaiting_wallet(amount),
-		PayoutStatus::OnItsWay => l10n.payout_on_its_way(amount),
-		PayoutStatus::Released => l10n.payout_released(amount),
-		PayoutStatus::HeldForReview => l10n.payout_held_for_review(amount),
-		PayoutStatus::Failed => l10n.payout_failed(amount),
-		PayoutStatus::Expired => l10n.payout_expired(amount),
+		PayoutStatus::AwaitingWallet => l10n.payout_awaiting_wallet(&amount),
+		PayoutStatus::OnItsWay => l10n.payout_on_its_way(&amount),
+		PayoutStatus::Released => l10n.payout_released(&amount),
+		PayoutStatus::HeldForReview => l10n.payout_held_for_review(&amount),
+		PayoutStatus::Failed => l10n.payout_failed(&amount),
+		PayoutStatus::Expired => l10n.payout_expired(&amount),
 	};
-	View()
-		.class(theme::CARD)
-		.child(Text(row.action_title).class("font-semibold"))
-		.child(chrome::muted(row.amount_label))
-		.child(chrome::muted(status))
+	view! {
+		<View class=theme::CARD>
+			<Text class="font-semibold">{row.action_title}</Text>
+			<chrome::Muted text=amount />
+			<chrome::Muted text=status />
+		</View>
+	}
 }
 
-fn appeal() -> Element {
+#[component]
+fn AppealForm() -> Element {
 	let l10n = use_l10n();
 	let attempt_id = RwSignal::new(String::new());
 	let reason = RwSignal::new(String::new());
@@ -163,26 +175,23 @@ fn appeal() -> Element {
 	let submit = use_mutation(mutation_scope::<SubmitAppeal>().with_on_success(move |_| {
 		sent.set(true);
 	}));
-	View()
-		.class(theme::CARD)
-		.child(chrome::title(l10n.me_appeal_title()))
-		.child(chrome::muted(l10n.me_appeal_body()))
-		.child(
-			TextInput()
-				.class(theme::FIELD)
-				.placeholder(l10n.me_appeal_reason_hint())
-				.on_change(move |next| attempt_id.set(next.to_owned())),
-		)
-		.child(
-			TextInput()
-				.class(theme::FIELD)
-				.placeholder(l10n.me_appeal_reason_label())
-				.on_change(move |next| reason.set(next.to_owned())),
-		)
-		.child(
-			Button(l10n.me_appeal_send().to_owned())
-				.class(theme::QUIET)
-				.on_press(move || {
+	view! {
+		<View class=theme::CARD>
+			<chrome::Title text=l10n.me_appeal_title() />
+			<chrome::Muted text=l10n.me_appeal_body() />
+			<TextInput
+				class=theme::FIELD
+				placeholder=l10n.me_appeal_reason_hint()
+				on:change=move |next| attempt_id.set(next.to_owned())
+			/>
+			<TextInput
+				class=theme::FIELD
+				placeholder=l10n.me_appeal_reason_label()
+				on:change=move |next| reason.set(next.to_owned())
+			/>
+			<Button
+				class=theme::QUIET
+				on:press=move || {
 					if attempt_id.get().trim().is_empty() || reason.get().trim().is_empty() {
 						return;
 					}
@@ -190,10 +199,14 @@ fn appeal() -> Element {
 						attempt_id: attempt_id.get(),
 						reason: reason.get(),
 					});
-				}),
-		)
-		.child(Show(
-			move || sent.get(),
-			move || chrome::muted(l10n.me_appeal_sent()),
-		))
+				}
+			>
+				{l10n.me_appeal_send()}
+			</Button>
+			{Show(
+				move || sent.get(),
+				move || view! { <chrome::Muted text=l10n.me_appeal_sent() /> },
+			)}
+		</View>
+	}
 }

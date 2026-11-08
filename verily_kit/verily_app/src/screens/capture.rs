@@ -5,6 +5,7 @@
 //! `beginCapture` returns, through the shell plugin. A missing plugin shows
 //! the integrity failure. It does not open a gallery or a file picker.
 
+use leptoskit::component;
 use leptoskit::prelude::Button;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::Get;
@@ -20,6 +21,7 @@ use leptoskit::prelude::ViewBox;
 use leptoskit::query::use_mutation;
 use leptoskit::rpc::client::mutation_scope;
 use leptoskit::rpc::client::use_rpc_query;
+use leptoskit::view;
 
 use crate::chrome;
 use crate::host;
@@ -46,7 +48,9 @@ enum Phase {
 }
 
 /// The capture screen for one requirement.
-pub fn capture(_navigation: &Navigation, page: &CapturePage) -> Element {
+#[component]
+pub fn Capture(navigation: &Navigation, page: &CapturePage) -> Element {
+	let _ = navigation;
 	let l10n = use_l10n();
 	let attempt_id = page.attempt.clone();
 	let requirement_id = page.requirement.clone();
@@ -128,87 +132,102 @@ pub fn capture(_navigation: &Navigation, page: &CapturePage) -> Element {
 			}),
 	);
 
-	View()
-		.class("flex flex-col gap-4")
-		.child(chrome::title(l10n.capture_review_title()))
-		.child(viewfinder(l10n.capture_live()))
-		.child(Show(
-			move || spoken.data().is_some(),
-			move || {
-				let word = spoken.data().map(|item| item.word).unwrap_or_default();
-				chrome::title(l10n.capture_challenge_say(&word))
-			},
-		))
-		.child(chrome::muted(l10n.capture_challenge_intro()))
-		.child(Show(
-			move || phase.get() == Phase::PluginMissing,
-			move || {
-				View()
-					.class(theme::CARD)
-					.child(chrome::title(l10n.capture_integrity_title()))
-					.child(chrome::muted(l10n.capture_integrity_body()))
-			},
-		))
-		.child(Show(
-			move || phase.get() == Phase::Failed,
-			move || chrome::title(l10n.capture_problem_title()),
-		))
-		.child(Show(move || phase.get() == Phase::Review, {
-			let attempt_id = attempt_id.clone();
-			let requirement_id = requirement_id.clone();
-			move || {
+	let live = l10n.capture_live();
+	view! {
+		<View class="flex flex-col gap-4">
+			<chrome::Title text=l10n.capture_review_title() />
+			<Viewfinder label=live />
+			{Show(
+				move || spoken.data().is_some(),
+				move || {
+					let word = spoken.data().map(|item| item.word).unwrap_or_default();
+					let said = l10n.capture_challenge_say(&word);
+					view! { <chrome::Title text=said /> }
+				},
+			)}
+			<chrome::Muted text=l10n.capture_challenge_intro() />
+			{Show(
+				move || phase.get() == Phase::PluginMissing,
+				move || {
+					view! {
+						<View class=theme::CARD>
+							<chrome::Title text=l10n.capture_integrity_title() />
+							<chrome::Muted text=l10n.capture_integrity_body() />
+						</View>
+					}
+				},
+			)}
+			{Show(
+				move || phase.get() == Phase::Failed,
+				move || view! { <chrome::Title text=l10n.capture_problem_title() /> },
+			)}
+			{Show(move || phase.get() == Phase::Review, {
 				let attempt_id = attempt_id.clone();
 				let requirement_id = requirement_id.clone();
-				View()
-					.class("flex flex-col gap-2")
-					.child(chrome::muted(l10n.capture_review_preview_unavailable()))
-					.child(
-						Button(l10n.capture_review_send().to_owned())
-							.class(theme::PRIMARY)
-							.on_press(move || {
-								phase.set(Phase::Working);
-								submit.mutate(SubmitLiveProof {
-									attempt_id: attempt_id.clone(),
-									requirement_id: requirement_id.clone(),
-									digest_hex: digest.get(),
-								});
-							}),
-					)
-					.child(
-						Button(l10n.capture_review_retake().to_owned())
-							.class(theme::QUIET)
-							.on_press(move || {
-								digest.set(String::new());
-								phase.set(Phase::Ready);
-							}),
-					)
-			}
-		}))
-		.child(Show(
-			move || phase.get() == Phase::Finished,
-			move || {
-				View()
-					.class(theme::CARD)
-					.child(chrome::title(l10n.action_verified_title()))
-					.child(chrome::muted(l10n.action_verified_body()))
-			},
-		))
-		.child(
-			Button(l10n.capture_record_start().to_owned())
-				.class(theme::PRIMARY)
-				.enabled(!begin.is_pending())
-				.on_press(move || {
+				move || {
+					let attempt_id = attempt_id.clone();
+					let requirement_id = requirement_id.clone();
+					view! {
+						<View class="flex flex-col gap-2">
+							<chrome::Muted text=l10n.capture_review_preview_unavailable() />
+							<Button
+								class=theme::PRIMARY
+								on:press=move || {
+									phase.set(Phase::Working);
+									submit.mutate(SubmitLiveProof {
+										attempt_id: attempt_id.clone(),
+										requirement_id: requirement_id.clone(),
+										digest_hex: digest.get(),
+									});
+								}
+							>
+								{l10n.capture_review_send()}
+							</Button>
+							<Button
+								class=theme::QUIET
+								on:press=move || {
+									digest.set(String::new());
+									phase.set(Phase::Ready);
+								}
+							>
+								{l10n.capture_review_retake()}
+							</Button>
+						</View>
+					}
+				}
+			})}
+			{Show(
+				move || phase.get() == Phase::Finished,
+				move || {
+					view! {
+						<View class=theme::CARD>
+							<chrome::Title text=l10n.action_verified_title() />
+							<chrome::Muted text=l10n.action_verified_body() />
+						</View>
+					}
+				},
+			)}
+			<Button
+				class=theme::PRIMARY
+				enabled={!begin.is_pending()}
+				on:press=move || {
 					phase.set(Phase::Working);
 					begin.mutate(BeginCapture {
 						attempt_id: attempt_for_begin.clone(),
 						requirement_id: requirement_for_begin.clone(),
 					});
-				}),
-		)
+				}
+			>
+				{l10n.capture_record_start()}
+			</Button>
+		</View>
+	}
 }
 
 /// Hatched frame. It describes the capture area. It is not a camera image.
-pub fn viewfinder(label: impl Into<String>) -> Element {
+#[component]
+pub fn Viewfinder(label: impl Into<String>) -> Element {
+	let label = label.into();
 	let ink = theme::stamp_on_night();
 	let frame = ViewBox::new(0.0, 0.0, 120.0, 120.0).expect("viewfinder box");
 	let border = VectorPath::new(PathData::parse("M16 16 H104 V104 H16 Z").expect("frame"))
@@ -217,11 +236,15 @@ pub fn viewfinder(label: impl Into<String>) -> Element {
 		PathData::parse("M28 92 L92 28 M40 92 L92 40 M28 80 L80 28").expect("hatch"),
 	)
 	.stroke(Stroke::new(ink, 1.0).expect("stroke"));
-	View().class(theme::FINDER).child(
-		Vector(frame)
-			.class("absolute inset-0")
-			.aria_label(label.into())
-			.path(border)
-			.path(hatch),
-	)
+	view! {
+		<View class=theme::FINDER>
+			<Vector
+				view_box=frame
+				class="absolute inset-0"
+				aria_label=label
+				path=border
+				path=hatch
+			/>
+		</View>
+	}
 }

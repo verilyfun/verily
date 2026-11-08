@@ -1,5 +1,6 @@
 //! Do: the catalogue, and one action's place, proof, and reward.
 
+use leptoskit::component;
 use leptoskit::prelude::Button;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::For;
@@ -12,6 +13,7 @@ use leptoskit::prelude::View;
 use leptoskit::query::use_mutation;
 use leptoskit::rpc::client::mutation_scope;
 use leptoskit::rpc::client::use_rpc_query;
+use leptoskit::view;
 
 use crate::chrome;
 use crate::l10n::use_l10n;
@@ -27,7 +29,8 @@ use crate::route::Navigation;
 use crate::theme;
 
 /// The catalogue.
-pub fn browse(navigation: &Navigation) -> Element {
+#[component]
+pub fn Browse(navigation: &Navigation) -> Element {
 	let l10n = use_l10n();
 	let filter = RwSignal::new(ActionFilter::all());
 	let actions = use_rpc_query(move || ListAvailableActions {
@@ -36,120 +39,127 @@ pub fn browse(navigation: &Navigation) -> Element {
 		longitude: None,
 	});
 	let navigation = navigation.clone();
-	View()
-		.class("flex flex-col gap-4")
-		.child(chrome::title(l10n.do_title()))
-		.child(chrome::muted(l10n.do_subtitle()))
-		.child(filters(filter))
-		.child(Show(
-			move || actions.is_loading(),
-			move || chrome::muted(l10n.do_loading()),
-		))
-		.child(Show(
-			move || actions.is_error(),
-			move || {
-				let actions = actions;
-				View()
-					.class("flex flex-col gap-2")
-					.child(chrome::title(l10n.do_load_failed_title()))
-					.child(
-						Button(l10n.dialog_retry().to_owned())
-							.class(theme::QUIET)
-							.on_press(move || {
-								actions.refetch();
-							}),
-					)
-			},
-		))
-		.child(Show(
-			move || actions.data().is_some_and(|rows| rows.is_empty()),
-			move || {
-				View()
-					.class(theme::CARD)
-					.child(chrome::title(l10n.do_empty_title()))
-					.child(chrome::muted(l10n.do_empty_body()))
-			},
-		))
-		.child(For(
-			move || actions.data().unwrap_or_default(),
-			|card: &ActionCard| card.id.clone(),
-			move |card| card_button(navigation.clone(), card),
-		))
+	view! {
+		<View class="flex flex-col gap-4">
+			<chrome::Title text=l10n.do_title() />
+			<chrome::Muted text=l10n.do_subtitle() />
+			<Filters filter=filter />
+			{Show(
+				move || actions.is_loading(),
+				move || view! { <chrome::Muted text=l10n.do_loading() /> },
+			)}
+			{Show(
+				move || actions.is_error(),
+				move || {
+					let actions = actions;
+					view! {
+						<View class="flex flex-col gap-2">
+							<chrome::Title text=l10n.do_load_failed_title() />
+							<Button
+								class=theme::QUIET
+								on:press=move || {
+									actions.refetch();
+								}
+							>
+								{l10n.dialog_retry()}
+							</Button>
+						</View>
+					}
+				},
+			)}
+			{Show(
+				move || actions.data().is_some_and(|rows| rows.is_empty()),
+				move || {
+					view! {
+						<View class=theme::CARD>
+							<chrome::Title text=l10n.do_empty_title() />
+							<chrome::Muted text=l10n.do_empty_body() />
+						</View>
+					}
+				},
+			)}
+			{For(
+				move || actions.data().unwrap_or_default(),
+				|card: &ActionCard| card.id.clone(),
+				move |card| view! { <CatalogueCard navigation=navigation.clone() card=card /> },
+			)}
+		</View>
+	}
 }
 
-fn filters(filter: RwSignal<ActionFilter>) -> Element {
+#[component]
+fn Filters(filter: RwSignal<ActionFilter>) -> Element {
 	let l10n = use_l10n();
-	View()
-		.class(theme::ROW)
-		.child(filter_button(
-			filter,
-			ActionFilter::All,
-			l10n.do_filter_all(),
-		))
-		.child(filter_button(
-			filter,
-			ActionFilter::Nearby,
-			l10n.do_filter_nearby(),
-		))
-		.child(filter_button(
-			filter,
-			ActionFilter::Place,
-			l10n.do_filter_place(),
-		))
-		.child(filter_button(
-			filter,
-			ActionFilter::Movement,
-			l10n.do_filter_movement(),
-		))
-		.child(filter_button(
-			filter,
-			ActionFilter::VenueCode,
-			l10n.do_filter_venue_code(),
-		))
-		.child(filter_button(
-			filter,
-			ActionFilter::Apps,
-			l10n.do_filter_apps(),
-		))
+	view! {
+		<View class=theme::ROW>
+			<FilterButton filter=filter value=ActionFilter::All label=l10n.do_filter_all() />
+			<FilterButton filter=filter value=ActionFilter::Nearby label=l10n.do_filter_nearby() />
+			<FilterButton filter=filter value=ActionFilter::Place label=l10n.do_filter_place() />
+			<FilterButton
+				filter=filter
+				value=ActionFilter::Movement
+				label=l10n.do_filter_movement()
+			/>
+			<FilterButton
+				filter=filter
+				value=ActionFilter::VenueCode
+				label=l10n.do_filter_venue_code()
+			/>
+			<FilterButton filter=filter value=ActionFilter::Apps label=l10n.do_filter_apps() />
+		</View>
+	}
 }
 
-fn filter_button(filter: RwSignal<ActionFilter>, value: ActionFilter, label: &str) -> Element {
+#[component]
+fn FilterButton(
+	filter: RwSignal<ActionFilter>,
+	value: ActionFilter,
+	label: impl Into<String>,
+) -> Element {
 	let selected = filter.get() == value;
+	let label = label.into();
 	let class = if selected {
 		theme::PRIMARY
 	} else {
 		theme::QUIET
 	};
-	Button(label.to_owned())
-		.class(class)
-		.on_press(move || filter.set(value.clone()))
+	view! {
+		<Button class=class on:press=move || filter.set(value.clone())>{label}</Button>
+	}
 }
 
-fn card_button(navigation: Navigation, card: ActionCard) -> Element {
+#[component]
+fn CatalogueCard(navigation: Navigation, card: ActionCard) -> Element {
 	let l10n = use_l10n();
 	let id = card.id.clone();
-	View()
-		.class(theme::CARD)
-		.child(Text(card.title).class(theme::TITLE))
-		.child(chrome::muted(l10n.do_creator_by(&card.creator)))
-		.child(chrome::muted(card.place_name))
-		.child(chrome::muted(if card.radius_meters > 0 {
-			l10n.action_place_radius(card.radius_meters)
-		} else {
-			l10n.do_map_empty_title().to_owned()
-		}))
-		.child(chrome::muted(card.reward_label))
-		.child(
-			Button(l10n.action_start().to_owned())
-				.class(theme::PRIMARY)
-				.on_press(move || {
+	let radius = if card.radius_meters > 0 {
+		l10n.action_place_radius(card.radius_meters)
+	} else {
+		l10n.do_map_empty_title().to_owned()
+	};
+	let creator = l10n.do_creator_by(&card.creator);
+	view! {
+		<View class=theme::CARD>
+			<Text class=theme::TITLE>{card.title}</Text>
+			<chrome::Muted text=creator />
+			<chrome::Muted text=card.place_name />
+			<chrome::Muted text=radius />
+			<chrome::Muted text=card.reward_label />
+			<Button
+				class=theme::PRIMARY
+				on:press=move || {
 					navigation.navigate(ActionPage { action: id.clone() });
-				}),
-		)
+				}
+			>
+				{l10n.action_start()}
+			</Button>
+		</View>
+	}
 }
 
 /// One action: place, proof list, reward, and the start of an attempt.
-pub fn action(navigation: &Navigation, page: &crate::route::ActionPage) -> Element {
+#[component]
+pub fn ActionScreen(navigation: &Navigation, page: &crate::route::ActionPage) -> Element {
 	let l10n = use_l10n();
 	let action_id = page.action.clone();
 	let detail = use_rpc_query(move || GetAction {
@@ -164,70 +174,80 @@ pub fn action(navigation: &Navigation, page: &crate::route::ActionPage) -> Eleme
 			});
 		}),
 	);
-	View()
-		.class("flex flex-col gap-4")
-		.child(Show(
-			move || detail.is_loading(),
-			move || chrome::muted(l10n.action_loading()),
-		))
-		.child(Show(
-			move || detail.is_error(),
-			move || chrome::title(l10n.action_load_failed_title()),
-		))
-		.child(Show(
-			move || detail.data().is_none() && !detail.is_loading() && !detail.is_error(),
-			move || chrome::title(l10n.action_not_found_title()),
-		))
-		.child(For(
-			move || detail.data().into_iter().collect::<Vec<_>>(),
-			|item: &crate::model::ActionDetail| item.id.clone(),
-			move |item| {
-				let l10n = use_l10n();
-				let id = item.id.clone();
-				View()
-					.class("flex flex-col gap-4")
-					.child(chrome::title(item.title.clone()))
-					.child(chrome::muted(item.summary.clone()))
-					.child(chrome::muted(l10n.do_creator_by(&item.creator)))
-					.child(place_card(&item.place_name, item.radius_meters))
-					.child(chrome::title(l10n.action_proof_heading()))
-					.child(chrome::muted(l10n.action_proof_intro()))
-					.child(For(
-						{
-							let proofs = item.proofs.clone();
-							move || proofs.clone()
-						},
-						|proof: &crate::model::ProofNeed| proof.id.clone(),
-						|proof| proof_row(proof),
-					))
-					.child(reward_card(&item.reward_label, item.funded))
-					.child(
-						Button(l10n.action_start().to_owned())
-							.class(theme::PRIMARY)
-							.enabled(!begin.is_pending())
-							.on_press(move || {
-								begin.mutate(BeginAttempt {
-									action_id: id.clone(),
-								});
-							}),
-					)
-			},
-		))
+	view! {
+		<View class="flex flex-col gap-4">
+			{Show(
+				move || detail.is_loading(),
+				move || view! { <chrome::Muted text=l10n.action_loading() /> },
+			)}
+			{Show(
+				move || detail.is_error(),
+				move || view! { <chrome::Title text=l10n.action_load_failed_title() /> },
+			)}
+			{Show(
+				move || detail.data().is_none() && !detail.is_loading() && !detail.is_error(),
+				move || view! { <chrome::Title text=l10n.action_not_found_title() /> },
+			)}
+			{For(
+				move || detail.data().into_iter().collect::<Vec<_>>(),
+				|item: &crate::model::ActionDetail| item.id.clone(),
+				move |item| {
+					let l10n = use_l10n();
+					let id = item.id.clone();
+					let proofs = item.proofs.clone();
+					let creator = l10n.do_creator_by(&item.creator);
+					view! {
+						<View class="flex flex-col gap-4">
+							<chrome::Title text=item.title.clone() />
+							<chrome::Muted text=item.summary.clone() />
+							<chrome::Muted text=creator />
+							<PlaceCard name=item.place_name.clone() radius_meters=item.radius_meters />
+							<chrome::Title text=l10n.action_proof_heading() />
+							<chrome::Muted text=l10n.action_proof_intro() />
+							{For(
+								move || proofs.clone(),
+								|proof: &crate::model::ProofNeed| proof.id.clone(),
+								|proof| view! { <ProofRow proof=proof /> },
+							)}
+							<RewardCard label=item.reward_label.clone() funded=item.funded />
+							<Button
+								class=theme::PRIMARY
+								enabled={!begin.is_pending()}
+								on:press=move || {
+									begin.mutate(BeginAttempt {
+										action_id: id.clone(),
+									});
+								}
+							>
+								{l10n.action_start()}
+							</Button>
+						</View>
+					}
+				},
+			)}
+		</View>
+	}
 }
 
-fn place_card(name: &str, radius_meters: i64) -> Element {
+#[component]
+fn PlaceCard(name: impl Into<String>, radius_meters: i64) -> Element {
 	let l10n = use_l10n();
-	View()
-		.class(theme::PLACE)
-		.child(Text(l10n.action_place_map_label(name)).class("font-semibold"))
-		.child(chrome::muted(if radius_meters > 0 {
-			l10n.action_place_radius(radius_meters)
-		} else {
-			l10n.editor_place_tap_hint().to_owned()
-		}))
+	let name = l10n.action_place_map_label(&name.into());
+	let radius = if radius_meters > 0 {
+		l10n.action_place_radius(radius_meters)
+	} else {
+		l10n.editor_place_tap_hint().to_owned()
+	};
+	view! {
+		<View class=theme::PLACE>
+			<Text class="font-semibold">{name}</Text>
+			<chrome::Muted text=radius />
+		</View>
+	}
 }
 
-fn proof_row(proof: crate::model::ProofNeed) -> Element {
+#[component]
+fn ProofRow(proof: crate::model::ProofNeed) -> Element {
 	let l10n = use_l10n();
 	let kind = match proof.kind {
 		ProofKind::Photo => l10n.do_proof_photo(),
@@ -239,21 +259,28 @@ fn proof_row(proof: crate::model::ProofNeed) -> Element {
 		ProofKind::VenueCode => l10n.do_proof_venue_code(),
 		ProofKind::App => l10n.do_proof_app(),
 	};
-	View()
-		.class(theme::CARD)
-		.child(Text(proof.title).class("font-semibold"))
-		.child(chrome::muted(kind))
+	view! {
+		<View class=theme::CARD>
+			<Text class="font-semibold">{proof.title}</Text>
+			<chrome::Muted text=kind />
+		</View>
+	}
 }
 
-fn reward_card(label: &str, funded: bool) -> Element {
+#[component]
+fn RewardCard(label: impl Into<String>, funded: bool) -> Element {
 	let l10n = use_l10n();
-	View()
-		.class(theme::REWARD)
-		.child(Text(l10n.editor_reward_heading()).class("font-semibold"))
-		.child(chrome::muted(l10n.reward_in_escrow(label)))
-		.child(chrome::muted(if funded {
-			l10n.hub_reward_funded()
-		} else {
-			l10n.hub_reward_needs_funding()
-		}))
+	let label = l10n.reward_in_escrow(&label.into());
+	let funded = if funded {
+		l10n.hub_reward_funded()
+	} else {
+		l10n.hub_reward_needs_funding()
+	};
+	view! {
+		<View class=theme::REWARD>
+			<Text class="font-semibold">{l10n.editor_reward_heading()}</Text>
+			<chrome::Muted text=label />
+			<chrome::Muted text=funded />
+		</View>
+	}
 }

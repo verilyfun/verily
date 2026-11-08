@@ -2,6 +2,7 @@
 //!
 //! Nothing on this screen is a token, a key, or a chain address.
 
+use leptoskit::component;
 use leptoskit::prelude::Button;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::Get;
@@ -12,6 +13,7 @@ use leptoskit::prelude::TextInput;
 use leptoskit::prelude::View;
 use leptoskit::query::use_mutation;
 use leptoskit::rpc::client::mutation_scope;
+use leptoskit::view;
 
 use crate::chrome;
 use crate::l10n::use_l10n;
@@ -21,7 +23,9 @@ use crate::route::Navigation;
 use crate::theme;
 
 /// Appearance and account actions.
-pub fn settings(_navigation: &Navigation) -> Element {
+#[component]
+pub fn Settings(navigation: &Navigation) -> Element {
+	let _ = navigation;
 	let l10n = use_l10n();
 	let notice = RwSignal::new(String::new());
 	let confirmation = RwSignal::new(String::new());
@@ -46,68 +50,48 @@ pub fn settings(_navigation: &Navigation) -> Element {
 			}),
 	);
 
-	View()
-		.class("flex flex-col gap-4")
-		.child(chrome::title(l10n.settings_title()))
-		.child(chrome::muted(l10n.settings_subtitle()))
-		.child(chrome::title(l10n.appearance_title()))
-		.child(chrome::muted(l10n.appearance_subtitle()))
-		.child(
-			View()
-				.class(theme::ROW)
-				.child(
-					Button(l10n.appearance_system().to_owned())
-						.class(theme::QUIET)
-						.on_press(|| theme::install_paper()),
-				)
-				.child(
-					Button(l10n.appearance_light().to_owned())
-						.class(theme::QUIET)
-						.on_press(|| theme::install_paper()),
-				)
-				.child(
-					Button(l10n.appearance_dark().to_owned())
-						.class(theme::QUIET)
-						.on_press(|| theme::install_night()),
-				),
-		)
-		.child(chrome::title(l10n.settings_account_title()))
-		.child(chrome::muted(l10n.settings_sign_out_subtitle()))
-		.child(
-			Button(l10n.settings_sign_out().to_owned())
-				.class(theme::QUIET)
-				.on_press(move || {
-					sign_out.mutate(SignOut {});
-				}),
-		)
-		.child(chrome::muted(l10n.settings_close_account_subtitle()))
-		.child(
-			Button(l10n.settings_close_account().to_owned())
-				.class(theme::PRIMARY)
-				.on_press(move || confirm_open.set(true)),
-		)
-		.child(Show(
-			move || confirm_open.get(),
-			move || {
-				View()
-					.class(theme::CARD)
-					.child(chrome::title(l10n.settings_close_account_dialog_title()))
-					.child(chrome::muted(l10n.settings_close_account_dialog_body()))
-					.child(chrome::muted(
-						l10n.settings_close_account_confirmation_label(),
-					))
-					.child(
-						TextInput()
-							.class(theme::FIELD)
-							.on_change(move |next| confirmation.set(next.to_owned())),
-					)
-					.child(
-						View()
-							.class(theme::ROW)
-							.child(
-								Button(l10n.settings_close_account_confirm().to_owned())
-									.class(theme::PRIMARY)
-									.on_press(move || {
+	view! {
+		<View class="flex flex-col gap-4">
+			<chrome::Title text=l10n.settings_title() />
+			<chrome::Muted text=l10n.settings_subtitle() />
+			<chrome::Title text=l10n.appearance_title() />
+			<chrome::Muted text=l10n.appearance_subtitle() />
+			<View class=theme::ROW>
+				<Button class=theme::QUIET on:press=theme::install_paper>
+					{l10n.appearance_system()}
+				</Button>
+				<Button class=theme::QUIET on:press=theme::install_paper>
+					{l10n.appearance_light()}
+				</Button>
+				<Button class=theme::QUIET on:press=theme::install_night>
+					{l10n.appearance_dark()}
+				</Button>
+			</View>
+			<chrome::Title text=l10n.settings_account_title() />
+			<chrome::Muted text=l10n.settings_sign_out_subtitle() />
+			<Button class=theme::QUIET on:press=move || sign_out.mutate(SignOut {})>
+				{l10n.settings_sign_out()}
+			</Button>
+			<chrome::Muted text=l10n.settings_close_account_subtitle() />
+			<Button class=theme::PRIMARY on:press=move || confirm_open.set(true)>
+				{l10n.settings_close_account()}
+			</Button>
+			{Show(
+				move || confirm_open.get(),
+				move || {
+					view! {
+						<View class=theme::CARD>
+							<chrome::Title text=l10n.settings_close_account_dialog_title() />
+							<chrome::Muted text=l10n.settings_close_account_dialog_body() />
+							<chrome::Muted text=l10n.settings_close_account_confirmation_label() />
+							<TextInput
+								class=theme::FIELD
+								on:change=move |next| confirmation.set(next.to_owned())
+							/>
+							<View class=theme::ROW>
+								<Button
+									class=theme::PRIMARY
+									on:press=move || {
 										let phrase = confirmation.get();
 										if phrase.trim().is_empty() {
 											return;
@@ -115,18 +99,22 @@ pub fn settings(_navigation: &Navigation) -> Element {
 										close.mutate(CloseAccount {
 											confirmation: phrase,
 										});
-									}),
-							)
-							.child(
-								Button(l10n.dialog_cancel().to_owned())
-									.class(theme::QUIET)
-									.on_press(move || confirm_open.set(false)),
-							),
-					)
-			},
-		))
-		.child(Show(
-			move || !notice.get().is_empty(),
-			move || chrome::muted(notice.get()),
-		))
+									}
+								>
+									{l10n.settings_close_account_confirm()}
+								</Button>
+								<Button class=theme::QUIET on:press=move || confirm_open.set(false)>
+									{l10n.dialog_cancel()}
+								</Button>
+							</View>
+						</View>
+					}
+				},
+			)}
+			{Show(move || !notice.get().is_empty(), move || {
+				let text = notice.get();
+				view! { <chrome::Muted text=text /> }
+			})}
+		</View>
+	}
 }

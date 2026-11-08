@@ -1,6 +1,6 @@
 //! Verily's process entry.
 //!
-//! The server is [`verily_backend`]. The UI is [`verily_app::app`] and nothing
+//! The server is [`verily_backend`]. The UI is [`verily_app::App`] and nothing
 //! else from that crate. Start this process with `lk dev`.
 
 use leptos::prelude::*;
@@ -37,7 +37,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	Ok(())
 }
 
-/// The document. It mounts [`verily_app::app`] and nothing else from that crate.
+/// The document. It mounts [`verily_app::App`] and nothing else from that crate.
 fn page() -> impl IntoView {
 	let navigation = verily_app::Navigation::new(verily_app::AppRoute::Do);
 	view! {
@@ -50,7 +50,7 @@ fn page() -> impl IntoView {
 				<title>"Verily"</title>
 				<style>{include_str!("../assets/app.css")}</style>
 			</head>
-			<body>{leptoskit::web::render(verily_app::app(navigation))}</body>
+			<body>{leptoskit::web::render(verily_app::App(navigation))}</body>
 		</html>
 	}
 }

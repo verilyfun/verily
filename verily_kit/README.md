@@ -13,4 +13,4 @@ lk build --platform ios
 lk build --platform android
 ```
 
-`verily_backend` owns the database tables. `[db]` in `leptoskit.toml` points `lk db` at that crate and its Postgres migrations. The binary mounts `verily_backend` and `verily_app::app`. `lk dev` resolves `monosecret.toml` before it starts. Keep secret values out of Git. An ignored `.env` is mode `0600`.
+`verily_backend` owns the database tables. `[db]` in `leptoskit.toml` points `lk db` at that crate and its Postgres migrations. The binary mounts `verily_backend` and `verily_app::App`. `lk dev` resolves `monosecret.toml` before it starts. Keep secret values out of Git. An ignored `.env` is mode `0600`.
