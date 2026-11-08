@@ -57,3 +57,11 @@ markup = "view"
 
 [lint.rules]
 component_attribute = "deny"
+
+# File routes live in verily_app. `lk dev` and `lk plugin:router routes`
+# regenerate that crate's module from those files.
+[[plugins]]
+name = "router"
+
+[plugins.options]
+dir = "verily_app/src/routes"

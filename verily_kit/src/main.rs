@@ -39,7 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 /// The document. It mounts [`verily_app::App`] and nothing else from that crate.
 fn page() -> impl IntoView {
-	let navigation = verily_app::Navigation::new(verily_app::AppRoute::Do);
+	let navigation = verily_app::Navigation::new(verily_app::Route::Do);
 	view! {
 		<!DOCTYPE html>
 		<html lang="en">
