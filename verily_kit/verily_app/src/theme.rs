@@ -33,12 +33,12 @@ pub fn class_sheet() -> &'static [&'static str] {
 
 /// Paper appearance: floral white page, ink text, vermilion stamp.
 pub fn install_paper() {
-	install(&PAPER);
+	install(PAPER);
 }
 
 /// Night appearance: the same roles, with the night ground and the lighter stamp.
 pub fn install_night() {
-	install(&NIGHT);
+	install(NIGHT);
 }
 
 fn install(tokens: &[(&str, &str)]) {

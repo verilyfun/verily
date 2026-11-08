@@ -3,6 +3,7 @@
 use leptoskit::prelude::Tailwind;
 use leptoskit::rpc::Kind;
 use leptoskit::rpc::Operation;
+use leptoskit::view;
 use verily_app::model::ActionFilter;
 use verily_app::model::EvidenceSource;
 use verily_app::model::ProofKind;
@@ -96,7 +97,7 @@ fn the_do_screen_builds() {
 		];
 		for route in routes {
 			let navigation = verily_app::Navigation::new(route);
-			let screen = verily_app::app(navigation);
+			let screen = view! { <verily_app::App navigation=navigation /> };
 			assert!(!screen.children.is_empty());
 		}
 	});
