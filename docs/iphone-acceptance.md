@@ -1,7 +1,7 @@
 # Physical iPhone acceptance checklist
 
 Use this checklist to accept the App Attest fraud-risk receipt and DeviceCheck
-implementation from [the iOS device-risk PR](https://github.com/ifiokjr/verily/pull/9).
+implementation from [the iOS device-risk PR](https://github.com/verilyfun/verily/pull/9).
 Read [Apple App Attest](verification.md#apple-app-attest) for the verification
 contract and [the operator API](serverpod-api.md#apple-device-risk-and-durable-restrictions)
 for endpoint permissions.
