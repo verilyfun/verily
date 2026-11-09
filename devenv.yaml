@@ -7,27 +7,27 @@ inputs:
         follows: nixpkgs
   ifiokjr-nixpkgs:
     # Monosecret 0.5.0, matching the monosecret package the server pins.
-    url: github:ifiokjr/nixpkgs/72e10cc44b8f9c720874df349e064e05024ef62c
+    url: github:ifiokjr/nixpkgs/6916068e520396144ebab9b83fb4ab81ddc3f879
     inputs:
       nixpkgs:
         follows: nixpkgs
   ifiokjr-nixpkgs-pina:
     # Keep Pina's generator and security lints aligned with the framework
-    # version pinned in Cargo.toml (0.23.0; lint driver built for
+    # version pinned in Cargo.toml (0.24.0; lint driver built for
     # nightly-2026-09-15, the toolchain this repository pins).
-    url: github:ifiokjr/nixpkgs/d4e9b677fc772fbeea00b646fd431a62c1fe1a9a
+    url: github:ifiokjr/nixpkgs/6916068e520396144ebab9b83fb4ab81ddc3f879
     inputs:
       nixpkgs:
         follows: nixpkgs
   ifiokjr-nixpkgs-monochange:
     # Monochange 0.21.0, without upgrading unrelated development tools.
-    url: github:ifiokjr/nixpkgs/72e10cc44b8f9c720874df349e064e05024ef62c
+    url: github:ifiokjr/nixpkgs/6916068e520396144ebab9b83fb4ab81ddc3f879
     inputs:
       nixpkgs:
         follows: nixpkgs
   ifiokjr-nixpkgs-serverpod:
     # Keep code generation aligned with the Serverpod packages in this workspace.
-    url: github:ifiokjr/nixpkgs/bbe950962405d75f052570a33b2b0d4298076b36
+    url: github:ifiokjr/nixpkgs/6916068e520396144ebab9b83fb4ab81ddc3f879
     inputs:
       nixpkgs:
         follows: nixpkgs

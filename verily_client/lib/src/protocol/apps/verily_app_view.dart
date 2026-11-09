@@ -111,7 +111,7 @@ abstract class VerilyAppView
     int? webhookSecretVersion,
     List<String>? redirectUris,
     DateTime? createdAt,
-    DateTime? revokedAt,
+    DateTime? revokedAt = const _isc.$UndefinedDateTime(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -199,7 +199,7 @@ class _VerilyAppViewImpl extends VerilyAppView {
     int? webhookSecretVersion,
     List<String>? redirectUris,
     DateTime? createdAt,
-    Object? revokedAt = _Undefined,
+    DateTime? revokedAt = const _isc.$UndefinedDateTime(),
   }) {
     return VerilyAppView(
       id: id ?? this.id,
@@ -212,7 +212,9 @@ class _VerilyAppViewImpl extends VerilyAppView {
       webhookSecretVersion: webhookSecretVersion ?? this.webhookSecretVersion,
       redirectUris: redirectUris ?? this.redirectUris.map((e0) => e0).toList(),
       createdAt: createdAt ?? this.createdAt,
-      revokedAt: revokedAt is DateTime? ? revokedAt : this.revokedAt,
+      revokedAt: revokedAt is _isc.UndefinedSentinel
+          ? this.revokedAt
+          : revokedAt,
     );
   }
 }

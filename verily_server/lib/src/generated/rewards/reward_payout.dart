@@ -11,6 +11,8 @@
 // ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'dart:async' as _ida;
+
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
@@ -153,11 +155,12 @@ abstract class RewardPayout
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
   RewardPayout copyWith({
-    _is.UuidValue? id,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? poolId,
     _is.UuidValue? attemptId,
     _is.UuidValue? recipientAuthUserId,
-    _iacs.AuthUser? recipientAuthUser,
+    _iacs.AuthUser? recipientAuthUser =
+        const _UndefinedRewardPayout$recipientAuthUser(),
     int? payoutIndex,
     int? amount,
     String? recipientWallet,
@@ -165,8 +168,8 @@ abstract class RewardPayout
     String? releaseSignature,
     int? attemptCount,
     String? lastErrorCode,
-    DateTime? releaseStartedAt,
-    DateTime? releasedAt,
+    DateTime? releaseStartedAt = const _is.$UndefinedDateTime(),
+    DateTime? releasedAt = const _is.$UndefinedDateTime(),
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -232,6 +235,11 @@ abstract class RewardPayout
 
 class _Undefined {}
 
+class _UndefinedRewardPayout$recipientAuthUser extends _is.UndefinedSentinel
+    implements _iacs.AuthUser {
+  const _UndefinedRewardPayout$recipientAuthUser();
+}
+
 class _RewardPayoutImpl extends RewardPayout {
   _RewardPayoutImpl({
     _is.UuidValue? id,
@@ -274,11 +282,12 @@ class _RewardPayoutImpl extends RewardPayout {
   @_is.useResult
   @override
   RewardPayout copyWith({
-    Object? id = _Undefined,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? poolId,
     _is.UuidValue? attemptId,
     _is.UuidValue? recipientAuthUserId,
-    Object? recipientAuthUser = _Undefined,
+    _iacs.AuthUser? recipientAuthUser =
+        const _UndefinedRewardPayout$recipientAuthUser(),
     int? payoutIndex,
     int? amount,
     Object? recipientWallet = _Undefined,
@@ -286,19 +295,19 @@ class _RewardPayoutImpl extends RewardPayout {
     Object? releaseSignature = _Undefined,
     int? attemptCount,
     Object? lastErrorCode = _Undefined,
-    Object? releaseStartedAt = _Undefined,
-    Object? releasedAt = _Undefined,
+    DateTime? releaseStartedAt = const _is.$UndefinedDateTime(),
+    DateTime? releasedAt = const _is.$UndefinedDateTime(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
     return RewardPayout(
-      id: id is _is.UuidValue? ? id : this.id,
+      id: id is _is.UndefinedSentinel ? this.id : id,
       poolId: poolId ?? this.poolId,
       attemptId: attemptId ?? this.attemptId,
       recipientAuthUserId: recipientAuthUserId ?? this.recipientAuthUserId,
-      recipientAuthUser: recipientAuthUser is _iacs.AuthUser?
-          ? recipientAuthUser
-          : this.recipientAuthUser?.copyWith(),
+      recipientAuthUser: recipientAuthUser is _is.UndefinedSentinel
+          ? this.recipientAuthUser?.copyWith()
+          : recipientAuthUser,
       payoutIndex: payoutIndex ?? this.payoutIndex,
       amount: amount ?? this.amount,
       recipientWallet: recipientWallet is String?
@@ -312,10 +321,12 @@ class _RewardPayoutImpl extends RewardPayout {
       lastErrorCode: lastErrorCode is String?
           ? lastErrorCode
           : this.lastErrorCode,
-      releaseStartedAt: releaseStartedAt is DateTime?
-          ? releaseStartedAt
-          : this.releaseStartedAt,
-      releasedAt: releasedAt is DateTime? ? releasedAt : this.releasedAt,
+      releaseStartedAt: releaseStartedAt is _is.UndefinedSentinel
+          ? this.releaseStartedAt
+          : releaseStartedAt,
+      releasedAt: releasedAt is _is.UndefinedSentinel
+          ? this.releasedAt
+          : releasedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -632,6 +643,71 @@ class RewardPayoutRepository {
       include: include,
       lockMode: lockMode,
       lockBehavior: lockBehavior,
+    );
+  }
+
+  /// Emits [RewardPayout]s matching the given query parameters every time the
+  /// source tables are modified.
+  ///
+  /// Use [where] to specify which items to include in the return value.
+  /// If none is specified, all items will be returned.
+  ///
+  /// To specify the order of the items use [orderBy] or [orderByList]
+  /// when sorting by multiple columns.
+  ///
+  /// The maximum number of items can be set by [limit]. If no limit is set,
+  /// all items matching the query will be returned.
+  ///
+  /// [offset] defines how many items to skip, after which [limit] (or all)
+  /// items are read from the database.
+  ///
+  /// Use [throttle] to specify the minimum interval between queries. It can
+  /// also be set to `null`, in which case the stream will only be throttled
+  /// when its subscription is paused.
+  ///
+  /// Source tables are collected from the queried table, [where], [orderBy],
+  /// [orderByList], and the [include] graph. [alsoTriggerOnTables] is added
+  /// to that set. Pass [Table] instances such as `RewardPayout.t`.
+  ///
+  /// Raw [Expression] SQL is not inspected. Tables referenced only in raw
+  /// SQL must be passed via [alsoTriggerOnTables].
+  ///
+  /// The stream always reads committed state and never joins an ambient
+  /// [Transaction]. Emissions for a write fire after that write commits.
+  ///
+  /// Currently only supported on SQLite. Calling this method on PostgreSQL
+  /// throws an [UnsupportedError].
+  ///
+  /// ```dart
+  /// var subscription = Persons.db.watch(
+  ///   session,
+  ///   where: (t) => t.lastName.equals('Jones'),
+  ///   orderBy: (t) => t.firstName,
+  ///   limit: 100,
+  /// ).listen((persons) {
+  ///   // Handle the latest matching rows.
+  /// });
+  /// ```
+  _ida.Stream<List<RewardPayout>> watch(
+    _is.DatabaseSession session, {
+    _is.WhereExpressionBuilder<RewardPayoutTable>? where,
+    int? limit,
+    int? offset,
+    _is.OrderByBuilder<RewardPayoutTable>? orderBy,
+    _is.OrderByListBuilder<RewardPayoutTable>? orderByList,
+    RewardPayoutInclude? include,
+    Duration? throttle = const Duration(milliseconds: 30),
+    Iterable<_is.Table>? alsoTriggerOnTables,
+  }) {
+    return session.db.watch<RewardPayout>(
+      where: where?.call(RewardPayout.t),
+      orderBy: orderBy?.call(RewardPayout.t),
+      orderByList: orderByList?.call(RewardPayout.t),
+      limit: limit,
+      offset: offset,
+      include: include,
+      throttle: throttle,
+      alsoTriggerOnTables: alsoTriggerOnTables,
     );
   }
 

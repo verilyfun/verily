@@ -61,7 +61,7 @@ abstract class VerilyAppWebhookSecret
     _isc.UuidValue? appId,
     int? version,
     String? secret,
-    DateTime? previousSecretValidUntil,
+    DateTime? previousSecretValidUntil = const _isc.$UndefinedDateTime(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -93,8 +93,6 @@ abstract class VerilyAppWebhookSecret
   }
 }
 
-class _Undefined {}
-
 class _VerilyAppWebhookSecretImpl extends VerilyAppWebhookSecret {
   _VerilyAppWebhookSecretImpl({
     required _isc.UuidValue appId,
@@ -116,15 +114,16 @@ class _VerilyAppWebhookSecretImpl extends VerilyAppWebhookSecret {
     _isc.UuidValue? appId,
     int? version,
     String? secret,
-    Object? previousSecretValidUntil = _Undefined,
+    DateTime? previousSecretValidUntil = const _isc.$UndefinedDateTime(),
   }) {
     return VerilyAppWebhookSecret(
       appId: appId ?? this.appId,
       version: version ?? this.version,
       secret: secret ?? this.secret,
-      previousSecretValidUntil: previousSecretValidUntil is DateTime?
-          ? previousSecretValidUntil
-          : this.previousSecretValidUntil,
+      previousSecretValidUntil:
+          previousSecretValidUntil is _isc.UndefinedSentinel
+          ? this.previousSecretValidUntil
+          : previousSecretValidUntil,
     );
   }
 }

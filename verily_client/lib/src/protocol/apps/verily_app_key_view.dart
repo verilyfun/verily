@@ -59,8 +59,8 @@ abstract class VerilyAppKeyView
   VerilyAppKeyView copyWith({
     String? keyId,
     DateTime? createdAt,
-    DateTime? lastUsedAt,
-    DateTime? revokedAt,
+    DateTime? lastUsedAt = const _isc.$UndefinedDateTime(),
+    DateTime? revokedAt = const _isc.$UndefinedDateTime(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -90,8 +90,6 @@ abstract class VerilyAppKeyView
   }
 }
 
-class _Undefined {}
-
 class _VerilyAppKeyViewImpl extends VerilyAppKeyView {
   _VerilyAppKeyViewImpl({
     required String keyId,
@@ -112,14 +110,18 @@ class _VerilyAppKeyViewImpl extends VerilyAppKeyView {
   VerilyAppKeyView copyWith({
     String? keyId,
     DateTime? createdAt,
-    Object? lastUsedAt = _Undefined,
-    Object? revokedAt = _Undefined,
+    DateTime? lastUsedAt = const _isc.$UndefinedDateTime(),
+    DateTime? revokedAt = const _isc.$UndefinedDateTime(),
   }) {
     return VerilyAppKeyView(
       keyId: keyId ?? this.keyId,
       createdAt: createdAt ?? this.createdAt,
-      lastUsedAt: lastUsedAt is DateTime? ? lastUsedAt : this.lastUsedAt,
-      revokedAt: revokedAt is DateTime? ? revokedAt : this.revokedAt,
+      lastUsedAt: lastUsedAt is _isc.UndefinedSentinel
+          ? this.lastUsedAt
+          : lastUsedAt,
+      revokedAt: revokedAt is _isc.UndefinedSentinel
+          ? this.revokedAt
+          : revokedAt,
     );
   }
 }

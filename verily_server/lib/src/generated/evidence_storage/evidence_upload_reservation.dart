@@ -11,6 +11,8 @@
 // ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'dart:async' as _ida;
+
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
@@ -190,9 +192,10 @@ abstract class EvidenceUploadReservation
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
   EvidenceUploadReservation copyWith({
-    _is.UuidValue? id,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? authUserId,
-    _iacs.AuthUser? authUser,
+    _iacs.AuthUser? authUser =
+        const _UndefinedEvidenceUploadReservation$authUser(),
     _is.UuidValue? attemptId,
     _is.UuidValue? requirementId,
     _iws572ni.ActionRequirementKind? kind,
@@ -200,15 +203,15 @@ abstract class EvidenceUploadReservation
     String? contentType,
     int? byteLength,
     _iaqghu9u.EvidenceUploadStatus? status,
-    _is.UuidValue? spokenChallengeId,
+    _is.UuidValue? spokenChallengeId = const _is.$UndefinedUuidValue(),
     int? requestCount,
     int? confirmationAttemptCount,
     DateTime? reservedAt,
     DateTime? lastSignedAt,
     DateTime? uploadExpiresAt,
     DateTime? retainUntil,
-    DateTime? confirmationStartedAt,
-    DateTime? confirmedAt,
+    DateTime? confirmationStartedAt = const _is.$UndefinedDateTime(),
+    DateTime? confirmedAt = const _is.$UndefinedDateTime(),
     String? storageVersionId,
   });
   @override
@@ -277,6 +280,11 @@ abstract class EvidenceUploadReservation
 
 class _Undefined {}
 
+class _UndefinedEvidenceUploadReservation$authUser extends _is.UndefinedSentinel
+    implements _iacs.AuthUser {
+  const _UndefinedEvidenceUploadReservation$authUser();
+}
+
 class _EvidenceUploadReservationImpl extends EvidenceUploadReservation {
   _EvidenceUploadReservationImpl({
     _is.UuidValue? id,
@@ -327,9 +335,10 @@ class _EvidenceUploadReservationImpl extends EvidenceUploadReservation {
   @_is.useResult
   @override
   EvidenceUploadReservation copyWith({
-    Object? id = _Undefined,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? authUserId,
-    Object? authUser = _Undefined,
+    _iacs.AuthUser? authUser =
+        const _UndefinedEvidenceUploadReservation$authUser(),
     _is.UuidValue? attemptId,
     _is.UuidValue? requirementId,
     _iws572ni.ActionRequirementKind? kind,
@@ -337,23 +346,23 @@ class _EvidenceUploadReservationImpl extends EvidenceUploadReservation {
     String? contentType,
     int? byteLength,
     _iaqghu9u.EvidenceUploadStatus? status,
-    Object? spokenChallengeId = _Undefined,
+    _is.UuidValue? spokenChallengeId = const _is.$UndefinedUuidValue(),
     int? requestCount,
     int? confirmationAttemptCount,
     DateTime? reservedAt,
     DateTime? lastSignedAt,
     DateTime? uploadExpiresAt,
     DateTime? retainUntil,
-    Object? confirmationStartedAt = _Undefined,
-    Object? confirmedAt = _Undefined,
+    DateTime? confirmationStartedAt = const _is.$UndefinedDateTime(),
+    DateTime? confirmedAt = const _is.$UndefinedDateTime(),
     Object? storageVersionId = _Undefined,
   }) {
     return EvidenceUploadReservation(
-      id: id is _is.UuidValue? ? id : this.id,
+      id: id is _is.UndefinedSentinel ? this.id : id,
       authUserId: authUserId ?? this.authUserId,
-      authUser: authUser is _iacs.AuthUser?
-          ? authUser
-          : this.authUser?.copyWith(),
+      authUser: authUser is _is.UndefinedSentinel
+          ? this.authUser?.copyWith()
+          : authUser,
       attemptId: attemptId ?? this.attemptId,
       requirementId: requirementId ?? this.requirementId,
       kind: kind ?? this.kind,
@@ -361,9 +370,9 @@ class _EvidenceUploadReservationImpl extends EvidenceUploadReservation {
       contentType: contentType ?? this.contentType,
       byteLength: byteLength ?? this.byteLength,
       status: status ?? this.status,
-      spokenChallengeId: spokenChallengeId is _is.UuidValue?
-          ? spokenChallengeId
-          : this.spokenChallengeId,
+      spokenChallengeId: spokenChallengeId is _is.UndefinedSentinel
+          ? this.spokenChallengeId
+          : spokenChallengeId,
       requestCount: requestCount ?? this.requestCount,
       confirmationAttemptCount:
           confirmationAttemptCount ?? this.confirmationAttemptCount,
@@ -371,10 +380,12 @@ class _EvidenceUploadReservationImpl extends EvidenceUploadReservation {
       lastSignedAt: lastSignedAt ?? this.lastSignedAt,
       uploadExpiresAt: uploadExpiresAt ?? this.uploadExpiresAt,
       retainUntil: retainUntil ?? this.retainUntil,
-      confirmationStartedAt: confirmationStartedAt is DateTime?
-          ? confirmationStartedAt
-          : this.confirmationStartedAt,
-      confirmedAt: confirmedAt is DateTime? ? confirmedAt : this.confirmedAt,
+      confirmationStartedAt: confirmationStartedAt is _is.UndefinedSentinel
+          ? this.confirmationStartedAt
+          : confirmationStartedAt,
+      confirmedAt: confirmedAt is _is.UndefinedSentinel
+          ? this.confirmedAt
+          : confirmedAt,
       storageVersionId: storageVersionId is String?
           ? storageVersionId
           : this.storageVersionId,
@@ -751,6 +762,71 @@ class EvidenceUploadReservationRepository {
       include: include,
       lockMode: lockMode,
       lockBehavior: lockBehavior,
+    );
+  }
+
+  /// Emits [EvidenceUploadReservation]s matching the given query parameters every time the
+  /// source tables are modified.
+  ///
+  /// Use [where] to specify which items to include in the return value.
+  /// If none is specified, all items will be returned.
+  ///
+  /// To specify the order of the items use [orderBy] or [orderByList]
+  /// when sorting by multiple columns.
+  ///
+  /// The maximum number of items can be set by [limit]. If no limit is set,
+  /// all items matching the query will be returned.
+  ///
+  /// [offset] defines how many items to skip, after which [limit] (or all)
+  /// items are read from the database.
+  ///
+  /// Use [throttle] to specify the minimum interval between queries. It can
+  /// also be set to `null`, in which case the stream will only be throttled
+  /// when its subscription is paused.
+  ///
+  /// Source tables are collected from the queried table, [where], [orderBy],
+  /// [orderByList], and the [include] graph. [alsoTriggerOnTables] is added
+  /// to that set. Pass [Table] instances such as `EvidenceUploadReservation.t`.
+  ///
+  /// Raw [Expression] SQL is not inspected. Tables referenced only in raw
+  /// SQL must be passed via [alsoTriggerOnTables].
+  ///
+  /// The stream always reads committed state and never joins an ambient
+  /// [Transaction]. Emissions for a write fire after that write commits.
+  ///
+  /// Currently only supported on SQLite. Calling this method on PostgreSQL
+  /// throws an [UnsupportedError].
+  ///
+  /// ```dart
+  /// var subscription = Persons.db.watch(
+  ///   session,
+  ///   where: (t) => t.lastName.equals('Jones'),
+  ///   orderBy: (t) => t.firstName,
+  ///   limit: 100,
+  /// ).listen((persons) {
+  ///   // Handle the latest matching rows.
+  /// });
+  /// ```
+  _ida.Stream<List<EvidenceUploadReservation>> watch(
+    _is.DatabaseSession session, {
+    _is.WhereExpressionBuilder<EvidenceUploadReservationTable>? where,
+    int? limit,
+    int? offset,
+    _is.OrderByBuilder<EvidenceUploadReservationTable>? orderBy,
+    _is.OrderByListBuilder<EvidenceUploadReservationTable>? orderByList,
+    EvidenceUploadReservationInclude? include,
+    Duration? throttle = const Duration(milliseconds: 30),
+    Iterable<_is.Table>? alsoTriggerOnTables,
+  }) {
+    return session.db.watch<EvidenceUploadReservation>(
+      where: where?.call(EvidenceUploadReservation.t),
+      orderBy: orderBy?.call(EvidenceUploadReservation.t),
+      orderByList: orderByList?.call(EvidenceUploadReservation.t),
+      limit: limit,
+      offset: offset,
+      include: include,
+      throttle: throttle,
+      alsoTriggerOnTables: alsoTriggerOnTables,
     );
   }
 

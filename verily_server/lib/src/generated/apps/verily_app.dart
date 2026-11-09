@@ -11,6 +11,8 @@
 // ignore_for_file: dead_code, unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'dart:async' as _ida;
+
 import 'package:serverpod/serverpod.dart' as _is;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _iacs;
@@ -160,21 +162,22 @@ abstract class VerilyApp
   /// with some or all fields replaced by the given arguments.
   @_is.useResult
   VerilyApp copyWith({
-    _is.UuidValue? id,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? creatorAuthUserId,
-    _iacs.AuthUser? creatorAuthUser,
+    _iacs.AuthUser? creatorAuthUser =
+        const _UndefinedVerilyApp$creatorAuthUser(),
     String? name,
     String? websiteUrl,
     _i0paxa5b.VerilyAppStatus? status,
-    DateTime? rateWindowStartedAt,
+    DateTime? rateWindowStartedAt = const _is.$UndefinedDateTime(),
     int? rateWindowCount,
     String? webhookUrl,
     int? webhookSecretVersion,
     int? previousWebhookSecretVersion,
-    DateTime? webhookSecretRotatedAt,
+    DateTime? webhookSecretRotatedAt = const _is.$UndefinedDateTime(),
     DateTime? createdAt,
     DateTime? updatedAt,
-    DateTime? revokedAt,
+    DateTime? revokedAt = const _is.$UndefinedDateTime(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -236,6 +239,11 @@ abstract class VerilyApp
 
 class _Undefined {}
 
+class _UndefinedVerilyApp$creatorAuthUser extends _is.UndefinedSentinel
+    implements _iacs.AuthUser {
+  const _UndefinedVerilyApp$creatorAuthUser();
+}
+
 class _VerilyAppImpl extends VerilyApp {
   _VerilyAppImpl({
     _is.UuidValue? id,
@@ -276,46 +284,49 @@ class _VerilyAppImpl extends VerilyApp {
   @_is.useResult
   @override
   VerilyApp copyWith({
-    Object? id = _Undefined,
+    _is.UuidValue? id = const _is.$UndefinedUuidValue(),
     _is.UuidValue? creatorAuthUserId,
-    Object? creatorAuthUser = _Undefined,
+    _iacs.AuthUser? creatorAuthUser =
+        const _UndefinedVerilyApp$creatorAuthUser(),
     String? name,
     Object? websiteUrl = _Undefined,
     _i0paxa5b.VerilyAppStatus? status,
-    Object? rateWindowStartedAt = _Undefined,
+    DateTime? rateWindowStartedAt = const _is.$UndefinedDateTime(),
     int? rateWindowCount,
     Object? webhookUrl = _Undefined,
     int? webhookSecretVersion,
     Object? previousWebhookSecretVersion = _Undefined,
-    Object? webhookSecretRotatedAt = _Undefined,
+    DateTime? webhookSecretRotatedAt = const _is.$UndefinedDateTime(),
     DateTime? createdAt,
     DateTime? updatedAt,
-    Object? revokedAt = _Undefined,
+    DateTime? revokedAt = const _is.$UndefinedDateTime(),
   }) {
     return VerilyApp(
-      id: id is _is.UuidValue? ? id : this.id,
+      id: id is _is.UndefinedSentinel ? this.id : id,
       creatorAuthUserId: creatorAuthUserId ?? this.creatorAuthUserId,
-      creatorAuthUser: creatorAuthUser is _iacs.AuthUser?
-          ? creatorAuthUser
-          : this.creatorAuthUser?.copyWith(),
+      creatorAuthUser: creatorAuthUser is _is.UndefinedSentinel
+          ? this.creatorAuthUser?.copyWith()
+          : creatorAuthUser,
       name: name ?? this.name,
       websiteUrl: websiteUrl is String? ? websiteUrl : this.websiteUrl,
       status: status ?? this.status,
-      rateWindowStartedAt: rateWindowStartedAt is DateTime?
-          ? rateWindowStartedAt
-          : this.rateWindowStartedAt,
+      rateWindowStartedAt: rateWindowStartedAt is _is.UndefinedSentinel
+          ? this.rateWindowStartedAt
+          : rateWindowStartedAt,
       rateWindowCount: rateWindowCount ?? this.rateWindowCount,
       webhookUrl: webhookUrl is String? ? webhookUrl : this.webhookUrl,
       webhookSecretVersion: webhookSecretVersion ?? this.webhookSecretVersion,
       previousWebhookSecretVersion: previousWebhookSecretVersion is int?
           ? previousWebhookSecretVersion
           : this.previousWebhookSecretVersion,
-      webhookSecretRotatedAt: webhookSecretRotatedAt is DateTime?
-          ? webhookSecretRotatedAt
-          : this.webhookSecretRotatedAt,
+      webhookSecretRotatedAt: webhookSecretRotatedAt is _is.UndefinedSentinel
+          ? this.webhookSecretRotatedAt
+          : webhookSecretRotatedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      revokedAt: revokedAt is DateTime? ? revokedAt : this.revokedAt,
+      revokedAt: revokedAt is _is.UndefinedSentinel
+          ? this.revokedAt
+          : revokedAt,
     );
   }
 }
@@ -622,6 +633,71 @@ class VerilyAppRepository {
       include: include,
       lockMode: lockMode,
       lockBehavior: lockBehavior,
+    );
+  }
+
+  /// Emits [VerilyApp]s matching the given query parameters every time the
+  /// source tables are modified.
+  ///
+  /// Use [where] to specify which items to include in the return value.
+  /// If none is specified, all items will be returned.
+  ///
+  /// To specify the order of the items use [orderBy] or [orderByList]
+  /// when sorting by multiple columns.
+  ///
+  /// The maximum number of items can be set by [limit]. If no limit is set,
+  /// all items matching the query will be returned.
+  ///
+  /// [offset] defines how many items to skip, after which [limit] (or all)
+  /// items are read from the database.
+  ///
+  /// Use [throttle] to specify the minimum interval between queries. It can
+  /// also be set to `null`, in which case the stream will only be throttled
+  /// when its subscription is paused.
+  ///
+  /// Source tables are collected from the queried table, [where], [orderBy],
+  /// [orderByList], and the [include] graph. [alsoTriggerOnTables] is added
+  /// to that set. Pass [Table] instances such as `VerilyApp.t`.
+  ///
+  /// Raw [Expression] SQL is not inspected. Tables referenced only in raw
+  /// SQL must be passed via [alsoTriggerOnTables].
+  ///
+  /// The stream always reads committed state and never joins an ambient
+  /// [Transaction]. Emissions for a write fire after that write commits.
+  ///
+  /// Currently only supported on SQLite. Calling this method on PostgreSQL
+  /// throws an [UnsupportedError].
+  ///
+  /// ```dart
+  /// var subscription = Persons.db.watch(
+  ///   session,
+  ///   where: (t) => t.lastName.equals('Jones'),
+  ///   orderBy: (t) => t.firstName,
+  ///   limit: 100,
+  /// ).listen((persons) {
+  ///   // Handle the latest matching rows.
+  /// });
+  /// ```
+  _ida.Stream<List<VerilyApp>> watch(
+    _is.DatabaseSession session, {
+    _is.WhereExpressionBuilder<VerilyAppTable>? where,
+    int? limit,
+    int? offset,
+    _is.OrderByBuilder<VerilyAppTable>? orderBy,
+    _is.OrderByListBuilder<VerilyAppTable>? orderByList,
+    VerilyAppInclude? include,
+    Duration? throttle = const Duration(milliseconds: 30),
+    Iterable<_is.Table>? alsoTriggerOnTables,
+  }) {
+    return session.db.watch<VerilyApp>(
+      where: where?.call(VerilyApp.t),
+      orderBy: orderBy?.call(VerilyApp.t),
+      orderByList: orderByList?.call(VerilyApp.t),
+      limit: limit,
+      offset: offset,
+      include: include,
+      throttle: throttle,
+      alsoTriggerOnTables: alsoTriggerOnTables,
     );
   }
 

@@ -271,9 +271,10 @@ abstract class ActionRequirementDraft
     double? minPeakAccelerationMetersPerSecondSquared,
     double? maxPeakAccelerationMetersPerSecondSquared,
     String? qrCode,
-    _isc.UuidValue? appId,
+    _isc.UuidValue? appId = const _isc.$UndefinedUuidValue(),
     _is7dtawb.AppVerificationMode? appVerificationMode,
-    _iyt6y350.ActionLocalCheck? localCheck,
+    _iyt6y350.ActionLocalCheck? localCheck =
+        const _UndefinedActionRequirementDraft$localCheck(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -379,6 +380,11 @@ abstract class ActionRequirementDraft
 
 class _Undefined {}
 
+class _UndefinedActionRequirementDraft$localCheck extends _isc.UndefinedSentinel
+    implements _iyt6y350.ActionLocalCheck {
+  const _UndefinedActionRequirementDraft$localCheck();
+}
+
 class _ActionRequirementDraftImpl extends ActionRequirementDraft {
   _ActionRequirementDraftImpl({
     required String requirementKey,
@@ -478,9 +484,10 @@ class _ActionRequirementDraftImpl extends ActionRequirementDraft {
     Object? minPeakAccelerationMetersPerSecondSquared = _Undefined,
     Object? maxPeakAccelerationMetersPerSecondSquared = _Undefined,
     Object? qrCode = _Undefined,
-    Object? appId = _Undefined,
+    _isc.UuidValue? appId = const _isc.$UndefinedUuidValue(),
     Object? appVerificationMode = _Undefined,
-    Object? localCheck = _Undefined,
+    _iyt6y350.ActionLocalCheck? localCheck =
+        const _UndefinedActionRequirementDraft$localCheck(),
   }) {
     return ActionRequirementDraft(
       requirementKey: requirementKey ?? this.requirementKey,
@@ -551,13 +558,13 @@ class _ActionRequirementDraftImpl extends ActionRequirementDraft {
           ? maxPeakAccelerationMetersPerSecondSquared
           : this.maxPeakAccelerationMetersPerSecondSquared,
       qrCode: qrCode is String? ? qrCode : this.qrCode,
-      appId: appId is _isc.UuidValue? ? appId : this.appId,
+      appId: appId is _isc.UndefinedSentinel ? this.appId : appId,
       appVerificationMode: appVerificationMode is _is7dtawb.AppVerificationMode?
           ? appVerificationMode
           : this.appVerificationMode,
-      localCheck: localCheck is _iyt6y350.ActionLocalCheck?
-          ? localCheck
-          : this.localCheck?.copyWith(),
+      localCheck: localCheck is _isc.UndefinedSentinel
+          ? this.localCheck?.copyWith()
+          : localCheck,
     );
   }
 }

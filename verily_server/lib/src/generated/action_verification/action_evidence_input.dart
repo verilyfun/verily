@@ -148,12 +148,13 @@ abstract class ActionEvidenceInput
     double? longitude,
     double? accuracyMeters,
     String? qrCode,
-    List<_if8wodvr.ActionMotionSample>? motionSamples,
-    _is.UuidValue? captureChallengeId,
+    List<_if8wodvr.ActionMotionSample>? motionSamples =
+        const _is.$UndefinedList<_if8wodvr.ActionMotionSample>(),
+    _is.UuidValue? captureChallengeId = const _is.$UndefinedUuidValue(),
     String? deviceIntegrityToken,
     String? captureManifest,
     String? captureSignature,
-    List<String>? captureCertificateChain,
+    List<String>? captureCertificateChain = const _is.$UndefinedList<String>(),
     String? captureAppAttestKeyId,
     String? captureDeviceCheckToken,
   });
@@ -270,12 +271,13 @@ class _ActionEvidenceInputImpl extends ActionEvidenceInput {
     Object? longitude = _Undefined,
     Object? accuracyMeters = _Undefined,
     Object? qrCode = _Undefined,
-    Object? motionSamples = _Undefined,
-    Object? captureChallengeId = _Undefined,
+    List<_if8wodvr.ActionMotionSample>? motionSamples =
+        const _is.$UndefinedList<_if8wodvr.ActionMotionSample>(),
+    _is.UuidValue? captureChallengeId = const _is.$UndefinedUuidValue(),
     Object? deviceIntegrityToken = _Undefined,
     Object? captureManifest = _Undefined,
     Object? captureSignature = _Undefined,
-    Object? captureCertificateChain = _Undefined,
+    List<String>? captureCertificateChain = const _is.$UndefinedList<String>(),
     Object? captureAppAttestKeyId = _Undefined,
     Object? captureDeviceCheckToken = _Undefined,
   }) {
@@ -289,12 +291,12 @@ class _ActionEvidenceInputImpl extends ActionEvidenceInput {
           ? accuracyMeters
           : this.accuracyMeters,
       qrCode: qrCode is String? ? qrCode : this.qrCode,
-      motionSamples: motionSamples is List<_if8wodvr.ActionMotionSample>?
-          ? motionSamples
-          : this.motionSamples?.map((e0) => e0.copyWith()).toList(),
-      captureChallengeId: captureChallengeId is _is.UuidValue?
-          ? captureChallengeId
-          : this.captureChallengeId,
+      motionSamples: motionSamples is _is.UndefinedSentinel
+          ? this.motionSamples?.map((e0) => e0.copyWith()).toList()
+          : motionSamples,
+      captureChallengeId: captureChallengeId is _is.UndefinedSentinel
+          ? this.captureChallengeId
+          : captureChallengeId,
       deviceIntegrityToken: deviceIntegrityToken is String?
           ? deviceIntegrityToken
           : this.deviceIntegrityToken,
@@ -304,9 +306,9 @@ class _ActionEvidenceInputImpl extends ActionEvidenceInput {
       captureSignature: captureSignature is String?
           ? captureSignature
           : this.captureSignature,
-      captureCertificateChain: captureCertificateChain is List<String>?
-          ? captureCertificateChain
-          : this.captureCertificateChain?.map((e0) => e0).toList(),
+      captureCertificateChain: captureCertificateChain is _is.UndefinedSentinel
+          ? this.captureCertificateChain?.map((e0) => e0).toList()
+          : captureCertificateChain,
       captureAppAttestKeyId: captureAppAttestKeyId is String?
           ? captureAppAttestKeyId
           : this.captureAppAttestKeyId,

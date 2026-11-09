@@ -172,13 +172,15 @@ abstract class ActionOpportunity
     String? timeZone,
     int? maxVerifiedCompletions,
     int? verifiedCompletions,
-    DateTime? opensAt,
-    DateTime? closesAt,
-    DateTime? publishedAt,
+    DateTime? opensAt = const _is.$UndefinedDateTime(),
+    DateTime? closesAt = const _is.$UndefinedDateTime(),
+    DateTime? publishedAt = const _is.$UndefinedDateTime(),
     DateTime? updatedAt,
     List<_if4hgiwe.ActionRequirementView>? requirements,
-    _ia5uqadz.ActionAttemptView? myAttempt,
-    _ifzz09nq.RewardSummary? reward,
+    _ia5uqadz.ActionAttemptView? myAttempt =
+        const _UndefinedActionOpportunity$myAttempt(),
+    _ifzz09nq.RewardSummary? reward =
+        const _UndefinedActionOpportunity$reward(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -244,6 +246,16 @@ abstract class ActionOpportunity
 
 class _Undefined {}
 
+class _UndefinedActionOpportunity$myAttempt extends _is.UndefinedSentinel
+    implements _ia5uqadz.ActionAttemptView {
+  const _UndefinedActionOpportunity$myAttempt();
+}
+
+class _UndefinedActionOpportunity$reward extends _is.UndefinedSentinel
+    implements _ifzz09nq.RewardSummary {
+  const _UndefinedActionOpportunity$reward();
+}
+
 class _ActionOpportunityImpl extends ActionOpportunity {
   _ActionOpportunityImpl({
     required _is.UuidValue id,
@@ -304,13 +316,15 @@ class _ActionOpportunityImpl extends ActionOpportunity {
     String? timeZone,
     Object? maxVerifiedCompletions = _Undefined,
     int? verifiedCompletions,
-    Object? opensAt = _Undefined,
-    Object? closesAt = _Undefined,
-    Object? publishedAt = _Undefined,
+    DateTime? opensAt = const _is.$UndefinedDateTime(),
+    DateTime? closesAt = const _is.$UndefinedDateTime(),
+    DateTime? publishedAt = const _is.$UndefinedDateTime(),
     DateTime? updatedAt,
     List<_if4hgiwe.ActionRequirementView>? requirements,
-    Object? myAttempt = _Undefined,
-    Object? reward = _Undefined,
+    _ia5uqadz.ActionAttemptView? myAttempt =
+        const _UndefinedActionOpportunity$myAttempt(),
+    _ifzz09nq.RewardSummary? reward =
+        const _UndefinedActionOpportunity$reward(),
   }) {
     return ActionOpportunity(
       id: id ?? this.id,
@@ -327,18 +341,20 @@ class _ActionOpportunityImpl extends ActionOpportunity {
           ? maxVerifiedCompletions
           : this.maxVerifiedCompletions,
       verifiedCompletions: verifiedCompletions ?? this.verifiedCompletions,
-      opensAt: opensAt is DateTime? ? opensAt : this.opensAt,
-      closesAt: closesAt is DateTime? ? closesAt : this.closesAt,
-      publishedAt: publishedAt is DateTime? ? publishedAt : this.publishedAt,
+      opensAt: opensAt is _is.UndefinedSentinel ? this.opensAt : opensAt,
+      closesAt: closesAt is _is.UndefinedSentinel ? this.closesAt : closesAt,
+      publishedAt: publishedAt is _is.UndefinedSentinel
+          ? this.publishedAt
+          : publishedAt,
       updatedAt: updatedAt ?? this.updatedAt,
       requirements:
           requirements ?? this.requirements.map((e0) => e0.copyWith()).toList(),
-      myAttempt: myAttempt is _ia5uqadz.ActionAttemptView?
-          ? myAttempt
-          : this.myAttempt?.copyWith(),
-      reward: reward is _ifzz09nq.RewardSummary?
-          ? reward
-          : this.reward?.copyWith(),
+      myAttempt: myAttempt is _is.UndefinedSentinel
+          ? this.myAttempt?.copyWith()
+          : myAttempt,
+      reward: reward is _is.UndefinedSentinel
+          ? this.reward?.copyWith()
+          : reward,
     );
   }
 }

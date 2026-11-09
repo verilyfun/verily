@@ -156,7 +156,8 @@ abstract class EvidenceReviewQueueItem
     String? reviewSummary,
     String? mediaUrl,
     String? spokenChallengeWord,
-    _iimxtm94.PayoutReviewView? payoutReview,
+    _iimxtm94.PayoutReviewView? payoutReview =
+        const _UndefinedEvidenceReviewQueueItem$payoutReview(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -216,6 +217,12 @@ abstract class EvidenceReviewQueueItem
 }
 
 class _Undefined {}
+
+class _UndefinedEvidenceReviewQueueItem$payoutReview
+    extends _isc.UndefinedSentinel
+    implements _iimxtm94.PayoutReviewView {
+  const _UndefinedEvidenceReviewQueueItem$payoutReview();
+}
 
 class _EvidenceReviewQueueItemImpl extends EvidenceReviewQueueItem {
   _EvidenceReviewQueueItemImpl({
@@ -277,7 +284,8 @@ class _EvidenceReviewQueueItemImpl extends EvidenceReviewQueueItem {
     String? reviewSummary,
     Object? mediaUrl = _Undefined,
     Object? spokenChallengeWord = _Undefined,
-    Object? payoutReview = _Undefined,
+    _iimxtm94.PayoutReviewView? payoutReview =
+        const _UndefinedEvidenceReviewQueueItem$payoutReview(),
   }) {
     return EvidenceReviewQueueItem(
       evidenceId: evidenceId ?? this.evidenceId,
@@ -300,9 +308,9 @@ class _EvidenceReviewQueueItemImpl extends EvidenceReviewQueueItem {
       spokenChallengeWord: spokenChallengeWord is String?
           ? spokenChallengeWord
           : this.spokenChallengeWord,
-      payoutReview: payoutReview is _iimxtm94.PayoutReviewView?
-          ? payoutReview
-          : this.payoutReview?.copyWith(),
+      payoutReview: payoutReview is _isc.UndefinedSentinel
+          ? this.payoutReview?.copyWith()
+          : payoutReview,
     );
   }
 }

@@ -122,7 +122,7 @@ abstract class EvidenceAppealView
     _i246oa84.EvidenceAppealStatus? status,
     DateTime? createdAt,
     String? resolutionNote,
-    DateTime? resolvedAt,
+    DateTime? resolvedAt = const _isc.$UndefinedDateTime(),
     String? mediaUrl,
     String? spokenChallengeWord,
   });
@@ -222,7 +222,7 @@ class _EvidenceAppealViewImpl extends EvidenceAppealView {
     _i246oa84.EvidenceAppealStatus? status,
     DateTime? createdAt,
     Object? resolutionNote = _Undefined,
-    Object? resolvedAt = _Undefined,
+    DateTime? resolvedAt = const _isc.$UndefinedDateTime(),
     Object? mediaUrl = _Undefined,
     Object? spokenChallengeWord = _Undefined,
   }) {
@@ -239,7 +239,9 @@ class _EvidenceAppealViewImpl extends EvidenceAppealView {
       resolutionNote: resolutionNote is String?
           ? resolutionNote
           : this.resolutionNote,
-      resolvedAt: resolvedAt is DateTime? ? resolvedAt : this.resolvedAt,
+      resolvedAt: resolvedAt is _isc.UndefinedSentinel
+          ? this.resolvedAt
+          : resolvedAt,
       mediaUrl: mediaUrl is String? ? mediaUrl : this.mediaUrl,
       spokenChallengeWord: spokenChallengeWord is String?
           ? spokenChallengeWord

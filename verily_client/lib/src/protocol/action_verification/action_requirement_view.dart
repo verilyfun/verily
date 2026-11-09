@@ -321,7 +321,7 @@ abstract class ActionRequirementView
     double? minConfidence,
     bool? venueCodeConfigured,
     bool? spokenChallengeRequired,
-    List<String>? acceptedContentTypes,
+    List<String>? acceptedContentTypes = const _isc.$UndefinedList<String>(),
     int? maxByteLength,
     _idij3jhk.ActionMovementKind? movementKind,
     _iw0fdt08.ActionMotionType? motionType,
@@ -334,12 +334,14 @@ abstract class ActionRequirementView
     int? maxFreeFallMilliseconds,
     double? minPeakAccelerationMetersPerSecondSquared,
     double? maxPeakAccelerationMetersPerSecondSquared,
-    _isc.UuidValue? appId,
+    _isc.UuidValue? appId = const _isc.$UndefinedUuidValue(),
     String? appName,
     bool? appAvailable,
     _is7dtawb.AppVerificationMode? appVerificationMode,
-    _iyt6y350.ActionLocalCheck? localCheck,
-    _ip3cz2wq.LocalCheckModelView? localCheckModel,
+    _iyt6y350.ActionLocalCheck? localCheck =
+        const _UndefinedActionRequirementView$localCheck(),
+    _ip3cz2wq.LocalCheckModelView? localCheckModel =
+        const _UndefinedActionRequirementView$localCheckModel(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -462,6 +464,17 @@ abstract class ActionRequirementView
 
 class _Undefined {}
 
+class _UndefinedActionRequirementView$localCheck extends _isc.UndefinedSentinel
+    implements _iyt6y350.ActionLocalCheck {
+  const _UndefinedActionRequirementView$localCheck();
+}
+
+class _UndefinedActionRequirementView$localCheckModel
+    extends _isc.UndefinedSentinel
+    implements _ip3cz2wq.LocalCheckModelView {
+  const _UndefinedActionRequirementView$localCheckModel();
+}
+
 class _ActionRequirementViewImpl extends ActionRequirementView {
   _ActionRequirementViewImpl({
     required _isc.UuidValue id,
@@ -566,7 +579,7 @@ class _ActionRequirementViewImpl extends ActionRequirementView {
     Object? minConfidence = _Undefined,
     Object? venueCodeConfigured = _Undefined,
     bool? spokenChallengeRequired,
-    Object? acceptedContentTypes = _Undefined,
+    List<String>? acceptedContentTypes = const _isc.$UndefinedList<String>(),
     Object? maxByteLength = _Undefined,
     Object? movementKind = _Undefined,
     Object? motionType = _Undefined,
@@ -579,12 +592,14 @@ class _ActionRequirementViewImpl extends ActionRequirementView {
     Object? maxFreeFallMilliseconds = _Undefined,
     Object? minPeakAccelerationMetersPerSecondSquared = _Undefined,
     Object? maxPeakAccelerationMetersPerSecondSquared = _Undefined,
-    Object? appId = _Undefined,
+    _isc.UuidValue? appId = const _isc.$UndefinedUuidValue(),
     Object? appName = _Undefined,
     Object? appAvailable = _Undefined,
     Object? appVerificationMode = _Undefined,
-    Object? localCheck = _Undefined,
-    Object? localCheckModel = _Undefined,
+    _iyt6y350.ActionLocalCheck? localCheck =
+        const _UndefinedActionRequirementView$localCheck(),
+    _ip3cz2wq.LocalCheckModelView? localCheckModel =
+        const _UndefinedActionRequirementView$localCheckModel(),
   }) {
     return ActionRequirementView(
       id: id ?? this.id,
@@ -621,9 +636,9 @@ class _ActionRequirementViewImpl extends ActionRequirementView {
           : this.venueCodeConfigured,
       spokenChallengeRequired:
           spokenChallengeRequired ?? this.spokenChallengeRequired,
-      acceptedContentTypes: acceptedContentTypes is List<String>?
-          ? acceptedContentTypes
-          : this.acceptedContentTypes?.map((e0) => e0).toList(),
+      acceptedContentTypes: acceptedContentTypes is _isc.UndefinedSentinel
+          ? this.acceptedContentTypes?.map((e0) => e0).toList()
+          : acceptedContentTypes,
       maxByteLength: maxByteLength is int? ? maxByteLength : this.maxByteLength,
       movementKind: movementKind is _idij3jhk.ActionMovementKind?
           ? movementKind
@@ -662,18 +677,18 @@ class _ActionRequirementViewImpl extends ActionRequirementView {
           maxPeakAccelerationMetersPerSecondSquared is double?
           ? maxPeakAccelerationMetersPerSecondSquared
           : this.maxPeakAccelerationMetersPerSecondSquared,
-      appId: appId is _isc.UuidValue? ? appId : this.appId,
+      appId: appId is _isc.UndefinedSentinel ? this.appId : appId,
       appName: appName is String? ? appName : this.appName,
       appAvailable: appAvailable is bool? ? appAvailable : this.appAvailable,
       appVerificationMode: appVerificationMode is _is7dtawb.AppVerificationMode?
           ? appVerificationMode
           : this.appVerificationMode,
-      localCheck: localCheck is _iyt6y350.ActionLocalCheck?
-          ? localCheck
-          : this.localCheck?.copyWith(),
-      localCheckModel: localCheckModel is _ip3cz2wq.LocalCheckModelView?
-          ? localCheckModel
-          : this.localCheckModel?.copyWith(),
+      localCheck: localCheck is _isc.UndefinedSentinel
+          ? this.localCheck?.copyWith()
+          : localCheck,
+      localCheckModel: localCheckModel is _isc.UndefinedSentinel
+          ? this.localCheckModel?.copyWith()
+          : localCheckModel,
     );
   }
 }
