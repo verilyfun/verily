@@ -5,7 +5,7 @@ edition = "2024"
 license = "Apache-2.0"
 publish = false
 rust-version = "1.95.0"
-description = "Patched leptoskit_idp: Grant.on_account_merge for Verily db check (pin 33ad5e1171f97f4086bf6ec9290e75aef956cdc0)."
+description = "Patched leptoskit_idp: Grant.on_account_merge for Verily db check (pin c0c5013b708e17723cb48062036b40f22f694a57)."
 
 [dependencies]
 axum = { version = "0.8", optional = true, default-features = false, features = ["form", "json", "query"] }
@@ -13,11 +13,11 @@ base64 = { version = "0.22", optional = true }
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde", "std"] }
 getrandom = { version = "0.3", optional = true }
 leptos = { version = "0.9.0-rc0", optional = true, default-features = false }
-leptoskit_auth = { git = "https://github.com/ifiokjr/leptoskit", rev = "33ad5e1171f97f4086bf6ec9290e75aef956cdc0", default-features = false }
-leptoskit_config = { git = "https://github.com/ifiokjr/leptoskit", rev = "33ad5e1171f97f4086bf6ec9290e75aef956cdc0", default-features = false, optional = true }
-leptoskit_db = { git = "https://github.com/ifiokjr/leptoskit", rev = "33ad5e1171f97f4086bf6ec9290e75aef956cdc0", default-features = false }
-leptoskit_query = { git = "https://github.com/ifiokjr/leptoskit", rev = "33ad5e1171f97f4086bf6ec9290e75aef956cdc0", default-features = false, optional = true }
-leptoskit_rpc = { git = "https://github.com/ifiokjr/leptoskit", rev = "33ad5e1171f97f4086bf6ec9290e75aef956cdc0", default-features = false, optional = true }
+leptoskit_auth = { git = "https://github.com/ifiokjr/leptoskit", rev = "c0c5013b708e17723cb48062036b40f22f694a57", default-features = false }
+leptoskit_config = { git = "https://github.com/ifiokjr/leptoskit", rev = "c0c5013b708e17723cb48062036b40f22f694a57", default-features = false, optional = true }
+leptoskit_db = { git = "https://github.com/ifiokjr/leptoskit", rev = "c0c5013b708e17723cb48062036b40f22f694a57", default-features = false }
+leptoskit_query = { git = "https://github.com/ifiokjr/leptoskit", rev = "c0c5013b708e17723cb48062036b40f22f694a57", default-features = false, optional = true }
+leptoskit_rpc = { git = "https://github.com/ifiokjr/leptoskit", rev = "c0c5013b708e17723cb48062036b40f22f694a57", default-features = false, optional = true }
 p256 = { version = "0.14", optional = true, default-features = false, features = ["ecdsa"] }
 ring = { version = "0.17", optional = true }
 serde = { version = "1", features = ["derive"] }
@@ -38,7 +38,7 @@ axum = { version = "0.8", default-features = false, features = ["form", "json", 
 base64 = "0.22"
 http-body-util = "0.1"
 leptos = { version = "0.9.0-rc0", default-features = false, features = ["ssr"] }
-leptoskit_rpc = { git = "https://github.com/ifiokjr/leptoskit", rev = "33ad5e1171f97f4086bf6ec9290e75aef956cdc0", default-features = false, features = ["ssr"] }
+leptoskit_rpc = { git = "https://github.com/ifiokjr/leptoskit", rev = "c0c5013b708e17723cb48062036b40f22f694a57", default-features = false, features = ["ssr"] }
 p256 = { version = "0.14", default-features = false, features = ["ecdsa"] }
 ring = "0.17"
 sha2 = "0.10"
