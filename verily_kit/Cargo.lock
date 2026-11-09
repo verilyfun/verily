@@ -6941,6 +6941,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "verily_site"
+version = "0.1.0"
+dependencies = [
+ "leptos",
+ "leptoskit",
+ "serde_json",
+ "skribble_leptoskit",
+]
+
+[[package]]
 name = "verily_verification"
 version = "0.1.0"
 dependencies = [

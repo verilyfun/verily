@@ -12,22 +12,24 @@ not port those back. Crypto appears only as the unit a reward is paid in.
 
 ## Layout
 
-| Path                             | What                                                             |
-| -------------------------------- | ---------------------------------------------------------------- |
-| `verily_server/`                 | Serverpod 4 server (PostgreSQL + PostGIS)                        |
-| `verily_client/`                 | Generated Serverpod client; never edit by hand                   |
-| `verily_flutter/`                | The Flutter app (Android first, then iOS and web)                |
-| `packages/verily_evidence/`      | Pure Dart evidence contract shared by app and server             |
-| `packages/verily_brand/`         | Brand tokens, mark, wordmark, stamp, promo reel, launch cover    |
-| `packages/verily_lints/`         | Analyzer plugin: colour tokens, pinned app dependencies          |
-| `packages/verily_escrow_client/` | Generated Dart client for the escrow program; never edit by hand |
-| `programs/verily_escrow/`        | Pina reward escrow program (`_sbf` is its deploy-only cdylib)    |
-| `brand/`                         | Exported logo and icon files                                     |
-| `docs/`                          | Verification, storage, escrow, provenance research, brand        |
+| Path                             | What                                                              |
+| -------------------------------- | ----------------------------------------------------------------- |
+| `verily_server/`                 | Serverpod 4 server (PostgreSQL + PostGIS)                         |
+| `verily_client/`                 | Generated Serverpod client; never edit by hand                    |
+| `verily_flutter/`                | The Flutter app (Android first, then iOS and web)                 |
+| `verily_kit/verily_site/`        | verily.fun, the landing page: static, deployed apart from the app |
+| `packages/verily_evidence/`      | Pure Dart evidence contract shared by app and server              |
+| `packages/verily_brand/`         | Brand tokens, mark, wordmark, stamp, promo reel, launch cover     |
+| `packages/verily_lints/`         | Analyzer plugin: colour tokens, pinned app dependencies           |
+| `packages/verily_escrow_client/` | Generated Dart client for the escrow program; never edit by hand  |
+| `programs/verily_escrow/`        | Pina reward escrow program (`_sbf` is its deploy-only cdylib)     |
+| `brand/`                         | Exported logo and icon files                                      |
+| `docs/`                          | Verification, storage, escrow, provenance research, brand         |
 
 Run everything through `devenv shell` so local work uses the pinned Flutter,
 Rust, Pina, and Serverpod toolchains. Verily's local ports avoid other
-Serverpod projects: API `8180`, insights `8181`, web `8182`, Postgres `8191`.
+Serverpod projects: API `8180`, insights `8181`, web `8182`, landing page `8183`,
+Postgres `8191`.
 
 ## Commits and pull requests
 

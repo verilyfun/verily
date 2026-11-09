@@ -21,22 +21,118 @@ pub struct Token {
 
 /// Every colour the site uses. Night values follow the `-on-night` roles.
 pub const TOKENS: &[Token] = &[
-	Token { name: "paper", paper: "#FFFAF0", night: "#292331" },
-	Token { name: "paper-deep", paper: "#F6EEDC", night: "#211C28" },
-	Token { name: "night", paper: "#292331", night: "#1E1925" },
-	Token { name: "ink", paper: "#34283F", night: "#FFFAF0" },
-	Token { name: "muted-ink", paper: "#736678", night: "#B9ACBF" },
-	Token { name: "muted-paper", paper: "#B9ACBF", night: "#736678" },
-	Token { name: "dot", paper: "#E4D9C6", night: "#3A3145" },
-	Token { name: "dusk", paper: "#4A3B5E", night: "#4A3B5E" },
-	Token { name: "stamp", paper: "#D13F22", night: "#F2856A" },
-	Token { name: "on-stamp", paper: "#FFFAF0", night: "#292331" },
-	Token { name: "place", paper: "#2F6B4F", night: "#86C7A0" },
-	Token { name: "place-wash", paper: "#DDEAD9", night: "#24382F" },
-	Token { name: "reward", paper: "#9A6A12", night: "#E6BC5C" },
-	Token { name: "reward-wash", paper: "#F6E8AF", night: "#3B3220" },
-	Token { name: "review", paper: "#6B4FA0", night: "#BBA6EC" },
-	Token { name: "review-wash", paper: "#E5DDF4", night: "#352B4B" },
+	Token {
+		name: "paper",
+		paper: "#FFFAF0",
+		night: "#292331",
+	},
+	Token {
+		name: "paper-deep",
+		paper: "#F6EEDC",
+		night: "#211C28",
+	},
+	Token {
+		name: "night",
+		paper: "#292331",
+		night: "#1E1925",
+	},
+	Token {
+		name: "ink",
+		paper: "#34283F",
+		night: "#FFFAF0",
+	},
+	Token {
+		name: "muted-ink",
+		paper: "#736678",
+		night: "#B9ACBF",
+	},
+	Token {
+		name: "muted-paper",
+		paper: "#B9ACBF",
+		night: "#736678",
+	},
+	Token {
+		name: "dot",
+		paper: "#E4D9C6",
+		night: "#3A3145",
+	},
+	Token {
+		name: "dusk",
+		paper: "#4A3B5E",
+		night: "#4A3B5E",
+	},
+	Token {
+		name: "stamp",
+		paper: "#D13F22",
+		night: "#F2856A",
+	},
+	Token {
+		name: "on-stamp",
+		paper: "#FFFAF0",
+		night: "#292331",
+	},
+	Token {
+		name: "place",
+		paper: "#2F6B4F",
+		night: "#86C7A0",
+	},
+	Token {
+		name: "place-wash",
+		paper: "#DDEAD9",
+		night: "#24382F",
+	},
+	Token {
+		name: "reward",
+		paper: "#9A6A12",
+		night: "#E6BC5C",
+	},
+	Token {
+		name: "reward-wash",
+		paper: "#F6E8AF",
+		night: "#3B3220",
+	},
+	Token {
+		name: "review",
+		paper: "#6B4FA0",
+		night: "#BBA6EC",
+	},
+	Token {
+		name: "review-wash",
+		paper: "#E5DDF4",
+		night: "#352B4B",
+	},
+	Token {
+		name: "phone",
+		paper: "#34283F",
+		night: "#141017",
+	},
+	// Ink on the night band and the camera, which stay dark in both
+	// appearances.
+	Token {
+		name: "chalk",
+		paper: "#FFFAF0",
+		night: "#FFFAF0",
+	},
+	Token {
+		name: "chalk-muted",
+		paper: "#B9ACBF",
+		night: "#B9ACBF",
+	},
+	Token {
+		name: "chalk-place",
+		paper: "#86C7A0",
+		night: "#86C7A0",
+	},
+	Token {
+		name: "chalk-stamp",
+		paper: "#F2856A",
+		night: "#F2856A",
+	},
+	Token {
+		name: "chalk-ink",
+		paper: "#34283F",
+		night: "#34283F",
+	},
 ];
 
 /// The `:root` rules that declare [`TOKENS`], with the night values under
@@ -84,15 +180,30 @@ pub const INK: Theme = Theme {
 };
 
 /// The verified vermilion: the brand and "verified", nothing else.
-pub const STAMP: Tone = Tone { light: hex(0xD1_3F_22), dark: hex(0xF2_85_6A) };
+pub const STAMP: Tone = Tone {
+	light: hex(0xD1_3F_22),
+	dark: hex(0xF2_85_6A),
+};
 /// Place green: pins and radii.
-pub const PLACE: Tone = Tone { light: hex(0x2F_6B_4F), dark: hex(0x86_C7_A0) };
+pub const PLACE: Tone = Tone {
+	light: hex(0x2F_6B_4F),
+	dark: hex(0x86_C7_A0),
+};
 /// Reward gold: coins and the escrow jar.
-pub const REWARD: Tone = Tone { light: hex(0x9A_6A_12), dark: hex(0xE6_BC_5C) };
+pub const REWARD: Tone = Tone {
+	light: hex(0x9A_6A_12),
+	dark: hex(0xE6_BC_5C),
+};
 /// Review violet: anything a person decides.
-pub const REVIEW: Tone = Tone { light: hex(0x6B_4F_A0), dark: hex(0xBB_A6_EC) };
+pub const REVIEW: Tone = Tone {
+	light: hex(0x6B_4F_A0),
+	dark: hex(0xBB_A6_EC),
+};
 /// Muted ink: streets and quiet doodles.
-pub const MUTED: Tone = Tone { light: hex(0xB9_AC_BF), dark: hex(0x73_66_78) };
+pub const MUTED: Tone = Tone {
+	light: hex(0xB9_AC_BF),
+	dark: hex(0x73_66_78),
+};
 
 /// The pin's silhouette on the 512 artboard.
 pub const MARK_PIN: &str = "M 240 486 C 240 486 90 330.56 90 218 C 90 135.15 157.15 68 240 68 C \
@@ -117,7 +228,10 @@ pub fn mark_svg(id: &str, label: Option<&str>, draw: bool) -> String {
 			format!("role=\"img\" aria-label=\"{label}\""),
 			format!("<title>{label}</title>"),
 		),
-		None => ("aria-hidden=\"true\" focusable=\"false\"".to_owned(), String::new()),
+		None => (
+			"aria-hidden=\"true\" focusable=\"false\"".to_owned(),
+			String::new(),
+		),
 	};
 	let class = if draw { "mark mark-draw" } else { "mark" };
 	format!(

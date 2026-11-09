@@ -59,12 +59,20 @@ pub fn place_map(seed: i64) -> Element {
 		Shape::curve([(232.0, 0.0), (222.0, 80.0), (240.0, 150.0), (226.0, 220.0)]),
 		Shape::line((0.0, 214.0), (120.0, 120.0)),
 	];
-	let radius = vec![Shape::Circle { x: 150.0, y: 110.0, diameter: 132.0 }];
+	let radius = vec![Shape::Circle {
+		x: 150.0,
+		y: 110.0,
+		diameter: 132.0,
+	}];
 	let pin = vec![
 		Shape::curve([(150.0, 112.0), (134.0, 92.0), (128.0, 80.0), (132.0, 70.0)]),
 		Shape::curve([(132.0, 70.0), (140.0, 54.0), (160.0, 54.0), (168.0, 70.0)]),
 		Shape::curve([(168.0, 70.0), (172.0, 80.0), (166.0, 92.0), (150.0, 112.0)]),
-		Shape::Circle { x: 150.0, y: 74.0, diameter: 12.0 },
+		Shape::Circle {
+			x: 150.0,
+			y: 74.0,
+			diameter: 12.0,
+		},
 	];
 	view! {
 		<View class="relative w-[300px] h-[220px]" aria_hidden=true>
@@ -92,18 +100,54 @@ pub fn escrow_jar(seed: i64) -> Element {
 			height: 124.0,
 			radii: [22.0, 22.0, 30.0, 30.0],
 		},
-		Shape::RoundedRectangle { x: 50.0, y: 34.0, width: 100.0, height: 16.0, radii: [6.0; 4] },
+		Shape::RoundedRectangle {
+			x: 50.0,
+			y: 34.0,
+			width: 100.0,
+			height: 16.0,
+			radii: [6.0; 4],
+		},
 	];
 	let coins = vec![
-		Shape::Ellipse { x: 80.0, y: 146.0, width: 46.0, height: 22.0 },
-		Shape::Ellipse { x: 120.0, y: 140.0, width: 46.0, height: 22.0 },
-		Shape::Ellipse { x: 100.0, y: 122.0, width: 46.0, height: 22.0 },
-		Shape::Ellipse { x: 86.0, y: 102.0, width: 46.0, height: 22.0 },
+		Shape::Ellipse {
+			x: 80.0,
+			y: 146.0,
+			width: 46.0,
+			height: 22.0,
+		},
+		Shape::Ellipse {
+			x: 120.0,
+			y: 140.0,
+			width: 46.0,
+			height: 22.0,
+		},
+		Shape::Ellipse {
+			x: 100.0,
+			y: 122.0,
+			width: 46.0,
+			height: 22.0,
+		},
+		Shape::Ellipse {
+			x: 86.0,
+			y: 102.0,
+			width: 46.0,
+			height: 22.0,
+		},
 	];
 	let lock = vec![
-		Shape::RoundedRectangle { x: 84.0, y: 30.0, width: 32.0, height: 26.0, radii: [5.0; 4] },
+		Shape::RoundedRectangle {
+			x: 84.0,
+			y: 30.0,
+			width: 32.0,
+			height: 26.0,
+			radii: [5.0; 4],
+		},
 		Shape::curve([(90.0, 30.0), (89.0, 12.0), (111.0, 12.0), (110.0, 30.0)]),
-		Shape::Circle { x: 100.0, y: 42.0, diameter: 6.0 },
+		Shape::Circle {
+			x: 100.0,
+			y: 42.0,
+			diameter: 6.0,
+		},
 	];
 	view! {
 		<View class="relative w-[200px] h-[180px]" aria_hidden=true>
@@ -125,8 +169,16 @@ pub fn viewfinder(width: f32, height: f32, seed: i64) -> Element {
 	let inset = 14.0;
 	let corners = vec![
 		Shape::linear_path([(inset, inset + arm), (inset, inset), (inset + arm, inset)]),
-		Shape::linear_path([(w - inset - arm, inset), (w - inset, inset), (w - inset, inset + arm)]),
-		Shape::linear_path([(inset, h - inset - arm), (inset, h - inset), (inset + arm, h - inset)]),
+		Shape::linear_path([
+			(w - inset - arm, inset),
+			(w - inset, inset),
+			(w - inset, inset + arm),
+		]),
+		Shape::linear_path([
+			(inset, h - inset - arm),
+			(inset, h - inset),
+			(inset + arm, h - inset),
+		]),
 		Shape::linear_path([
 			(w - inset - arm, h - inset),
 			(w - inset, h - inset),
@@ -155,8 +207,16 @@ pub fn stamp(size: f32, seed: i64) -> Element {
 	let s = f64::from(size);
 	let c = s / 2.0;
 	let rings = vec![
-		Shape::Circle { x: c, y: c, diameter: s * 0.94 },
-		Shape::Circle { x: c, y: c, diameter: s * 0.78 },
+		Shape::Circle {
+			x: c,
+			y: c,
+			diameter: s * 0.94,
+		},
+		Shape::Circle {
+			x: c,
+			y: c,
+			diameter: s * 0.78,
+		},
 	];
 	let check = vec![Shape::curve([
 		(s * 0.3, s * 0.5),
@@ -183,27 +243,18 @@ pub fn stamp(size: f32, seed: i64) -> Element {
 	}
 }
 
-/// A doodled arrow from left to right that curls down at the end.
-pub fn arrow(width: f32, height: f32, seed: i64) -> Element {
-	let (w, h) = (f64::from(width), f64::from(height));
-	let shapes = vec![
-		Shape::curve([(4.0, h * 0.3), (w * 0.35, h * 0.05), (w * 0.7, h * 0.2), (w - 6.0, h - 6.0)])
-			.with_arrowhead(),
-	];
-	view! {
-		<View aria_hidden=true>
-			<Sketch width=width height=height shapes=shapes seed=seed theme=brand::INK />
-		</View>
-	}
-}
-
 /// A doodled arrow that rises from the bottom left and points up and to the
 /// right, curling as it goes.
 pub fn arrow_up(width: f32, height: f32, seed: i64) -> Element {
 	let (w, h) = (f64::from(width), f64::from(height));
 	let shapes = vec![
-		Shape::curve([(6.0, h - 6.0), (w * 0.15, h * 0.35), (w * 0.55, h * 0.2), (w - 6.0, 8.0)])
-			.with_arrowhead(),
+		Shape::curve([
+			(6.0, h - 6.0),
+			(w * 0.15, h * 0.35),
+			(w * 0.55, h * 0.2),
+			(w - 6.0, 8.0),
+		])
+		.with_arrowhead(),
 	];
 	view! {
 		<View aria_hidden=true>
@@ -215,7 +266,12 @@ pub fn arrow_up(width: f32, height: f32, seed: i64) -> Element {
 /// A hand-drawn underline, as wide as the words it sits under.
 pub fn underline(width: f32, seed: i64, tone: Tone) -> Element {
 	let w = f64::from(width);
-	let shapes = vec![Shape::curve([(2.0, 10.0), (w * 0.3, 4.0), (w * 0.7, 12.0), (w - 2.0, 5.0)])];
+	let shapes = vec![Shape::curve([
+		(2.0, 10.0),
+		(w * 0.3, 4.0),
+		(w * 0.7, 12.0),
+		(w - 2.0, 5.0),
+	])];
 	view! {
 		<View aria_hidden=true>
 			<Sketch
@@ -234,8 +290,20 @@ pub fn underline(width: f32, seed: i64, tone: Tone) -> Element {
 /// A ticked checkbox in ink with the check in vermilion, as the proof
 /// checklist draws it.
 pub fn tick(seed: i64) -> Element {
-	let boxed = vec![Shape::RoundedRectangle { x: 3.0, y: 5.0, width: 24.0, height: 24.0, radii: [5.0; 4] }];
-	let check = vec![Shape::curve([(8.0, 17.0), (12.0, 22.0), (15.0, 25.0), (22.0, 12.0), (32.0, 2.0)])];
+	let boxed = vec![Shape::RoundedRectangle {
+		x: 3.0,
+		y: 5.0,
+		width: 24.0,
+		height: 24.0,
+		radii: [5.0; 4],
+	}];
+	let check = vec![Shape::curve([
+		(8.0, 17.0),
+		(12.0, 22.0),
+		(15.0, 25.0),
+		(22.0, 12.0),
+		(32.0, 2.0),
+	])];
 	view! {
 		<View class="relative w-[34px] h-[32px]" aria_hidden=true>
 			{layer("left-0 top-0", sketch(34.0, 32.0, seed, boxed))}
@@ -302,7 +370,11 @@ pub fn slammed_stamp(size: f32, seed: i64, delay_ms: u64, when_seen: bool) -> El
 	let motion = Motion::enter(Pose::new().scale(2.2).rotate(-24.0).opacity(0.0))
 		.spring(Spring::BOUNCY)
 		.delay(std::time::Duration::from_millis(delay_ms));
-	let motion = if when_seen { motion.in_view(ViewRange::entry()) } else { motion };
+	let motion = if when_seen {
+		motion.in_view(ViewRange::entry())
+	} else {
+		motion
+	};
 	view! { <View motion=motion>{stamp(size, seed)}</View> }
 }
 
