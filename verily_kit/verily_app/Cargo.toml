@@ -8,10 +8,10 @@ rust-version = "1.95"
 description = "Verily screens for doing, capturing, creating, reviewing, and account."
 
 [dependencies]
-leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false, features = ["l10n", "query", "rpc"] }
-leptoskit_bridge = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false, optional = true }
-leptoskit_l10n = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
-leptoskit_router = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
+leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "d25d5a1dff535c16cc8865c90f4169bc0f759805", default-features = false, features = ["l10n", "query", "rpc"] }
+leptoskit_bridge = { git = "https://github.com/ifiokjr/leptoskit", rev = "d25d5a1dff535c16cc8865c90f4169bc0f759805", default-features = false, optional = true }
+leptoskit_l10n = { git = "https://github.com/ifiokjr/leptoskit", rev = "d25d5a1dff535c16cc8865c90f4169bc0f759805", default-features = false }
+leptoskit_router = { git = "https://github.com/ifiokjr/leptoskit", rev = "d25d5a1dff535c16cc8865c90f4169bc0f759805", default-features = false }
 schemars = { version = "1.2", features = ["semver1"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -27,4 +27,4 @@ ios = ["guest"]
 
 [dev-dependencies]
 any_spawner = { version = "0.3", features = ["futures-executor"] }
-leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false, features = ["leptos"] }
+leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "d25d5a1dff535c16cc8865c90f4169bc0f759805", default-features = false, features = ["leptos"] }
