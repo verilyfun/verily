@@ -87,7 +87,7 @@ verily_backend = { path = "verily_backend" }
 # leptoskit crate above is pinned to, so the graph holds one leptoskit. Bump
 # this rev with the others.
 [patch.crates-io]
-leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "a7b4d400154fef9c3dcc13e434766a66240c90b2" }
+leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "7e61e9bceefea4db7c8e3a70fdd31deb21597898" }
 
 [profile.release]
 lto = "thin"
