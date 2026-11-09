@@ -8,8 +8,8 @@ description = "Server-side actions, escrow checks, and payouts for Verily."
 
 [dependencies]
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde", "std"] }
-leptoskit_db = { git = "https://github.com/ifiokjr/leptoskit", rev = "a7b4d400154fef9c3dcc13e434766a66240c90b2", default-features = false, features = ["sqlite"] }
-leptoskit_rpc = { git = "https://github.com/ifiokjr/leptoskit", rev = "a7b4d400154fef9c3dcc13e434766a66240c90b2", default-features = false, features = ["sqlite"] }
+leptoskit_db = { git = "https://github.com/ifiokjr/leptoskit", rev = "c7a85ef05c4a1a510f6136b444ad4a0c2ef1af5e", default-features = false, features = ["sqlite"] }
+leptoskit_rpc = { git = "https://github.com/ifiokjr/leptoskit", rev = "c7a85ef05c4a1a510f6136b444ad4a0c2ef1af5e", default-features = false, features = ["sqlite"] }
 monosecret = { version = "0.5.0", default-features = false, features = ["client"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
