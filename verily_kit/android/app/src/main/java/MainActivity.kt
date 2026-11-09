@@ -1,8 +1,10 @@
-package fun.verily.app
+package `fun`.verily.app
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.window.OnBackInvokedDispatcher
 import dev.leptoskit.bridge.NativeActivityResult
 import dev.leptoskit.bridge.NativeActivityResultBroker
 import dev.leptoskit.bridge.NativeActivityResultHost
@@ -47,12 +49,46 @@ class MainActivity :
         content = applicationView(this)
         setContentView(content)
         noteAppShortcutLaunch(intent)
+        noteDeepLink(intent)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Android 13 and later deliver Back only here: the manifest opts in
+            // with enableOnBackInvokedCallback, and Android 16 requires it.
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT) {
+                offerSystemBack()
+            }
+        }
+    }
+
+    @Deprecated("Android 12 and earlier deliver Back here; later versions use the callback registered in onCreate")
+    override fun onBackPressed() = offerSystemBack()
+
+    /**
+     * Offers Back to the app's file router first, and leaves only when it has
+     * nothing to go back to. The router answers from the guest thread, a moment
+     * later. Only it knows whether it can go back, so the Back callback stays
+     * registered and Android never previews going home; a Back that arrives
+     * while the router is still answering the last one waits its turn.
+     */
+    private fun offerSystemBack() {
+        val view = content ?: return leave()
+
+        view.offerSystemBack { wentBack -> if (!wentBack) leave() }
+    }
+
+    /** Does what Back does when nothing handles it: finishes, or moves a root task to the back. */
+    private fun leave() {
+        if (isFinishing || isDestroyed) return
+
+        @Suppress("DEPRECATION")
+        super.onBackPressed()
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
         noteAppShortcutLaunch(intent)
+        noteDeepLink(intent)
     }
 
     override fun onSaveInstanceState(state: Bundle) {
@@ -120,6 +156,19 @@ private fun noteAppShortcutLaunch(intent: Intent?) {
         val plugin =
             Class.forName("dev.leptoskit.plugins.appshortcuts.AppShortcutsPlugin")
         plugin.getMethod("noteLaunchIfPresent", Intent::class.java).invoke(null, intent)
+    } catch (_: ClassNotFoundException) {
+    } catch (_: ReflectiveOperationException) {
+    }
+}
+
+/** Pushes an inbound VIEW intent into the deep-link plugin when registered. */
+private fun noteDeepLink(intent: Intent?) {
+    if (intent == null) {
+        return
+    }
+    try {
+        val plugin = Class.forName("dev.leptoskit.plugins.deeplink.DeepLinkPlugin")
+        plugin.getMethod("noteIntentIfPresent", Intent::class.java).invoke(null, intent)
     } catch (_: ClassNotFoundException) {
     } catch (_: ReflectiveOperationException) {
     }
