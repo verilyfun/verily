@@ -838,7 +838,7 @@ in
       exec = ''
         set -euo pipefail
         if ! command -v lk >/dev/null 2>&1; then
-          echo "lk is not on PATH. Install leptoskit_cli from ifiokjr/leptoskit at rev dd174162dfd43b30f06f7e21c69784c1e1e52394." >&2
+          echo "lk is not on PATH. Install it from leptoskit main: cargo install --git https://github.com/ifiokjr/leptoskit --branch main leptoskit_cli --locked" >&2
           exit 1
         fi
         cd "$DEVENV_ROOT/verily_kit"
