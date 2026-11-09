@@ -1,4 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Verily">
   <title>Verily</title>
-  <path d="M 307 268 C 308 232 340 86 222 76 C 126 68 74 142 82 212 C 90 282 158 348 222 458 C 280 318 340 188 430 54" fill="none" stroke="#D13F22" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+  <defs>
+    <mask id="verily-mark-knockout" maskUnits="userSpaceOnUse" x="69.1" y="47.1" width="341.8" height="459.8">
+      <rect x="69.1" y="47.1" width="341.8" height="459.8" fill="white"/>
+      <path d="M 162 230 L 220 292 L 457.3 2.5" fill="none" stroke="black" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+  <path d="M 240 486 C 240 486 90 330.56 90 218 C 90 135.15 157.15 68 240 68 C 322.85 68 390 135.15 390 218 C 390 330.56 240 486 240 486 Z" fill="#D13F22" mask="url(#verily-mark-knockout)"/>
+  <path d="M 380.7 95.9 L 420 48" fill="none" stroke="#D13F22" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

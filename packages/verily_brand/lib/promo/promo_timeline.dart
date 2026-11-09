@@ -44,7 +44,7 @@ abstract final class PromoTimeline {
   /// The vermilion pen strikes through "didn't".
   static const PromoCue strike = PromoCue(1.55, 1.9);
 
-  /// The pin-check draws in one stroke, then ✓erily writes on.
+  /// The pin-check presses in and is ticked, then ✓erily writes on.
   static const PromoCue hookLockup = PromoCue(2, 3.25);
 
   // -- Create: post an action -------------------------------------------------

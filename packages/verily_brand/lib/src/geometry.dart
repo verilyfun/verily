@@ -27,10 +27,26 @@ final class BrandPoint {
   String toString() => 'BrandPoint($x, $y)';
 }
 
-/// A cubic Bézier curve continuing a [BrandStroke] to [end].
+/// A cubic Bézier curve continuing a [BrandStroke] or [BrandShape] to [end].
 final class BrandCubic {
   /// A curve pulled towards [control1] and [control2] that lands on [end].
-  const BrandCubic(this.control1, this.control2, this.end);
+  const BrandCubic(this.control1, this.control2, this.end) : isLine = false;
+
+  /// A straight line from [from] to [end], as a cubic with its control points
+  /// a third and two thirds of the way along. It is written out as an SVG
+  /// `L` command.
+  BrandCubic.line(BrandPoint from, this.end)
+    : control1 = BrandPoint(
+        from.x + (end.x - from.x) / 3,
+        from.y + (end.y - from.y) / 3,
+      ),
+      control2 = BrandPoint(
+        from.x + (end.x - from.x) * 2 / 3,
+        from.y + (end.y - from.y) * 2 / 3,
+      ),
+      isLine = true;
+
+  const BrandCubic._(this.control1, this.control2, this.end, this.isLine);
 
   /// The first control point.
   final BrandPoint control1;
@@ -41,16 +57,53 @@ final class BrandCubic {
   /// Where the curve lands.
   final BrandPoint end;
 
+  /// Whether this curve is a straight line made with [BrandCubic.line].
+  final bool isLine;
+
   /// This curve with every point transformed by [BrandPoint.transform].
   BrandCubic transform({double scale = 1, double dx = 0, double dy = 0}) =>
-      BrandCubic(
+      BrandCubic._(
         control1.transform(scale: scale, dx: dx, dy: dy),
         control2.transform(scale: scale, dx: dx, dy: dy),
         end.transform(scale: scale, dx: dx, dy: dy),
+        isLine,
       );
+
+  /// This curve as an SVG path command: `L` for a line, `C` otherwise.
+  String get pathCommand => isLine
+      ? ' L ${svgNumber(end.x)} ${svgNumber(end.y)}'
+      : ' C ${svgNumber(control1.x)} ${svgNumber(control1.y)}'
+            ' ${svgNumber(control2.x)} ${svgNumber(control2.y)}'
+            ' ${svgNumber(end.x)} ${svgNumber(end.y)}';
 }
 
-/// Which brand ink a stroke or dot is drawn in.
+/// Points along [curves], [perCurve] to a curve, starting at [start].
+List<BrandPoint> _sample(
+  BrandPoint start,
+  List<BrandCubic> curves,
+  int perCurve,
+) {
+  final points = [start];
+  var from = start;
+  for (final curve in curves) {
+    for (var i = 1; i <= perCurve; i++) {
+      points.add(cubicPoint(from, curve, i / perCurve));
+    }
+    from = curve.end;
+  }
+  return points;
+}
+
+/// [curves] from [start] as SVG path data.
+String _pathData(BrandPoint start, List<BrandCubic> curves) {
+  final data = StringBuffer('M ${svgNumber(start.x)} ${svgNumber(start.y)}');
+  for (final curve in curves) {
+    data.write(curve.pathCommand);
+  }
+  return data.toString();
+}
+
+/// Which brand ink a shape, stroke, or dot is drawn in.
 enum BrandInk {
   /// Stamp vermilion: the check, the mark, and the i-dot.
   accent,
@@ -99,30 +152,37 @@ final class BrandStroke {
         ink: ink,
       );
 
-  /// The stroke's centreline as SVG path data (`M … C …`).
-  String get pathData {
-    final data = StringBuffer('M ${svgNumber(start.x)} ${svgNumber(start.y)}');
-    for (final curve in curves) {
-      data.write(
-        ' C ${svgNumber(curve.control1.x)} ${svgNumber(curve.control1.y)}'
-        ' ${svgNumber(curve.control2.x)} ${svgNumber(curve.control2.y)}'
-        ' ${svgNumber(curve.end.x)} ${svgNumber(curve.end.y)}',
-      );
-    }
-    return data.toString();
-  }
+  /// The stroke's centreline as SVG path data (`M … C …`, with `L` for
+  /// straight lines).
+  String get pathData => _pathData(start, curves);
 
   /// Points along the centreline, [perCurve] to a curve, starting at [start].
-  List<BrandPoint> sample({int perCurve = 48}) {
-    final points = [start];
-    var from = start;
-    for (final curve in curves) {
-      for (var i = 1; i <= perCurve; i++) {
-        points.add(cubicPoint(from, curve, i / perCurve));
-      }
-      from = curve.end;
+  List<BrandPoint> sample({int perCurve = 48}) =>
+      _sample(start, curves, perCurve);
+
+  /// Where [point] falls on this stroke: how far along the centreline its
+  /// nearest point is, and how far [point] lies off the centreline.
+  ({double along, double off}) locate(BrandPoint point) {
+    final points = sample(perCurve: 64);
+    var travelled = 0.0;
+    var best = (along: 0.0, off: double.infinity);
+    for (var i = 1; i < points.length; i++) {
+      final a = points[i - 1];
+      final b = points[i];
+      final dx = b.x - a.x;
+      final dy = b.y - a.y;
+      final span = math.sqrt(dx * dx + dy * dy);
+      if (span == 0) continue;
+      final t = (((point.x - a.x) * dx + (point.y - a.y) * dy) / (span * span))
+          .clamp(0.0, 1.0);
+      final off = math.sqrt(
+        math.pow(a.x + dx * t - point.x, 2) +
+            math.pow(a.y + dy * t - point.y, 2),
+      );
+      if (off < best.off) best = (along: travelled + span * t, off: off);
+      travelled += span;
     }
-    return points;
+    return best;
   }
 
   /// The approximate length of the centreline.
@@ -156,6 +216,71 @@ final class BrandDot {
 
   /// The ink it is drawn in.
   final BrandInk ink;
+
+  /// This dot scaled by [scale] and then moved by ([dx], [dy]).
+  BrandDot transform({double scale = 1, double dx = 0, double dy = 0}) =>
+      BrandDot(
+        center: center.transform(scale: scale, dx: dx, dy: dy),
+        radius: radius * scale,
+        ink: ink,
+      );
+}
+
+/// A solid shape: an outline from [start] through [curves] that closes back
+/// on itself and is filled, such as the mark's pin.
+final class BrandShape {
+  /// A shape outlined by [curves] from [start], filled with [ink].
+  const BrandShape({
+    required this.start,
+    required this.curves,
+    this.ink = BrandInk.accent,
+  });
+
+  /// Where the outline starts and, once closed, ends.
+  final BrandPoint start;
+
+  /// The outline's curves, in order. The last lands back on [start].
+  final List<BrandCubic> curves;
+
+  /// The ink it is filled with.
+  final BrandInk ink;
+
+  /// This shape scaled by [scale] and then moved by ([dx], [dy]).
+  BrandShape transform({double scale = 1, double dx = 0, double dy = 0}) =>
+      BrandShape(
+        start: start.transform(scale: scale, dx: dx, dy: dy),
+        curves: [
+          for (final curve in curves)
+            curve.transform(scale: scale, dx: dx, dy: dy),
+        ],
+        ink: ink,
+      );
+
+  /// The closed outline as SVG path data (`M … C … Z`).
+  String get pathData => '${_pathData(start, curves)} Z';
+
+  /// Points along the outline, [perCurve] to a curve, starting at [start].
+  List<BrandPoint> sample({int perCurve = 48}) =>
+      _sample(start, curves, perCurve);
+
+  /// The outline as a stroke [width] wide, for inking its edge.
+  BrandStroke outline(double width) =>
+      BrandStroke(start: start, curves: curves, width: width, ink: ink);
+
+  /// The box the filled shape covers.
+  BrandBox get bounds {
+    var left = double.infinity;
+    var top = double.infinity;
+    var right = double.negativeInfinity;
+    var bottom = double.negativeInfinity;
+    for (final point in sample()) {
+      left = math.min(left, point.x);
+      top = math.min(top, point.y);
+      right = math.max(right, point.x);
+      bottom = math.max(bottom, point.y);
+    }
+    return BrandBox(left, top, right - left, bottom - top);
+  }
 }
 
 /// An axis-aligned box in artboard units.
@@ -197,10 +322,28 @@ final class BrandBox {
       '${svgNumber(left)} ${svgNumber(top)} ${svgNumber(width)} ${svgNumber(height)}';
 }
 
-/// A drawing made of pen strokes and dots, in writing order.
+/// A drawing made of filled shapes, knockouts, pen strokes, and dots, in
+/// drawing order.
+///
+/// Shapes are pressed in first. Knockouts then cut through the shapes, and
+/// only the shapes: where a knockout passes, the shapes are removed and
+/// whatever is behind the glyph shows through. Strokes and dots are inked
+/// last, over the shapes, and no knockout ever touches them.
 final class BrandGlyph {
-  /// A glyph of [strokes] followed by [dots].
-  const BrandGlyph({required this.strokes, this.dots = const []});
+  /// A glyph of [shapes] cut by [knockouts], then [strokes], then [dots].
+  const BrandGlyph({
+    this.shapes = const [],
+    this.knockouts = const [],
+    this.strokes = const [],
+    this.dots = const [],
+  });
+
+  /// Filled shapes, pressed in first.
+  final List<BrandShape> shapes;
+
+  /// Pen strokes that cut through [shapes] instead of adding ink. Their ink
+  /// is ignored.
+  final List<BrandStroke> knockouts;
 
   /// The strokes, in the order a pen draws them.
   final List<BrandStroke> strokes;
@@ -208,12 +351,20 @@ final class BrandGlyph {
   /// Dots, placed after every stroke (the i is dotted last).
   final List<BrandDot> dots;
 
-  /// The box the ink covers, including each stroke's round caps.
+  /// The box the ink covers: every shape, every stroke including its round
+  /// caps, and every dot. Knockouts remove ink, so they add none.
   BrandBox get inkBounds {
     var left = double.infinity;
     var top = double.infinity;
     var right = double.negativeInfinity;
     var bottom = double.negativeInfinity;
+    for (final shape in shapes) {
+      final box = shape.bounds;
+      left = math.min(left, box.left);
+      top = math.min(top, box.top);
+      right = math.max(right, box.right);
+      bottom = math.max(bottom, box.bottom);
+    }
     for (final stroke in strokes) {
       final half = stroke.width / 2;
       for (final point in stroke.sample()) {
@@ -232,23 +383,57 @@ final class BrandGlyph {
     return BrandBox(left, top, right - left, bottom - top);
   }
 
-  /// This glyph with every stroke and dot scaled by [scale] and moved by
-  /// ([dx], [dy]).
+  /// This glyph with every knockout and stroke drawn by a pen [width] wide.
+  /// Shapes and dots keep their size.
+  BrandGlyph withPenWidth(double width) => BrandGlyph(
+    shapes: shapes,
+    knockouts: [for (final knockout in knockouts) knockout.withWidth(width)],
+    strokes: [for (final stroke in strokes) stroke.withWidth(width)],
+    dots: dots,
+  );
+
+  /// This glyph with every part scaled by [scale] and moved by ([dx], [dy]).
   BrandGlyph transform({double scale = 1, double dx = 0, double dy = 0}) =>
       BrandGlyph(
+        shapes: [
+          for (final shape in shapes)
+            shape.transform(scale: scale, dx: dx, dy: dy),
+        ],
+        knockouts: [
+          for (final knockout in knockouts)
+            knockout.transform(scale: scale, dx: dx, dy: dy),
+        ],
         strokes: [
           for (final stroke in strokes)
             stroke.transform(scale: scale, dx: dx, dy: dy),
         ],
         dots: [
-          for (final dot in dots)
-            BrandDot(
-              center: dot.center.transform(scale: scale, dx: dx, dy: dy),
-              radius: dot.radius * scale,
-              ink: dot.ink,
-            ),
+          for (final dot in dots) dot.transform(scale: scale, dx: dx, dy: dy),
         ],
       );
+
+  /// The furthest any ink reaches from [center]: shapes to their outline,
+  /// strokes to the edge of their pen, dots to their rim. Knockouts add none.
+  double reachFrom(BrandPoint center) {
+    double from(BrandPoint point) => math.sqrt(
+      math.pow(point.x - center.x, 2) + math.pow(point.y - center.y, 2),
+    );
+    var reach = 0.0;
+    for (final shape in shapes) {
+      for (final point in shape.sample(perCurve: 96)) {
+        reach = math.max(reach, from(point));
+      }
+    }
+    for (final stroke in strokes) {
+      for (final point in stroke.sample(perCurve: 96)) {
+        reach = math.max(reach, from(point) + stroke.width / 2);
+      }
+    }
+    for (final dot in dots) {
+      reach = math.max(reach, from(dot.center) + dot.radius);
+    }
+    return reach;
+  }
 }
 
 /// The point [t] of the way along [curve], which starts at [from].
@@ -270,58 +455,81 @@ abstract final class VerilyGeometry {
   /// The side of the square artboard the mark is drawn on.
   static const double markArtboard = 512;
 
-  /// The mark's pen width for ordinary use, from 48 logical pixels up.
-  static const double markWeight = 36;
+  /// The width of the mark's check and flick for ordinary use, from 64
+  /// logical pixels up.
+  static const double markWeight = 42;
 
-  /// The heavier pen used on the app icon, where the mark sits on colour.
-  static const double iconWeight = 44;
+  /// The check and flick on the app icon, where the mark sits on colour.
+  static const double iconWeight = 46;
 
-  /// The heaviest pen, for the mark at 32 logical pixels and below, so the
-  /// loop stays open and the line stays visible at 24 pixels.
-  static const double smallWeight = 52;
+  /// The heaviest check and flick, for the mark at 32 logical pixels and
+  /// below, so the cut stays open and the flick stays visible at 24 pixels.
+  static const double smallWeight = 54;
 
-  /// The pin-check: ONE continuous stroke.
-  ///
-  /// The pen lands on the centreline of the check's long arm and leaves it
-  /// heading straight up. It loops over the pin's round head, falls down the
-  /// pin's left side to its point, and that point is the vertex of a check:
-  /// the long arm rises up and to the right, crossing the head's right side
-  /// exactly where the loop began, and flicks out past the head. It reads as
-  /// both a location pin and a tick: verified, here.
-  ///
-  /// The vertex at the pin's point is a sharp corner; the other joins are
-  /// smooth.
-  static const BrandStroke mark = BrandStroke(
-    start: BrandPoint(307, 268),
+  /// The pin: a solid map pin with a round head and a sharp point, filled in
+  /// vermilion.
+  static const BrandShape pin = BrandShape(
+    start: BrandPoint(240, 486),
     curves: [
-      // Up from the arm and over the head's right shoulder.
+      // Up the left flank from the point to the head's widest.
       BrandCubic(
-        BrandPoint(308, 232),
-        BrandPoint(340, 86),
-        BrandPoint(222, 76),
+        BrandPoint(240, 486),
+        BrandPoint(90, 330.56),
+        BrandPoint(90, 218),
       ),
-      // Across the top and round the head's left side.
-      BrandCubic(BrandPoint(126, 68), BrandPoint(74, 142), BrandPoint(82, 212)),
-      // Down the pin's left flank to its point.
+      // Round the head's left side to the top.
       BrandCubic(
-        BrandPoint(90, 282),
-        BrandPoint(158, 348),
-        BrandPoint(222, 458),
+        BrandPoint(90, 135.15),
+        BrandPoint(157.15, 68),
+        BrandPoint(240, 68),
       ),
-      // The check's long arm: up through the loop's start and out.
+      // Round the head's right side.
       BrandCubic(
-        BrandPoint(280, 318),
-        BrandPoint(340, 188),
-        BrandPoint(430, 54),
+        BrandPoint(322.85, 68),
+        BrandPoint(390, 135.15),
+        BrandPoint(390, 218),
       ),
+      // Down the right flank back to the point.
+      BrandCubic(
+        BrandPoint(390, 330.56),
+        BrandPoint(240, 486),
+        BrandPoint(240, 486),
+      ),
+    ],
+  );
+
+  /// The check knocked out of the pin's head: a short arm down to the vertex,
+  /// then the long arm up and to the right, straight through the pin's rim
+  /// and on past it, so the rim is cut open.
+  static final BrandStroke markCheck = BrandStroke(
+    start: const BrandPoint(162, 230),
+    curves: [
+      BrandCubic.line(const BrandPoint(162, 230), const BrandPoint(220, 292)),
+      BrandCubic.line(const BrandPoint(220, 292), const BrandPoint(457.3, 2.5)),
     ],
     width: markWeight,
   );
 
-  /// The mark as a glyph.
-  static const BrandGlyph markGlyph = BrandGlyph(strokes: [mark]);
+  /// The flick: the check's long arm carrying on outside the pin, after a
+  /// small gap, in vermilion. It lies on the long arm's centreline.
+  static final BrandStroke markFlick = BrandStroke(
+    start: const BrandPoint(380.7, 95.9),
+    curves: [
+      BrandCubic.line(const BrandPoint(380.7, 95.9), const BrandPoint(420, 48)),
+    ],
+    width: markWeight,
+  );
 
-  /// The square the mark is centred in, at [markArtboard] units.
+  /// The pin-check: a solid pin with a check knocked out of its head, whose
+  /// long arm breaks through the rim and flicks out past it. It reads as
+  /// both a location pin and a tick: verified, here.
+  static final BrandGlyph markGlyph = BrandGlyph(
+    shapes: const [pin],
+    knockouts: [markCheck],
+    strokes: [markFlick],
+  );
+
+  /// The square the mark is drawn on, at [markArtboard] units.
   static const BrandBox markBox = BrandBox(0, 0, markArtboard, markArtboard);
 
   /// The check that is the "v" of ✓erily, in vermilion.
@@ -486,36 +694,27 @@ abstract final class VerilyGeometry {
   static final BrandBox wordmarkBox = wordmark.inkBounds;
 
   /// The horizontal lockup: the mark as tall as the wordmark from ascender
-  /// to descender, its pen as heavy as the check-v, a short gap, then the
-  /// wordmark.
-  static final BrandGlyph horizontalLockup = BrandGlyph(
-    strokes: [
-      _placeMark(
-        height: wordmarkBox.height * 1.04,
-        weight: checkV.width,
-        centerY: wordmarkBox.center.y,
-        right: wordmarkBox.left - wordmarkBox.height * 0.17,
-      ),
-      ...wordmark.strokes,
-    ],
-    dots: wordmark.dots,
+  /// to descender, a short gap, then the wordmark.
+  static final BrandGlyph horizontalLockup = _withWordmark(
+    _placeMark(
+      height: wordmarkBox.height * 1.04,
+      weight: markWeight,
+      centerY: wordmarkBox.center.y,
+      right: wordmarkBox.left - wordmarkBox.height * 0.17,
+    ),
   );
 
   /// The box the horizontal lockup's ink covers.
   static final BrandBox horizontalLockupBox = horizontalLockup.inkBounds;
 
   /// The stacked lockup: the mark centred over the wordmark.
-  static final BrandGlyph stackedLockup = BrandGlyph(
-    strokes: [
-      _placeMark(
-        height: wordmarkBox.height * 1.3,
-        weight: checkV.width * 1.2,
-        centerX: wordmarkBox.center.x,
-        bottom: wordmarkBox.top - wordmarkBox.height * 0.2,
-      ),
-      ...wordmark.strokes,
-    ],
-    dots: wordmark.dots,
+  static final BrandGlyph stackedLockup = _withWordmark(
+    _placeMark(
+      height: wordmarkBox.height * 1.3,
+      weight: markWeight,
+      centerX: wordmarkBox.center.x,
+      bottom: wordmarkBox.top - wordmarkBox.height * 0.2,
+    ),
   );
 
   /// The box the stacked lockup's ink covers.
@@ -528,11 +727,11 @@ abstract final class VerilyGeometry {
   /// Launchers apply their own mask, so the launcher PNG is full-bleed.
   static const double appIconCornerRadius = 228;
 
-  /// The app icon's mark: paper ink at [iconWeight], 60% of the icon tall,
-  /// centred on its ink.
-  static final BrandStroke appIconMark = _placeMark(
+  /// The app icon's mark: paper ink with its check and flick at
+  /// [iconWeight], 60% of the icon tall, centred on its ink.
+  static final BrandGlyph appIconMark = _placeMark(
     height: appIconArtboard * 0.6,
-    weight: iconWeight * appIconArtboard * 0.6 / 440,
+    weight: iconWeight,
     centerX: appIconArtboard / 2,
     centerY: appIconArtboard / 2,
   );
@@ -544,34 +743,26 @@ abstract final class VerilyGeometry {
   static const double adaptiveIconSafeRadius = 33;
 
   /// The adaptive icon's foreground mark: the app icon's proportions, shrunk
-  /// until every bit of ink sits inside [adaptiveIconSafeRadius] with a
-  /// little air to spare.
-  static final BrandStroke adaptiveIconMark = () {
-    const center = BrandPoint(
-      adaptiveIconArtboard / 2,
-      adaptiveIconArtboard / 2,
-    );
+  /// until every bit of ink, flick included, sits inside
+  /// [adaptiveIconSafeRadius] with a little air to spare.
+  static final BrandGlyph adaptiveIconMark = () {
     const allowed = adaptiveIconSafeRadius - 1.5;
     final unit = appIconMark.transform(
       scale: 1 / appIconArtboard,
       dx: -0.5,
       dy: -0.5,
     );
-    var reach = 0.0;
-    for (final point in unit.sample()) {
-      reach = math.max(reach, math.sqrt(point.x * point.x + point.y * point.y));
-    }
-    reach += unit.width / 2;
+    final reach = unit.reachFrom(const BrandPoint(0, 0));
     return unit.transform(
       scale: allowed / reach,
-      dx: center.x,
-      dy: center.y,
+      dx: adaptiveIconArtboard / 2,
+      dy: adaptiveIconArtboard / 2,
     );
   }();
 
-  /// The mark scaled so its ink is [height] tall with a pen [weight] wide
-  /// after scaling, then placed by its ink box.
-  static BrandStroke _placeMark({
+  /// The mark with its check and flick [weight] artboard units wide, scaled
+  /// so its ink is [height] tall, then placed by its ink box.
+  static BrandGlyph _placeMark({
     required double height,
     required double weight,
     double? centerX,
@@ -579,14 +770,9 @@ abstract final class VerilyGeometry {
     double? right,
     double? bottom,
   }) {
-    // The ink box depends on the pen width, which depends on the scale, so
-    // settle the two together.
-    var ink = markGlyph.inkBounds;
-    var scale = height / ink.height;
-    for (var i = 0; i < 4; i++) {
-      ink = BrandGlyph(strokes: [mark.withWidth(weight / scale)]).inkBounds;
-      scale = height / ink.height;
-    }
+    final mark = markGlyph.withPenWidth(weight);
+    final ink = mark.inkBounds;
+    final scale = height / ink.height;
     final scaled = BrandBox(
       ink.left * scale,
       ink.top * scale,
@@ -599,10 +785,17 @@ abstract final class VerilyGeometry {
     final dy = centerY != null
         ? centerY - scaled.center.y
         : bottom! - scaled.bottom;
-    return mark
-        .withWidth(weight / scale)
-        .transform(scale: scale, dx: dx, dy: dy);
+    return mark.transform(scale: scale, dx: dx, dy: dy);
   }
+
+  /// [mark] followed by the whole wordmark: the mark is drawn first, then the
+  /// word is written. The mark's knockouts cut only the mark.
+  static BrandGlyph _withWordmark(BrandGlyph mark) => BrandGlyph(
+    shapes: mark.shapes,
+    knockouts: mark.knockouts,
+    strokes: [...mark.strokes, ...wordmark.strokes],
+    dots: [...mark.dots, ...wordmark.dots],
+  );
 
   /// The radius of the stamp's heavy outer ring, in stamp units around the
   /// stamp's centre.

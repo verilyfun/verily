@@ -1,4 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="108" height="108" role="img" aria-label="Verily">
   <title>Verily</title>
-  <path d="M 59.6 55.31 C 59.71 51.39 63.19 35.49 50.34 34.4 C 39.89 33.53 34.23 41.59 35.1 49.21 C 35.97 56.83 43.37 64.02 50.34 75.99 C 56.66 60.75 63.19 46.6 72.99 32.01" fill="none" stroke="#FFFAF0" stroke-width="4.89" stroke-linecap="round" stroke-linejoin="round"/>
+  <defs>
+    <mask id="verily-app-icon-foreground-knockout" maskUnits="userSpaceOnUse" x="31.88" y="30.65" width="38.3" height="51.52">
+      <rect x="31.88" y="30.65" width="38.3" height="51.52" fill="white"/>
+      <path d="M 42.29 51.14 L 48.79 58.09 L 75.38 25.65" fill="none" stroke="black" stroke-width="5.15" stroke-linecap="round" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+  <path d="M 51.03 79.83 C 51.03 79.83 34.22 62.41 34.22 49.8 C 34.22 40.51 41.75 32.99 51.03 32.99 C 60.31 32.99 67.84 40.51 67.84 49.8 C 67.84 62.41 51.03 79.83 51.03 79.83 Z" fill="#FFFAF0" mask="url(#verily-app-icon-foreground-knockout)"/>
+  <path d="M 66.8 36.12 L 71.2 30.75" fill="none" stroke="#FFFAF0" stroke-width="5.15" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

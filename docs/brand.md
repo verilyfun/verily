@@ -50,64 +50,90 @@ The voice is **playful, honest, and plain**:
 
 ![The pin-check](../brand/verily-mark.svg)
 
-One continuous stroke that is both a **map pin** and a **check**: _verified,
+A solid **map pin** with a **check** knocked out of its head: _verified,
 here_.
 
-The pen lands on the centreline of the check's long arm and leaves it
-heading straight up. It loops over the pin's round head, falls down the
-pin's left side to its point, and that point is the vertex of a check: the
-long arm rises up and to the right, crossing the head's right side exactly
-where the loop began, and flicks out past the head.
+The check's short arm sits inside the head and its long arm rises up and to
+the right, straight through the pin's rim, cutting it open. After a small
+gap, the same line carries on outside the pin as a short vermilion flick: a
+confident tick that overshoots the pin. The check is cut, not drawn: it is
+transparent, so whatever the mark sits on (paper, night, a photo, the app
+icon's vermilion) shows through it.
 
-Construction, on a 512 × 512 artboard:
+Construction, on a 512 × 512 artboard (y runs down):
 
 ```text
-M 307 268
-C 308 232 340 86 222 76      up from the arm, over the head's right shoulder
-C 126 68 74 142 82 212       across the top, round the left side
-C 90 282 158 348 222 458     down the left flank to the pin's point
-C 280 318 340 188 430 54     the check's long arm, out through the loop's start
+Pin (filled, vermilion)
+M 240 486
+C 240 486 90 330.56 90 218        up the left flank to the head's widest
+C 90 135.15 157.15 68 240 68      round the head's left side to the top
+C 322.85 68 390 135.15 390 218    round the head's right side
+C 390 330.56 240 486 240 486 Z    down the right flank to the point
+
+Check (knocked out of the pin, 42 wide, round caps and joins)
+M 162 230 L 220 292 L 457.3 2.5   short arm to the vertex, then the long arm
+                                  out through the rim and past it
+
+Flick (vermilion, 42 wide, round caps)
+M 380.7 95.9 L 420 48             the long arm again, outside the pin
 ```
 
-- The loop's start lies on the arm's centreline (within half a unit), so the
-  arm crosses the head cleanly with no nub. The joins at the top and left are
-  smooth; the pin's point is the only corner.
-- The ink box is centred on the artboard.
+- The flick lies exactly on the long arm's centreline. Its cap starts about
+  **16 units** past the point where the arm leaves the pin, so the rim is
+  visibly cut open before the flick begins.
+- The cut runs far past the rim on purpose, so the rim is always cut clean
+  through; past the rim there is nothing left to cut.
+- The cut removes only the pin. It never cuts the flick, the wordmark, or
+  anything behind the mark.
+- The pin is centred on x = 240 and the flick reaches out to the upper
+  right, so the ink box (90 to 441 across, 27 to 486 down) sits a little
+  right of the artboard's centre. Lockups and icons place the mark by its ink
+  box.
 - Round caps and joins, always.
 
-### Pen weights
+### Cut and flick weights
 
-The line gets heavier as the mark gets smaller, so the loop stays open and
-the stroke stays visible.
+The cut and the flick get wider as the mark gets smaller, so the check stays
+open and the flick stays visible. The pin itself never changes.
 
-| Size on screen  | Pen (artboard units) | Where                             |
-| --------------- | -------------------- | --------------------------------- |
-| 64 px and up    | 36                   | `verily-mark.svg`, hero uses      |
-| 33 to 63 px     | blends 52 → 36       | `VerilyMark` does this for you    |
-| 32 px and below | 52                   | `verily-mark-small.svg`, favicons |
-| App icon        | 44 on colour         | `verily-app-icon*.svg/png`        |
+| Size on screen  | Cut and flick (artboard units) | Where                             |
+| --------------- | ------------------------------ | --------------------------------- |
+| 64 px and up    | 42                             | `verily-mark.svg`, hero uses      |
+| 33 to 63 px     | blends 54 → 42                 | `VerilyMark` does this for you    |
+| 32 px and below | 54                             | `verily-mark-small.svg`, favicons |
+| App icon        | 46 on colour                   | `verily-app-icon*.svg/png`        |
 
 ### Rough and clean
 
-In the app and in motion, the mark is inked in Skribble's seeded hand: two
-slightly different passes of one pen, a short touchdown, and a thinning flick
-at the end. The same seed always draws the same line, so it never shimmers
-between frames. Exported files are the clean centreline. Use the clean line
-for print, favicons, embroidery, and anywhere a renderer cannot draw ours.
+In the app and in motion, the mark is inked in Skribble's seeded hand: the
+pin's outline wanders very slightly and is edged by two light passes of an
+even pen, and the cut and the flick follow two slightly different seeded
+lines with round caps. The same seed always draws the same mark, so it never
+shimmers between frames. Exported files are the clean vectors: the pin as a
+filled path, the cut as an SVG mask, the flick as a stroke. Use the clean
+mark for print, favicons, embroidery, and anywhere a renderer cannot draw
+ours.
+
+When the mark draws itself on, the pin presses in first (it fades up and
+grows from its point), then the check is cut through it from the short arm
+up, and the flick draws as the cut runs out past the rim, in one pass.
 
 ### Clear space and minimum size
 
 - **Clear space:** keep a margin of at least **a quarter of the mark's
-  height** on every side, free of text and other marks. Around a lockup, use
-  the height of the wordmark's lowercase letters.
-- **Minimum size:** the mark is legible at **24 px** with the small pen (the
-  loop is still an open loop and the check still reads; see the review sheet
-  below), and usable down to **16 px** as a favicon. The wordmark and the
-  lockups need at least **24 px** of height.
+  height** (its ink, flick included) on every side, free of text and other
+  marks. Around a lockup, use the height of the wordmark's lowercase letters.
+- **Minimum size:** the mark is legible at **24 px** with the small weights:
+  the pin, the cut check, and the flick all read, though the gap between the
+  rim and the flick closes to under a pixel (see the review sheet below). It
+  is usable down to **16 px** as a favicon. The wordmark and the lockups need
+  at least **24 px** of height.
 
 To check legibility yourself, render the review sheets (commands at the end)
 and look at `mark-24.png`, `mark-48.png`, and `mark-96.png`: the rough mark,
-the clean mark, the app icon, and the night mark side by side at each size.
+the clean mark, the app icon, and the night mark (rough and clean) side by
+side at each size. `mark-knockout.png` shows the cut over stripes, and
+`mark-motion.png` shows the mark drawing itself on.
 
 ## The wordmark: ✓erily
 
@@ -126,10 +152,14 @@ check or the dot to ink.
 
 ### Lockups
 
-- **Horizontal** (default): the mark as tall as the wordmark from ascender
-  to descender, its pen as heavy as the check-v, with a gap of about a sixth
-  of that height.
-- **Stacked**: the mark centred above the wordmark, a little larger.
+- **Horizontal** (default): the mark (flick included) as tall as the
+  wordmark from ascender to descender, with a gap of about a sixth of that
+  height. The mark keeps its own proportions: its cut and flick are the
+  regular 42 units of its artboard.
+- **Stacked**: the mark centred above the wordmark by its ink box, a little
+  larger.
+
+The mark's cut goes through its pin only, never through the wordmark.
 
 The proportions live in the geometry; use `VerilyLockup` or the exported files
 instead of placing the parts by eye.
@@ -194,7 +224,7 @@ turned 8° anticlockwise, with a rubber-stamp texture (`VerifiedStamp`).
 **Do**
 
 - Draw in Skribble's hand: seeded rough lines, hatched washes, dotted paper.
-- Let the mark draw itself in one stroke, once, where a moment deserves it.
+- Let the mark press in and tick itself, once, where a moment deserves it.
 - Show the place: a pin and a hatched sage radius.
 - Show the money before the work: the escrow jar or chip is already full.
 - Keep copy short and literal.
@@ -202,7 +232,8 @@ turned 8° anticlockwise, with a rubber-stamp texture (`VerifiedStamp`).
 **Don't**
 
 - Redraw, stretch, rotate, outline, or shadow the mark, or add a gradient.
-- Separate the pin from the check, or fill the pin's head.
+- Fill in the check, draw it on top of the pin instead of cutting it out,
+  close the rim where the check breaks through, or drop the flick.
 - Use surveillance imagery: red boxes, face grids, threat meters, scores.
 - Make the token the product, or show charts, prices, or trading.
 - Claim a clip is "real". Say what was checked.
