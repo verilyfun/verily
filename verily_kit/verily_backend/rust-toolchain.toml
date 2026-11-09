@@ -4,10 +4,10 @@
 [toolchain]
 channel = "nightly-2026-10-21"
 components = [
-	"cargo",
-	"clippy",
-	"rustfmt",
-	"rust-analyzer",
-	"rust-src",
+  "cargo",
+  "clippy",
+  "rustfmt",
+  "rust-analyzer",
+  "rust-src",
 ]
 profile = "default"
