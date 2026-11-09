@@ -3194,6 +3194,7 @@ name = "leptoskit_bridge_ffi"
 version = "0.3.0"
 source = "git+https://github.com/ifiokjr/leptoskit?rev=d161fdf435c8f5e64cfb09f2ff53feec5619c921#d161fdf435c8f5e64cfb09f2ff53feec5619c921"
 dependencies = [
+ "futures",
  "leptoskit_appkit",
  "leptoskit_bridge",
  "leptoskit_codepush",
@@ -3205,6 +3206,7 @@ dependencies = [
  "log",
  "serde",
  "serde_json",
+ "tokio",
 ]
 
 [[package]]
