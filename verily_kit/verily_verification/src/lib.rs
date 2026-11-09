@@ -6,7 +6,8 @@
 //! list, and a model verdict does not release a reward. Missing attestation
 //! or configuration fails closed.
 //!
-//! Domain records that `verily_shared` does not own yet live in [`pending_shared`].
+//! Shared domain records come from [`verily_shared`]. Capture-only types such
+//! as key storage stay in this crate.
 
 pub mod binding;
 pub mod capture;
@@ -19,7 +20,6 @@ pub mod motion;
 pub mod movement;
 pub mod ops;
 pub mod payout;
-pub mod pending_shared;
 pub mod reasons;
 pub mod review;
 pub mod spoken;

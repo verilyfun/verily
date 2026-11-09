@@ -17,11 +17,17 @@ use p256::ecdsa::VerifyingKey;
 use p256::ecdsa::signature::Verifier;
 
 use crate::binding;
-use crate::pending_shared::KeyStorage;
-use crate::pending_shared::Provenance;
+use verily_shared::EvidenceProvenanceLevel;
 
 pub const WINDOW: Duration = Duration::from_secs(30 * 60);
 pub const CLOCK_TOLERANCE: Duration = Duration::from_secs(2 * 60);
+
+/// Where an attested Android key lives. Only the chain may say so.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum KeyStorage {
+	StrongBox,
+	TrustedEnvironment,
+}
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum CaptureError {
@@ -66,7 +72,7 @@ pub fn begin_capture(
 fn fill_nonce(nonce: &mut [u8; 32]) -> Result<(), CaptureError> {
 	#[cfg(test)]
 	{
-		return test_entropy(nonce);
+		test_entropy(nonce)
 	}
 	#[cfg(not(test))]
 	{
@@ -154,7 +160,7 @@ pub fn verify_android_capture(
 	manifest: &[u8],
 	signature_p1363: &[u8],
 	mode: SignatureMode,
-) -> Result<Provenance, CaptureError> {
+) -> Result<EvidenceProvenanceLevel, CaptureError> {
 	let challenge = binding::android_attestation_challenge(capture_challenge, attempt_id)
 		.map_err(|_| CaptureError::Refused)?;
 	let parsed = attestation.parse(chain_der, &challenge)?;
@@ -162,14 +168,14 @@ pub fn verify_android_capture(
 	if parsed.trusted {
 		return match parsed.storage {
 			Some(KeyStorage::StrongBox | KeyStorage::TrustedEnvironment) => {
-				Ok(Provenance::HardwareAttested)
+				Ok(EvidenceProvenanceLevel::HardwareAttested)
 			}
 			None => Err(CaptureError::Refused),
 		};
 	}
 	match mode {
 		SignatureMode::Required => Err(CaptureError::Refused),
-		SignatureMode::Optional => Ok(Provenance::DeviceSigned),
+		SignatureMode::Optional => Ok(EvidenceProvenanceLevel::DeviceSigned),
 	}
 }
 
@@ -194,14 +200,16 @@ pub struct AppAttestAssertion {
 	pub last_accepted_counter: u32,
 }
 
-pub fn judge_app_attest(assertion: AppAttestAssertion) -> Result<Provenance, CaptureError> {
+pub fn judge_app_attest(
+	assertion: AppAttestAssertion,
+) -> Result<EvidenceProvenanceLevel, CaptureError> {
 	if !assertion.signature_verifies || !assertion.rp_id_matches {
 		return Err(CaptureError::Refused);
 	}
 	if assertion.counter <= assertion.last_accepted_counter {
 		return Err(CaptureError::Replayed);
 	}
-	Ok(Provenance::SecureEnclaveAttested)
+	Ok(EvidenceProvenanceLevel::SecureEnclaveAttested)
 }
 
 #[cfg(test)]
@@ -268,7 +276,7 @@ mod tests {
 			SignatureMode::Required,
 		)
 		.unwrap();
-		assert_eq!(provenance, Provenance::HardwareAttested);
+		assert_eq!(provenance, EvidenceProvenanceLevel::HardwareAttested);
 	}
 
 	#[test]
@@ -309,7 +317,7 @@ mod tests {
 				SignatureMode::Optional,
 			)
 			.unwrap(),
-			Provenance::DeviceSigned
+			EvidenceProvenanceLevel::DeviceSigned
 		);
 		assert_eq!(
 			verify_android_capture(
@@ -334,8 +342,8 @@ mod tests {
 			last_accepted_counter: 3,
 		})
 		.unwrap();
-		assert_eq!(provenance, Provenance::SecureEnclaveAttested);
-		assert_ne!(provenance, Provenance::HardwareAttested);
+		assert_eq!(provenance, EvidenceProvenanceLevel::SecureEnclaveAttested);
+		assert_ne!(provenance, EvidenceProvenanceLevel::HardwareAttested);
 		assert_eq!(
 			judge_app_attest(AppAttestAssertion {
 				signature_verifies: true,

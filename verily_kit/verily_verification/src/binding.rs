@@ -9,7 +9,7 @@ use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use sha2::Digest;
 use sha2::Sha256;
 
-use crate::pending_shared::MediaKind;
+use verily_shared::MediaEvidenceKind;
 
 pub const REQUEST_DOMAIN: &str = "verily-capture-request-v2";
 pub const MANIFEST_DOMAIN: &str = "verily-capture-manifest-v1";
@@ -123,7 +123,7 @@ pub fn capture_manifest(
 }
 
 pub fn media_binding_hash(
-	kind: MediaKind,
+	kind: MediaEvidenceKind,
 	captured_at_ms: i64,
 	sha256_digest: &str,
 	byte_length: u64,
@@ -134,8 +134,8 @@ pub fn media_binding_hash(
 		return Err(BindingError::Invalid);
 	}
 	let duration_ok = match kind {
-		MediaKind::Photo => duration_seconds == 0,
-		MediaKind::Video | MediaKind::Audio => duration_seconds > 0,
+		MediaEvidenceKind::Photo => duration_seconds == 0,
+		MediaEvidenceKind::Video | MediaEvidenceKind::Audio => duration_seconds > 0,
 	};
 	let content_type = content_type.trim().to_ascii_lowercase();
 	if !duration_ok || content_type.is_empty() {
@@ -229,11 +229,11 @@ fn canonical_hash(fields: &[&str]) -> String {
 	sha256_hex(fields.join("\n").as_bytes())
 }
 
-fn kind_name(kind: MediaKind) -> &'static str {
+fn kind_name(kind: MediaEvidenceKind) -> &'static str {
 	match kind {
-		MediaKind::Video => "video",
-		MediaKind::Photo => "photo",
-		MediaKind::Audio => "audio",
+		MediaEvidenceKind::Video => "video",
+		MediaEvidenceKind::Photo => "photo",
+		MediaEvidenceKind::Audio => "audio",
 	}
 }
 
@@ -258,7 +258,7 @@ mod tests {
 	#[test]
 	fn media_binding_matches_the_evidence_contract() {
 		let hash = media_binding_hash(
-			MediaKind::Photo,
+			MediaEvidenceKind::Photo,
 			1_700_000_000_000,
 			&"ab".repeat(32),
 			12,
@@ -290,8 +290,15 @@ mod tests {
 
 	#[test]
 	fn a_client_digest_is_only_accepted_when_it_matches_the_recompute() {
-		let stored =
-			media_binding_hash(MediaKind::Photo, 10, &"aa".repeat(32), 4, 0, "image/png").unwrap();
+		let stored = media_binding_hash(
+			MediaEvidenceKind::Photo,
+			10,
+			&"aa".repeat(32),
+			4,
+			0,
+			"image/png",
+		)
+		.unwrap();
 		assert_eq!(normalize_sha256(&stored.to_uppercase()).unwrap(), stored);
 		assert!(normalize_sha256("not-a-digest").is_err());
 		assert_ne!(stored, "aa".repeat(32));

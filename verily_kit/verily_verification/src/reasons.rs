@@ -1,6 +1,6 @@
 //! Public reason codes. Internal verifier codes stay on the server.
 
-use crate::pending_shared::DecisionStatus;
+use verily_shared::EvidenceDecisionStatus;
 
 pub const PROOF_ACCEPTED: &str = "proof_accepted";
 pub const CHECKING: &str = "checking";
@@ -21,15 +21,18 @@ pub const MOTION_NOT_MATCHED: &str = "motion_not_matched";
 pub const CAPTURE_NOT_VERIFIED: &str = "capture_not_verified";
 pub const PAYOUT_REVIEW: &str = "payout_review";
 
-pub fn public_decision_reason(code: Option<&str>, status: Option<DecisionStatus>) -> &'static str {
+pub fn public_decision_reason(
+	code: Option<&str>,
+	status: Option<EvidenceDecisionStatus>,
+) -> &'static str {
 	if let Some(exact) = code.and_then(exact) {
 		return exact;
 	}
 	match status {
 		None => CHECKING,
-		Some(DecisionStatus::Accepted) => PROOF_ACCEPTED,
-		Some(DecisionStatus::ManualReview) => NEEDS_REVIEW,
-		Some(DecisionStatus::Rejected) => {
+		Some(EvidenceDecisionStatus::Accepted) => PROOF_ACCEPTED,
+		Some(EvidenceDecisionStatus::ManualReview) => NEEDS_REVIEW,
+		Some(EvidenceDecisionStatus::Rejected) => {
 			code.and_then(rejected_family).unwrap_or(PROOF_NOT_ACCEPTED)
 		}
 	}
@@ -100,13 +103,16 @@ mod tests {
 	#[test]
 	fn internal_codes_become_the_public_set() {
 		assert_eq!(
-			public_decision_reason(Some("outside_geofence"), Some(DecisionStatus::Rejected)),
+			public_decision_reason(
+				Some("outside_geofence"),
+				Some(EvidenceDecisionStatus::Rejected)
+			),
 			OUTSIDE_AREA
 		);
 		assert_eq!(
 			public_decision_reason(
 				Some("capture_attestation_untrusted"),
-				Some(DecisionStatus::Rejected)
+				Some(EvidenceDecisionStatus::Rejected)
 			),
 			CAPTURE_NOT_VERIFIED
 		);

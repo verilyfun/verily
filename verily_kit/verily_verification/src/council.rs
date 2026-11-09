@@ -3,8 +3,8 @@
 //! Any injection report forces manual review, including when other votes would
 //! accept. Missing quorum routes to a person. The council does not guess.
 
-use crate::pending_shared::DecisionStatus;
-use crate::pending_shared::VerificationPolicy;
+use verily_shared::ActionVerificationPolicy;
+use verily_shared::EvidenceDecisionStatus;
 
 pub const PROMPT_INJECTION: &str = "media_prompt_injection_detected";
 pub const VERIFIED_SUMMARY: &str = "Proof verified.";
@@ -38,7 +38,7 @@ pub struct ModelVote {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct MediaDecision {
-	pub status: DecisionStatus,
+	pub status: EvidenceDecisionStatus,
 	pub verifier_type: &'static str,
 	pub reason_code: &'static str,
 	pub summary: &'static str,
@@ -49,12 +49,12 @@ pub struct MediaDecision {
 
 /// Combines votes. `minimum_confidence` is the rule's threshold, not a caller's.
 pub fn decide(
-	policy: VerificationPolicy,
+	policy: ActionVerificationPolicy,
 	votes: &[ModelVote],
 	minimum_confidence: f64,
 	spoken_challenge_requested: bool,
 ) -> MediaDecision {
-	let council = policy == VerificationPolicy::ModelCouncil;
+	let council = policy == ActionVerificationPolicy::ModelCouncil;
 	let verifier_type = if council {
 		"openrouter-model-council"
 	} else {
@@ -87,7 +87,7 @@ pub fn decide(
 		.any(|vote| vote.error_code.as_deref() == Some(PROMPT_INJECTION))
 	{
 		return decision(
-			DecisionStatus::ManualReview,
+			EvidenceDecisionStatus::ManualReview,
 			"media_security_review_required",
 			REVIEW_SUMMARY,
 			None,
@@ -99,7 +99,7 @@ pub fn decide(
 	let not_fulfilled = decisive(votes, Verdict::NotFulfilled, minimum_confidence);
 	if not_fulfilled.len() >= quorum && fulfilled.len() < quorum {
 		return decision(
-			DecisionStatus::Rejected,
+			EvidenceDecisionStatus::Rejected,
 			if council {
 				"media_council_requirements_not_met"
 			} else {
@@ -135,7 +135,7 @@ pub fn decide(
 			"media_verifier_uncertain"
 		};
 		return decision(
-			DecisionStatus::ManualReview,
+			EvidenceDecisionStatus::ManualReview,
 			reason,
 			REVIEW_SUMMARY,
 			single.and_then(|vote| vote.confidence),
@@ -145,7 +145,7 @@ pub fn decide(
 	let confidence = lowest(&fulfilled);
 	if !spoken_challenge_requested {
 		return decision(
-			DecisionStatus::Accepted,
+			EvidenceDecisionStatus::Accepted,
 			if council {
 				"media_council_verified"
 			} else {
@@ -175,7 +175,7 @@ pub fn decide(
 		.count();
 	if heard >= quorum && not_heard == 0 {
 		return decision(
-			DecisionStatus::Accepted,
+			EvidenceDecisionStatus::Accepted,
 			if council {
 				"media_council_verified"
 			} else {
@@ -187,14 +187,14 @@ pub fn decide(
 	}
 	if not_heard >= quorum && heard == 0 {
 		return decision(
-			DecisionStatus::Rejected,
+			EvidenceDecisionStatus::Rejected,
 			"spoken_challenge_not_heard",
 			SPOKEN_SUMMARY,
 			confidence,
 		);
 	}
 	decision(
-		DecisionStatus::ManualReview,
+		EvidenceDecisionStatus::ManualReview,
 		"spoken_challenge_unverified",
 		REVIEW_SUMMARY,
 		confidence,
@@ -204,7 +204,7 @@ pub fn decide(
 /// Manual review when no verifier is configured. It does not accept the proof.
 pub fn manual_review() -> MediaDecision {
 	MediaDecision {
-		status: DecisionStatus::ManualReview,
+		status: EvidenceDecisionStatus::ManualReview,
 		verifier_type: "manual-review-fallback",
 		reason_code: "media_verifier_unavailable",
 		summary: REVIEW_SUMMARY,
@@ -214,11 +214,7 @@ pub fn manual_review() -> MediaDecision {
 	}
 }
 
-fn decisive<'a>(
-	votes: &'a [ModelVote],
-	verdict: Verdict,
-	minimum_confidence: f64,
-) -> Vec<&'a ModelVote> {
+fn decisive(votes: &[ModelVote], verdict: Verdict, minimum_confidence: f64) -> Vec<&ModelVote> {
 	votes
 		.iter()
 		.filter(|vote| {
@@ -259,8 +255,8 @@ mod tests {
 			vote(Verdict::Fulfilled, 0.9, Some(SpokenVerdict::Heard)),
 		];
 		votes[0].error_code = Some(PROMPT_INJECTION.to_string());
-		let decision = decide(VerificationPolicy::ModelCouncil, &votes, 0.6, true);
-		assert_eq!(decision.status, DecisionStatus::ManualReview);
+		let decision = decide(ActionVerificationPolicy::ModelCouncil, &votes, 0.6, true);
+		assert_eq!(decision.status, EvidenceDecisionStatus::ManualReview);
 		assert_eq!(decision.reason_code, "media_security_review_required");
 	}
 
@@ -271,12 +267,12 @@ mod tests {
 			vote(Verdict::Fulfilled, 0.7, None),
 			vote(Verdict::NotFulfilled, 0.4, None),
 		];
-		let accepted = decide(VerificationPolicy::ModelCouncil, &votes, 0.6, false);
-		assert_eq!(accepted.status, DecisionStatus::Accepted);
+		let accepted = decide(ActionVerificationPolicy::ModelCouncil, &votes, 0.6, false);
+		assert_eq!(accepted.status, EvidenceDecisionStatus::Accepted);
 		assert_eq!(accepted.reason_code, "media_council_verified");
 		let thin = vec![vote(Verdict::Fulfilled, 0.9, None)];
-		let review = decide(VerificationPolicy::ModelCouncil, &thin, 0.6, false);
-		assert_eq!(review.status, DecisionStatus::ManualReview);
+		let review = decide(ActionVerificationPolicy::ModelCouncil, &thin, 0.6, false);
+		assert_eq!(review.status, EvidenceDecisionStatus::ManualReview);
 		assert_eq!(review.reason_code, "media_council_no_consensus");
 	}
 
@@ -287,21 +283,21 @@ mod tests {
 			vote(Verdict::NotFulfilled, 0.9, None),
 		];
 		assert_eq!(
-			decide(VerificationPolicy::ModelCouncil, &missed, 0.6, true).status,
-			DecisionStatus::Rejected
+			decide(ActionVerificationPolicy::ModelCouncil, &missed, 0.6, true).status,
+			EvidenceDecisionStatus::Rejected
 		);
 		let quiet = vec![
 			vote(Verdict::Fulfilled, 0.9, Some(SpokenVerdict::Abstained)),
 			vote(Verdict::Fulfilled, 0.9, Some(SpokenVerdict::Heard)),
 		];
 		assert_eq!(
-			decide(VerificationPolicy::ModelCouncil, &quiet, 0.6, true).reason_code,
+			decide(ActionVerificationPolicy::ModelCouncil, &quiet, 0.6, true).reason_code,
 			"spoken_challenge_unverified"
 		);
 	}
 
 	#[test]
 	fn manual_review_does_not_accept() {
-		assert_eq!(manual_review().status, DecisionStatus::ManualReview);
+		assert_eq!(manual_review().status, EvidenceDecisionStatus::ManualReview);
 	}
 }

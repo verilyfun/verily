@@ -5,7 +5,7 @@ use std::time::Duration;
 use chrono::DateTime;
 use chrono::Utc;
 
-use crate::pending_shared::DecisionStatus;
+use verily_shared::EvidenceDecisionStatus;
 
 #[derive(Debug, Clone, Copy)]
 pub struct LocationPolicy {
@@ -89,10 +89,16 @@ impl LocationPolicy {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct LocationDecision {
-	pub status: DecisionStatus,
+	pub status: EvidenceDecisionStatus,
 	pub verifier_type: &'static str,
 	pub reason_code: &'static str,
 	pub summary: &'static str,
+}
+
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
+pub enum LocationError {
+	#[error("the location input was refused")]
+	Refused,
 }
 
 /// `distance_meters` and `previous` come from PostGIS. Coordinates are not returned.
@@ -104,19 +110,19 @@ pub fn decide(
 	distance_meters: f64,
 	radius_meters: f64,
 	previous: Option<PreviousObservation>,
-) -> Result<LocationDecision, ()> {
+) -> Result<LocationDecision, LocationError> {
 	if !current.accuracy_meters.is_finite()
 		|| current.accuracy_meters < 0.0
 		|| !distance_meters.is_finite()
 		|| !radius_meters.is_finite()
 		|| radius_meters <= 0.0
 	{
-		return Err(());
+		return Err(LocationError::Refused);
 	}
 	let freshness = policy.evaluate(now, current, None);
 	if freshness == LocationRisk::Stale {
 		return Ok(decision(
-			DecisionStatus::Rejected,
+			EvidenceDecisionStatus::Rejected,
 			"location-risk",
 			"location_capture_stale",
 			"Take a new location check and try again.",
@@ -124,7 +130,7 @@ pub fn decide(
 	}
 	if freshness == LocationRisk::FromFuture {
 		return Ok(decision(
-			DecisionStatus::Rejected,
+			EvidenceDecisionStatus::Rejected,
 			"location-risk",
 			"location_capture_time_invalid",
 			"Check the phone clock, then take a new location check.",
@@ -132,7 +138,7 @@ pub fn decide(
 	}
 	if current.accuracy_meters > max_accuracy_meters {
 		return Ok(decision(
-			DecisionStatus::Rejected,
+			EvidenceDecisionStatus::Rejected,
 			"geofence",
 			"location_accuracy_too_low",
 			"The location was not precise enough.",
@@ -141,7 +147,7 @@ pub fn decide(
 	let inside = distance_meters <= radius_meters;
 	if inside && policy.evaluate(now, current, previous) == LocationRisk::ImplausibleTravel {
 		return Ok(decision(
-			DecisionStatus::ManualReview,
+			EvidenceDecisionStatus::ManualReview,
 			"location-risk",
 			"location_travel_needs_review",
 			"A person will check this proof.",
@@ -149,14 +155,14 @@ pub fn decide(
 	}
 	Ok(if inside {
 		decision(
-			DecisionStatus::Accepted,
+			EvidenceDecisionStatus::Accepted,
 			"geofence",
 			"inside_geofence",
 			"Location check accepted.",
 		)
 	} else {
 		decision(
-			DecisionStatus::Rejected,
+			EvidenceDecisionStatus::Rejected,
 			"geofence",
 			"outside_geofence",
 			"The check-in was outside the place.",
@@ -165,7 +171,7 @@ pub fn decide(
 }
 
 fn decision(
-	status: DecisionStatus,
+	status: EvidenceDecisionStatus,
 	verifier_type: &'static str,
 	reason_code: &'static str,
 	summary: &'static str,

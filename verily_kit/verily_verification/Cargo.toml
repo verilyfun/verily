@@ -20,3 +20,4 @@ p256 = { version = "0.13", features = ["ecdsa"] }
 regex = "1"
 sha2 = "0.10"
 thiserror = "2"
+verily_shared = { path = "../verily_shared" }

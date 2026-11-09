@@ -24,9 +24,9 @@ use crate::location::Observation;
 use crate::location::PreviousObservation;
 use crate::payout::PayoutAuthorization;
 use crate::payout::PayoutRequest;
-use crate::pending_shared::Provenance;
-use crate::pending_shared::VerificationPolicy;
 use crate::spoken::SpokenChallenge;
+use verily_shared::ActionVerificationPolicy;
+use verily_shared::EvidenceProvenanceLevel;
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum OpError {
@@ -100,9 +100,9 @@ impl<A: AndroidAttestation> Verification<A> {
 			VerifierMode::ManualReview => crate::council::manual_review(),
 			VerifierMode::Cloud | VerifierMode::OpenRouter => {
 				let policy = if self.config.council_model_ids.len() == 3 {
-					VerificationPolicy::ModelCouncil
+					ActionVerificationPolicy::ModelCouncil
 				} else {
-					VerificationPolicy::SingleModel
+					ActionVerificationPolicy::SingleModel
 				};
 				crate::council::decide(policy, votes, minimum_confidence, spoken)
 			}
@@ -116,7 +116,7 @@ impl<A: AndroidAttestation> Verification<A> {
 		attempt_id: &str,
 		manifest: &[u8],
 		signature_p1363: &[u8],
-	) -> Result<Provenance, OpError> {
+	) -> Result<EvidenceProvenanceLevel, OpError> {
 		crate::capture::verify_android_capture(
 			&self.android,
 			chain_der,
@@ -147,7 +147,7 @@ impl<A: AndroidAttestation> Verification<A> {
 			radius_meters,
 			previous,
 		)
-		.map_err(|()| OpError::Refused)
+		.map_err(|_| OpError::Refused)
 	}
 
 	pub fn authorize_payout(
@@ -159,7 +159,7 @@ impl<A: AndroidAttestation> Verification<A> {
 
 	pub fn resolve_review<'a>(
 		&self,
-		decision: crate::pending_shared::DecisionStatus,
+		decision: verily_shared::EvidenceDecisionStatus,
 		note: &'a str,
 	) -> Result<&'a str, crate::review::ReviewError> {
 		crate::review::resolve(decision)?;

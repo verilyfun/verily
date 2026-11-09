@@ -3,9 +3,9 @@
 //! Paths come from authenticated ids. A review link is not part of the seal
 //! and is not proof.
 
-use crate::pending_shared::MediaKind;
 use sha2::Digest;
 use sha2::Sha256;
+use verily_shared::MediaEvidenceKind;
 
 pub const CONTRACT: &str = "verily.evidence-integrity.v1";
 pub const OBJECT_PREFIX: &str = "action-evidence/";
@@ -15,49 +15,49 @@ pub const MAX_BYTES: u64 = 150 * 1024 * 1024;
 pub struct MediaType {
 	pub content_type: &'static str,
 	pub extension: &'static str,
-	pub kind: MediaKind,
+	pub kind: MediaEvidenceKind,
 }
 
 const MEDIA_TYPES: &[MediaType] = &[
 	MediaType {
 		content_type: "video/mp4",
 		extension: "mp4",
-		kind: MediaKind::Video,
+		kind: MediaEvidenceKind::Video,
 	},
 	MediaType {
 		content_type: "video/quicktime",
 		extension: "mov",
-		kind: MediaKind::Video,
+		kind: MediaEvidenceKind::Video,
 	},
 	MediaType {
 		content_type: "video/webm",
 		extension: "webm",
-		kind: MediaKind::Video,
+		kind: MediaEvidenceKind::Video,
 	},
 	MediaType {
 		content_type: "image/jpeg",
 		extension: "jpg",
-		kind: MediaKind::Photo,
+		kind: MediaEvidenceKind::Photo,
 	},
 	MediaType {
 		content_type: "image/png",
 		extension: "png",
-		kind: MediaKind::Photo,
+		kind: MediaEvidenceKind::Photo,
 	},
 	MediaType {
 		content_type: "image/heic",
 		extension: "heic",
-		kind: MediaKind::Photo,
+		kind: MediaEvidenceKind::Photo,
 	},
 	MediaType {
 		content_type: "audio/mp4",
 		extension: "m4a",
-		kind: MediaKind::Audio,
+		kind: MediaEvidenceKind::Audio,
 	},
 	MediaType {
 		content_type: "audio/webm",
 		extension: "webm",
-		kind: MediaKind::Audio,
+		kind: MediaEvidenceKind::Audio,
 	},
 ];
 
@@ -255,11 +255,11 @@ fn media_type(content_type: &str) -> Option<MediaType> {
 		.find(|media| media.content_type == normalized)
 }
 
-fn max_bytes(kind: MediaKind) -> u64 {
+fn max_bytes(kind: MediaEvidenceKind) -> u64 {
 	match kind {
-		MediaKind::Video => 150 * 1024 * 1024,
-		MediaKind::Photo => 20 * 1024 * 1024,
-		MediaKind::Audio => 50 * 1024 * 1024,
+		MediaEvidenceKind::Video => 150 * 1024 * 1024,
+		MediaEvidenceKind::Photo => 20 * 1024 * 1024,
+		MediaEvidenceKind::Audio => 50 * 1024 * 1024,
 	}
 }
 

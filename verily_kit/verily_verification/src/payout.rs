@@ -67,7 +67,7 @@ mod tests {
 	#[test]
 	fn a_model_acceptance_does_not_release_and_a_missing_threshold_fails_closed() {
 		let decision = council::decide(
-			crate::pending_shared::VerificationPolicy::SingleModel,
+			verily_shared::ActionVerificationPolicy::SingleModel,
 			&[council::ModelVote {
 				model_id: "google/gemini-2.5-flash-lite".to_string(),
 				resolved_model_id: None,
@@ -81,7 +81,7 @@ mod tests {
 		);
 		assert_eq!(
 			decision.status,
-			crate::pending_shared::DecisionStatus::Accepted
+			verily_shared::EvidenceDecisionStatus::Accepted
 		);
 		assert!(!model_decision_releases_reward(&decision));
 		assert_eq!(

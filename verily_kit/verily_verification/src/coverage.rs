@@ -13,6 +13,7 @@ use crate::capture;
 use crate::capture::AndroidAttestation;
 use crate::capture::AppAttestAssertion;
 use crate::capture::AttestationUnavailable;
+use crate::capture::KeyStorage;
 use crate::capture::ParsedAndroidKey;
 use crate::capture::SignatureMode;
 use crate::config;
@@ -34,13 +35,12 @@ use crate::ops::Verification;
 use crate::payout;
 use crate::payout::AcceptanceBasis;
 use crate::payout::PayoutRequest;
-use crate::pending_shared::DecisionStatus;
-use crate::pending_shared::KeyStorage;
-use crate::pending_shared::MediaKind;
-use crate::pending_shared::Provenance;
-use crate::pending_shared::VerificationPolicy;
 use crate::reasons;
 use crate::review;
+use verily_shared::ActionVerificationPolicy;
+use verily_shared::EvidenceDecisionStatus;
+use verily_shared::EvidenceProvenanceLevel;
+use verily_shared::MediaEvidenceKind;
 
 fn now() -> DateTime<Utc> {
 	DateTime::from_timestamp(1_700_000_100, 0).unwrap()
@@ -90,22 +90,62 @@ fn binding_covers_every_kind_and_refusal() {
 		binding::capture_manifest(attempt, requirement, &request, &binding_hash).unwrap();
 	assert!(binding::capture_manifest(attempt, requirement, "nope", &binding_hash).is_err());
 	assert!(
-		binding::media_binding_hash(MediaKind::Photo, 1, &binding_hash, 0, 0, "image/jpeg")
-			.is_err()
+		binding::media_binding_hash(
+			MediaEvidenceKind::Photo,
+			1,
+			&binding_hash,
+			0,
+			0,
+			"image/jpeg"
+		)
+		.is_err()
 	);
 	assert!(
-		binding::media_binding_hash(MediaKind::Photo, 1, &binding_hash, 4, 1, "image/jpeg")
-			.is_err()
+		binding::media_binding_hash(
+			MediaEvidenceKind::Photo,
+			1,
+			&binding_hash,
+			4,
+			1,
+			"image/jpeg"
+		)
+		.is_err()
 	);
 	assert!(
-		binding::media_binding_hash(MediaKind::Video, 1, &binding_hash, 4, 0, "video/mp4").is_err()
+		binding::media_binding_hash(
+			MediaEvidenceKind::Video,
+			1,
+			&binding_hash,
+			4,
+			0,
+			"video/mp4"
+		)
+		.is_err()
 	);
-	assert!(binding::media_binding_hash(MediaKind::Audio, 1, &binding_hash, 4, 2, "").is_err());
 	assert!(
-		binding::media_binding_hash(MediaKind::Video, 1, &binding_hash, 4, 2, "video/mp4").is_ok()
+		binding::media_binding_hash(MediaEvidenceKind::Audio, 1, &binding_hash, 4, 2, "").is_err()
 	);
 	assert!(
-		binding::media_binding_hash(MediaKind::Audio, 1, &binding_hash, 4, 2, "audio/mp4").is_ok()
+		binding::media_binding_hash(
+			MediaEvidenceKind::Video,
+			1,
+			&binding_hash,
+			4,
+			2,
+			"video/mp4"
+		)
+		.is_ok()
+	);
+	assert!(
+		binding::media_binding_hash(
+			MediaEvidenceKind::Audio,
+			1,
+			&binding_hash,
+			4,
+			2,
+			"audio/mp4"
+		)
+		.is_ok()
 	);
 	assert!(binding::location_binding_hash(1, f64::NAN, 0.0, 1.0).is_err());
 	assert!(binding::location_binding_hash(1, 91.0, 0.0, 1.0).is_err());
@@ -236,7 +276,7 @@ fn capture_scripted_refuses_a_mismatched_challenge() {
 			SignatureMode::Optional,
 		)
 		.unwrap(),
-		Provenance::HardwareAttested
+		EvidenceProvenanceLevel::HardwareAttested
 	);
 	assert_eq!(
 		capture::verify_android_capture(
@@ -360,8 +400,8 @@ fn council_covers_single_model_spoken_and_budget_paths() {
 	};
 	assert_eq!(
 		council::decide(
-			VerificationPolicy::SingleModel,
-			&[reject.clone()],
+			ActionVerificationPolicy::SingleModel,
+			std::slice::from_ref(&reject),
 			0.5,
 			false
 		)
@@ -370,8 +410,8 @@ fn council_covers_single_model_spoken_and_budget_paths() {
 	);
 	assert_eq!(
 		council::decide(
-			VerificationPolicy::SingleModel,
-			&[failed.clone()],
+			ActionVerificationPolicy::SingleModel,
+			std::slice::from_ref(&failed),
 			0.5,
 			false
 		)
@@ -380,7 +420,7 @@ fn council_covers_single_model_spoken_and_budget_paths() {
 	);
 	assert_eq!(
 		council::decide(
-			VerificationPolicy::SingleModel,
+			ActionVerificationPolicy::SingleModel,
 			&[ModelVote {
 				error_code: Some("other".into()),
 				..failed.clone()
@@ -392,12 +432,12 @@ fn council_covers_single_model_spoken_and_budget_paths() {
 		"media_verifier_unavailable"
 	);
 	assert_eq!(
-		council::decide(VerificationPolicy::SingleModel, &[low], 0.5, false).reason_code,
+		council::decide(ActionVerificationPolicy::SingleModel, &[low], 0.5, false).reason_code,
 		"media_confidence_below_threshold"
 	);
 	assert_eq!(
 		council::decide(
-			VerificationPolicy::ModelCouncil,
+			ActionVerificationPolicy::ModelCouncil,
 			&[
 				accept.clone(),
 				ModelVote {
@@ -423,8 +463,8 @@ fn council_covers_single_model_spoken_and_budget_paths() {
 	);
 	assert_eq!(
 		council::decide(
-			VerificationPolicy::SingleModel,
-			&[accept.clone()],
+			ActionVerificationPolicy::SingleModel,
+			std::slice::from_ref(&accept),
 			0.5,
 			true
 		)
@@ -433,7 +473,7 @@ fn council_covers_single_model_spoken_and_budget_paths() {
 	);
 	assert_eq!(
 		council::decide(
-			VerificationPolicy::ModelCouncil,
+			ActionVerificationPolicy::ModelCouncil,
 			&[
 				ModelVote {
 					spoken: Some(SpokenVerdict::Heard),
@@ -453,7 +493,7 @@ fn council_covers_single_model_spoken_and_budget_paths() {
 	);
 	assert_eq!(
 		council::decide(
-			VerificationPolicy::SingleModel,
+			ActionVerificationPolicy::SingleModel,
 			&[ModelVote {
 				spoken: Some(SpokenVerdict::NotHeard),
 				..accept.clone()
@@ -466,7 +506,7 @@ fn council_covers_single_model_spoken_and_budget_paths() {
 	);
 	assert_eq!(
 		council::decide(
-			VerificationPolicy::SingleModel,
+			ActionVerificationPolicy::SingleModel,
 			&[ModelVote {
 				verdict: Verdict::Fulfilled,
 				confidence: None,
@@ -482,7 +522,7 @@ fn council_covers_single_model_spoken_and_budget_paths() {
 	);
 	assert_eq!(
 		council::decide(
-			VerificationPolicy::ModelCouncil,
+			ActionVerificationPolicy::ModelCouncil,
 			&[accept.clone(), accept.clone(), accept.clone()],
 			0.99,
 			false
@@ -800,32 +840,35 @@ fn model_input_movement_reasons_and_ops_cover_the_rest() {
 		reasons::CHECKING
 	);
 	assert_eq!(
-		reasons::public_decision_reason(None, Some(DecisionStatus::Accepted)),
+		reasons::public_decision_reason(None, Some(EvidenceDecisionStatus::Accepted)),
 		reasons::PROOF_ACCEPTED
 	);
 	assert_eq!(
-		reasons::public_decision_reason(None, Some(DecisionStatus::ManualReview)),
+		reasons::public_decision_reason(None, Some(EvidenceDecisionStatus::ManualReview)),
 		reasons::NEEDS_REVIEW
 	);
 	assert_eq!(
-		reasons::public_decision_reason(Some("other"), Some(DecisionStatus::Rejected)),
+		reasons::public_decision_reason(Some("other"), Some(EvidenceDecisionStatus::Rejected)),
 		reasons::PROOF_NOT_ACCEPTED
 	);
 	assert_eq!(
-		reasons::public_decision_reason(Some("motion_miss"), Some(DecisionStatus::Rejected)),
+		reasons::public_decision_reason(
+			Some("motion_miss"),
+			Some(EvidenceDecisionStatus::Rejected)
+		),
 		reasons::MOTION_NOT_MATCHED
 	);
 	assert_eq!(
 		reasons::public_decision_reason(
 			Some("device_integrity_fail"),
-			Some(DecisionStatus::Rejected)
+			Some(EvidenceDecisionStatus::Rejected)
 		),
 		reasons::CAPTURE_NOT_VERIFIED
 	);
 	assert_eq!(
 		reasons::public_decision_reason(
 			Some("app_integrity_not_recognised"),
-			Some(DecisionStatus::Rejected)
+			Some(EvidenceDecisionStatus::Rejected)
 		),
 		reasons::CAPTURE_NOT_VERIFIED
 	);
@@ -847,7 +890,7 @@ fn model_input_movement_reasons_and_ops_cover_the_rest() {
 		"action_capacity_reached",
 		"high_value_payout_review",
 	] {
-		let _ = reasons::public_decision_reason(Some(code), Some(DecisionStatus::Accepted));
+		let _ = reasons::public_decision_reason(Some(code), Some(EvidenceDecisionStatus::Accepted));
 	}
 	for code in [
 		"high_value_payout_review",
@@ -910,7 +953,7 @@ fn model_input_movement_reasons_and_ops_cover_the_rest() {
 	);
 	assert_eq!(
 		closed.decide_media(&[], 0.5, false).status,
-		DecisionStatus::ManualReview
+		EvidenceDecisionStatus::ManualReview
 	);
 	let mut env = HashMap::new();
 	env.insert("VERILY_MEDIA_VERIFIER_MODE".into(), "openrouter".into());
@@ -948,7 +991,7 @@ fn model_input_movement_reasons_and_ops_cover_the_rest() {
 				false
 			)
 			.status,
-		DecisionStatus::Accepted
+		EvidenceDecisionStatus::Accepted
 	);
 	let mut single_config = VerifierConfig::from_resolved(&env, None, Some("key")).unwrap();
 	single_config.council_model_ids.clear();
@@ -1031,16 +1074,19 @@ fn model_input_movement_reasons_and_ops_cover_the_rest() {
 	);
 	assert_eq!(
 		closed
-			.resolve_review(DecisionStatus::Accepted, "looks good")
+			.resolve_review(EvidenceDecisionStatus::Accepted, "looks good")
 			.unwrap(),
 		"looks good"
 	);
 	assert!(
 		closed
-			.resolve_review(DecisionStatus::ManualReview, "note")
+			.resolve_review(EvidenceDecisionStatus::ManualReview, "note")
 			.is_err()
 	);
 	let _ = spoken;
 	let _ = review::review_note("ok");
-	assert_eq!(Provenance::Basic, Provenance::Basic);
+	assert_eq!(
+		EvidenceProvenanceLevel::Basic,
+		EvidenceProvenanceLevel::Basic
+	);
 }

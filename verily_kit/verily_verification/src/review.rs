@@ -1,6 +1,6 @@
 //! Person decisions. A queued review is not a resolution.
 
-use crate::pending_shared::DecisionStatus;
+use verily_shared::EvidenceDecisionStatus;
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum ReviewError {
@@ -20,10 +20,10 @@ pub fn review_note(note: &str) -> Result<&str, ReviewError> {
 	}
 }
 
-pub fn resolve(decision: DecisionStatus) -> Result<DecisionStatus, ReviewError> {
+pub fn resolve(decision: EvidenceDecisionStatus) -> Result<EvidenceDecisionStatus, ReviewError> {
 	match decision {
-		DecisionStatus::Accepted | DecisionStatus::Rejected => Ok(decision),
-		DecisionStatus::ManualReview => Err(ReviewError::Pending),
+		EvidenceDecisionStatus::Accepted | EvidenceDecisionStatus::Rejected => Ok(decision),
+		EvidenceDecisionStatus::ManualReview => Err(ReviewError::Pending),
 	}
 }
 
@@ -37,12 +37,12 @@ mod tests {
 		assert_eq!(review_note("   "), Err(ReviewError::Note));
 		assert_eq!(review_note(&"a".repeat(501)), Err(ReviewError::Note));
 		assert_eq!(
-			resolve(DecisionStatus::ManualReview),
+			resolve(EvidenceDecisionStatus::ManualReview),
 			Err(ReviewError::Pending)
 		);
 		assert_eq!(
-			resolve(DecisionStatus::Accepted).unwrap(),
-			DecisionStatus::Accepted
+			resolve(EvidenceDecisionStatus::Accepted).unwrap(),
+			EvidenceDecisionStatus::Accepted
 		);
 	}
 }
