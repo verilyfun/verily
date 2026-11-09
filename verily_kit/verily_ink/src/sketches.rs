@@ -18,7 +18,9 @@ fn sketch(width: f32, height: f32, seed: i64, shapes: Vec<Shape>) -> Element {
 }
 
 fn tinted(width: f32, height: f32, seed: i64, stroke: Tone, shapes: Vec<Shape>) -> Element {
-	view! { <Sketch width=width height=height shapes=shapes seed=seed theme=brand::INK stroke=stroke /> }
+	view! {
+		<Sketch width=width height=height shapes=shapes seed=seed theme=brand::INK stroke=stroke />
+	}
 }
 
 fn filled(
@@ -76,14 +78,33 @@ pub fn place_map(seed: i64) -> Element {
 	];
 	view! {
 		<View class="relative w-[300px] h-[220px]" aria_hidden=true>
-			{layer("left-0 top-0", tinted(300.0, 220.0, seed, brand::MUTED, streets))}
 			{layer(
 				"left-0 top-0",
-				filled(300.0, 220.0, seed + 1, brand::PLACE, brand::PLACE, FillStyle::Hachure, radius),
+				tinted(300.0, 220.0, seed, brand::MUTED, streets),
 			)}
 			{layer(
 				"left-0 top-0",
-				filled(300.0, 220.0, seed + 2, brand::PLACE, brand::PLACE, FillStyle::Solid, pin),
+				filled(
+					300.0,
+					220.0,
+					seed + 1,
+					brand::PLACE,
+					brand::PLACE,
+					FillStyle::Hachure,
+					radius,
+				),
+			)}
+			{layer(
+				"left-0 top-0",
+				filled(
+					300.0,
+					220.0,
+					seed + 2,
+					brand::PLACE,
+					brand::PLACE,
+					FillStyle::Solid,
+					pin,
+				),
 			)}
 		</View>
 	}
@@ -153,7 +174,15 @@ pub fn escrow_jar(seed: i64) -> Element {
 		<View class="relative w-[200px] h-[180px]" aria_hidden=true>
 			{layer(
 				"left-0 top-0",
-				filled(200.0, 180.0, seed, brand::REWARD, brand::REWARD, FillStyle::Hachure, coins),
+				filled(
+					200.0,
+					180.0,
+					seed,
+					brand::REWARD,
+					brand::REWARD,
+					FillStyle::Hachure,
+					coins,
+				),
 			)}
 			{layer("left-0 top-0", sketch(200.0, 180.0, seed + 1, jar))}
 			{layer("left-0 top-0", sketch(200.0, 180.0, seed + 2, lock))}
@@ -227,7 +256,10 @@ pub fn stamp(size: f32, seed: i64) -> Element {
 	])];
 	view! {
 		<View class=format!("relative w-[{size}px] h-[{size}px]")>
-			{layer("left-0 top-0", tinted(size, size, seed, brand::STAMP, rings))}
+			{layer(
+				"left-0 top-0",
+				tinted(size, size, seed, brand::STAMP, rings),
+			)}
 			<View class="absolute left-0 top-0">
 				<Sketch
 					width=size
@@ -259,6 +291,25 @@ pub fn arrow_up(width: f32, height: f32, seed: i64) -> Element {
 	view! {
 		<View aria_hidden=true>
 			<Sketch width=width height=height shapes=shapes seed=seed theme=brand::INK />
+		</View>
+	}
+}
+
+/// A doodled arrow pointing back, to the left.
+pub fn arrow_back(size: f32, seed: i64) -> Element {
+	let s = f64::from(size);
+	let shapes = vec![
+		Shape::curve([
+			(s - 4.0, s * 0.55),
+			(s * 0.62, s * 0.42),
+			(s * 0.34, s * 0.58),
+			(4.0, s * 0.5),
+		])
+		.with_arrowhead(),
+	];
+	view! {
+		<View aria_hidden=true>
+			<Sketch width=size height=size shapes=shapes seed=seed theme=brand::APP />
 		</View>
 	}
 }
@@ -318,6 +369,107 @@ pub fn tick(seed: i64) -> Element {
 					pen=RoughPen::BRUSH
 				/>
 			</View>
+		</View>
+	}
+}
+
+/// The proof checklist's empty box: an outcome still to come.
+pub fn open_box(seed: i64) -> Element {
+	let boxed = vec![Shape::RoundedRectangle {
+		x: 3.0,
+		y: 5.0,
+		width: 24.0,
+		height: 24.0,
+		radii: [5.0; 4],
+	}];
+	view! {
+		<View class="relative w-[34px] h-[32px]" aria_hidden=true>
+			{layer("left-0 top-0", sketch(34.0, 32.0, seed, boxed))}
+		</View>
+	}
+}
+
+/// A small place pin in place green, for cards and chips.
+pub fn pin(size: f32, seed: i64) -> Element {
+	let s = f64::from(size);
+	let outline = vec![
+		Shape::curve([
+			(s * 0.5, s * 0.96),
+			(s * 0.24, s * 0.62),
+			(s * 0.14, s * 0.46),
+			(s * 0.18, s * 0.3),
+		]),
+		Shape::curve([
+			(s * 0.18, s * 0.3),
+			(s * 0.3, s * 0.02),
+			(s * 0.7, s * 0.02),
+			(s * 0.82, s * 0.3),
+		]),
+		Shape::curve([
+			(s * 0.82, s * 0.3),
+			(s * 0.86, s * 0.46),
+			(s * 0.76, s * 0.62),
+			(s * 0.5, s * 0.96),
+		]),
+	];
+	let dot = vec![Shape::Circle {
+		x: s * 0.5,
+		y: s * 0.34,
+		diameter: s * 0.22,
+	}];
+	view! {
+		<View class=format!("relative w-[{size}px] h-[{size}px]") aria_hidden=true>
+			{layer(
+				"left-0 top-0",
+				tinted(size, size, seed, brand::PLACE, outline),
+			)}
+			{layer(
+				"left-0 top-0",
+				filled(
+					size,
+					size,
+					seed + 1,
+					brand::PLACE,
+					brand::PLACE,
+					FillStyle::Solid,
+					dot,
+				),
+			)}
+		</View>
+	}
+}
+
+/// A coin in reward gold, for amounts.
+pub fn coin(size: f32, seed: i64) -> Element {
+	let s = f64::from(size);
+	let rim = vec![Shape::Circle {
+		x: s / 2.0,
+		y: s / 2.0,
+		diameter: s * 0.86,
+	}];
+	let face = vec![Shape::Circle {
+		x: s / 2.0,
+		y: s / 2.0,
+		diameter: s * 0.5,
+	}];
+	view! {
+		<View class=format!("relative w-[{size}px] h-[{size}px]") aria_hidden=true>
+			{layer(
+				"left-0 top-0",
+				filled(
+					size,
+					size,
+					seed,
+					brand::REWARD,
+					brand::REWARD,
+					FillStyle::Hachure,
+					rim,
+				),
+			)}
+			{layer(
+				"left-0 top-0",
+				tinted(size, size, seed + 1, brand::REWARD, face),
+			)}
 		</View>
 	}
 }

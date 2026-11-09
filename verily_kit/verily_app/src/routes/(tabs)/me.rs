@@ -1,38 +1,41 @@
-//! Attempts and payouts, `/me`.
+//! Your page, `/me`: the payout wallet, attempts, payouts, appeals, and the
+//! way into reviewing and settings.
 //!
 //! The wallet card does not show an address, a key, or a signature.
 
 use leptoskit::component;
-use leptoskit::prelude::Button;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::For;
 use leptoskit::prelude::Get;
 use leptoskit::prelude::Set;
 use leptoskit::prelude::Show;
-use leptoskit::prelude::Text;
-use leptoskit::prelude::TextInput;
 use leptoskit::prelude::View;
+use leptoskit::query::QueryHandle;
 use leptoskit::query::use_mutation;
+use leptoskit::rpc::FnError;
 use leptoskit::rpc::client::mutation_scope;
 use leptoskit::rpc::client::use_rpc_query;
 use leptoskit::view;
+use verily_ink::sketches;
 
 use crate::chrome;
 use crate::l10n::use_l10n;
-use crate::state::remember;
 use crate::model::AttemptRow;
 use crate::model::AttemptStatus;
 use crate::model::PayoutRow;
 use crate::model::PayoutStatus;
+use crate::model::WalletLink;
 use crate::ops::ListMyAttempts;
 use crate::ops::ListMyPayouts;
 use crate::ops::SubmitAppeal;
 use crate::ops::WalletStatus;
 use crate::routes::Navigation;
 use crate::routes::Route;
+use crate::state::remember;
 use crate::theme;
+use crate::theme::Role;
 
-/// Attempts, payouts, the wallet card, and the way into review and settings.
+/// Attempts, payouts, the wallet card, and the links out.
 #[component]
 pub fn Page(navigation: &Navigation) -> Element {
 	let l10n = use_l10n();
@@ -42,93 +45,114 @@ pub fn Page(navigation: &Navigation) -> Element {
 	let review = navigation.clone();
 	let settings = navigation.clone();
 	view! {
-		<View class="flex flex-col gap-4">
-			<chrome::Title text=l10n.me_title() />
-			<chrome::Muted text=l10n.me_subtitle() />
+		<chrome::Page>
+			<chrome::Heading text=l10n.me_title() body=l10n.me_subtitle() />
 			<WalletCard wallet=wallet />
-			<chrome::Title text=l10n.me_attempts_title() />
-			{Show(
-				move || attempts.is_loading(),
-				move || view! { <chrome::Muted text=l10n.me_loading_attempts() /> },
-			)}
-			{Show(
-				move || attempts.is_error(),
-				move || view! { <chrome::Title text=l10n.me_load_failed_title() /> },
-			)}
-			{Show(
-				move || attempts.data().is_some_and(|rows| rows.is_empty()),
-				move || view! { <chrome::Muted text=l10n.me_attempts_empty() /> },
-			)}
-			{For(
-				move || attempts.data().unwrap_or_default(),
-				|row: &AttemptRow| row.id.clone(),
-				|row| view! { <AttemptTile row=row /> },
-			)}
-			<AppealForm />
-			<chrome::Title text=l10n.me_payouts_title() />
-			{Show(
-				move || payouts.is_loading(),
-				move || view! { <chrome::Muted text=l10n.me_loading_payouts() /> },
-			)}
-			{Show(
-				move || payouts.data().is_some_and(|rows| rows.is_empty()),
-				move || view! { <chrome::Muted text=l10n.me_payouts_empty() /> },
-			)}
-			{For(
-				move || payouts.data().unwrap_or_default(),
-				|row: &PayoutRow| row.id.clone(),
-				|row| view! { <PayoutTile row=row /> },
-			)}
-			<View class=theme::ROW>
-				<Button class=theme::QUIET on:press=move || review.navigate(Route::Review)>
-					{l10n.me_link_review()}
-				</Button>
-				<Button class=theme::QUIET on:press=move || settings.navigate(Route::Settings)>
-					{l10n.settings_title()}
-				</Button>
+			<View class=theme::STACK>
+				<chrome::Title text=l10n.me_attempts_title() />
+				{Show(
+					move || attempts.is_loading(),
+					move || view! { <chrome::Loading text=l10n.me_loading_attempts() /> },
+				)}
+				{Show(
+					move || attempts.is_error(),
+					move || {
+						view! {
+							<chrome::Failed
+								title=l10n.me_load_failed_title()
+								retry=l10n.dialog_retry()
+								on_retry=move || {
+									attempts.refetch();
+								}
+							/>
+						}
+					},
+				)}
+				{Show(
+					move || attempts.data().is_some_and(|rows| rows.is_empty()),
+					move || view! { <chrome::Muted text=l10n.me_attempts_empty() /> },
+				)}
+				{For(
+					move || attempts.data().unwrap_or_default(),
+					|row: &AttemptRow| row.id.clone(),
+					|row| view! { <AttemptCard row=row /> },
+				)}
 			</View>
-		</View>
+			<View class=theme::STACK>
+				<chrome::Title text=l10n.me_payouts_title() />
+				{Show(
+					move || payouts.is_loading(),
+					move || view! { <chrome::Loading text=l10n.me_loading_payouts() /> },
+				)}
+				{Show(
+					move || payouts.data().is_some_and(|rows| rows.is_empty()),
+					move || view! { <chrome::Muted text=l10n.me_payouts_empty() /> },
+				)}
+				{For(
+					move || payouts.data().unwrap_or_default(),
+					|row: &PayoutRow| row.id.clone(),
+					|row| view! { <PayoutCard row=row /> },
+				)}
+			</View>
+			<AppealForm />
+			<View class=theme::ROW>
+				<chrome::Quiet
+					label=l10n.me_link_review()
+					on_press=move || review.navigate(Route::Reviews)
+					seed=401
+				/>
+				<chrome::Quiet
+					label=l10n.settings_title()
+					on_press=move || settings.navigate(Route::Settings)
+					seed=403
+				/>
+			</View>
+		</chrome::Page>
 	}
 }
 
+/// Where rewards go: linked or not, in plain words.
 #[component]
-fn WalletCard(
-	wallet: leptoskit::query::QueryHandle<crate::model::WalletLink, leptoskit::rpc::FnError>,
-) -> Element {
+fn WalletCard(wallet: QueryHandle<WalletLink, FnError>) -> Element {
 	let l10n = use_l10n();
 	view! {
-		<View class=theme::REWARD>
-			<Text class="font-semibold">{l10n.me_wallet_title()}</Text>
+		<chrome::RoleCard role=Role::Reward seed=405>
+			<View class="flex flex-row items-center gap-3">
+				{sketches::coin(32.0, 407)} <chrome::Title text=l10n.me_wallet_title() />
+			</View>
 			{Show(
 				move || wallet.data().is_some_and(|link| link.linked),
 				move || {
 					view! {
-						<View class="flex flex-col gap-2">
-							<chrome::Muted text=l10n.me_wallet_linked() />
+						<View class=theme::STACK>
+							<chrome::Body text=l10n.me_wallet_linked() />
 							<chrome::Muted text=l10n.me_wallet_linked_body() />
 						</View>
 					}
 				},
 			)}
 			{Show(
-				move || wallet.data().is_some_and(|link| !link.linked) || wallet.data().is_none(),
+				move || wallet.data().is_none_or(|link| !link.linked),
 				move || {
 					view! {
-						<View class="flex flex-col gap-2">
-							<chrome::Muted text=l10n.me_wallet_unlinked_title() />
+						<View class=theme::STACK>
+							<chrome::Body text=l10n.me_wallet_unlinked_title() />
 							<chrome::Muted text=l10n.me_wallet_unlinked_body() />
 						</View>
 					}
 				},
 			)}
-		</View>
+		</chrome::RoleCard>
 	}
 }
 
+/// One attempt. A verified one gets the stamp; one with a person says so in
+/// violet; the rest say where they are in words.
 #[component]
-fn AttemptTile(row: AttemptRow) -> Element {
+fn AttemptCard(row: AttemptRow) -> Element {
 	let l10n = use_l10n();
-	let status = match row.status {
+	let seed = chrome::seed_for(&row.id);
+	let words = match row.status {
 		AttemptStatus::CollectingEvidence => l10n.attempt_status_collecting_evidence(),
 		AttemptStatus::Verifying => l10n.attempt_status_verifying(),
 		AttemptStatus::PendingReview => l10n.attempt_status_pending_review(),
@@ -136,18 +160,33 @@ fn AttemptTile(row: AttemptRow) -> Element {
 		AttemptStatus::Rejected => l10n.attempt_status_rejected(),
 		AttemptStatus::CapacityReached => l10n.attempt_status_capacity_reached(),
 	};
-	let status = l10n.do_your_attempt(status);
+	let status = match row.status {
+		AttemptStatus::Verified => {
+			view! {
+				<View class="flex flex-row items-center gap-3">
+					<View class="-rotate-[8deg]">{sketches::stamp(56.0, seed + 1)}</View>
+					<chrome::Label text=words />
+				</View>
+			}
+		}
+		AttemptStatus::PendingReview => {
+			view! { <chrome::Chip role=Role::Review text=words seed=seed + 1 /> }
+		}
+		_ => view! { <chrome::Muted text=l10n.do_your_attempt(words) /> },
+	};
 	view! {
-		<View class=theme::CARD>
-			<Text class="font-semibold">{row.action_title}</Text>
-			<chrome::Muted text=status />
-		</View>
+		<chrome::Card seed=seed>
+			<chrome::Title text=row.action_title />
+			{status}
+		</chrome::Card>
 	}
 }
 
+/// One payout, with its amount next to a coin.
 #[component]
-fn PayoutTile(row: PayoutRow) -> Element {
+fn PayoutCard(row: PayoutRow) -> Element {
 	let l10n = use_l10n();
+	let seed = chrome::seed_for(&row.id);
 	let amount = row.amount_label.clone();
 	let status = match row.status {
 		PayoutStatus::AwaitingWallet => l10n.payout_awaiting_wallet(&amount),
@@ -158,14 +197,18 @@ fn PayoutTile(row: PayoutRow) -> Element {
 		PayoutStatus::Expired => l10n.payout_expired(&amount),
 	};
 	view! {
-		<View class=theme::CARD>
-			<Text class="font-semibold">{row.action_title}</Text>
-			<chrome::Muted text=amount />
+		<chrome::Card seed=seed>
+			<chrome::Title text=row.action_title />
+			<View class="flex flex-row items-center gap-3">
+				{sketches::coin(28.0, seed + 1)}
+				<chrome::Chip role=Role::Reward text=amount seed=seed + 2 />
+			</View>
 			<chrome::Muted text=status />
-		</View>
+		</chrome::Card>
 	}
 }
 
+/// Contest a decision: which attempt, and why.
 #[component]
 fn AppealForm() -> Element {
 	let l10n = use_l10n();
@@ -176,22 +219,25 @@ fn AppealForm() -> Element {
 		sent.set(true);
 	}));
 	view! {
-		<View class=theme::CARD>
+		<chrome::RoleCard role=Role::Review seed=411>
 			<chrome::Title text=l10n.me_appeal_title() />
 			<chrome::Muted text=l10n.me_appeal_body() />
-			<TextInput
-				class=theme::FIELD
-				placeholder=l10n.me_appeal_reason_hint()
-				on:change=move |next| attempt_id.set(next.to_owned())
+			<chrome::Field
+				label=l10n.me_appeal_reason_hint()
+				value=attempt_id.get()
+				on_change=move |next| attempt_id.set(next.to_owned())
+				seed=413
 			/>
-			<TextInput
-				class=theme::FIELD
-				placeholder=l10n.me_appeal_reason_label()
-				on:change=move |next| reason.set(next.to_owned())
+			<chrome::Field
+				label=l10n.me_appeal_reason_label()
+				value=reason.get()
+				on_change=move |next| reason.set(next.to_owned())
+				seed=415
 			/>
-			<Button
-				class=theme::QUIET
-				on:press=move || {
+			<chrome::Quiet
+				label=l10n.me_appeal_send()
+				disabled=submit.is_pending()
+				on_press=move || {
 					if attempt_id.get().trim().is_empty() || reason.get().trim().is_empty() {
 						return;
 					}
@@ -200,13 +246,12 @@ fn AppealForm() -> Element {
 						reason: reason.get(),
 					});
 				}
-			>
-				{l10n.me_appeal_send()}
-			</Button>
+				seed=417
+			/>
 			{Show(
 				move || sent.get(),
-				move || view! { <chrome::Muted text=l10n.me_appeal_sent() /> },
+				move || view! { <chrome::Body text=l10n.me_appeal_sent() /> },
 			)}
-		</View>
+		</chrome::RoleCard>
 	}
 }

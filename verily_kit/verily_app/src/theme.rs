@@ -1,100 +1,127 @@
-//! Verily colour tokens from `DESIGN.md` and `packages/verily_brand`.
+//! Verily's look in the app, from `DESIGN.md`: the Skribble pen, the type
+//! scale, and the colour roles as Tailwind classes.
 //!
-//! Screens use `var(--paper)` and the other names. They do not use LeptosKit's
-//! ember and mint theme, and they do not write raw colours of their own.
+//! Every colour comes from [`verily_ink`], which the site shares, and carries
+//! its night twin as a `dark:` class, so the app follows the device's
+//! appearance on every platform. Screens never write a colour of their own.
 
-use leptoskit::prelude::Color;
-use leptoskit::prelude::Theme;
-use std::collections::BTreeMap;
+use skribble_leptoskit::Palette;
+use skribble_leptoskit::Theme;
+use skribble_leptoskit::Tone;
+use verily_ink::tone_class;
 
-/// Class strings the screens share. Tests parse every one.
-pub const PAGE: &str = "flex flex-col gap-4 bg-[var(--paper)] p-4 text-[var(--ink)]";
-pub const TITLE: &str = "text-2xl font-bold text-[var(--ink)]";
-pub const MUTED: &str = "text-sm text-[var(--muted-ink)]";
-pub const CARD: &str =
-	"flex flex-col gap-2 rounded-lg border border-[var(--dusk)] bg-[var(--paper)] p-4";
-pub const PRIMARY: &str = "rounded-lg bg-[var(--stamp)] px-4 py-2 text-[var(--paper)]";
-pub const QUIET: &str = "rounded-lg border border-[var(--dusk)] px-4 py-2 text-[var(--ink)]";
-pub const PLACE: &str = "rounded-lg bg-[var(--place-wash)] p-4 text-[var(--place)]";
-pub const REWARD: &str = "rounded-lg bg-[var(--reward-wash)] p-4 text-[var(--reward)]";
-pub const REVIEW: &str = "rounded-lg bg-[var(--review-wash)] p-4 text-[var(--review)]";
-pub const ROW: &str = "flex flex-row flex-wrap items-center gap-2";
-pub const FINDER: &str = "relative h-64 w-full overflow-hidden rounded-lg bg-[var(--night)]";
-pub const FIELD: &str =
-	"rounded-lg border border-[var(--dusk)] bg-[var(--paper)] px-3 py-2 text-[var(--ink)]";
+/// The app's pen: plum ink on paper, ink as the filled accent, so the one
+/// primary button on a screen is ink on paper and vermilion stays for
+/// "verified" and the brand.
+pub const PEN: Theme = verily_ink::APP;
 
-/// Every shared class string, so a test can reject one the renderer does not know.
+/// Display: one plain promise per screen.
+pub const DISPLAY: &str = "text-[40px] font-bold";
+/// Headline: screen titles and big amounts.
+pub const HEADLINE: &str = "text-[28px] font-bold";
+/// Title: action names on cards.
+pub const TITLE: &str = "text-[20px] font-bold";
+/// Body: explanations, kept short.
+pub const BODY: &str = "text-base";
+/// Label: chips, place names, status words.
+pub const LABEL: &str = "text-[14px] font-bold";
+
+/// The page: a 16 point gutter and 24 points between groups.
+pub const PAGE: &str = "flex flex-col gap-6 px-4 pt-6 pb-12";
+/// Related items: 12 points apart.
+pub const STACK: &str = "flex flex-col gap-3";
+/// A row that wraps instead of clipping.
+pub const ROW: &str = "flex flex-row flex-wrap items-center gap-3";
+
+/// A colour role: its pen colour and the wash behind it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Role {
+	/// Pins, radii, and "inside the place".
+	Place,
+	/// Escrowed rewards and payouts. Text on its wash stays ink.
+	Reward,
+	/// Anything a person decides.
+	Review,
+}
+
+impl Role {
+	/// The role's pen colour, for outlines and marks.
+	#[must_use]
+	pub const fn tone(self) -> Tone {
+		match self {
+			Self::Place => verily_ink::PLACE,
+			Self::Reward => verily_ink::REWARD,
+			Self::Review => verily_ink::REVIEW,
+		}
+	}
+
+	/// The surface behind the role's content.
+	#[must_use]
+	pub const fn wash(self) -> Tone {
+		match self {
+			Self::Place => verily_ink::PLACE_WASH,
+			Self::Reward => verily_ink::REWARD_WASH,
+			Self::Review => verily_ink::REVIEW_WASH,
+		}
+	}
+
+	/// [`PEN`] outlining in the role's colour.
+	#[must_use]
+	pub const fn pen(self) -> Theme {
+		outlined(self.tone())
+	}
+}
+
+/// [`PEN`] with its outlines in `tone`.
 #[must_use]
-pub fn class_sheet() -> &'static [&'static str] {
-	&[
-		PAGE, TITLE, MUTED, CARD, PRIMARY, QUIET, PLACE, REWARD, REVIEW, ROW, FINDER, FIELD,
-	]
+pub const fn outlined(tone: Tone) -> Theme {
+	Theme {
+		light: Palette {
+			ink: tone.light,
+			..PEN.light
+		},
+		dark: Palette {
+			ink: tone.dark,
+			..PEN.dark
+		},
+		..PEN
+	}
 }
 
-/// Paper appearance: floral white page, ink text, vermilion stamp.
-pub fn install_paper() {
-	install(PAPER);
-}
-
-/// Night appearance: the same roles, with the night ground and the lighter stamp.
-pub fn install_night() {
-	install(NIGHT);
-}
-
-fn install(tokens: &[(&str, &str)]) {
-	let colors = tokens
-		.iter()
-		.map(|(name, value)| ((*name).to_owned(), (*value).to_owned()))
-		.collect::<BTreeMap<_, _>>();
-	Theme::install_maps(&colors, &BTreeMap::new()).expect("Verily colour tokens are hex colours");
-}
-
-const PAPER: &[(&str, &str)] = &[
-	("paper", "#FFFAF0"),
-	("night", "#292331"),
-	("ink", "#34283F"),
-	("muted-ink", "#736678"),
-	("muted-paper", "#B9ACBF"),
-	("dusk", "#4A3B5E"),
-	("stamp", "#D13F22"),
-	("stamp-on-night", "#F2856A"),
-	("place", "#2F6B4F"),
-	("place-wash", "#DDEAD9"),
-	("reward", "#9A6A12"),
-	("reward-wash", "#F6E8AF"),
-	("review", "#6B4FA0"),
-	("review-wash", "#E5DDF4"),
-	("fire", "#2F6FD6"),
-];
-
-const NIGHT: &[(&str, &str)] = &[
-	("paper", "#292331"),
-	("night", "#292331"),
-	("ink", "#FFFAF0"),
-	("muted-ink", "#B9ACBF"),
-	("muted-paper", "#736678"),
-	("dusk", "#4A3B5E"),
-	("stamp", "#F2856A"),
-	("stamp-on-night", "#F2856A"),
-	("place", "#DDEAD9"),
-	("place-wash", "#2F6B4F"),
-	("reward", "#F6E8AF"),
-	("reward-wash", "#9A6A12"),
-	("review", "#E5DDF4"),
-	("review-wash", "#6B4FA0"),
-	("fire", "#2F6FD6"),
-];
-
-/// Stamp vermilion, for the vector frame. The screen still paints with tokens.
+/// Ink text: plum on paper, paper on night.
 #[must_use]
-pub fn stamp_ink() -> Color {
-	Color::hex("#D13F22").expect("stamp vermilion")
+pub fn ink() -> String {
+	tone_class("text", verily_ink::INK_TONE)
 }
 
-/// The lighter stamp used on the night viewfinder.
+/// Secondary text: muted ink, or muted paper on night.
 #[must_use]
-pub fn stamp_on_night() -> Color {
-	Color::hex("#F2856A").expect("stamp on night")
+pub fn muted() -> String {
+	tone_class("text", verily_ink::MUTED_INK)
+}
+
+/// Text in a role's colour, for labels large enough to carry it.
+#[must_use]
+pub fn role_text(role: Role) -> String {
+	tone_class("text", role.tone())
+}
+
+/// The page colour behind everything.
+#[must_use]
+pub fn paper() -> String {
+	tone_class("bg", verily_ink::PAPER)
+}
+
+/// Every fixed class string, so a test can reject one the renderer does not
+/// know.
+#[must_use]
+pub fn class_sheet() -> Vec<String> {
+	let mut sheet = [DISPLAY, HEADLINE, TITLE, BODY, LABEL, PAGE, STACK, ROW]
+		.map(str::to_owned)
+		.to_vec();
+	sheet.extend([ink(), muted(), paper()]);
+	sheet.extend([Role::Place, Role::Reward, Role::Review].map(role_text));
+	sheet
 }
 
 #[cfg(test)]
@@ -102,22 +129,25 @@ mod tests {
 	use super::*;
 
 	#[test]
-	fn paper_tokens_match_the_brand() {
-		install_paper();
-		assert_eq!(Theme::color("paper"), Color::hex("#FFFAF0"));
-		assert_eq!(Theme::color("ink"), Color::hex("#34283F"));
-		assert_eq!(Theme::color("stamp"), Color::hex("#D13F22"));
-		assert_eq!(Theme::color("place"), Color::hex("#2F6B4F"));
-		assert_eq!(Theme::color("reward"), Color::hex("#9A6A12"));
-		assert_eq!(Theme::color("review"), Color::hex("#6B4FA0"));
-		assert_eq!(Theme::color("fire"), Color::hex("#2F6FD6"));
+	fn primary_fills_are_ink_not_vermilion() {
+		assert_eq!(PEN.light.accent, verily_ink::INK_TONE.light);
+		assert_eq!(PEN.dark.accent, verily_ink::INK_TONE.dark);
+		for role in [Role::Place, Role::Reward, Role::Review] {
+			assert_ne!(role.pen().light.accent, verily_ink::STAMP.light);
+		}
 	}
 
 	#[test]
-	fn night_keeps_the_stamp_readable() {
-		install_night();
-		assert_eq!(Theme::color("paper"), Color::hex("#292331"));
-		assert_eq!(Theme::color("ink"), Color::hex("#FFFAF0"));
-		assert_eq!(Theme::color("stamp"), Color::hex("#F2856A"));
+	fn roles_outline_in_their_colour_and_keep_the_paper() {
+		let place = Role::Place.pen();
+		assert_eq!(place.light.ink, verily_ink::PLACE.light);
+		assert_eq!(place.dark.ink, verily_ink::PLACE.dark);
+		assert_eq!(place.light.paper, PEN.light.paper);
+	}
+
+	#[test]
+	fn colours_follow_the_device_appearance() {
+		assert_eq!(ink(), "text-[#34283f] dark:text-[#fffaf0]");
+		assert_eq!(paper(), "bg-[#fffaf0] dark:bg-[#292331]");
 	}
 }

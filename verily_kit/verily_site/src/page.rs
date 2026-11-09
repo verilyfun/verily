@@ -6,7 +6,7 @@ use leptoskit::prelude::Element;
 
 use crate::SiteConfig;
 use crate::brand;
-use crate::ink;
+use verily_ink::sketches as ink;
 
 const CSS: &str = include_str!("site.css");
 

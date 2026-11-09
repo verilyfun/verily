@@ -1,93 +1,103 @@
-//! The creator's list, `/create`.
+//! The creator's notebook, `/create`: drafts and live actions, and the way
+//! to post a new one.
 
 use leptoskit::component;
-use leptoskit::prelude::Button;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::For;
 use leptoskit::prelude::Show;
-use leptoskit::prelude::Text;
 use leptoskit::prelude::View;
 use leptoskit::rpc::client::use_rpc_query;
 use leptoskit::view;
+use verily_ink::sketches;
 
 use crate::chrome;
 use crate::l10n::use_l10n;
 use crate::model::DraftRow;
 use crate::ops::ListMyActions;
-use crate::routes::Editor;
+use crate::routes::EditAction;
 use crate::routes::Navigation;
+use crate::routes::NewAction;
 use crate::theme;
+use crate::theme::Role;
 
 /// Drafts and live actions.
 #[component]
 pub fn Page(navigation: &Navigation) -> Element {
 	let l10n = use_l10n();
 	let rows = use_rpc_query(|| ListMyActions {});
-	let open_editor = navigation.clone();
+	let post = navigation.clone();
 	let navigation = navigation.clone();
 	view! {
-		<View class="flex flex-col gap-4">
-			<chrome::Title text=l10n.hub_title() />
-			<chrome::Muted text=l10n.hub_subtitle() />
-			<Button
-				class=theme::PRIMARY
-				on:press=move || {
-					open_editor.navigate(Editor {
-						draft: "new".into(),
-					});
-				}
-			>
-				{l10n.hub_post_action()}
-			</Button>
+		<chrome::Page>
+			<chrome::Heading text=l10n.hub_title() body=l10n.hub_subtitle() />
+			<chrome::Primary
+				label=l10n.hub_post_action()
+				on_press=move || post.navigate(NewAction)
+				seed=301
+			/>
 			{Show(
 				move || rows.is_loading(),
-				move || view! { <chrome::Muted text=l10n.hub_loading() /> },
+				move || view! { <chrome::Loading text=l10n.hub_loading() /> },
 			)}
 			{Show(
 				move || rows.is_error(),
-				move || view! { <chrome::Title text=l10n.hub_load_failed_title() /> },
+				move || {
+					view! {
+						<chrome::Failed
+							title=l10n.hub_load_failed_title()
+							retry=l10n.dialog_retry()
+							on_retry=move || {
+								rows.refetch();
+							}
+						/>
+					}
+				},
 			)}
 			{Show(
 				move || rows.data().is_some_and(|list| list.is_empty()),
 				move || {
 					view! {
-						<View class=theme::CARD>
-							<chrome::Title text=l10n.hub_empty_title() />
-							<chrome::Muted text=l10n.hub_empty_body() />
-						</View>
+						<chrome::Empty
+							title=l10n.hub_empty_title()
+							body=l10n.hub_empty_body()
+							picture=sketches::escrow_jar(303)
+						/>
 					}
 				},
 			)}
-			{For(
-				move || rows.data().unwrap_or_default(),
-				|row: &DraftRow| row.id.clone(),
-				move |row| view! { <DraftCard navigation=navigation.clone() row=row /> },
-			)}
-		</View>
+			<View class=theme::STACK>
+				{For(
+					move || rows.data().unwrap_or_default(),
+					|row: &DraftRow| row.id.clone(),
+					move |row| view! { <DraftCard navigation=navigation.clone() row=row /> },
+				)}
+			</View>
+		</chrome::Page>
 	}
 }
 
+/// One of the creator's actions, with what it needs next.
 #[component]
 fn DraftCard(navigation: Navigation, row: DraftRow) -> Element {
 	let l10n = use_l10n();
+	let seed = chrome::seed_for(&row.id);
 	let id = row.id.clone();
-	let status = if row.live && row.funded {
-		l10n.hub_status_live()
+	let (role, status) = if row.live && row.funded {
+		(Role::Place, l10n.hub_status_live())
 	} else if row.funded {
-		l10n.hub_reward_funded()
+		(Role::Reward, l10n.hub_reward_funded())
 	} else {
-		l10n.hub_reward_needs_funding()
+		(Role::Review, l10n.hub_reward_needs_funding())
 	};
 	view! {
-		<View class=theme::CARD>
-			<Text class="font-semibold">{row.title}</Text>
-			<chrome::Muted text=status />
-			<Button
-				class=theme::QUIET
-				on:press=move || navigation.navigate(Editor { draft: id.clone() })
-			>
-				{l10n.hub_edit()}
-			</Button>
-		</View>
+		<chrome::Card seed=seed>
+			<chrome::Title text=row.title />
+			<chrome::Chip role=role text=status seed=seed + 1 />
+			<chrome::Quiet
+				label=l10n.hub_edit()
+				on_press=move || navigation.navigate(EditAction { action: id.clone() })
+				seed=seed + 2
+			/>
+		</chrome::Card>
 	}
 }

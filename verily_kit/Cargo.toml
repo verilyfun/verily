@@ -17,6 +17,7 @@ members = [
   "vendor/skribble_rough",
   "verily_app",
   "verily_backend",
+  "verily_ink",
   "verily_rewards",
   "verily_shared",
   "verily_site",
@@ -76,6 +77,7 @@ skribble_leptoskit = { path = "vendor/skribble_leptoskit" }
 skribble_rough = { path = "vendor/skribble_rough" }
 solana_kit = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32dcfccc4f73b6b5d68bdc6f541151c7e047" }
 thiserror = "2"
+verily_ink = { path = "verily_ink" }
 
 [dependencies]
 leptoskit = { workspace = true, features = ["server", "web", "db-postgres"] }

@@ -24,6 +24,7 @@ schemars = { version = "1.2", features = ["semver1"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 skribble_leptoskit = { workspace = true }
+verily_ink = { workspace = true }
 # The CLI's embedded wasm-bindgen accepts exactly its matching library version.
 wasm-bindgen = { version = "=0.2.129", optional = true }
 

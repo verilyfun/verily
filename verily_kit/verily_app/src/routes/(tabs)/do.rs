@@ -1,7 +1,7 @@
-//! The catalogue, `/do`.
+//! The catalogue, `/do`: actions to do, each with its place and reward in
+//! view before anyone starts.
 
 use leptoskit::component;
-use leptoskit::prelude::Button;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::For;
 use leptoskit::prelude::Get;
@@ -12,16 +12,20 @@ use leptoskit::prelude::Text;
 use leptoskit::prelude::View;
 use leptoskit::rpc::client::use_rpc_query;
 use leptoskit::view;
+use skribble_leptoskit::FillStyle;
+use skribble_leptoskit::WiredBadge;
+use verily_ink::sketches;
 
 use crate::chrome;
 use crate::l10n::use_l10n;
-use crate::state::remember;
 use crate::model::ActionCard;
 use crate::model::ActionFilter;
 use crate::ops::ListAvailableActions;
 use crate::routes::Action;
 use crate::routes::Navigation;
+use crate::state::remember;
 use crate::theme;
+use crate::theme::Role;
 
 /// The catalogue.
 #[component]
@@ -35,30 +39,24 @@ pub fn Page(navigation: &Navigation) -> Element {
 	});
 	let navigation = navigation.clone();
 	view! {
-		<View class="flex flex-col gap-4">
-			<chrome::Title text=l10n.do_title() />
-			<chrome::Muted text=l10n.do_subtitle() />
+		<chrome::Page>
+			<chrome::Heading text=l10n.do_title() body=l10n.do_subtitle() />
 			<Filters filter=filter />
 			{Show(
 				move || actions.is_loading(),
-				move || view! { <chrome::Muted text=l10n.do_loading() /> },
+				move || view! { <chrome::Loading text=l10n.do_loading() /> },
 			)}
 			{Show(
 				move || actions.is_error(),
 				move || {
-					let actions = actions;
 					view! {
-						<View class="flex flex-col gap-2">
-							<chrome::Title text=l10n.do_load_failed_title() />
-							<Button
-								class=theme::QUIET
-								on:press=move || {
-									actions.refetch();
-								}
-							>
-								{l10n.dialog_retry()}
-							</Button>
-						</View>
+						<chrome::Failed
+							title=l10n.do_load_failed_title()
+							retry=l10n.dialog_retry()
+							on_retry=move || {
+								actions.refetch();
+							}
+						/>
 					}
 				},
 			)}
@@ -66,88 +64,110 @@ pub fn Page(navigation: &Navigation) -> Element {
 				move || actions.data().is_some_and(|rows| rows.is_empty()),
 				move || {
 					view! {
-						<View class=theme::CARD>
-							<chrome::Title text=l10n.do_empty_title() />
-							<chrome::Muted text=l10n.do_empty_body() />
-						</View>
+						<chrome::Empty
+							title=l10n.do_empty_title()
+							body=l10n.do_empty_body()
+							picture=sketches::arrow_up(96.0, 84.0, 31)
+						/>
 					}
 				},
 			)}
-			{For(
-				move || actions.data().unwrap_or_default(),
-				|card: &ActionCard| card.id.clone(),
-				move |card| view! { <CatalogueCard navigation=navigation.clone() card=card /> },
-			)}
-		</View>
+			<View class=theme::STACK>
+				{For(
+					move || actions.data().unwrap_or_default(),
+					|card: &ActionCard| card.id.clone(),
+					move |card| view! { <CatalogueCard navigation=navigation.clone() card=card /> },
+				)}
+			</View>
+		</chrome::Page>
 	}
 }
 
 #[component]
 fn Filters(filter: RwSignal<ActionFilter>) -> Element {
 	let l10n = use_l10n();
-	view! {
-		<View class=theme::ROW>
-			<FilterButton filter=filter value=ActionFilter::All label=l10n.do_filter_all() />
-			<FilterButton filter=filter value=ActionFilter::Nearby label=l10n.do_filter_nearby() />
-			<FilterButton filter=filter value=ActionFilter::Place label=l10n.do_filter_place() />
-			<FilterButton
-				filter=filter
-				value=ActionFilter::Movement
-				label=l10n.do_filter_movement()
-			/>
-			<FilterButton
-				filter=filter
-				value=ActionFilter::VenueCode
-				label=l10n.do_filter_venue_code()
-			/>
-			<FilterButton filter=filter value=ActionFilter::Apps label=l10n.do_filter_apps() />
-		</View>
-	}
+	let chips = [
+		(ActionFilter::All, l10n.do_filter_all()),
+		(ActionFilter::Nearby, l10n.do_filter_nearby()),
+		(ActionFilter::Place, l10n.do_filter_place()),
+		(ActionFilter::Movement, l10n.do_filter_movement()),
+		(ActionFilter::VenueCode, l10n.do_filter_venue_code()),
+		(ActionFilter::Apps, l10n.do_filter_apps()),
+	]
+	.into_iter()
+	.enumerate()
+	.map(|(index, (value, label))| {
+		view! { <FilterChip filter=filter value=value label=label seed=101 + index as i64 /> }
+	})
+	.collect::<Vec<_>>();
+	view! { <View class=theme::ROW>{chips}</View> }
 }
 
+/// A filter as a hand-drawn capsule: ink-filled when chosen.
 #[component]
-fn FilterButton(
+fn FilterChip(
 	filter: RwSignal<ActionFilter>,
 	value: ActionFilter,
 	label: impl Into<String>,
+	seed: i64,
 ) -> Element {
 	let selected = filter.get() == value;
 	let label = label.into();
-	let class = if selected {
-		theme::PRIMARY
+	let (fill_style, text) = if selected {
+		(
+			FillStyle::Solid,
+			verily_ink::tone_class("text", verily_ink::PAPER),
+		)
 	} else {
-		theme::QUIET
+		(FillStyle::None, theme::ink())
 	};
-	view! {
-		<Button class=class on:press=move || filter.set(value.clone())>{label}</Button>
-	}
+	let chip = view! {
+		<WiredBadge seed=seed theme=theme::PEN fill_style=fill_style class=text>
+			<Text class=theme::LABEL>{label.clone()}</Text>
+		</WiredBadge>
+	};
+	leptoskit::prelude::Pressable(label)
+		.class("min-h-11 justify-center")
+		.on_press(move || filter.set(value.clone()))
+		.child(chip)
 }
 
+/// One action: its name, where, and what it pays. The whole card opens it.
 #[component]
 fn CatalogueCard(navigation: Navigation, card: ActionCard) -> Element {
 	let l10n = use_l10n();
-	let id = card.id.clone();
-	let radius = if card.radius_meters > 0 {
-		l10n.action_place_radius(card.radius_meters)
-	} else {
-		l10n.do_map_empty_title().to_owned()
-	};
+	let seed = chrome::seed_for(&card.id);
+	let radius = (card.radius_meters > 0).then(|| l10n.action_place_radius(card.radius_meters));
 	let creator = l10n.do_creator_by(&card.creator);
-	view! {
-		<View class=theme::CARD>
-			<Text class=theme::TITLE>{card.title}</Text>
+	let reward = (!card.reward_label.is_empty()).then(|| {
+		let label = l10n.reward_in_escrow(&card.reward_label);
+		view! {
+			<View class="flex flex-row items-center gap-2">
+				{sketches::coin(28.0, seed + 5)}
+				<chrome::Chip role=Role::Reward text=label seed=seed + 7 />
+			</View>
+		}
+	});
+	let body = view! {
+		<chrome::Card seed=seed>
+			<chrome::Title text=card.title.clone() />
 			<chrome::Muted text=creator />
-			<chrome::Muted text=card.place_name />
-			<chrome::Muted text=radius />
-			<chrome::Muted text=card.reward_label />
-			<Button
-				class=theme::PRIMARY
-				on:press=move || {
-					navigation.navigate(Action { action: id.clone() });
-				}
-			>
-				{l10n.action_start()}
-			</Button>
-		</View>
-	}
+			<View class="flex flex-row items-center gap-2">
+				{sketches::pin(24.0, seed + 3)}
+				<Text class=format!("{} {}", theme::LABEL, theme::role_text(Role::Place))>
+					{card.place_name.clone()}
+				</Text>
+			</View>
+			{radius.map(|radius| view! { <chrome::Muted text=radius /> })}
+			{reward}
+		</chrome::Card>
+	};
+	navigation
+		.link(
+			Action {
+				action: card.id.clone(),
+			},
+			card.title,
+		)
+		.child(body)
 }
