@@ -7,11 +7,6 @@ license = "Apache-2.0"
 publish = false
 description = "Server-side Verily verification. Fail closed. Mounted by verily_backend."
 
-# Standalone until the shell workspace lists this member. Dependencies are
-# pinned in this manifest so `cargo test` does not wait on that file.
-[workspace]
-resolver = "2"
-
 [dependencies]
 base64 = "0.22"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }

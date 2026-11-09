@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleIdentifier</key><string>fun.verily.app</string>
+<key>CFBundleName</key><string>verily_kit</string>
+<key>CFBundleExecutable</key><string>App</string>
+<key>CFBundlePackageType</key><string>APPL</string>
+<key>CFBundleShortVersionString</key><string>0.1.0</string>
+<key>CFBundleVersion</key><string>1</string>
+<key>UILaunchScreen</key><dict/>
+<key>UIApplicationSceneManifest</key><dict>
+<key>UIApplicationSupportsMultipleScenes</key><false/>
+<key>UISceneConfigurations</key><dict/>
+</dict>
+<key>NSCameraUsageDescription</key><string>Verily uses the camera to capture proof of an action.</string>
+<key>NSMicrophoneUsageDescription</key><string>Verily uses the microphone to capture proof of an action.</string>
+<key>NSLocationWhenInUseUsageDescription</key><string>Verily uses your location to confirm where an action happened.</string>
+</dict></plist>

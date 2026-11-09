@@ -41,7 +41,7 @@ context is the script name. The default lanes cover `lint:all` and everything
 
 | Lane                | What it checks                                                                          |
 | ------------------- | --------------------------------------------------------------------------------------- |
-| `lint:all`          | Formatting, Dart analysis, Pina and Clippy lints, escrow migrations, native lint        |
+| `lint:all`          | Formatting, Dart analysis, Pina and Clippy lints, escrow migrations, native lint, `lk lint` on `verily_kit` |
 | `test:tools`        | Repository tooling, including this tool's lane table                                    |
 | `test:lints`        | The Verily analyzer plugin's rules                                                      |
 | `test:flutter`      | Flutter unit and widget tests for the app and brand packages                            |

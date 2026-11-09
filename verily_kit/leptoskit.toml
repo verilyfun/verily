@@ -1,0 +1,67 @@
+#:schema https://leptoskit.dev/schemas/leptoskit.v0.schema.json
+
+[app]
+name = "verily_kit"
+version = "0.1.0"
+default_platform = "web"
+platforms = ["web", "ios", "android", "macos", "windows", "linux"]
+render = "ssr"
+
+[serve]
+address = "127.0.0.1"
+port = 8180
+probes = true
+
+[build]
+backend = true
+
+[native]
+package_id = "fun.verily.app"
+plugins = [
+    "http",
+    "location",
+    "sensors",
+    "permissions",
+    "speech",
+    "secure-store",
+    "crypto",
+    "filesystem",
+    "local-authentication",
+    "device",
+]
+
+[native.plugin-options.http]
+origins = ["http://localhost:3000", "http://10.0.2.2:3000"]
+
+# Tables live in verily_backend. These commands read that crate:
+# `lk db check`, `lk db migration create`, `lk db migrate`, `lk db status`.
+[db]
+dialect = "postgres"
+crate = "verily_backend"
+features = ["server"]
+migrations = "verily_backend/migrations-postgres"
+url_env = "DATABASE_URL"
+
+[auth]
+app_name = "Verily"
+keys_env = "AUTH_ENCRYPTION_KEYS"
+
+[auth.idp]
+consent_page = "/consent"
+device_page = "/device"
+
+# A capitalized function that returns a view is a component, so it carries
+# `#[component]`. `lk lint` denies a missing attribute.
+[lint]
+markup = "view"
+
+[lint.rules]
+component_attribute = "deny"
+
+# File routes live in verily_app. `lk dev` and `lk plugin:router routes`
+# regenerate that crate's module from those files.
+[[plugins]]
+name = "router"
+
+[plugins.options]
+dir = "verily_app/src/routes"
