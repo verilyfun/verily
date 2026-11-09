@@ -1,7 +1,7 @@
 /// Verily's brand in code.
 ///
 /// - `VerilyBrandColors`: every brand colour, with its role and contrast.
-/// - `VerilyMark`: the pin-check, one continuous stroke.
+/// - `VerilyMark`: the pin-check, a solid pin with a check cut through it.
 /// - `VerilyWordmark`: ✓erily, the "v" a vermilion check.
 /// - `VerilyLockup`: the two together, side by side or stacked.
 /// - `VerifiedStamp`: the stamp pressed onto verified proof.
@@ -19,10 +19,12 @@ export 'package:verily_brand/src/geometry.dart'
         BrandGlyph,
         BrandInk,
         BrandPoint,
+        BrandShape,
         BrandStroke,
         VerilyGeometry;
 export 'package:verily_brand/src/glyph_painter.dart';
-export 'package:verily_brand/src/ink.dart' show BrandInkPainter, verilyBrandPen;
+export 'package:verily_brand/src/ink.dart'
+    show BrandInkPainter, verilyBrandPen, verilyMarkPen;
 export 'package:verily_brand/src/lockup.dart';
 export 'package:verily_brand/src/mark.dart';
 export 'package:verily_brand/src/stamp.dart';
