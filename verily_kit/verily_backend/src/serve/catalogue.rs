@@ -174,6 +174,7 @@ pub async fn get_action(cx: &rpc::QueryCx, action_id: String) -> rpc::Result<Act
 			})
 			.collect(),
 		reward_label: reward_label(&opportunity),
+		rewarded: opportunity.reward.is_some(),
 		funded: escrow_funded(&opportunity),
 	})
 }
@@ -197,6 +198,7 @@ pub async fn list_my_actions(cx: &rpc::QueryCx) -> rpc::Result<Vec<DraftRow>> {
 		rows.push(DraftRow {
 			id: action.id.to_string(),
 			title: action.title.clone(),
+			rewarded: opportunity.reward.is_some(),
 			funded: escrow_funded(&opportunity),
 			live: action.status == name(&ActionDefinitionStatus::Active),
 		});
@@ -295,11 +297,13 @@ pub async fn publish_action(
 	{
 		Ok(published) => Ok(PublishOutcome {
 			published: published.status == ActionDefinitionStatus::Active,
+			rewarded: published.reward.is_some(),
 			funded: escrow_funded(&published),
 		}),
 		Err(RewardsError::Authoring(ActionAuthoringProblem::RewardNotFunded)) => {
 			Ok(PublishOutcome {
 				published: false,
+				rewarded: true,
 				funded: false,
 			})
 		}

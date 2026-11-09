@@ -89,11 +89,18 @@ pub fn Page(route: &Action, navigation: &Navigation) -> Element {
 						l10n.editor_place_tap_hint().to_owned()
 					};
 					let place = l10n.action_place_map_label(&item.place_name);
-					let reward = l10n.reward_in_escrow(&item.reward_label);
-					let funded = if item.funded {
-						l10n.hub_reward_funded()
-					} else {
-						l10n.hub_reward_needs_funding()
+					// Only a rewarded action shows a reward: its amount once the
+					// escrow is verified, or that it still needs funding.
+					let reward = match (item.rewarded, item.funded) {
+						(true, true) => Some(view! {
+							<chrome::RewardChip
+								label=l10n.reward_in_escrow(&item.reward_label)
+								detail=l10n.hub_reward_funded().to_owned()
+								seed=51
+							/>
+						}),
+						(true, false) => Some(view! { <chrome::Muted text=l10n.hub_reward_needs_funding() /> }),
+						(false, _) => None,
 					};
 					view! {
 						<View class="flex flex-col gap-6">
@@ -115,7 +122,7 @@ pub fn Page(route: &Action, navigation: &Navigation) -> Element {
 									|proof| view! { <ProofLine proof=proof /> },
 								)}
 							</chrome::Card>
-							<chrome::RewardChip label=reward detail=funded.to_owned() seed=51 />
+							{reward}
 							<chrome::Primary
 								label=l10n.action_start()
 								disabled=begin.is_pending()

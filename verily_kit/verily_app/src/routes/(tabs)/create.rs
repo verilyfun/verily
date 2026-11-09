@@ -78,23 +78,26 @@ pub fn Page(navigation: &Navigation) -> Element {
 fn DraftCard(navigation: Navigation, row: DraftRow) -> Element {
 	let l10n = use_l10n();
 	let id = row.id.clone();
-	let status = if row.live && row.funded {
-		l10n.hub_status_live()
-	} else if row.funded {
-		l10n.hub_reward_funded()
-	} else {
-		l10n.hub_reward_needs_funding()
-	};
 	let seed = 131 + row.id.len() as i64;
-	let chip = if row.funded {
-		view! { <chrome::RewardChip label=status seed=seed + 1 /> }
+	let state = if row.live {
+		l10n.hub_status_live()
 	} else {
-		view! { <chrome::Muted text=status /> }
+		l10n.hub_status_draft()
+	};
+	// A reward is shown only when there is one: funded in escrow, or still
+	// waiting for its escrow before it can go live.
+	let reward = match (row.rewarded, row.funded) {
+		(true, true) => {
+			Some(view! { <chrome::RewardChip label=l10n.hub_reward_funded() seed=seed + 1 /> })
+		}
+		(true, false) => Some(view! { <chrome::Muted text=l10n.hub_reward_needs_funding() /> }),
+		(false, _) => None,
 	};
 	view! {
 		<chrome::Card seed=seed>
 			<chrome::Title text=row.title />
-			{chip}
+			<chrome::Muted text=state />
+			{reward}
 			<chrome::Quiet
 				label=l10n.hub_edit()
 				seed=seed + 3

@@ -77,8 +77,9 @@ pub fn Page(route: &Editor, navigation: &Navigation) -> Element {
 				/>
 			</chrome::Card>
 			<chrome::Card seed=153>
+				<chrome::Title text=l10n.editor_reward_heading() />
+				<chrome::Muted text=l10n.editor_reward_help() />
 				<Field label=l10n.editor_reward_amount_label() value=reward seed=155 />
-				<chrome::Muted text=l10n.editor_fund_first() />
 			</chrome::Card>
 			<chrome::Card seed=157>
 				<chrome::Title text=l10n.editor_proof_heading() />
@@ -121,7 +122,7 @@ pub fn Page(route: &Editor, navigation: &Navigation) -> Element {
 					seed=163
 					on_press=move || {
 						let Some(action_id) = saved_for_publish.get() else {
-							notice.set(l10n.editor_fund_first().to_owned());
+							notice.set(l10n.editor_draft_ready().to_owned());
 							return;
 						};
 						publish.mutate(PublishAction { action_id });

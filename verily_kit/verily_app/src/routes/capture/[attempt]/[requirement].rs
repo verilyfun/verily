@@ -15,7 +15,6 @@ use leptoskit::prelude::Text;
 use leptoskit::prelude::View;
 use leptoskit::query::use_mutation;
 use leptoskit::rpc::client::mutation_scope;
-use leptoskit::rpc::client::use_rpc_query;
 use leptoskit::view;
 use leptoskit_router::Route;
 use verily_ink::draw;
@@ -26,7 +25,6 @@ use crate::host::HostFault;
 use crate::l10n::use_l10n;
 use crate::ops::BeginCapture;
 use crate::ops::CompleteAttempt;
-use crate::ops::IssueSpokenChallenge;
 use crate::ops::SubmitAttestation;
 use crate::ops::SubmitLiveProof;
 use crate::routes::Navigation;
@@ -60,15 +58,9 @@ pub fn Page(route: &Capture, navigation: &Navigation) -> Element {
 	let key = format!("capture.{attempt_id}.{requirement_id}");
 	let phase = remember(&format!("{key}.phase"), || Phase::Ready);
 	let digest = remember(&format!("{key}.digest"), String::new);
-	let spoken = use_rpc_query({
-		let attempt_id = attempt_id.clone();
-		let requirement_id = requirement_id.clone();
-		move || IssueSpokenChallenge {
-			attempt_id: attempt_id.clone(),
-			requirement_id: requirement_id.clone(),
-		}
-	});
-
+	// The word comes with the capture window, from the server's list, and
+	// only for a proof that asks for one.
+	let spoken = remember(&format!("{key}.word"), || None::<String>);
 	let finish = use_mutation(
 		mutation_scope::<CompleteAttempt>().with_on_success(move |_| {
 			phase.set(Phase::Finished);
@@ -119,6 +111,7 @@ pub fn Page(route: &Capture, navigation: &Navigation) -> Element {
 			.with_on_success_async(move |args| {
 				let phase = phase;
 				let digest = digest;
+				spoken.set(args.data.spoken_word.clone());
 				async move {
 					match host::open_live(&args.data).await {
 						Ok(proof) => {
@@ -137,12 +130,14 @@ pub fn Page(route: &Capture, navigation: &Navigation) -> Element {
 	);
 
 	let live = l10n.capture_live();
-	let word = move || spoken.data().map(|item| item.word);
 	view! {
 		<View class="flex flex-col gap-6">
 			<chrome::Display text=l10n.capture_review_title() />
-			<Viewfinder label=live word=word().map(|word| l10n.capture_challenge_say(&word)) />
-			<chrome::Muted text=l10n.capture_challenge_intro() />
+			<Viewfinder label=live word=spoken.get().map(|word| l10n.capture_challenge_say(&word)) />
+			{Show(
+				move || spoken.get().is_some(),
+				move || view! { <chrome::Muted text=l10n.capture_challenge_intro() /> },
+			)}
 			{Show(
 				move || phase.get() == Phase::PluginMissing,
 				move || {
