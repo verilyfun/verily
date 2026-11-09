@@ -1,0 +1,44 @@
+#:schema https://leptoskit.dev/schemas/leptoskit.v0.schema.json
+
+schema_version = 0
+
+# Temporary host config until the verily_kit shell owns leptoskit.toml at the
+# kit root and drops this package's standalone [workspace] table.
+
+[app]
+name = "verily"
+version = "0.1.0"
+default_platform = "web"
+platforms = ["web"]
+render = "csr"
+
+[serve]
+address = "127.0.0.1"
+# Verily's local API port family avoids other Serverpod projects (8180).
+port = 8180
+
+[build]
+client_package = "verily_backend"
+
+# This package is the Axum host library; wasm client bundles come from the
+# shell / verily_app once those land. Disable wasm-opt until then.
+[bundle]
+wasm_opt = false
+
+[db]
+# Production and shared development use Postgres (+ PostGIS). SQLite migrations
+# stay available for host unit tests via `migrations/` (switch dialect locally
+# when creating those).
+dialect = "postgres"
+crate = "verily_backend"
+features = ["server"]
+migrations = "migrations-postgres"
+url_env = "DATABASE_URL"
+
+[auth]
+app_name = "Verily"
+keys_env = "AUTH_ENCRYPTION_KEYS"
+
+[auth.idp]
+consent_page = "/consent"
+device_page = "/device"

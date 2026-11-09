@@ -1,0 +1,13 @@
+# Matches the pinned leptoskit rev. The repo-root escrow workspace keeps its
+# own toolchain; this package is a temporary standalone workspace until the
+# verily_kit shell lists it as a member.
+[toolchain]
+channel = "nightly-2026-10-21"
+components = [
+	"cargo",
+	"clippy",
+	"rustfmt",
+	"rust-analyzer",
+	"rust-src",
+]
+profile = "default"
