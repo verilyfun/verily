@@ -1,10 +1,9 @@
 //! Verily's `leptoskit_db` schema: accounts, attempts, and evidence, plus the
 //! action and reward tables linked from `verily_rewards`.
 //!
-//! Tables are declared with `leptoskit_db` macros from leptoskit `main`. Auth
-//! and IdP packs sit beside them (`leptoskit_idp` is the vendored patch that
-//! gives `idp.grants` an `on_account_merge` strategy). After changing a table, use the LeptosKit
-//! CLI (never ad-hoc SQL scripts) from this package directory:
+//! Tables are declared with `leptoskit_db` macros from the pinned leptoskit
+//! revision. Auth and IdP packs sit beside them. After changing a table, use
+//! the LeptosKit CLI (never ad-hoc SQL scripts) from this package directory:
 //!
 //! ```sh
 //! cd verily_kit/verily_backend

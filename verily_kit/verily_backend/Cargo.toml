@@ -14,9 +14,7 @@ leptoskit_config = { workspace = true }
 leptoskit_db = { workspace = true, features = ["postgres", "sqlite"] }
 leptoskit_db_macros = { workspace = true }
 leptoskit_db_schema = { workspace = true }
-# Patched pin of leptoskit_idp: upstream Grant lacks on_account_merge, which
-# fails `lk db check`. Do not edit the git pin of other leptoskit crates.
-leptoskit_idp = { path = "vendor/leptoskit_idp", default-features = false, features = ["axum", "postgres", "sqlite"] }
+leptoskit_idp = { workspace = true, default-features = false, features = ["axum", "postgres", "sqlite"] }
 leptoskit_rpc = { workspace = true, default-features = false, features = ["live", "postgres", "server", "sqlite"] }
 monosecret = { workspace = true }
 thiserror = { workspace = true }
