@@ -129,16 +129,18 @@ tool, a gig dashboard, or a crypto app, and it must never look like one.
 
 ## Logo
 
-The **pin-check** is one continuous stroke: a map pin whose point is the
-vertex of a check, the check's long arm crossing the head exactly where the
-loop began. It reads as "verified, here". The **✓erily** wordmark makes the v a
-vermilion check and dots the i in vermilion, last.
+The **pin-check** is a solid vermilion map pin with a check knocked out of its
+head. The check's long arm cuts straight through the pin's rim, and after a
+small gap it carries on outside as a short flick: a confident tick that
+overshoots the pin. It reads as "verified, here". The cut is transparent, so
+whatever the mark sits on shows through it. The **✓erily** wordmark makes the
+v a vermilion check and dots the i in vermilion, last.
 
 Use the widgets (`VerilyMark`, `VerilyWordmark`, `VerilyLockup`) in the app
 and the files in [`brand/`](brand/README.md) everywhere else. In the app the
 mark is inked in the seeded Skribble hand; exported files are the clean
-centreline. The mark keeps its own optical weight: a heavier pen at 32dp and
-below so it reads at 24dp. Full rules, construction, clear space, and
+vectors. The mark keeps its own optical weight: a wider cut and flick at 32dp
+and below so it reads at 24dp. Full rules, construction, clear space, and
 minimum sizes are in [`docs/brand.md`](docs/brand.md).
 
 ## Colors
@@ -283,8 +285,9 @@ with a rubber-stamp texture. Pressed only onto proof that passed, once.
 
 ### Motion
 
-One moment, one gesture: the mark draws itself in one stroke, a word writes
-on, a tick is drawn, or the stamp slams (it lands half way through, squashes,
+One moment, one gesture: the mark presses its pin in and ticks it (the check
+cuts through and flicks out past the rim in one pass), a word writes on, a
+tick is drawn, or the stamp slams (it lands half way through, squashes,
 rings, and the ink settles). Never several at once on one screen. Everything
 is drawn from a seeded pen, so motion never re-rolls a wobble. Under reduced
 motion every drawing appears complete and the stamp appears settled.
