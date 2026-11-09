@@ -1,0 +1,35 @@
+[package]
+name = "verily_app"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+license = "Apache-2.0"
+publish = false
+description = "Verily screens for doing, capturing, creating, reviewing, and account."
+
+# Standalone until the shell workspace lists this member. LeptosKit is pinned
+# here so `cargo test` does not wait on that file.
+[workspace]
+resolver = "2"
+
+[dependencies]
+leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false, features = ["l10n", "query", "rpc"] }
+leptoskit_bridge = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false, optional = true }
+leptoskit_l10n = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
+leptoskit_router = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
+schemars = { version = "1.2", features = ["semver1"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[features]
+default = []
+# Browser host. The capture screen still refuses a file picker.
+web = ["leptoskit/web", "leptoskit_l10n/web", "leptoskit_router/web"]
+# Native guest. Android is the first phone target; iOS uses the same guest.
+guest = ["leptoskit/guest", "dep:leptoskit_bridge"]
+android = ["guest"]
+ios = ["guest"]
+
+[dev-dependencies]
+any_spawner = { version = "0.3", features = ["futures-executor"] }
+leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false, features = ["leptos"] }
