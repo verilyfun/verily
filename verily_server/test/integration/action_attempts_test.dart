@@ -623,6 +623,77 @@ void main() {
       );
 
       test(
+        'then a trusted capture spends the venue code so another account '
+        'cannot reuse it',
+        () async {
+          final attempt = await begin(participant, 'attested-venue');
+          final window = await open(attestedService, attempt);
+          final capturedAt = DateTime.now().toUtc();
+          final code = await liveCode();
+          final binding = bound(attempt, window, capturedAt, code);
+
+          final accepted = await attestedService.submitEvidence(
+            participant.build(),
+            authUserId: participantId,
+            input: ActionEvidenceInput(
+              attemptId: attempt.id,
+              requirementId: venue.id,
+              capturedAt: capturedAt,
+              qrCode: code,
+              captureChallengeId: window.id,
+              deviceIntegrityToken: _tokenFor(binding.requestHash),
+            ),
+          );
+
+          expect(accepted.status, EvidenceDecisionStatus.accepted);
+          final qr = await ActionQrChallenge.db.findFirstRow(
+            participant.build(),
+            where: (table) => table.secretHash.equals(secretSha256Hex(code)),
+          );
+          expect(qr!.usedAt, isNotNull);
+          expect(qr.usedByAttemptId, attempt.id);
+
+          final replayAttempt = await begin(other, 'attested-venue-replay');
+          final replayWindow = await attestedService.beginCapture(
+            other.build(),
+            authUserId: otherId,
+            attemptId: replayAttempt.id,
+            requirementId: venue.id,
+          );
+          final replayAt = DateTime.now().toUtc();
+          final replayBinding = bound(
+            replayAttempt,
+            replayWindow,
+            replayAt,
+            code,
+          );
+
+          final replayed = await attestedService.submitEvidence(
+            other.build(),
+            authUserId: otherId,
+            input: ActionEvidenceInput(
+              attemptId: replayAttempt.id,
+              requirementId: venue.id,
+              capturedAt: replayAt,
+              qrCode: code,
+              captureChallengeId: replayWindow.id,
+              deviceIntegrityToken: _tokenFor(replayBinding.requestHash),
+            ),
+          );
+
+          expect(replayed.status, EvidenceDecisionStatus.rejected);
+          expect(replayed.reasonCode, 'code_not_matched');
+          expect(
+            (await ActionQrChallenge.db.findById(
+              participant.build(),
+              qr.id!,
+            ))!.usedByAttemptId,
+            attempt.id,
+          );
+        },
+      );
+
+      test(
         'then a manifest signed by a key attested for the window is '
         'verified and kept with the proof',
         () async {
