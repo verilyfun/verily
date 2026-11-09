@@ -1,6 +1,3 @@
-// Generated copyWith methods use null to clear nullable persisted fields.
-// ignore_for_file: avoid_redundant_argument_values
-
 import 'package:serverpod/serverpod.dart';
 import 'package:verily_server/src/evidence_storage/evidence_object_access.dart';
 import 'package:verily_server/src/generated/protocol.dart';
