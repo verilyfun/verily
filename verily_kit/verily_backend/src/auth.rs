@@ -67,7 +67,10 @@ pub fn build_auth(
 
 	if let Some(config) = config.filter(|config| config.auth.is_some()) {
 		if let Ok(builder) = Auth::from_config(db, config) {
-			return Ok(builder);
+			return Ok(match development_origin(config) {
+				Some(origin) => builder.origin(origin),
+				None => builder,
+			});
 		}
 
 		let auth = config
@@ -84,8 +87,8 @@ pub fn build_auth(
 			absolute: Duration::from_secs(u64::from(auth.absolute_days) * DAY),
 			access: Duration::from_secs(u64::from(auth.access_minutes) * 60),
 		});
-		if let Some(origin) = &auth.origin {
-			builder = builder.origin(origin.clone());
+		if let Some(origin) = auth.origin.clone().or_else(|| development_origin(config)) {
+			builder = builder.origin(origin);
 		}
 		if let Some(header) = &auth.client_ip_header {
 			builder = builder.client_ip_header(header.clone());
@@ -94,6 +97,17 @@ pub fn build_auth(
 	}
 
 	Ok(Auth::builder(db, keys).app_name("Verily"))
+}
+
+/// The origin a debug build serves on when `[auth] origin` is unset:
+/// `http://localhost` on the `[serve]` port, which `lk dev` and the iOS
+/// Simulator reach. Release builds never guess, so a missing origin still
+/// refuses to start the identity provider.
+#[must_use]
+pub fn development_origin(config: &LeptoskitConfig) -> Option<String> {
+	let configured = config.auth.as_ref().and_then(|auth| auth.origin.as_ref());
+	(cfg!(debug_assertions) && configured.is_none())
+		.then(|| format!("http://localhost:{}", config.serve.port))
 }
 
 /// Build the identity provider beside `auth` when `[auth.idp]` is present.
@@ -119,4 +133,32 @@ pub fn build_idp(
 		return Ok(None);
 	}
 	Ok(Some(Idp::from_config(db, auth, config)?))
+}
+
+#[cfg(test)]
+mod tests {
+	use std::path::Path;
+
+	use super::*;
+
+	fn config(auth: &str) -> LeptoskitConfig {
+		let raw = format!("[app]\nname = \"verily_kit\"\n\n[serve]\nport = 8184\n\n{auth}");
+		LeptoskitConfig::from_toml(&raw, Path::new(".")).unwrap()
+	}
+
+	#[test]
+	fn a_debug_build_serves_sign_in_on_localhost_when_no_origin_is_set() {
+		let origin = development_origin(&config("[auth]\napp_name = \"Verily\"\n"));
+		if cfg!(debug_assertions) {
+			assert_eq!(origin.as_deref(), Some("http://localhost:8184"));
+		} else {
+			assert_eq!(origin, None);
+		}
+	}
+
+	#[test]
+	fn a_configured_origin_is_never_replaced() {
+		let config = config("[auth]\norigin = \"https://app.verily.fun\"\n");
+		assert_eq!(development_origin(&config), None);
+	}
 }

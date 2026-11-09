@@ -7,25 +7,45 @@ publish = false
 rust-version = "1.95"
 description = "Verily screens for doing, capturing, creating, reviewing, and account."
 
+# rlib for the server and tests; cdylib for the browser's Wasm module and the
+# native runners' Wasm guest.
+[lib]
+crate-type = ["rlib", "cdylib"]
+
 [dependencies]
-leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "44cfd118a6ab5aa6e98eb641048fa307c91e47d2", default-features = false, features = ["l10n", "query", "rpc"] }
-leptoskit_bridge = { git = "https://github.com/ifiokjr/leptoskit", rev = "44cfd118a6ab5aa6e98eb641048fa307c91e47d2", default-features = false, optional = true }
-leptoskit_l10n = { git = "https://github.com/ifiokjr/leptoskit", rev = "44cfd118a6ab5aa6e98eb641048fa307c91e47d2", default-features = false }
-leptoskit_router = { git = "https://github.com/ifiokjr/leptoskit", rev = "44cfd118a6ab5aa6e98eb641048fa307c91e47d2", default-features = false }
+leptos = { version = "0.9.0-rc0", default-features = false, optional = true }
+leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "ab557f9fdf7ae39f376f76bf6b00bcce950b89f7", default-features = false, features = ["l10n", "query", "rpc"] }
+leptoskit_bridge = { git = "https://github.com/ifiokjr/leptoskit", rev = "ab557f9fdf7ae39f376f76bf6b00bcce950b89f7", default-features = false, optional = true }
+leptoskit_l10n = { git = "https://github.com/ifiokjr/leptoskit", rev = "ab557f9fdf7ae39f376f76bf6b00bcce950b89f7", default-features = false }
+leptoskit_router = { git = "https://github.com/ifiokjr/leptoskit", rev = "ab557f9fdf7ae39f376f76bf6b00bcce950b89f7", default-features = false }
 schemars = { version = "1.2", features = ["semver1"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 skribble_leptoskit = { workspace = true }
+# The CLI's embedded wasm-bindgen accepts exactly its matching library version.
+wasm-bindgen = { version = "=0.2.129", optional = true }
 
 [features]
 default = []
 # Browser host. The capture screen still refuses a file picker.
-web = ["leptoskit/web", "leptoskit_l10n/web", "leptoskit_router/web"]
+web = ["leptoskit/web", "leptoskit_l10n/web", "leptoskit_router/web", "dep:leptos", "dep:wasm-bindgen"]
+# The browser renders on the client only, hydrates server markup, or is the server.
+csr = ["web", "leptos/csr"]
+hydrate = ["web", "leptos/hydrate"]
+ssr = ["web", "leptos/ssr"]
 # Native guest. Android is the first phone target; iOS uses the same guest.
-guest = ["leptoskit/guest", "dep:leptoskit_bridge"]
-android = ["guest"]
-ios = ["guest"]
+native = ["leptoskit/guest", "dep:leptoskit_bridge"]
+android = ["native", "leptoskit/android"]
+ios = ["native", "leptoskit/ios"]
+macos = ["native", "leptoskit/macos"]
+windows = ["native", "leptoskit/windows"]
+linux = ["native", "leptoskit/linux"]
+# The DevTools agents; `lk dev` turns this on, `lk build` never does.
+devtools = ["leptoskit/devtools"]
+
+[build-dependencies]
+leptoskit_build = { workspace = true }
 
 [dev-dependencies]
 any_spawner = { version = "0.3", features = ["futures-executor"] }
-leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "44cfd118a6ab5aa6e98eb641048fa307c91e47d2", default-features = false, features = ["leptos"] }
+leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "ab557f9fdf7ae39f376f76bf6b00bcce950b89f7", default-features = false, features = ["leptos"] }

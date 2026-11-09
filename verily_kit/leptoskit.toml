@@ -9,11 +9,13 @@ render = "ssr"
 
 [serve]
 address = "127.0.0.1"
-port = 8180
+port = 8184
 probes = true
 
 [build]
 backend = true
+# The crate the browser's Wasm module and the native guest are built from.
+client_package = "verily_app"
 
 [native]
 package_id = "fun.verily.app"
@@ -31,7 +33,9 @@ plugins = [
 ]
 
 [native.plugin-options.http]
-origins = ["http://localhost:3000", "http://10.0.2.2:3000"]
+# The kit server as an iOS Simulator (localhost) and an Android emulator
+# (10.0.2.2) reach it.
+origins = ["http://localhost:8184", "http://127.0.0.1:8184", "http://10.0.2.2:8184"]
 
 # Tables live in verily_backend. These commands read that crate:
 # `lk db check`, `lk db migration create`, `lk db migrate`, `lk db status`.

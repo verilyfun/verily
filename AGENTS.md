@@ -29,7 +29,7 @@ not port those back. Crypto appears only as the unit a reward is paid in.
 Run everything through `devenv shell` so local work uses the pinned Flutter,
 Rust, Pina, and Serverpod toolchains. Verily's local ports avoid other
 Serverpod projects: API `8180`, insights `8181`, web `8182`, landing page `8183`,
-Postgres `8191`.
+the LeptosKit kit `8184`, Postgres `8191`.
 
 ## Commits and pull requests
 
