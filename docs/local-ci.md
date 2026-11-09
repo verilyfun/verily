@@ -39,16 +39,16 @@ context is the script name. The default lanes cover `lint:all` and everything
 `test:all` runs; a unit test (`test/tool/local_ci_test.dart`) fails when
 `test:all` gains a script the lanes do not run.
 
-| Lane                | What it checks                                                                          |
-| ------------------- | --------------------------------------------------------------------------------------- |
+| Lane                | What it checks                                                                                              |
+| ------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `lint:all`          | Formatting, Dart analysis, Pina and Clippy lints, escrow migrations, native lint, `lk lint` on `verily_kit` |
-| `test:tools`        | Repository tooling, including this tool's lane table                                    |
-| `test:lints`        | The Verily analyzer plugin's rules                                                      |
-| `test:flutter`      | Flutter unit and widget tests for the app and brand packages                            |
-| `test:server`       | Serverpod unit and integration tests and the shared evidence package, on local Postgres |
-| `test:escrow`       | The escrow program's unit and Mollusk suites                                            |
-| `test:server-image` | Opt-in: the linux/amd64 server image (below)                                            |
-| `test:escrow:e2e`   | Opt-in: the escrow program on a throwaway validator, end to end against Postgres        |
+| `test:tools`        | Repository tooling, including this tool's lane table                                                        |
+| `test:lints`        | The Verily analyzer plugin's rules                                                                          |
+| `test:flutter`      | Flutter unit and widget tests for the app and brand packages                                                |
+| `test:server`       | Serverpod unit and integration tests and the shared evidence package, on local Postgres                     |
+| `test:escrow`       | The escrow program's unit and Mollusk suites                                                                |
+| `test:server-image` | Opt-in: the linux/amd64 server image (below)                                                                |
+| `test:escrow:e2e`   | Opt-in: the escrow program on a throwaway validator, end to end against Postgres                            |
 
 Opt-in lanes run only when named, for example
 `dart run tool/local_ci.dart --lane=test:escrow:e2e`. `test:escrow:e2e`

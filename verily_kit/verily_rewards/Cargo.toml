@@ -7,7 +7,6 @@ publish = false
 description = "Server-side actions, escrow checks, and payouts for Verily."
 
 [dependencies]
-verily_shared = { path = "../verily_shared" }
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde", "std"] }
 leptoskit_db = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false, features = ["sqlite"] }
 leptoskit_rpc = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false, features = ["sqlite"] }
@@ -20,6 +19,7 @@ solana_kit_core = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32
 solana_kit_native = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32dcfccc4f73b6b5d68bdc6f541151c7e047" }
 thiserror = "2"
 uuid = { version = "1", features = ["serde", "v4"] }
+verily_shared = { path = "../verily_shared" }
 
 [dev-dependencies]
 base64 = "0.22"

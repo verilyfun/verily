@@ -1,4 +1,4 @@
-#:schema https://leptoskit.dev/schemas/leptoskit.v0.schema.json
+# :schema https://leptoskit.dev/schemas/leptoskit.v0.schema.json
 
 [app]
 name = "verily_kit"
@@ -18,16 +18,16 @@ backend = true
 [native]
 package_id = "fun.verily.app"
 plugins = [
-    "http",
-    "location",
-    "sensors",
-    "permissions",
-    "speech",
-    "secure-store",
-    "crypto",
-    "filesystem",
-    "local-authentication",
-    "device",
+  "http",
+  "location",
+  "sensors",
+  "permissions",
+  "speech",
+  "secure-store",
+  "crypto",
+  "filesystem",
+  "local-authentication",
+  "device",
 ]
 
 [native.plugin-options.http]
