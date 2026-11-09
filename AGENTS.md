@@ -38,6 +38,13 @@ Rust, Pina, and Serverpod toolchains. Verily's local ports avoid other
 Serverpod projects: API `8180`, insights `8181`, web `8182`, landing page `8183`,
 the LeptosKit kit `8184`, Postgres `8191`.
 
+Cursor cloud agents on Linux install that toolchain with
+`bash .cursor/cloud-install.sh` and start the Nix daemon with
+`bash .cursor/cloud-start.sh` (also the environment install and start
+commands). Then `devenv shell lint:all` and `devenv shell test:all`. iOS
+builds, SwiftLint, and the Seeker device flow need macOS or a phone, and
+Android app builds need an SDK the cloud install does not download.
+
 ## Commits and pull requests
 
 - Every commit is authored by Ifiok alone and GPG-signed with his key. Never
