@@ -1,0 +1,63 @@
+[package]
+name = "verily_backend"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+publish = false
+rust-version.workspace = true
+description = "Verily's LeptosKit Axum host: db, auth, idp, RPC, and mounts for verification and rewards."
+
+# Temporary until verily_kit/Cargo.toml lists this member and drops the table.
+[workspace]
+resolver = "2"
+members = ["."]
+
+[workspace.package]
+edition = "2024"
+license = "Apache-2.0"
+rust-version = "1.95.0"
+
+[workspace.dependencies]
+# Pin every leptoskit crate the same way. No crates.io, no branch.
+leptoskit_auth = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
+leptoskit_axum = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
+leptoskit_config = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
+leptoskit_db = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
+leptoskit_db_macros = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
+leptoskit_db_schema = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
+leptoskit_rpc = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
+monosecret = { version = "0.5.0", default-features = false, features = ["client"] }
+thiserror = "2"
+
+[dependencies]
+leptoskit_auth = { workspace = true, features = ["axum", "oauth", "postgres", "rpc", "sqlite"] }
+leptoskit_axum = { workspace = true }
+leptoskit_config = { workspace = true }
+leptoskit_db = { workspace = true, features = ["postgres", "sqlite"] }
+leptoskit_db_macros = { workspace = true }
+leptoskit_db_schema = { workspace = true }
+# Patched pin of leptoskit_idp: upstream Grant lacks on_account_merge, which
+# fails `lk db check`. Do not edit the git pin of other leptoskit crates.
+leptoskit_idp = { path = "vendor/leptoskit_idp", default-features = false, features = ["axum", "postgres", "sqlite"] }
+leptoskit_rpc = { workspace = true, default-features = false, features = ["live", "postgres", "server", "sqlite"] }
+monosecret = { workspace = true }
+thiserror = { workspace = true }
+# Path deps on domain crates (temporary [workspace] until the shell lists members).
+verily_rewards = { path = "../verily_rewards" }
+verily_verification = { path = "../verily_verification" }
+
+[features]
+default = ["server"]
+# The host is always the server side of the tables. Named so `leptoskit.toml`'s
+# `[db] features = ["server"]` matches the scaffold the CLI expects.
+server = []
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+correctness = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }

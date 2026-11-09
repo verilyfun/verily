@@ -1,0 +1,5406 @@
+{
+  "format": 2,
+  "dialect": "sqlite",
+  "packs": [
+    {
+      "name": "audit",
+      "tables": [
+        {
+          "name": "_leptoskit_audit"
+        }
+      ],
+      "builtin": true
+    },
+    {
+      "name": "auth",
+      "tables": [
+        {
+          "namespace": "auth",
+          "name": "accounts"
+        },
+        {
+          "namespace": "auth",
+          "name": "challenges"
+        },
+        {
+          "namespace": "auth",
+          "name": "emails"
+        },
+        {
+          "namespace": "auth",
+          "name": "events"
+        },
+        {
+          "namespace": "auth",
+          "name": "identities"
+        },
+        {
+          "namespace": "auth",
+          "name": "merged_accounts"
+        },
+        {
+          "namespace": "auth",
+          "name": "passkeys"
+        },
+        {
+          "namespace": "auth",
+          "name": "passwords"
+        },
+        {
+          "namespace": "auth",
+          "name": "provider_tokens"
+        },
+        {
+          "namespace": "auth",
+          "name": "rate_limits"
+        },
+        {
+          "namespace": "auth",
+          "name": "recovery_codes"
+        },
+        {
+          "namespace": "auth",
+          "name": "sessions"
+        },
+        {
+          "namespace": "auth",
+          "name": "totp"
+        },
+        {
+          "namespace": "auth",
+          "name": "wallets"
+        }
+      ]
+    },
+    {
+      "name": "idp",
+      "tables": [
+        {
+          "namespace": "idp",
+          "name": "assertions"
+        },
+        {
+          "namespace": "idp",
+          "name": "authorizations"
+        },
+        {
+          "namespace": "idp",
+          "name": "clients"
+        },
+        {
+          "namespace": "idp",
+          "name": "device_codes"
+        },
+        {
+          "namespace": "idp",
+          "name": "dpop_proofs"
+        },
+        {
+          "namespace": "idp",
+          "name": "families"
+        },
+        {
+          "namespace": "idp",
+          "name": "grants"
+        },
+        {
+          "namespace": "idp",
+          "name": "pushed_requests"
+        },
+        {
+          "namespace": "idp",
+          "name": "refresh_tokens"
+        },
+        {
+          "namespace": "idp",
+          "name": "signing_keys"
+        }
+      ]
+    },
+    {
+      "name": "live",
+      "tables": [
+        {
+          "namespace": "live",
+          "name": "changes"
+        },
+        {
+          "namespace": "live",
+          "name": "commits"
+        }
+      ],
+      "builtin": true
+    },
+    {
+      "name": "rpc",
+      "tables": [
+        {
+          "namespace": "rpc",
+          "name": "inbox"
+        },
+        {
+          "namespace": "rpc",
+          "name": "jobs"
+        },
+        {
+          "namespace": "rpc",
+          "name": "receipts"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "name": {
+        "name": "_leptoskit_audit"
+      },
+      "comment": "One change to a row of an audited table.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "The entry's key, which orders entries by when they were made."
+        },
+        {
+          "name": "at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When the change was made: the same instant for every row one write\nchanged."
+        },
+        {
+          "name": "table_name",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false,
+          "comment": "The changed table, with its namespace: `posts` or `billing.invoices`."
+        },
+        {
+          "name": "row_key",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false,
+          "comment": "The changed row's key: its key columns' values as a JSON array."
+        },
+        {
+          "name": "op",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false,
+          "comment": "What the change did."
+        },
+        {
+          "name": "actor",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": true,
+          "comment": "Who made the change, if anyone was acting."
+        },
+        {
+          "name": "reason",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": true,
+          "comment": "Why policies were bypassed, for a change made through\n[`Db::system`](crate::Db::system)."
+        },
+        {
+          "name": "before",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": true,
+          "comment": "The row before the change, without its `secret` columns."
+        },
+        {
+          "name": "after",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": true,
+          "comment": "The row after the change, without its `secret` columns."
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "_leptoskit_audit_table_name_row_key_idx",
+          "columns": [
+            "table_name",
+            "row_key"
+          ]
+        },
+        {
+          "name": "_leptoskit_audit_at_idx",
+          "columns": [
+            "at"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "_leptoskit_audit_op_values",
+          "rule": {
+            "kind": "one_of",
+            "column": "op",
+            "values": [
+              "insert",
+              "update",
+              "delete"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "name": "accounts"
+      },
+      "comment": "Someone on Verily. Shares its primary key with `auth.accounts`, so deleting\nthe signed-in account removes this profile.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "display_name",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false,
+          "comment": "Display name shown on public action and attempt surfaces."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "name": "accounts_id_fkey",
+          "columns": [
+            "id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ],
+      "checks": [
+        {
+          "name": "accounts_display_name_length",
+          "rule": {
+            "kind": "length",
+            "column": "display_name",
+            "min": 1,
+            "max": 100
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "name": "actions"
+      },
+      "comment": "One action revision owned by an account.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "Row id."
+        },
+        {
+          "name": "creator_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "Account that created the action."
+        },
+        {
+          "name": "action_key",
+          "type": {
+            "kind": "text",
+            "max_len": 80
+          },
+          "nullable": false,
+          "comment": "Creator-chosen key, unique per account."
+        },
+        {
+          "name": "revision",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": false,
+          "comment": "Revision the client must send back."
+        },
+        {
+          "name": "status",
+          "type": {
+            "kind": "text",
+            "max_len": 32
+          },
+          "nullable": false,
+          "comment": "`draft`, `active`, `paused`, or `completed`."
+        },
+        {
+          "name": "title",
+          "type": {
+            "kind": "text",
+            "max_len": 160
+          },
+          "nullable": false,
+          "comment": "Title."
+        },
+        {
+          "name": "description",
+          "type": {
+            "kind": "text",
+            "max_len": 4000
+          },
+          "nullable": false,
+          "comment": "Description."
+        },
+        {
+          "name": "recurrence",
+          "type": {
+            "kind": "text",
+            "max_len": 16
+          },
+          "nullable": false,
+          "comment": "`once` or `daily`."
+        },
+        {
+          "name": "time_zone",
+          "type": {
+            "kind": "text",
+            "max_len": 80
+          },
+          "nullable": false,
+          "comment": "IANA time zone."
+        },
+        {
+          "name": "max_verified_completions",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": true,
+          "comment": "Optional cap on verified completions."
+        },
+        {
+          "name": "verified_completions",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": false,
+          "comment": "Verified completions so far."
+        },
+        {
+          "name": "opens_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When the action opens."
+        },
+        {
+          "name": "closes_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When the action closes."
+        },
+        {
+          "name": "published_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When it was published."
+        },
+        {
+          "name": "creator_display_name",
+          "type": {
+            "kind": "text",
+            "max_len": 80
+          },
+          "nullable": false,
+          "comment": "Name shown on the action."
+        },
+        {
+          "name": "requirements_json",
+          "type": {
+            "kind": "text",
+            "max_len": 32000
+          },
+          "nullable": false,
+          "comment": "Requirement drafts as JSON."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When the row was created."
+        },
+        {
+          "name": "updated_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When the row was last saved."
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "actions_creator_id_idx",
+          "columns": [
+            "creator_id"
+          ]
+        },
+        {
+          "name": "actions_creator_id_action_key_key",
+          "columns": [
+            "creator_id",
+            "action_key"
+          ],
+          "unique": true
+        }
+      ]
+    },
+    {
+      "name": {
+        "name": "attempts"
+      },
+      "comment": "One account attempt per action period; retries reuse the same attempt.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "action_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "participant_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "period_key",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false,
+          "comment": "Recurrence bucket key (for example a calendar day in the action TZ)."
+        },
+        {
+          "name": "idempotency_key",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false,
+          "default": {
+            "text": "collecting_evidence"
+          },
+          "comment": "`collecting_evidence`, `verifying`, `pending_review`, `verified`,\n`rejected`, or `capacity_reached`."
+        },
+        {
+          "name": "verification_score",
+          "type": {
+            "kind": "float64"
+          },
+          "nullable": true
+        },
+        {
+          "name": "rejection_code",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": true
+        },
+        {
+          "name": "reward_outcome",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": true,
+          "comment": "Set when a verified attempt met a reward pool: won or why not."
+        },
+        {
+          "name": "started_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        },
+        {
+          "name": "submitted_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true
+        },
+        {
+          "name": "verified_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true
+        },
+        {
+          "name": "updated_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "attempts_action_id_idx",
+          "columns": [
+            "action_id"
+          ]
+        },
+        {
+          "name": "attempts_participant_id_idx",
+          "columns": [
+            "participant_id"
+          ]
+        },
+        {
+          "name": "attempts_action_id_participant_id_period_key_key",
+          "columns": [
+            "action_id",
+            "participant_id",
+            "period_key"
+          ],
+          "unique": true
+        },
+        {
+          "name": "attempts_participant_id_idempotency_key_key",
+          "columns": [
+            "participant_id",
+            "idempotency_key"
+          ],
+          "unique": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "attempts_action_id_fkey",
+          "columns": [
+            "action_id"
+          ],
+          "references": {
+            "name": "actions"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "restrict"
+        },
+        {
+          "name": "attempts_participant_id_fkey",
+          "columns": [
+            "participant_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ],
+      "checks": [
+        {
+          "name": "attempts_period_key_length",
+          "rule": {
+            "kind": "length",
+            "column": "period_key",
+            "min": 1,
+            "max": 64
+          }
+        },
+        {
+          "name": "attempts_idempotency_key_length",
+          "rule": {
+            "kind": "length",
+            "column": "idempotency_key",
+            "min": 1,
+            "max": 128
+          }
+        },
+        {
+          "name": "attempts_status_values",
+          "rule": {
+            "kind": "one_of",
+            "column": "status",
+            "values": [
+              "collecting_evidence",
+              "verifying",
+              "pending_review",
+              "verified",
+              "rejected",
+              "capacity_reached"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "name": "evidence"
+      },
+      "comment": "Private evidence for one requirement on one attempt.\n\nAlmost every column is private: evidence originals stay off public feeds.\nPolicies let only the participant select the row; write paths are server\nsystem transactions in `verily_verification`.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "attempt_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "requirement_key",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false,
+          "comment": "Stable key of the requirement this proof satisfies."
+        },
+        {
+          "name": "kind",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false,
+          "comment": "Requirement kind: `photo`, `video`, `location`, `motion`, `qr`,\n`spoken`, `external`, …"
+        },
+        {
+          "name": "storage_path",
+          "type": {
+            "kind": "text",
+            "max_len": 1024
+          },
+          "nullable": true
+        },
+        {
+          "name": "storage_version_id",
+          "type": {
+            "kind": "text",
+            "max_len": 128
+          },
+          "nullable": true
+        },
+        {
+          "name": "mime_type",
+          "type": {
+            "kind": "text",
+            "max_len": 128
+          },
+          "nullable": true
+        },
+        {
+          "name": "sha256_digest",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": true,
+          "comment": "SHA-256 hex of the exact evidence bytes the server accepted."
+        },
+        {
+          "name": "byte_length",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": true
+        },
+        {
+          "name": "provenance_level",
+          "type": {
+            "kind": "text",
+            "max_len": 32
+          },
+          "nullable": false,
+          "default": {
+            "text": "basic"
+          },
+          "comment": "Capture integrity / provenance level label (for example `basic`)."
+        },
+        {
+          "name": "capture_manifest",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": true
+        },
+        {
+          "name": "capture_signature",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": true
+        },
+        {
+          "name": "capture_public_key",
+          "type": {
+            "kind": "text",
+            "max_len": 256
+          },
+          "nullable": true
+        },
+        {
+          "name": "capture_key_id",
+          "type": {
+            "kind": "text",
+            "max_len": 128
+          },
+          "nullable": true
+        },
+        {
+          "name": "capture_key_storage",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": true,
+          "comment": "`strongBox`, `trustedEnvironment`, or `secureEnclave` when attested."
+        },
+        {
+          "name": "captured_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        },
+        {
+          "name": "submitted_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "evidence_attempt_id_idx",
+          "columns": [
+            "attempt_id"
+          ]
+        },
+        {
+          "name": "evidence_attempt_id_requirement_key_key",
+          "columns": [
+            "attempt_id",
+            "requirement_key"
+          ],
+          "unique": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "evidence_attempt_id_fkey",
+          "columns": [
+            "attempt_id"
+          ],
+          "references": {
+            "name": "attempts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ],
+      "checks": [
+        {
+          "name": "evidence_requirement_key_length",
+          "rule": {
+            "kind": "length",
+            "column": "requirement_key",
+            "min": 1,
+            "max": 64
+          }
+        },
+        {
+          "name": "evidence_kind_length",
+          "rule": {
+            "kind": "length",
+            "column": "kind",
+            "min": 1,
+            "max": 32
+          }
+        },
+        {
+          "name": "evidence_byte_length_range",
+          "rule": {
+            "kind": "range",
+            "column": "byte_length",
+            "min": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "name": "payout_wallets"
+      },
+      "comment": "The wallet an account is paid to.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "Row id."
+        },
+        {
+          "name": "account_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "Account."
+        },
+        {
+          "name": "wallet_address",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": false,
+          "comment": "Wallet address."
+        },
+        {
+          "name": "label",
+          "type": {
+            "kind": "text",
+            "max_len": 80
+          },
+          "nullable": false,
+          "comment": "Label."
+        },
+        {
+          "name": "linked_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When the signature was verified."
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "payout_wallets_account_id_key",
+          "columns": [
+            "account_id"
+          ],
+          "unique": true
+        }
+      ]
+    },
+    {
+      "name": {
+        "name": "reward_payouts"
+      },
+      "comment": "One payout reserved for one attempt.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "Row id."
+        },
+        {
+          "name": "pool_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "Pool the index belongs to."
+        },
+        {
+          "name": "attempt_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "Attempt this payout was reserved for. Unique."
+        },
+        {
+          "name": "account_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "Account that completed the attempt."
+        },
+        {
+          "name": "payout_index",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": false,
+          "comment": "Index assigned under the pool row lock."
+        },
+        {
+          "name": "amount",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": false,
+          "comment": "Atoms."
+        },
+        {
+          "name": "status",
+          "type": {
+            "kind": "text",
+            "max_len": 32
+          },
+          "nullable": false,
+          "comment": "Payout status name."
+        },
+        {
+          "name": "action_title",
+          "type": {
+            "kind": "text",
+            "max_len": 160
+          },
+          "nullable": false,
+          "comment": "Action title copied at reserve time."
+        },
+        {
+          "name": "recipient_wallet",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": true,
+          "comment": "Wallet the payout would be sent to."
+        },
+        {
+          "name": "release_signature",
+          "type": {
+            "kind": "text",
+            "max_len": 128
+          },
+          "nullable": true,
+          "comment": "Signature of a confirmed release. Never a `local-dev-` prefix."
+        },
+        {
+          "name": "person_accepted_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When a different person accepted the review."
+        },
+        {
+          "name": "person_accepted_by",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": true,
+          "comment": "Account that accepted the review."
+        },
+        {
+          "name": "payable_until",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "Last time a release may be sent."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When the row was created."
+        },
+        {
+          "name": "updated_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When the row was last saved."
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "reward_payouts_account_id_idx",
+          "columns": [
+            "account_id"
+          ]
+        },
+        {
+          "name": "reward_payouts_pool_id_payout_index_key",
+          "columns": [
+            "pool_id",
+            "payout_index"
+          ],
+          "unique": true
+        },
+        {
+          "name": "reward_payouts_attempt_id_key",
+          "columns": [
+            "attempt_id"
+          ],
+          "unique": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "reward_payouts_pool_id_fkey",
+          "columns": [
+            "pool_id"
+          ],
+          "references": {
+            "name": "reward_pools"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ]
+    },
+    {
+      "name": {
+        "name": "reward_pools"
+      },
+      "comment": "One action's reward pool.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "Row id."
+        },
+        {
+          "name": "action_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "The action this pool pays for."
+        },
+        {
+          "name": "creator_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "Account that created the pool."
+        },
+        {
+          "name": "chain_pool_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "UUID whose 16 bytes are the on-chain pool id."
+        },
+        {
+          "name": "status",
+          "type": {
+            "kind": "text",
+            "max_len": 32
+          },
+          "nullable": false,
+          "comment": "Pool status name."
+        },
+        {
+          "name": "cluster",
+          "type": {
+            "kind": "text",
+            "max_len": 16
+          },
+          "nullable": false,
+          "comment": "`devnet` or `mainnet`."
+        },
+        {
+          "name": "mint",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": false,
+          "comment": "Mint address."
+        },
+        {
+          "name": "token_symbol",
+          "type": {
+            "kind": "text",
+            "max_len": 16
+          },
+          "nullable": false,
+          "comment": "Token symbol."
+        },
+        {
+          "name": "decimals",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": false,
+          "comment": "Token decimals."
+        },
+        {
+          "name": "amount_per_payout",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": false,
+          "comment": "Atoms per payout."
+        },
+        {
+          "name": "max_payouts",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": false,
+          "comment": "Funded payout count."
+        },
+        {
+          "name": "max_wins_per_account",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": false,
+          "comment": "Wins one account may take."
+        },
+        {
+          "name": "payouts_reserved",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": false,
+          "comment": "Indexes assigned so far."
+        },
+        {
+          "name": "payouts_released",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": false,
+          "comment": "Indexes settled from the bitmap."
+        },
+        {
+          "name": "expires_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When new completions stop."
+        },
+        {
+          "name": "refund_after",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When the refund window opens."
+        },
+        {
+          "name": "refund_delay_days",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": false,
+          "comment": "Refund delay in days."
+        },
+        {
+          "name": "creator_wallet",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": true,
+          "comment": "Creator wallet, once funding is prepared."
+        },
+        {
+          "name": "escrow_address",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": true,
+          "comment": "Derived escrow address."
+        },
+        {
+          "name": "funding_signature",
+          "type": {
+            "kind": "text",
+            "max_len": 128
+          },
+          "nullable": true,
+          "comment": "Audit signature stored after the chain read matches."
+        },
+        {
+          "name": "funded_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When the chain read matched."
+        },
+        {
+          "name": "arbiter_address",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": false,
+          "comment": "Arbiter address."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When the row was created."
+        },
+        {
+          "name": "updated_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When the row was last saved."
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "reward_pools_creator_id_idx",
+          "columns": [
+            "creator_id"
+          ]
+        },
+        {
+          "name": "reward_pools_action_id_key",
+          "columns": [
+            "action_id"
+          ],
+          "unique": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "reward_pools_action_id_fkey",
+          "columns": [
+            "action_id"
+          ],
+          "references": {
+            "name": "actions"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ]
+    },
+    {
+      "name": {
+        "name": "wallet_link_challenges"
+      },
+      "comment": "A wallet-link challenge. Signing it does not move funds.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "Row id."
+        },
+        {
+          "name": "account_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "Account the challenge was issued to."
+        },
+        {
+          "name": "wallet_address",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": false,
+          "comment": "Address the signature must come from."
+        },
+        {
+          "name": "nonce",
+          "type": {
+            "kind": "text",
+            "max_len": 80
+          },
+          "nullable": false,
+          "comment": "Single-use nonce."
+        },
+        {
+          "name": "message",
+          "type": {
+            "kind": "text",
+            "max_len": 400
+          },
+          "nullable": false,
+          "comment": "Exact bytes the wallet signs."
+        },
+        {
+          "name": "expires_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When the challenge stops being acceptable."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When the challenge was issued."
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "wallet_link_challenges_account_id_idx",
+          "columns": [
+            "account_id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "auth",
+        "name": "accounts"
+      },
+      "comment": "One per person. Everything else about them, from their emails to their\nsessions, points here; the app's own user table shares its key.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        },
+        {
+          "name": "disabled_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When the account was disabled. A disabled account can't sign in, and\nits sessions stop working."
+        },
+        {
+          "name": "locked_until",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "Until when sign-in is refused, after too many failed attempts."
+        }
+      ],
+      "primary_key": [
+        "id"
+      ]
+    },
+    {
+      "name": {
+        "namespace": "auth",
+        "name": "challenges"
+      },
+      "comment": "A short-lived secret a sign-in method sent or expects, such as an email\ncode or the second step of signing in. Only its hash is stored, it\nexpires, and it works once.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "purpose",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false
+        },
+        {
+          "name": "subject",
+          "type": {
+            "kind": "text",
+            "max_len": 320
+          },
+          "nullable": false,
+          "comment": "Who it was issued to, such as an email address."
+        },
+        {
+          "name": "secret_hash",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": false
+        },
+        {
+          "name": "state",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": true,
+          "comment": "What the ceremony needs to finish, such as a WebAuthn challenge or a\nPKCE verifier: sealed with the server's keys and bound to this row."
+        },
+        {
+          "name": "attempts",
+          "type": {
+            "kind": "int32"
+          },
+          "nullable": false,
+          "comment": "Failed attempts so far."
+        },
+        {
+          "name": "expires_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        },
+        {
+          "name": "used_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "auth_challenges_purpose_subject_idx",
+          "columns": [
+            "purpose",
+            "subject"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "auth_challenges_purpose_values",
+          "rule": {
+            "kind": "one_of",
+            "column": "purpose",
+            "values": [
+              "email_code",
+              "second_factor",
+              "passkey_registration",
+              "passkey_authentication",
+              "provider",
+              "provider_sign_up",
+              "merge",
+              "wallet_link",
+              "wallet_proof",
+              "wallet_sign_in",
+              "password_pause"
+            ]
+          }
+        },
+        {
+          "name": "auth_challenges_attempts_range",
+          "rule": {
+            "kind": "range",
+            "column": "attempts",
+            "min": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "auth",
+        "name": "emails"
+      },
+      "comment": "An email address an account has proved it receives mail at.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "account_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "address",
+          "type": {
+            "kind": "text",
+            "max_len": 254
+          },
+          "nullable": false,
+          "comment": "The address, trimmed and lowercased. Each belongs to one account."
+        },
+        {
+          "name": "verified_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When the account last proved it receives mail here."
+        },
+        {
+          "name": "is_primary",
+          "type": {
+            "kind": "bool"
+          },
+          "nullable": false,
+          "comment": "Whether this is the address the account's mail goes to."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "auth_emails_address_key",
+          "columns": [
+            "address"
+          ],
+          "unique": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "auth_emails_account_id_fkey",
+          "columns": [
+            "account_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ],
+      "checks": [
+        {
+          "name": "auth_emails_address_pattern",
+          "rule": {
+            "kind": "regex",
+            "column": "address",
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "auth",
+        "name": "events"
+      },
+      "comment": "The audit trail: what happened to an account, and from where. Never\ncredentials.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "account_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": true
+        },
+        {
+          "name": "kind",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false
+        },
+        {
+          "name": "detail",
+          "type": {
+            "kind": "text",
+            "max_len": 200
+          },
+          "nullable": true,
+          "comment": "What it concerns, such as the app that was connected: never a\ncredential."
+        },
+        {
+          "name": "ip",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": true
+        },
+        {
+          "name": "user_agent",
+          "type": {
+            "kind": "text",
+            "max_len": 512
+          },
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "auth_events_created_at_idx",
+          "columns": [
+            "created_at"
+          ]
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "auth_events_account_id_fkey",
+          "columns": [
+            "account_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ],
+      "checks": [
+        {
+          "name": "auth_events_kind_values",
+          "rule": {
+            "kind": "one_of",
+            "column": "kind",
+            "values": [
+              "signed_up",
+              "signed_in",
+              "sign_in_failed",
+              "signed_out",
+              "session_revoked",
+              "refresh_reused",
+              "code_sent",
+              "totp_enabled",
+              "totp_disabled",
+              "second_factor_failed",
+              "stepped_up",
+              "recovery_code_used",
+              "recovery_codes_regenerated",
+              "passkey_added",
+              "passkey_removed",
+              "passkey_failed",
+              "locked",
+              "unlocked",
+              "mfa_reset",
+              "identity_linked",
+              "identity_unlinked",
+              "account_merged",
+              "wallet_linked",
+              "wallet_unlinked",
+              "wallet_proved",
+              "wallet_sign_in_changed",
+              "wallet_failed",
+              "app_connected",
+              "app_disconnected",
+              "app_token_reused",
+              "app_registered",
+              "app_changed",
+              "app_deleted",
+              "account_deleted",
+              "password_set",
+              "password_changed",
+              "password_removed",
+              "password_reset",
+              "password_paused"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "auth",
+        "name": "identities"
+      },
+      "comment": "A third-party account someone signs in with, such as their Google\naccount. Who they are there is the provider and the provider's subject,\nnever the email address, which some providers let people change to\nanything.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "account_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "provider",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": false,
+          "comment": "The provider's ID in `[auth.providers]`, such as `google`."
+        },
+        {
+          "name": "subject",
+          "type": {
+            "kind": "text",
+            "max_len": 255
+          },
+          "nullable": false,
+          "comment": "The provider's stable ID for the person."
+        },
+        {
+          "name": "email",
+          "type": {
+            "kind": "text",
+            "max_len": 320
+          },
+          "nullable": true,
+          "comment": "The address the provider gave, as it gave it."
+        },
+        {
+          "name": "email_verified",
+          "type": {
+            "kind": "bool"
+          },
+          "nullable": false,
+          "comment": "Whether the provider vouched for that address. Even then, it never\nconnects accounts by itself."
+        },
+        {
+          "name": "name",
+          "type": {
+            "kind": "text",
+            "max_len": 200
+          },
+          "nullable": true,
+          "comment": "Their name or username there, to tell connected accounts apart."
+        },
+        {
+          "name": "last_used_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When it last signed in."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "auth_identities_account_id_idx",
+          "columns": [
+            "account_id"
+          ]
+        },
+        {
+          "name": "auth_identities_provider_subject_key",
+          "columns": [
+            "provider",
+            "subject"
+          ],
+          "unique": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "auth_identities_account_id_fkey",
+          "columns": [
+            "account_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "auth",
+        "name": "merged_accounts"
+      },
+      "comment": "An account that was merged into another. Old references to it, such as\nprofile links, resolve to the account that absorbed it.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "absorbed_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "The account that no longer exists."
+        },
+        {
+          "name": "survivor_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "The account it became part of."
+        },
+        {
+          "name": "merged_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "auth_merged_accounts_absorbed_id_key",
+          "columns": [
+            "absorbed_id"
+          ],
+          "unique": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "auth_merged_accounts_survivor_id_fkey",
+          "columns": [
+            "survivor_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "auth",
+        "name": "passkeys"
+      },
+      "comment": "A passkey: a key pair on the person's device, or synced through their\npassword manager, whose public half signs them in. Only public keys are\nstored.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "account_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "credential_id",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": false,
+          "comment": "The credential ID the device names the key by. Each belongs to one\naccount."
+        },
+        {
+          "name": "credential",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": false,
+          "comment": "The public key, its algorithm, and its signature counter, as\n`webauthn-rs` keeps them, in JSON."
+        },
+        {
+          "name": "name",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false,
+          "comment": "What the person calls it, such as \"iCloud Keychain\"."
+        },
+        {
+          "name": "backed_up",
+          "type": {
+            "kind": "bool"
+          },
+          "nullable": false,
+          "comment": "Whether it's synced to other devices, such as through a password\nmanager, rather than bound to one."
+        },
+        {
+          "name": "last_used_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When it last signed in or confirmed it's them."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "auth_passkeys_credential_id_key",
+          "columns": [
+            "credential_id"
+          ],
+          "unique": true
+        },
+        {
+          "name": "auth_passkeys_account_id_idx",
+          "columns": [
+            "account_id"
+          ]
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "auth_passkeys_account_id_fkey",
+          "columns": [
+            "account_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ],
+      "checks": [
+        {
+          "name": "auth_passkeys_name_length",
+          "rule": {
+            "kind": "length",
+            "column": "name",
+            "min": 1,
+            "max": 100
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "auth",
+        "name": "passwords"
+      },
+      "comment": "An account's password, as an Argon2id hash in the PHC string format,\nwhich names its parameters, so a hash made with older ones is replaced\nat the next sign-in. Nobody reads it but this crate.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "account_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "One password per account."
+        },
+        {
+          "name": "hash",
+          "type": {
+            "kind": "text",
+            "max_len": 512
+          },
+          "nullable": false
+        },
+        {
+          "name": "changed_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When it was last set, changed, or reset."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "auth_passwords_account_id_key",
+          "columns": [
+            "account_id"
+          ],
+          "unique": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "auth_passwords_account_id_fkey",
+          "columns": [
+            "account_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "auth",
+        "name": "provider_tokens"
+      },
+      "comment": "A provider's access and refresh tokens for one connected account, kept\nonly for providers the app configured with `store_tokens`, so the app\ncan call that provider's API for the person. Both are encrypted with the\nserver's keys and bound to the identity, so a copy of the database calls\nno one's API. Nobody reads them directly, not even their owner: the app\nasks [`Auth::provider_access_token`](crate::Auth), which refreshes them.\nDisconnecting the account, merging it away, or deleting the account\ndeletes them, and revokes them where the provider allows.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "identity_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "The connected account they belong to: one set each."
+        },
+        {
+          "name": "account_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "provider",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": false,
+          "comment": "The provider's ID in `[auth.providers]`, such as `github`."
+        },
+        {
+          "name": "access_token",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": false,
+          "comment": "The access token, AES-256-GCM-SIV under the newest key."
+        },
+        {
+          "name": "refresh_token",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": true,
+          "comment": "The refresh token, sealed the same way, when the provider gave one."
+        },
+        {
+          "name": "expires_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When the access token stops working, if the provider said."
+        },
+        {
+          "name": "scope",
+          "type": {
+            "kind": "text",
+            "max_len": 2048
+          },
+          "nullable": true,
+          "comment": "The scopes the provider granted, as it listed them."
+        },
+        {
+          "name": "updated_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When they were last replaced, at sign-in or by a refresh."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "auth_provider_tokens_identity_id_key",
+          "columns": [
+            "identity_id"
+          ],
+          "unique": true
+        },
+        {
+          "name": "auth_provider_tokens_account_id_idx",
+          "columns": [
+            "account_id"
+          ]
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "auth_provider_tokens_identity_id_fkey",
+          "columns": [
+            "identity_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "identities"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        },
+        {
+          "name": "auth_provider_tokens_account_id_fkey",
+          "columns": [
+            "account_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "auth",
+        "name": "rate_limits"
+      },
+      "comment": "A fixed-window counter for one action from one source, such as code\nrequests for one address. The key is a hash, so the table holds no\naddresses.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "key",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": false
+        },
+        {
+          "name": "window_start",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        },
+        {
+          "name": "count",
+          "type": {
+            "kind": "int32"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "auth_rate_limits_key_key",
+          "columns": [
+            "key"
+          ],
+          "unique": true
+        }
+      ],
+      "checks": [
+        {
+          "name": "auth_rate_limits_count_range",
+          "rule": {
+            "kind": "range",
+            "column": "count",
+            "min": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "auth",
+        "name": "recovery_codes"
+      },
+      "comment": "One of an account's recovery codes, for when its authenticator is lost.\nEach works once; only its keyed hash is stored.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "account_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "code_hash",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": false
+        },
+        {
+          "name": "used_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "auth_recovery_codes_account_id_idx",
+          "columns": [
+            "account_id"
+          ]
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "auth_recovery_codes_account_id_fkey",
+          "columns": [
+            "account_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "auth",
+        "name": "sessions"
+      },
+      "comment": "A signed-in device. The tokens that prove it live only on the device:\nthis row keeps their SHA-256 hashes, so a copy of the database signs no\none in.\n\nA browser holds one token, in a cookie. A native app holds two: a\nshort-lived access token it sends with each request, and a refresh token\nthat trades for a new pair and works once.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "account_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "token_hash",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": false,
+          "comment": "The cookie's token, or a native app's access token."
+        },
+        {
+          "name": "access_expires_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When a native app's access token stops working, so it must refresh.\n`None` for a browser's cookie."
+        },
+        {
+          "name": "refresh_hash",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": true,
+          "comment": "A native app's refresh token."
+        },
+        {
+          "name": "previous_refresh_hash",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": true,
+          "comment": "The refresh token this one replaced. Seen again after a short grace,\nit means someone else has a copy, and the session ends."
+        },
+        {
+          "name": "refreshed_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When the refresh token was last replaced."
+        },
+        {
+          "name": "aal",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false
+        },
+        {
+          "name": "authenticated_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When its owner last proved who they are, which carries over when the\nsession's token is replaced."
+        },
+        {
+          "name": "mfa_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When its owner last completed a second factor."
+        },
+        {
+          "name": "last_seen_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When the session was last used, to the minute."
+        },
+        {
+          "name": "idle_expires_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When it ends unless it's used before then."
+        },
+        {
+          "name": "expires_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When it ends however often it's used."
+        },
+        {
+          "name": "device",
+          "type": {
+            "kind": "text",
+            "max_len": 200
+          },
+          "nullable": false,
+          "comment": "What signed in, such as \"Firefox on macOS\", for the list of devices."
+        },
+        {
+          "name": "revoked_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When it was signed out or revoked."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "auth_sessions_token_hash_key",
+          "columns": [
+            "token_hash"
+          ],
+          "unique": true
+        },
+        {
+          "name": "auth_sessions_refresh_hash_key",
+          "columns": [
+            "refresh_hash"
+          ],
+          "unique": true
+        },
+        {
+          "name": "auth_sessions_previous_refresh_hash_key",
+          "columns": [
+            "previous_refresh_hash"
+          ],
+          "unique": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "auth_sessions_account_id_fkey",
+          "columns": [
+            "account_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ],
+      "checks": [
+        {
+          "name": "auth_sessions_aal_values",
+          "rule": {
+            "kind": "one_of",
+            "column": "aal",
+            "values": [
+              "aal1",
+              "aal2"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "auth",
+        "name": "totp"
+      },
+      "comment": "An account's authenticator app: the TOTP secret it shares with the\nserver. The secret is encrypted with the server's keys, so a copy of the\ndatabase can't produce codes, and bound to its account.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "account_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false,
+          "comment": "One authenticator per account."
+        },
+        {
+          "name": "secret",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": false,
+          "comment": "AES-256-GCM-SIV under the newest key, with the key's ID."
+        },
+        {
+          "name": "confirmed_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When a code from the app first matched. Until then the app isn't\ntrusted to sign in with."
+        },
+        {
+          "name": "last_used_step",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": true,
+          "comment": "The last 30-second step whose code was used, so no code works twice."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "auth_totp_account_id_key",
+          "columns": [
+            "account_id"
+          ],
+          "unique": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "auth_totp_account_id_fkey",
+          "columns": [
+            "account_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "auth",
+        "name": "wallets"
+      },
+      "comment": "A wallet linked to an account, with proof that the account's owner\ncontrols it: a Sign-In With Solana message signed by its key. A wallet\nbelongs to one account. It's private unless its owner shows it, and\nsigns in only when its owner turns that on.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "account_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "chain",
+          "type": {
+            "kind": "text",
+            "max_len": 32
+          },
+          "nullable": false,
+          "comment": "The chain: `solana`."
+        },
+        {
+          "name": "address",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false,
+          "comment": "The address."
+        },
+        {
+          "name": "label",
+          "type": {
+            "kind": "text",
+            "max_len": 100
+          },
+          "nullable": true,
+          "comment": "What the person calls it, such as \"Treasury\"."
+        },
+        {
+          "name": "can_sign_in",
+          "type": {
+            "kind": "bool"
+          },
+          "nullable": false,
+          "comment": "Whether it may sign in to the account. Off until its owner turns it\non."
+        },
+        {
+          "name": "is_public",
+          "type": {
+            "kind": "bool"
+          },
+          "nullable": false,
+          "comment": "Whether it shows on its owner's public profile."
+        },
+        {
+          "name": "verified_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When it was linked."
+        },
+        {
+          "name": "last_proved_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When it last signed a proof."
+        },
+        {
+          "name": "proof",
+          "type": {
+            "kind": "text",
+            "max_len": 4096
+          },
+          "nullable": false,
+          "comment": "The latest signed message, kept for audit."
+        },
+        {
+          "name": "proof_signature",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false,
+          "comment": "The message's signature."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "auth_wallets_account_id_idx",
+          "columns": [
+            "account_id"
+          ]
+        },
+        {
+          "name": "auth_wallets_chain_address_key",
+          "columns": [
+            "chain",
+            "address"
+          ],
+          "unique": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "auth_wallets_account_id_fkey",
+          "columns": [
+            "account_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ],
+      "checks": [
+        {
+          "name": "auth_wallets_address_length",
+          "rule": {
+            "kind": "length",
+            "column": "address",
+            "min": 32,
+            "max": 44
+          }
+        },
+        {
+          "name": "auth_wallets_address_pattern",
+          "rule": {
+            "kind": "regex",
+            "column": "address",
+            "pattern": "^[1-9A-HJ-NP-Za-km-z]+$"
+          }
+        },
+        {
+          "name": "auth_wallets_proof_signature_length",
+          "rule": {
+            "kind": "length",
+            "column": "proof_signature",
+            "min": 64,
+            "max": 88
+          }
+        },
+        {
+          "name": "auth_wallets_proof_signature_pattern",
+          "rule": {
+            "kind": "regex",
+            "column": "proof_signature",
+            "pattern": "^[1-9A-HJ-NP-Za-km-z]+$"
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "idp",
+        "name": "assertions"
+      },
+      "comment": "A `private_key_jwt` assertion an app authenticated with, kept until it\nexpires so it can't be used twice.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "client_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "jti_hash",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": false,
+          "comment": "The assertion's `jti`, hashed with the client's ID."
+        },
+        {
+          "name": "expires_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "idp_assertions_jti_hash_key",
+          "columns": [
+            "jti_hash"
+          ],
+          "unique": true
+        },
+        {
+          "name": "idp_assertions_expires_at_idx",
+          "columns": [
+            "expires_at"
+          ]
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "idp_assertions_client_id_fkey",
+          "columns": [
+            "client_id"
+          ],
+          "references": {
+            "namespace": "idp",
+            "name": "clients"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "idp",
+        "name": "authorizations"
+      },
+      "comment": "An authorization request: waiting for consent, then an authorization\ncode, then used. Codes last a minute and work once.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "client_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "account_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "redirect_uri",
+          "type": {
+            "kind": "text",
+            "max_len": 2048
+          },
+          "nullable": false
+        },
+        {
+          "name": "scopes",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": false
+        },
+        {
+          "name": "state",
+          "type": {
+            "kind": "text",
+            "max_len": 2048
+          },
+          "nullable": true
+        },
+        {
+          "name": "nonce",
+          "type": {
+            "kind": "text",
+            "max_len": 2048
+          },
+          "nullable": true
+        },
+        {
+          "name": "id_token_claims",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": false,
+          "comment": "Claims asked for in the ID token with the `claims` parameter."
+        },
+        {
+          "name": "code_challenge",
+          "type": {
+            "kind": "text",
+            "max_len": 128
+          },
+          "nullable": false,
+          "comment": "The PKCE `S256` challenge."
+        },
+        {
+          "name": "auth_time",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        },
+        {
+          "name": "consent_hash",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": true,
+          "comment": "The handle the consent screen reads it by, while it waits."
+        },
+        {
+          "name": "code_hash",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": true,
+          "comment": "The authorization code, once consent is given."
+        },
+        {
+          "name": "expires_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        },
+        {
+          "name": "used_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When it was answered or its code traded."
+        },
+        {
+          "name": "family_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": true,
+          "comment": "The family its code started, which a replayed code ends."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "idp_authorizations_consent_hash_key",
+          "columns": [
+            "consent_hash"
+          ],
+          "unique": true
+        },
+        {
+          "name": "idp_authorizations_code_hash_key",
+          "columns": [
+            "code_hash"
+          ],
+          "unique": true
+        },
+        {
+          "name": "idp_authorizations_expires_at_idx",
+          "columns": [
+            "expires_at"
+          ]
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "idp_authorizations_client_id_fkey",
+          "columns": [
+            "client_id"
+          ],
+          "references": {
+            "namespace": "idp",
+            "name": "clients"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        },
+        {
+          "name": "idp_authorizations_account_id_fkey",
+          "columns": [
+            "account_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        },
+        {
+          "name": "idp_authorizations_family_id_fkey",
+          "columns": [
+            "family_id"
+          ],
+          "references": {
+            "namespace": "idp",
+            "name": "families"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "idp",
+        "name": "clients"
+      },
+      "comment": "An app that may ask people to sign in with yours. Operators register\nthem with `lk auth idp client add`; with the developer portal on, people\nregister their own, which they alone see.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "client_id",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": false,
+          "comment": "The public identifier the app sends as `client_id`."
+        },
+        {
+          "name": "name",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false,
+          "comment": "The app's name, as the consent screen shows it."
+        },
+        {
+          "name": "auth_method",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false
+        },
+        {
+          "name": "secret_hash",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": true,
+          "comment": "The SHA-256 of the client secret, for a confidential client."
+        },
+        {
+          "name": "jwks",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": true,
+          "comment": "The public keys a `private_key_jwt` client signs with, as a JWK set."
+        },
+        {
+          "name": "grant_types",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": false,
+          "comment": "How it gets tokens."
+        },
+        {
+          "name": "id_token_alg",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false,
+          "comment": "How its ID tokens are signed."
+        },
+        {
+          "name": "redirect_uris",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": false,
+          "comment": "Where codes may be sent, compared exactly."
+        },
+        {
+          "name": "post_logout_redirect_uris",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": false,
+          "comment": "Where people may be sent after signing out, compared exactly."
+        },
+        {
+          "name": "scopes",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": false,
+          "comment": "The scopes the app may ask for."
+        },
+        {
+          "name": "first_party",
+          "type": {
+            "kind": "bool"
+          },
+          "nullable": false,
+          "comment": "One of your own apps: it sees the account ID as `sub` instead of a\npairwise one, and needs no consent."
+        },
+        {
+          "name": "introspection",
+          "type": {
+            "kind": "bool"
+          },
+          "nullable": false,
+          "comment": "Whether it may introspect tokens issued to other apps, as a resource\nserver does."
+        },
+        {
+          "name": "subject_salt",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": false,
+          "comment": "Mixed into the pairwise `sub` each account gets for this app, so two\napps can't match up their users."
+        },
+        {
+          "name": "owner_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": true,
+          "comment": "Who registered it in the developer portal; `None` for an app the\noperator registered."
+        },
+        {
+          "name": "dpop_bound",
+          "type": {
+            "kind": "bool"
+          },
+          "nullable": false,
+          "default": {
+            "bool": false
+          },
+          "comment": "Whether every access token it gets must be bound to a key it holds,\nwith DPoP (RFC 9449), so a stolen token is useless without the key."
+        },
+        {
+          "name": "registration_hash",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": true,
+          "comment": "The SHA-256 of the token that manages it, for an app that registered\nitself through dynamic registration (RFC 7591 and 7592)."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "idp_clients_client_id_key",
+          "columns": [
+            "client_id"
+          ],
+          "unique": true
+        },
+        {
+          "name": "idp_clients_registration_hash_key",
+          "columns": [
+            "registration_hash"
+          ],
+          "unique": true
+        },
+        {
+          "name": "idp_clients_owner_id_idx",
+          "columns": [
+            "owner_id"
+          ]
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "idp_clients_owner_id_fkey",
+          "columns": [
+            "owner_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ],
+      "checks": [
+        {
+          "name": "idp_clients_name_length",
+          "rule": {
+            "kind": "length",
+            "column": "name",
+            "min": 1,
+            "max": 100
+          }
+        },
+        {
+          "name": "idp_clients_auth_method_values",
+          "rule": {
+            "kind": "one_of",
+            "column": "auth_method",
+            "values": [
+              "none",
+              "client_secret_basic",
+              "client_secret_post",
+              "private_key_jwt"
+            ]
+          }
+        },
+        {
+          "name": "idp_clients_id_token_alg_values",
+          "rule": {
+            "kind": "one_of",
+            "column": "id_token_alg",
+            "values": [
+              "ES256",
+              "RS256"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "idp",
+        "name": "device_codes"
+      },
+      "comment": "A sign-in started on a device with no browser, such as a CLI or a TV\n(RFC 8628): it shows a short code, someone enters it on their phone or\ncomputer and approves, and the device's polling then gets tokens.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "client_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "device_hash",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": false,
+          "comment": "The secret the device polls with, hashed."
+        },
+        {
+          "name": "user_code_hash",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": false,
+          "comment": "The code people type, hashed."
+        },
+        {
+          "name": "scopes",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": false,
+          "comment": "What the device asked to do."
+        },
+        {
+          "name": "account_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": true,
+          "comment": "Who approved or refused it."
+        },
+        {
+          "name": "auth_time",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When they last proved who they are, once they approved."
+        },
+        {
+          "name": "approved",
+          "type": {
+            "kind": "bool"
+          },
+          "nullable": true,
+          "comment": "Whether they approved, once they answered."
+        },
+        {
+          "name": "interval",
+          "type": {
+            "kind": "int32"
+          },
+          "nullable": false,
+          "comment": "Seconds the device must wait between polls."
+        },
+        {
+          "name": "polled_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When the device last polled."
+        },
+        {
+          "name": "expires_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        },
+        {
+          "name": "used_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When the device traded it for tokens."
+        },
+        {
+          "name": "family_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": true,
+          "comment": "The family it started, which a replayed device code ends."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "idp_device_codes_device_hash_key",
+          "columns": [
+            "device_hash"
+          ],
+          "unique": true
+        },
+        {
+          "name": "idp_device_codes_user_code_hash_key",
+          "columns": [
+            "user_code_hash"
+          ],
+          "unique": true
+        },
+        {
+          "name": "idp_device_codes_expires_at_idx",
+          "columns": [
+            "expires_at"
+          ]
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "idp_device_codes_client_id_fkey",
+          "columns": [
+            "client_id"
+          ],
+          "references": {
+            "namespace": "idp",
+            "name": "clients"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        },
+        {
+          "name": "idp_device_codes_account_id_fkey",
+          "columns": [
+            "account_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        },
+        {
+          "name": "idp_device_codes_family_id_fkey",
+          "columns": [
+            "family_id"
+          ],
+          "references": {
+            "namespace": "idp",
+            "name": "families"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ],
+      "checks": [
+        {
+          "name": "idp_device_codes_interval_range",
+          "rule": {
+            "kind": "range",
+            "column": "interval",
+            "min": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "idp",
+        "name": "dpop_proofs"
+      },
+      "comment": "A DPoP proof (RFC 9449) already presented, kept until it's too old to be\naccepted anyway, so none works twice.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "jti_hash",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": false,
+          "comment": "The proof's `jti`, hashed with its key's thumbprint."
+        },
+        {
+          "name": "expires_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "idp_dpop_proofs_jti_hash_key",
+          "columns": [
+            "jti_hash"
+          ],
+          "unique": true
+        },
+        {
+          "name": "idp_dpop_proofs_expires_at_idx",
+          "columns": [
+            "expires_at"
+          ]
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "idp",
+        "name": "families"
+      },
+      "comment": "One sign-in of an app: the refresh tokens that descend from one\nauthorization code or device code. A refresh token presented twice ends\nthe whole family, since one of the two holders stole it.\n\nAn app acting as itself (`client_credentials`) gets a family with no\nperson, grant or refresh token, so its access tokens can be revoked\ntoo.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "grant_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": true
+        },
+        {
+          "name": "account_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": true
+        },
+        {
+          "name": "client_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "scopes",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": false,
+          "comment": "The scopes its tokens may carry."
+        },
+        {
+          "name": "id_token_claims",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": false,
+          "comment": "Claims the app asked to find in its ID tokens with the `claims`\nparameter, such as `email`. Only claims its scopes release appear."
+        },
+        {
+          "name": "auth_time",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When the person last proved who they are, as `auth_time` says."
+        },
+        {
+          "name": "expires_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When its refresh tokens stop working however often they're used."
+        },
+        {
+          "name": "revoked_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When it was revoked, signed out, or ended by a reused token."
+        },
+        {
+          "name": "jkt",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": true,
+          "comment": "The RFC 7638 thumbprint of the DPoP key its refresh tokens are bound\nto, for a public app that started it with a DPoP proof."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "idp_families_account_id_idx",
+          "columns": [
+            "account_id"
+          ]
+        },
+        {
+          "name": "idp_families_expires_at_idx",
+          "columns": [
+            "expires_at"
+          ]
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "idp_families_grant_id_fkey",
+          "columns": [
+            "grant_id"
+          ],
+          "references": {
+            "namespace": "idp",
+            "name": "grants"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        },
+        {
+          "name": "idp_families_account_id_fkey",
+          "columns": [
+            "account_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        },
+        {
+          "name": "idp_families_client_id_fkey",
+          "columns": [
+            "client_id"
+          ],
+          "references": {
+            "namespace": "idp",
+            "name": "clients"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "idp",
+        "name": "grants"
+      },
+      "comment": "What a person let an app do: the scopes they consented to. One per\naccount and app; revoking it ends every token the app holds for them.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "account_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "client_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "scopes",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": false,
+          "comment": "Every scope they consented to."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When they last consented to more."
+        },
+        {
+          "name": "last_used_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When the app last refreshed its tokens."
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "idp_grants_account_id_client_id_key",
+          "columns": [
+            "account_id",
+            "client_id"
+          ],
+          "unique": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "idp_grants_account_id_fkey",
+          "columns": [
+            "account_id"
+          ],
+          "references": {
+            "namespace": "auth",
+            "name": "accounts"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        },
+        {
+          "name": "idp_grants_client_id_fkey",
+          "columns": [
+            "client_id"
+          ],
+          "references": {
+            "namespace": "idp",
+            "name": "clients"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "idp",
+        "name": "pushed_requests"
+      },
+      "comment": "An authorization request an app pushed ahead of sending the browser\n(RFC 9126), so its parameters travel server to server rather than\nthrough the address bar. It works once, and soon expires.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "client_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "handle_hash",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": false,
+          "comment": "The `request_uri` handle, hashed."
+        },
+        {
+          "name": "request",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": false,
+          "comment": "The request's parameters."
+        },
+        {
+          "name": "expires_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "idp_pushed_requests_handle_hash_key",
+          "columns": [
+            "handle_hash"
+          ],
+          "unique": true
+        },
+        {
+          "name": "idp_pushed_requests_expires_at_idx",
+          "columns": [
+            "expires_at"
+          ]
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "idp_pushed_requests_client_id_fkey",
+          "columns": [
+            "client_id"
+          ],
+          "references": {
+            "namespace": "idp",
+            "name": "clients"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "idp",
+        "name": "refresh_tokens"
+      },
+      "comment": "A refresh token. Only its SHA-256 hash is kept, and it works once.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "family_id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "token_hash",
+          "type": {
+            "kind": "bytes"
+          },
+          "nullable": false
+        },
+        {
+          "name": "used_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When it was traded for new tokens."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "idp_refresh_tokens_token_hash_key",
+          "columns": [
+            "token_hash"
+          ],
+          "unique": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "name": "idp_refresh_tokens_family_id_fkey",
+          "columns": [
+            "family_id"
+          ],
+          "references": {
+            "namespace": "idp",
+            "name": "families"
+          },
+          "referenced_columns": [
+            "id"
+          ],
+          "on_delete": "cascade"
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "idp",
+        "name": "signing_keys"
+      },
+      "comment": "A key that signs ID and access tokens. The database keeps only its\npublic half. An ES256 key's private half is derived from one of the\nserver's `AUTH_ENCRYPTION_KEYS` whenever it's needed; an RS256 key's is\nthe RSA key the server was given.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "kid",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": false,
+          "comment": "The key ID tokens name in their header."
+        },
+        {
+          "name": "algorithm",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false
+        },
+        {
+          "name": "derived_from",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": true,
+          "comment": "The ID of the server key an ES256 key is derived from."
+        },
+        {
+          "name": "x",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": true,
+          "comment": "An ES256 key's P-256 coordinates, in base64url."
+        },
+        {
+          "name": "y",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": true
+        },
+        {
+          "name": "n",
+          "type": {
+            "kind": "text",
+            "max_len": 1400
+          },
+          "nullable": true,
+          "comment": "An RS256 key's modulus and exponent, in base64url."
+        },
+        {
+          "name": "e",
+          "type": {
+            "kind": "text",
+            "max_len": 16
+          },
+          "nullable": true
+        },
+        {
+          "name": "retires_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When it stops signing new tokens."
+        },
+        {
+          "name": "expires_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When it leaves the published key set, after every token it signed\nhas expired."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "idp_signing_keys_kid_key",
+          "columns": [
+            "kid"
+          ],
+          "unique": true
+        }
+      ],
+      "checks": [
+        {
+          "name": "idp_signing_keys_algorithm_values",
+          "rule": {
+            "kind": "one_of",
+            "column": "algorithm",
+            "values": [
+              "ES256",
+              "RS256"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "live",
+        "name": "changes"
+      },
+      "comment": "`live.changes`: one row per written row of a live table.",
+      "columns": [
+        {
+          "name": "seq",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": false,
+          "comment": "The change's place among the database's changes."
+        },
+        {
+          "name": "txid",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": true,
+          "comment": "The Postgres transaction that wrote it, which joins it to its commit."
+        },
+        {
+          "name": "version",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": true,
+          "comment": "SQLite: the commit's version, set just before the commit."
+        },
+        {
+          "name": "table_name",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false,
+          "comment": "The changed table, with its namespace: `messages` or `billing.invoices`."
+        },
+        {
+          "name": "op",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false,
+          "comment": "What the write did."
+        },
+        {
+          "name": "key",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": false,
+          "comment": "The changed row's key, in key column order."
+        },
+        {
+          "name": "old",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": true,
+          "comment": "The row before an update or delete, without `secret` and\n`live = skip` columns."
+        },
+        {
+          "name": "new",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": true,
+          "comment": "The row after an insert or update, without those columns."
+        },
+        {
+          "name": "changed",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": false,
+          "comment": "For an update, every column whose value changed; empty otherwise."
+        }
+      ],
+      "primary_key": [
+        "seq"
+      ],
+      "indexes": [
+        {
+          "name": "live_changes_txid_idx",
+          "columns": [
+            "txid"
+          ]
+        },
+        {
+          "name": "live_changes_version_idx",
+          "columns": [
+            "version"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "live_changes_op_values",
+          "rule": {
+            "kind": "one_of",
+            "column": "op",
+            "values": [
+              "I",
+              "U",
+              "D"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "live",
+        "name": "commits"
+      },
+      "comment": "`live.commits`: one row per committed transaction that wrote a live\ntable.",
+      "columns": [
+        {
+          "name": "version",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": false,
+          "comment": "The transaction's place in the version line. Gaps are transactions\nthat rolled back after taking a version, which never become visible."
+        },
+        {
+          "name": "txid",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": true,
+          "comment": "The Postgres transaction ID, which joins the commit to its changes.\n`None` on SQLite."
+        },
+        {
+          "name": "committed_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "When the transaction committed."
+        },
+        {
+          "name": "actor",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": true,
+          "comment": "Who made the change, when the transaction said."
+        },
+        {
+          "name": "origin",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false,
+          "comment": "What made it: what the transaction said, such as an operation's\nname, or `sql`."
+        },
+        {
+          "name": "lsn",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": true,
+          "comment": "Replication capture: where the commit's record starts in Postgres's\nwrite-ahead log, which orders commits as the database committed them.\n`None` for commits captured by triggers."
+        }
+      ],
+      "primary_key": [
+        "version"
+      ],
+      "indexes": [
+        {
+          "name": "live_commits_txid_idx",
+          "columns": [
+            "txid"
+          ]
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "rpc",
+        "name": "inbox"
+      },
+      "comment": "One notice in someone's inbox, in the `rpc` pack's `inbox` table.\n\nIts policies let each account read and mark read only its own notices;\nonly server code writes them, through `cx.notify(...)`.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "account",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": false,
+          "comment": "Whose notice it is: their account's UUID."
+        },
+        {
+          "name": "title",
+          "type": {
+            "kind": "text",
+            "max_len": 255
+          },
+          "nullable": false
+        },
+        {
+          "name": "body",
+          "type": {
+            "kind": "text",
+            "max_len": 4000
+          },
+          "nullable": false
+        },
+        {
+          "name": "link",
+          "type": {
+            "kind": "text",
+            "max_len": 2000
+          },
+          "nullable": true
+        },
+        {
+          "name": "action",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": true,
+          "comment": "The button on it."
+        },
+        {
+          "name": "kind",
+          "type": {
+            "kind": "text",
+            "max_len": 32
+          },
+          "nullable": false,
+          "comment": "`info`, `success`, `warning`, or `error`."
+        },
+        {
+          "name": "read_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When its owner read it."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "rpc_inbox_account_created_at_idx",
+          "columns": [
+            "account",
+            "created_at"
+          ]
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "rpc",
+        "name": "jobs"
+      },
+      "comment": "One enqueued job, in the `rpc` pack's `jobs` table.\n\nIt's a live table: a client follows a job with\n[`use_job`](crate::client::use_job), and the hub sends each change. Its\npolicies show a job to the account that enqueued it, and to whoever\n`#[rpc::job(visible_to = ...)]` names, and let only the owner change it.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "key",
+          "type": {
+            "kind": "text",
+            "max_len": 255
+          },
+          "nullable": true,
+          "comment": "The app's idempotency key, if it gave one: enqueuing it again returns\nthe same job, until the job is pruned."
+        },
+        {
+          "name": "name",
+          "type": {
+            "kind": "text",
+            "max_len": 255
+          },
+          "nullable": false,
+          "comment": "The job's name."
+        },
+        {
+          "name": "queue",
+          "type": {
+            "kind": "text",
+            "max_len": 255
+          },
+          "nullable": false,
+          "comment": "Its queue."
+        },
+        {
+          "name": "arguments",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": false,
+          "comment": "The arguments, as JSON."
+        },
+        {
+          "name": "owner",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": false,
+          "comment": "The account that enqueued it, as a UUID, or empty when nobody signed\nin did."
+        },
+        {
+          "name": "viewer",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": false,
+          "comment": "Another account that may read it, from `visible_to = argument`, or\nempty."
+        },
+        {
+          "name": "visibility",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false,
+          "comment": "Who else may read it."
+        },
+        {
+          "name": "serial_key",
+          "type": {
+            "kind": "text",
+            "max_len": 512
+          },
+          "nullable": true,
+          "comment": "The job's name and its `serialize_by` argument: at most one job with\na key runs at a time."
+        },
+        {
+          "name": "state",
+          "type": {
+            "kind": "text"
+          },
+          "nullable": false
+        },
+        {
+          "name": "attempts",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": false,
+          "comment": "How many times a worker has started it."
+        },
+        {
+          "name": "max_attempts",
+          "type": {
+            "kind": "int64"
+          },
+          "nullable": false,
+          "comment": "How many starts it gets before it fails."
+        },
+        {
+          "name": "priority",
+          "type": {
+            "kind": "int32"
+          },
+          "nullable": false,
+          "comment": "Higher runs first."
+        },
+        {
+          "name": "run_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false,
+          "comment": "Not before this instant."
+        },
+        {
+          "name": "deadline_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "No attempt starts after this instant."
+        },
+        {
+          "name": "started_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When a worker last started it."
+        },
+        {
+          "name": "finished_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "When it reached `done`, `failed`, or `cancelled`."
+        },
+        {
+          "name": "locked_until",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": true,
+          "comment": "Until when the running worker holds it; `None` when no one does."
+        },
+        {
+          "name": "result",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": true,
+          "comment": "What the body returned, as JSON."
+        },
+        {
+          "name": "error",
+          "type": {
+            "kind": "text",
+            "max_len": 2000
+          },
+          "nullable": true,
+          "comment": "Why the last attempt failed."
+        },
+        {
+          "name": "progress",
+          "type": {
+            "kind": "text",
+            "max_len": 500
+          },
+          "nullable": true,
+          "comment": "What it last said it was doing."
+        },
+        {
+          "name": "fraction",
+          "type": {
+            "kind": "float64"
+          },
+          "nullable": true,
+          "comment": "How far along it last said it was, from 0 to 1."
+        },
+        {
+          "name": "steps",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": false,
+          "comment": "The results of the steps it finished, by name."
+        },
+        {
+          "name": "cancel_requested",
+          "type": {
+            "kind": "bool"
+          },
+          "nullable": false,
+          "comment": "Someone asked it to stop."
+        },
+        {
+          "name": "failure_pending",
+          "type": {
+            "kind": "bool"
+          },
+          "nullable": false,
+          "comment": "It failed, and its `on_failure` mutation hasn't run yet."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "rpc_jobs_key_key",
+          "columns": [
+            "key"
+          ],
+          "unique": true
+        },
+        {
+          "name": "rpc_jobs_state_run_at_idx",
+          "columns": [
+            "state",
+            "run_at"
+          ]
+        },
+        {
+          "name": "rpc_jobs_locked_until_idx",
+          "columns": [
+            "locked_until"
+          ]
+        },
+        {
+          "name": "rpc_jobs_queue_state_idx",
+          "columns": [
+            "queue",
+            "state"
+          ]
+        },
+        {
+          "name": "rpc_jobs_serial_key_state_idx",
+          "columns": [
+            "serial_key",
+            "state"
+          ]
+        },
+        {
+          "name": "rpc_jobs_finished_at_idx",
+          "columns": [
+            "finished_at"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "rpc_jobs_visibility_values",
+          "rule": {
+            "kind": "one_of",
+            "column": "visibility",
+            "values": [
+              "owner",
+              "signed_in",
+              "everyone"
+            ]
+          }
+        },
+        {
+          "name": "rpc_jobs_state_values",
+          "rule": {
+            "kind": "one_of",
+            "column": "state",
+            "values": [
+              "pending",
+              "running",
+              "done",
+              "failed",
+              "cancelled"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "namespace": "rpc",
+        "name": "receipts"
+      },
+      "comment": "One mutation call that ran with a request ID, and what it returned.\n\nEach caller sees only their own receipts: the policy compares\n[`owner`](Self::owner) with the [`ReceiptOwner`] the RPC adds to the\ncontext it runs a mutation in.",
+      "columns": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "uuid"
+          },
+          "nullable": false
+        },
+        {
+          "name": "owner",
+          "type": {
+            "kind": "text",
+            "max_len": 255
+          },
+          "nullable": false,
+          "comment": "Who called: their [`Identity::caller`](super::Identity::caller), such\nas a session ID, or [`ANONYMOUS`] for anonymous callers."
+        },
+        {
+          "name": "request_id",
+          "type": {
+            "kind": "text",
+            "max_len": 255
+          },
+          "nullable": false,
+          "comment": "The ID the call came with."
+        },
+        {
+          "name": "operation",
+          "type": {
+            "kind": "text",
+            "max_len": 255
+          },
+          "nullable": false,
+          "comment": "The operation's name."
+        },
+        {
+          "name": "arguments",
+          "type": {
+            "kind": "text",
+            "max_len": 64
+          },
+          "nullable": false,
+          "comment": "A SHA-256 of the operation's name and arguments, in hex: a repeat\nwith the same request ID and other arguments is refused rather than\nanswered with another call's result."
+        },
+        {
+          "name": "result",
+          "type": {
+            "kind": "json"
+          },
+          "nullable": false,
+          "comment": "What the call returned, as JSON."
+        },
+        {
+          "name": "created_at",
+          "type": {
+            "kind": "timestamp"
+          },
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "rpc_receipts_created_at_idx",
+          "columns": [
+            "created_at"
+          ]
+        },
+        {
+          "name": "rpc_receipts_owner_request_id_key",
+          "columns": [
+            "owner",
+            "request_id"
+          ],
+          "unique": true
+        }
+      ]
+    }
+  ],
+  "triggers": [
+    {
+      "name": "live_accounts_delete",
+      "table": {
+        "name": "accounts"
+      },
+      "timing": "after",
+      "events": [
+        "delete"
+      ],
+      "columns": [
+        "id",
+        "display_name",
+        "created_at",
+        "updated_at"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'accounts', 'D', json_array(CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END), json_object('id', CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END, 'display_name', OLD.\"display_name\", 'created_at', OLD.\"created_at\", 'updated_at', OLD.\"updated_at\"), NULL, '[]');"
+      }
+    },
+    {
+      "name": "live_accounts_insert",
+      "table": {
+        "name": "accounts"
+      },
+      "timing": "after",
+      "events": [
+        "insert"
+      ],
+      "columns": [
+        "id",
+        "display_name",
+        "created_at",
+        "updated_at"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'accounts', 'I', json_array(CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END), NULL, json_object('id', CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END, 'display_name', NEW.\"display_name\", 'created_at', NEW.\"created_at\", 'updated_at', NEW.\"updated_at\"), '[]');"
+      }
+    },
+    {
+      "name": "live_accounts_update",
+      "table": {
+        "name": "accounts"
+      },
+      "timing": "after",
+      "events": [
+        "update"
+      ],
+      "columns": [
+        "id",
+        "display_name",
+        "created_at",
+        "updated_at"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'accounts', 'U', json_array(CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END), json_object('id', CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END, 'display_name', OLD.\"display_name\", 'created_at', OLD.\"created_at\", 'updated_at', OLD.\"updated_at\"), json_object('id', CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END, 'display_name', NEW.\"display_name\", 'created_at', NEW.\"created_at\", 'updated_at', NEW.\"updated_at\"), (SELECT json_group_array(\"value\") FROM json_each(json_array(CASE WHEN OLD.\"created_at\" IS NOT NEW.\"created_at\" THEN 'created_at' END, CASE WHEN OLD.\"display_name\" IS NOT NEW.\"display_name\" THEN 'display_name' END, CASE WHEN OLD.\"id\" IS NOT NEW.\"id\" THEN 'id' END, CASE WHEN OLD.\"updated_at\" IS NOT NEW.\"updated_at\" THEN 'updated_at' END)) WHERE \"type\" <> 'null'));"
+      }
+    },
+    {
+      "name": "live_attempts_delete",
+      "table": {
+        "name": "attempts"
+      },
+      "timing": "after",
+      "events": [
+        "delete"
+      ],
+      "columns": [
+        "id",
+        "action_id",
+        "participant_id",
+        "period_key",
+        "idempotency_key",
+        "status",
+        "verification_score",
+        "rejection_code",
+        "reward_outcome",
+        "started_at",
+        "submitted_at",
+        "verified_at",
+        "updated_at"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'attempts', 'D', json_array(CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END), json_object('id', CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END, 'action_id', CASE WHEN OLD.\"action_id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"action_id\")) END, 'participant_id', CASE WHEN OLD.\"participant_id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"participant_id\")) END, 'period_key', OLD.\"period_key\", 'idempotency_key', OLD.\"idempotency_key\", 'status', OLD.\"status\", 'verification_score', OLD.\"verification_score\", 'rejection_code', OLD.\"rejection_code\", 'reward_outcome', OLD.\"reward_outcome\", 'started_at', OLD.\"started_at\", 'submitted_at', OLD.\"submitted_at\", 'verified_at', OLD.\"verified_at\", 'updated_at', OLD.\"updated_at\"), NULL, '[]');"
+      }
+    },
+    {
+      "name": "live_attempts_insert",
+      "table": {
+        "name": "attempts"
+      },
+      "timing": "after",
+      "events": [
+        "insert"
+      ],
+      "columns": [
+        "id",
+        "action_id",
+        "participant_id",
+        "period_key",
+        "idempotency_key",
+        "status",
+        "verification_score",
+        "rejection_code",
+        "reward_outcome",
+        "started_at",
+        "submitted_at",
+        "verified_at",
+        "updated_at"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'attempts', 'I', json_array(CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END), NULL, json_object('id', CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END, 'action_id', CASE WHEN NEW.\"action_id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"action_id\")) END, 'participant_id', CASE WHEN NEW.\"participant_id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"participant_id\")) END, 'period_key', NEW.\"period_key\", 'idempotency_key', NEW.\"idempotency_key\", 'status', NEW.\"status\", 'verification_score', NEW.\"verification_score\", 'rejection_code', NEW.\"rejection_code\", 'reward_outcome', NEW.\"reward_outcome\", 'started_at', NEW.\"started_at\", 'submitted_at', NEW.\"submitted_at\", 'verified_at', NEW.\"verified_at\", 'updated_at', NEW.\"updated_at\"), '[]');"
+      }
+    },
+    {
+      "name": "live_attempts_update",
+      "table": {
+        "name": "attempts"
+      },
+      "timing": "after",
+      "events": [
+        "update"
+      ],
+      "columns": [
+        "id",
+        "action_id",
+        "participant_id",
+        "period_key",
+        "idempotency_key",
+        "status",
+        "verification_score",
+        "rejection_code",
+        "reward_outcome",
+        "started_at",
+        "submitted_at",
+        "verified_at",
+        "updated_at"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'attempts', 'U', json_array(CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END), json_object('id', CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END, 'action_id', CASE WHEN OLD.\"action_id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"action_id\")) END, 'participant_id', CASE WHEN OLD.\"participant_id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"participant_id\")) END, 'period_key', OLD.\"period_key\", 'idempotency_key', OLD.\"idempotency_key\", 'status', OLD.\"status\", 'verification_score', OLD.\"verification_score\", 'rejection_code', OLD.\"rejection_code\", 'reward_outcome', OLD.\"reward_outcome\", 'started_at', OLD.\"started_at\", 'submitted_at', OLD.\"submitted_at\", 'verified_at', OLD.\"verified_at\", 'updated_at', OLD.\"updated_at\"), json_object('id', CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END, 'action_id', CASE WHEN NEW.\"action_id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"action_id\")) END, 'participant_id', CASE WHEN NEW.\"participant_id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"participant_id\")) END, 'period_key', NEW.\"period_key\", 'idempotency_key', NEW.\"idempotency_key\", 'status', NEW.\"status\", 'verification_score', NEW.\"verification_score\", 'rejection_code', NEW.\"rejection_code\", 'reward_outcome', NEW.\"reward_outcome\", 'started_at', NEW.\"started_at\", 'submitted_at', NEW.\"submitted_at\", 'verified_at', NEW.\"verified_at\", 'updated_at', NEW.\"updated_at\"), (SELECT json_group_array(\"value\") FROM json_each(json_array(CASE WHEN OLD.\"action_id\" IS NOT NEW.\"action_id\" THEN 'action_id' END, CASE WHEN OLD.\"id\" IS NOT NEW.\"id\" THEN 'id' END, CASE WHEN OLD.\"idempotency_key\" IS NOT NEW.\"idempotency_key\" THEN 'idempotency_key' END, CASE WHEN OLD.\"participant_id\" IS NOT NEW.\"participant_id\" THEN 'participant_id' END, CASE WHEN OLD.\"period_key\" IS NOT NEW.\"period_key\" THEN 'period_key' END, CASE WHEN OLD.\"rejection_code\" IS NOT NEW.\"rejection_code\" THEN 'rejection_code' END, CASE WHEN OLD.\"reward_outcome\" IS NOT NEW.\"reward_outcome\" THEN 'reward_outcome' END, CASE WHEN OLD.\"started_at\" IS NOT NEW.\"started_at\" THEN 'started_at' END, CASE WHEN OLD.\"status\" IS NOT NEW.\"status\" THEN 'status' END, CASE WHEN OLD.\"submitted_at\" IS NOT NEW.\"submitted_at\" THEN 'submitted_at' END, CASE WHEN OLD.\"updated_at\" IS NOT NEW.\"updated_at\" THEN 'updated_at' END, CASE WHEN OLD.\"verification_score\" IS NOT NEW.\"verification_score\" THEN 'verification_score' END, CASE WHEN OLD.\"verified_at\" IS NOT NEW.\"verified_at\" THEN 'verified_at' END)) WHERE \"type\" <> 'null'));"
+      }
+    },
+    {
+      "name": "live_auth_accounts_delete",
+      "table": {
+        "namespace": "auth",
+        "name": "accounts"
+      },
+      "timing": "after",
+      "events": [
+        "delete"
+      ],
+      "columns": [
+        "id",
+        "created_at",
+        "disabled_at",
+        "locked_until"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'auth.accounts', 'D', json_array(CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END), json_object('id', CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END, 'created_at', OLD.\"created_at\", 'disabled_at', OLD.\"disabled_at\", 'locked_until', OLD.\"locked_until\"), NULL, '[]');"
+      }
+    },
+    {
+      "name": "live_auth_accounts_insert",
+      "table": {
+        "namespace": "auth",
+        "name": "accounts"
+      },
+      "timing": "after",
+      "events": [
+        "insert"
+      ],
+      "columns": [
+        "id",
+        "created_at",
+        "disabled_at",
+        "locked_until"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'auth.accounts', 'I', json_array(CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END), NULL, json_object('id', CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END, 'created_at', NEW.\"created_at\", 'disabled_at', NEW.\"disabled_at\", 'locked_until', NEW.\"locked_until\"), '[]');"
+      }
+    },
+    {
+      "name": "live_auth_accounts_update",
+      "table": {
+        "namespace": "auth",
+        "name": "accounts"
+      },
+      "timing": "after",
+      "events": [
+        "update"
+      ],
+      "columns": [
+        "id",
+        "created_at",
+        "disabled_at",
+        "locked_until"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'auth.accounts', 'U', json_array(CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END), json_object('id', CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END, 'created_at', OLD.\"created_at\", 'disabled_at', OLD.\"disabled_at\", 'locked_until', OLD.\"locked_until\"), json_object('id', CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END, 'created_at', NEW.\"created_at\", 'disabled_at', NEW.\"disabled_at\", 'locked_until', NEW.\"locked_until\"), (SELECT json_group_array(\"value\") FROM json_each(json_array(CASE WHEN OLD.\"created_at\" IS NOT NEW.\"created_at\" THEN 'created_at' END, CASE WHEN OLD.\"disabled_at\" IS NOT NEW.\"disabled_at\" THEN 'disabled_at' END, CASE WHEN OLD.\"id\" IS NOT NEW.\"id\" THEN 'id' END, CASE WHEN OLD.\"locked_until\" IS NOT NEW.\"locked_until\" THEN 'locked_until' END)) WHERE \"type\" <> 'null'));"
+      }
+    },
+    {
+      "name": "live_auth_sessions_delete",
+      "table": {
+        "namespace": "auth",
+        "name": "sessions"
+      },
+      "timing": "after",
+      "events": [
+        "delete"
+      ],
+      "columns": [
+        "id",
+        "account_id",
+        "access_expires_at",
+        "refreshed_at",
+        "aal",
+        "authenticated_at",
+        "mfa_at",
+        "last_seen_at",
+        "idle_expires_at",
+        "expires_at",
+        "device",
+        "revoked_at",
+        "created_at"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'auth.sessions', 'D', json_array(CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END), json_object('id', CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END, 'account_id', CASE WHEN OLD.\"account_id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"account_id\")) END, 'access_expires_at', OLD.\"access_expires_at\", 'refreshed_at', OLD.\"refreshed_at\", 'aal', OLD.\"aal\", 'authenticated_at', OLD.\"authenticated_at\", 'mfa_at', OLD.\"mfa_at\", 'last_seen_at', OLD.\"last_seen_at\", 'idle_expires_at', OLD.\"idle_expires_at\", 'expires_at', OLD.\"expires_at\", 'device', OLD.\"device\", 'revoked_at', OLD.\"revoked_at\", 'created_at', OLD.\"created_at\"), NULL, '[]');"
+      }
+    },
+    {
+      "name": "live_auth_sessions_insert",
+      "table": {
+        "namespace": "auth",
+        "name": "sessions"
+      },
+      "timing": "after",
+      "events": [
+        "insert"
+      ],
+      "columns": [
+        "id",
+        "account_id",
+        "access_expires_at",
+        "refreshed_at",
+        "aal",
+        "authenticated_at",
+        "mfa_at",
+        "last_seen_at",
+        "idle_expires_at",
+        "expires_at",
+        "device",
+        "revoked_at",
+        "created_at"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'auth.sessions', 'I', json_array(CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END), NULL, json_object('id', CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END, 'account_id', CASE WHEN NEW.\"account_id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"account_id\")) END, 'access_expires_at', NEW.\"access_expires_at\", 'refreshed_at', NEW.\"refreshed_at\", 'aal', NEW.\"aal\", 'authenticated_at', NEW.\"authenticated_at\", 'mfa_at', NEW.\"mfa_at\", 'last_seen_at', NEW.\"last_seen_at\", 'idle_expires_at', NEW.\"idle_expires_at\", 'expires_at', NEW.\"expires_at\", 'device', NEW.\"device\", 'revoked_at', NEW.\"revoked_at\", 'created_at', NEW.\"created_at\"), '[]');"
+      }
+    },
+    {
+      "name": "live_auth_sessions_update",
+      "table": {
+        "namespace": "auth",
+        "name": "sessions"
+      },
+      "timing": "after",
+      "events": [
+        "update"
+      ],
+      "columns": [
+        "id",
+        "account_id",
+        "access_expires_at",
+        "refreshed_at",
+        "aal",
+        "authenticated_at",
+        "mfa_at",
+        "last_seen_at",
+        "idle_expires_at",
+        "expires_at",
+        "device",
+        "revoked_at",
+        "created_at"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'auth.sessions', 'U', json_array(CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END), json_object('id', CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END, 'account_id', CASE WHEN OLD.\"account_id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"account_id\")) END, 'access_expires_at', OLD.\"access_expires_at\", 'refreshed_at', OLD.\"refreshed_at\", 'aal', OLD.\"aal\", 'authenticated_at', OLD.\"authenticated_at\", 'mfa_at', OLD.\"mfa_at\", 'last_seen_at', OLD.\"last_seen_at\", 'idle_expires_at', OLD.\"idle_expires_at\", 'expires_at', OLD.\"expires_at\", 'device', OLD.\"device\", 'revoked_at', OLD.\"revoked_at\", 'created_at', OLD.\"created_at\"), json_object('id', CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END, 'account_id', CASE WHEN NEW.\"account_id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"account_id\")) END, 'access_expires_at', NEW.\"access_expires_at\", 'refreshed_at', NEW.\"refreshed_at\", 'aal', NEW.\"aal\", 'authenticated_at', NEW.\"authenticated_at\", 'mfa_at', NEW.\"mfa_at\", 'last_seen_at', NEW.\"last_seen_at\", 'idle_expires_at', NEW.\"idle_expires_at\", 'expires_at', NEW.\"expires_at\", 'device', NEW.\"device\", 'revoked_at', NEW.\"revoked_at\", 'created_at', NEW.\"created_at\"), (SELECT json_group_array(\"value\") FROM json_each(json_array(CASE WHEN OLD.\"aal\" IS NOT NEW.\"aal\" THEN 'aal' END, CASE WHEN OLD.\"access_expires_at\" IS NOT NEW.\"access_expires_at\" THEN 'access_expires_at' END, CASE WHEN OLD.\"account_id\" IS NOT NEW.\"account_id\" THEN 'account_id' END, CASE WHEN OLD.\"authenticated_at\" IS NOT NEW.\"authenticated_at\" THEN 'authenticated_at' END, CASE WHEN OLD.\"created_at\" IS NOT NEW.\"created_at\" THEN 'created_at' END, CASE WHEN OLD.\"device\" IS NOT NEW.\"device\" THEN 'device' END, CASE WHEN OLD.\"expires_at\" IS NOT NEW.\"expires_at\" THEN 'expires_at' END, CASE WHEN OLD.\"id\" IS NOT NEW.\"id\" THEN 'id' END, CASE WHEN OLD.\"idle_expires_at\" IS NOT NEW.\"idle_expires_at\" THEN 'idle_expires_at' END, CASE WHEN OLD.\"last_seen_at\" IS NOT NEW.\"last_seen_at\" THEN 'last_seen_at' END, CASE WHEN OLD.\"mfa_at\" IS NOT NEW.\"mfa_at\" THEN 'mfa_at' END, CASE WHEN OLD.\"previous_refresh_hash\" IS NOT NEW.\"previous_refresh_hash\" THEN 'previous_refresh_hash' END, CASE WHEN OLD.\"refresh_hash\" IS NOT NEW.\"refresh_hash\" THEN 'refresh_hash' END, CASE WHEN OLD.\"refreshed_at\" IS NOT NEW.\"refreshed_at\" THEN 'refreshed_at' END, CASE WHEN OLD.\"revoked_at\" IS NOT NEW.\"revoked_at\" THEN 'revoked_at' END, CASE WHEN OLD.\"token_hash\" IS NOT NEW.\"token_hash\" THEN 'token_hash' END)) WHERE \"type\" <> 'null'));"
+      }
+    },
+    {
+      "name": "live_rpc_inbox_delete",
+      "table": {
+        "namespace": "rpc",
+        "name": "inbox"
+      },
+      "timing": "after",
+      "events": [
+        "delete"
+      ],
+      "columns": [
+        "id",
+        "account",
+        "title",
+        "body",
+        "link",
+        "action",
+        "kind",
+        "read_at",
+        "created_at"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'rpc.inbox', 'D', json_array(CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END), json_object('id', CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END, 'account', OLD.\"account\", 'title', OLD.\"title\", 'body', OLD.\"body\", 'link', OLD.\"link\", 'action', json(OLD.\"action\"), 'kind', OLD.\"kind\", 'read_at', OLD.\"read_at\", 'created_at', OLD.\"created_at\"), NULL, '[]');"
+      }
+    },
+    {
+      "name": "live_rpc_inbox_insert",
+      "table": {
+        "namespace": "rpc",
+        "name": "inbox"
+      },
+      "timing": "after",
+      "events": [
+        "insert"
+      ],
+      "columns": [
+        "id",
+        "account",
+        "title",
+        "body",
+        "link",
+        "action",
+        "kind",
+        "read_at",
+        "created_at"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'rpc.inbox', 'I', json_array(CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END), NULL, json_object('id', CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END, 'account', NEW.\"account\", 'title', NEW.\"title\", 'body', NEW.\"body\", 'link', NEW.\"link\", 'action', json(NEW.\"action\"), 'kind', NEW.\"kind\", 'read_at', NEW.\"read_at\", 'created_at', NEW.\"created_at\"), '[]');"
+      }
+    },
+    {
+      "name": "live_rpc_inbox_update",
+      "table": {
+        "namespace": "rpc",
+        "name": "inbox"
+      },
+      "timing": "after",
+      "events": [
+        "update"
+      ],
+      "columns": [
+        "id",
+        "account",
+        "title",
+        "body",
+        "link",
+        "action",
+        "kind",
+        "read_at",
+        "created_at"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'rpc.inbox', 'U', json_array(CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END), json_object('id', CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END, 'account', OLD.\"account\", 'title', OLD.\"title\", 'body', OLD.\"body\", 'link', OLD.\"link\", 'action', json(OLD.\"action\"), 'kind', OLD.\"kind\", 'read_at', OLD.\"read_at\", 'created_at', OLD.\"created_at\"), json_object('id', CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END, 'account', NEW.\"account\", 'title', NEW.\"title\", 'body', NEW.\"body\", 'link', NEW.\"link\", 'action', json(NEW.\"action\"), 'kind', NEW.\"kind\", 'read_at', NEW.\"read_at\", 'created_at', NEW.\"created_at\"), (SELECT json_group_array(\"value\") FROM json_each(json_array(CASE WHEN OLD.\"account\" IS NOT NEW.\"account\" THEN 'account' END, CASE WHEN OLD.\"action\" IS NOT NEW.\"action\" THEN 'action' END, CASE WHEN OLD.\"body\" IS NOT NEW.\"body\" THEN 'body' END, CASE WHEN OLD.\"created_at\" IS NOT NEW.\"created_at\" THEN 'created_at' END, CASE WHEN OLD.\"id\" IS NOT NEW.\"id\" THEN 'id' END, CASE WHEN OLD.\"kind\" IS NOT NEW.\"kind\" THEN 'kind' END, CASE WHEN OLD.\"link\" IS NOT NEW.\"link\" THEN 'link' END, CASE WHEN OLD.\"read_at\" IS NOT NEW.\"read_at\" THEN 'read_at' END, CASE WHEN OLD.\"title\" IS NOT NEW.\"title\" THEN 'title' END)) WHERE \"type\" <> 'null'));"
+      }
+    },
+    {
+      "name": "live_rpc_jobs_delete",
+      "table": {
+        "namespace": "rpc",
+        "name": "jobs"
+      },
+      "timing": "after",
+      "events": [
+        "delete"
+      ],
+      "columns": [
+        "id",
+        "key",
+        "name",
+        "queue",
+        "arguments",
+        "owner",
+        "viewer",
+        "visibility",
+        "serial_key",
+        "state",
+        "attempts",
+        "max_attempts",
+        "priority",
+        "run_at",
+        "deadline_at",
+        "started_at",
+        "finished_at",
+        "locked_until",
+        "result",
+        "error",
+        "progress",
+        "fraction",
+        "steps",
+        "cancel_requested",
+        "failure_pending",
+        "created_at"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'rpc.jobs', 'D', json_array(CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END), json_object('id', CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END, 'key', OLD.\"key\", 'name', OLD.\"name\", 'queue', OLD.\"queue\", 'arguments', json(OLD.\"arguments\"), 'owner', OLD.\"owner\", 'viewer', OLD.\"viewer\", 'visibility', OLD.\"visibility\", 'serial_key', OLD.\"serial_key\", 'state', OLD.\"state\", 'attempts', OLD.\"attempts\", 'max_attempts', OLD.\"max_attempts\", 'priority', OLD.\"priority\", 'run_at', OLD.\"run_at\", 'deadline_at', OLD.\"deadline_at\", 'started_at', OLD.\"started_at\", 'finished_at', OLD.\"finished_at\", 'locked_until', OLD.\"locked_until\", 'result', json(OLD.\"result\"), 'error', OLD.\"error\", 'progress', OLD.\"progress\", 'fraction', OLD.\"fraction\", 'steps', json(OLD.\"steps\"), 'cancel_requested', OLD.\"cancel_requested\", 'failure_pending', OLD.\"failure_pending\", 'created_at', OLD.\"created_at\"), NULL, '[]');"
+      }
+    },
+    {
+      "name": "live_rpc_jobs_insert",
+      "table": {
+        "namespace": "rpc",
+        "name": "jobs"
+      },
+      "timing": "after",
+      "events": [
+        "insert"
+      ],
+      "columns": [
+        "id",
+        "key",
+        "name",
+        "queue",
+        "arguments",
+        "owner",
+        "viewer",
+        "visibility",
+        "serial_key",
+        "state",
+        "attempts",
+        "max_attempts",
+        "priority",
+        "run_at",
+        "deadline_at",
+        "started_at",
+        "finished_at",
+        "locked_until",
+        "result",
+        "error",
+        "progress",
+        "fraction",
+        "steps",
+        "cancel_requested",
+        "failure_pending",
+        "created_at"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'rpc.jobs', 'I', json_array(CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END), NULL, json_object('id', CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END, 'key', NEW.\"key\", 'name', NEW.\"name\", 'queue', NEW.\"queue\", 'arguments', json(NEW.\"arguments\"), 'owner', NEW.\"owner\", 'viewer', NEW.\"viewer\", 'visibility', NEW.\"visibility\", 'serial_key', NEW.\"serial_key\", 'state', NEW.\"state\", 'attempts', NEW.\"attempts\", 'max_attempts', NEW.\"max_attempts\", 'priority', NEW.\"priority\", 'run_at', NEW.\"run_at\", 'deadline_at', NEW.\"deadline_at\", 'started_at', NEW.\"started_at\", 'finished_at', NEW.\"finished_at\", 'locked_until', NEW.\"locked_until\", 'result', json(NEW.\"result\"), 'error', NEW.\"error\", 'progress', NEW.\"progress\", 'fraction', NEW.\"fraction\", 'steps', json(NEW.\"steps\"), 'cancel_requested', NEW.\"cancel_requested\", 'failure_pending', NEW.\"failure_pending\", 'created_at', NEW.\"created_at\"), '[]');"
+      }
+    },
+    {
+      "name": "live_rpc_jobs_update",
+      "table": {
+        "namespace": "rpc",
+        "name": "jobs"
+      },
+      "timing": "after",
+      "events": [
+        "update"
+      ],
+      "columns": [
+        "id",
+        "key",
+        "name",
+        "queue",
+        "arguments",
+        "owner",
+        "viewer",
+        "visibility",
+        "serial_key",
+        "state",
+        "attempts",
+        "max_attempts",
+        "priority",
+        "run_at",
+        "deadline_at",
+        "started_at",
+        "finished_at",
+        "locked_until",
+        "result",
+        "error",
+        "progress",
+        "fraction",
+        "steps",
+        "cancel_requested",
+        "failure_pending",
+        "created_at"
+      ],
+      "action": {
+        "kind": "statements",
+        "sql": "INSERT INTO \"live_changes\" (\"seq\", \"txid\", \"version\", \"table_name\", \"op\", \"key\", \"old\", \"new\", \"changed\") VALUES ((SELECT coalesce(max(\"seq\"), 0) + 1 FROM \"live_changes\"), NULL, NULL, 'rpc.jobs', 'U', json_array(CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END), json_object('id', CASE WHEN OLD.\"id\" IS NULL THEN NULL ELSE lower(hex(OLD.\"id\")) END, 'key', OLD.\"key\", 'name', OLD.\"name\", 'queue', OLD.\"queue\", 'arguments', json(OLD.\"arguments\"), 'owner', OLD.\"owner\", 'viewer', OLD.\"viewer\", 'visibility', OLD.\"visibility\", 'serial_key', OLD.\"serial_key\", 'state', OLD.\"state\", 'attempts', OLD.\"attempts\", 'max_attempts', OLD.\"max_attempts\", 'priority', OLD.\"priority\", 'run_at', OLD.\"run_at\", 'deadline_at', OLD.\"deadline_at\", 'started_at', OLD.\"started_at\", 'finished_at', OLD.\"finished_at\", 'locked_until', OLD.\"locked_until\", 'result', json(OLD.\"result\"), 'error', OLD.\"error\", 'progress', OLD.\"progress\", 'fraction', OLD.\"fraction\", 'steps', json(OLD.\"steps\"), 'cancel_requested', OLD.\"cancel_requested\", 'failure_pending', OLD.\"failure_pending\", 'created_at', OLD.\"created_at\"), json_object('id', CASE WHEN NEW.\"id\" IS NULL THEN NULL ELSE lower(hex(NEW.\"id\")) END, 'key', NEW.\"key\", 'name', NEW.\"name\", 'queue', NEW.\"queue\", 'arguments', json(NEW.\"arguments\"), 'owner', NEW.\"owner\", 'viewer', NEW.\"viewer\", 'visibility', NEW.\"visibility\", 'serial_key', NEW.\"serial_key\", 'state', NEW.\"state\", 'attempts', NEW.\"attempts\", 'max_attempts', NEW.\"max_attempts\", 'priority', NEW.\"priority\", 'run_at', NEW.\"run_at\", 'deadline_at', NEW.\"deadline_at\", 'started_at', NEW.\"started_at\", 'finished_at', NEW.\"finished_at\", 'locked_until', NEW.\"locked_until\", 'result', json(NEW.\"result\"), 'error', NEW.\"error\", 'progress', NEW.\"progress\", 'fraction', NEW.\"fraction\", 'steps', json(NEW.\"steps\"), 'cancel_requested', NEW.\"cancel_requested\", 'failure_pending', NEW.\"failure_pending\", 'created_at', NEW.\"created_at\"), (SELECT json_group_array(\"value\") FROM json_each(json_array(CASE WHEN OLD.\"arguments\" IS NOT NEW.\"arguments\" THEN 'arguments' END, CASE WHEN OLD.\"attempts\" IS NOT NEW.\"attempts\" THEN 'attempts' END, CASE WHEN OLD.\"cancel_requested\" IS NOT NEW.\"cancel_requested\" THEN 'cancel_requested' END, CASE WHEN OLD.\"created_at\" IS NOT NEW.\"created_at\" THEN 'created_at' END, CASE WHEN OLD.\"deadline_at\" IS NOT NEW.\"deadline_at\" THEN 'deadline_at' END, CASE WHEN OLD.\"error\" IS NOT NEW.\"error\" THEN 'error' END, CASE WHEN OLD.\"failure_pending\" IS NOT NEW.\"failure_pending\" THEN 'failure_pending' END, CASE WHEN OLD.\"finished_at\" IS NOT NEW.\"finished_at\" THEN 'finished_at' END, CASE WHEN OLD.\"fraction\" IS NOT NEW.\"fraction\" THEN 'fraction' END, CASE WHEN OLD.\"id\" IS NOT NEW.\"id\" THEN 'id' END, CASE WHEN OLD.\"key\" IS NOT NEW.\"key\" THEN 'key' END, CASE WHEN OLD.\"locked_until\" IS NOT NEW.\"locked_until\" THEN 'locked_until' END, CASE WHEN OLD.\"max_attempts\" IS NOT NEW.\"max_attempts\" THEN 'max_attempts' END, CASE WHEN OLD.\"name\" IS NOT NEW.\"name\" THEN 'name' END, CASE WHEN OLD.\"owner\" IS NOT NEW.\"owner\" THEN 'owner' END, CASE WHEN OLD.\"priority\" IS NOT NEW.\"priority\" THEN 'priority' END, CASE WHEN OLD.\"progress\" IS NOT NEW.\"progress\" THEN 'progress' END, CASE WHEN OLD.\"queue\" IS NOT NEW.\"queue\" THEN 'queue' END, CASE WHEN OLD.\"result\" IS NOT NEW.\"result\" THEN 'result' END, CASE WHEN OLD.\"run_at\" IS NOT NEW.\"run_at\" THEN 'run_at' END, CASE WHEN OLD.\"serial_key\" IS NOT NEW.\"serial_key\" THEN 'serial_key' END, CASE WHEN OLD.\"started_at\" IS NOT NEW.\"started_at\" THEN 'started_at' END, CASE WHEN OLD.\"state\" IS NOT NEW.\"state\" THEN 'state' END, CASE WHEN OLD.\"steps\" IS NOT NEW.\"steps\" THEN 'steps' END, CASE WHEN OLD.\"viewer\" IS NOT NEW.\"viewer\" THEN 'viewer' END, CASE WHEN OLD.\"visibility\" IS NOT NEW.\"visibility\" THEN 'visibility' END)) WHERE \"type\" <> 'null'));"
+      }
+    }
+  ]
+}

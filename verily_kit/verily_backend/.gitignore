@@ -1,0 +1,5 @@
+# Local LeptosKit CLI state and development databases.
+.leptoskit/
+*.sqlite3
+*.sqlite3-*
+/target/
