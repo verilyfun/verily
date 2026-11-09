@@ -8,6 +8,7 @@ rust-version.workspace = true
 description = "Verily's LeptosKit Axum host: db, auth, idp, RPC, and mounts for verification and rewards."
 
 [dependencies]
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 leptoskit_auth = { workspace = true, features = ["axum", "oauth", "postgres", "rpc", "sqlite"] }
 leptoskit_axum = { workspace = true }
 leptoskit_config = { workspace = true }
@@ -17,9 +18,19 @@ leptoskit_db_schema = { workspace = true }
 leptoskit_idp = { workspace = true, default-features = false, features = ["axum", "postgres", "sqlite"] }
 leptoskit_rpc = { workspace = true, default-features = false, features = ["live", "postgres", "server", "sqlite"] }
 monosecret = { workspace = true }
+serde = { version = "1", features = ["derive"] }
+serde_json = { workspace = true }
+# The development seed derives the escrow vault it plants in the test gateway.
+solana_kit_associated_token_account = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32dcfccc4f73b6b5d68bdc6f541151c7e047", features = ["crypto"] }
+solana_kit_core = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32dcfccc4f73b6b5d68bdc6f541151c7e047", features = ["crypto"] }
 thiserror = { workspace = true }
+tracing = "0.1"
+uuid = { version = "1", features = ["serde", "v4"] }
+# The records the app's operations send and return.
+verily_api = { path = "../verily_api" }
 # Path deps on domain crates (temporary [workspace] until the shell lists members).
 verily_rewards = { path = "../verily_rewards" }
+verily_shared = { path = "../verily_shared" }
 verily_verification = { path = "../verily_verification" }
 
 [features]
@@ -29,7 +40,12 @@ default = ["server"]
 server = []
 
 [dev-dependencies]
+leptoskit_auth = { workspace = true, features = ["axum", "rpc", "sqlite"] }
+leptoskit_db = { workspace = true, features = ["sqlite"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tower = { version = "0.5", features = ["util"] }
+# The operations under test, with their bodies: `verily_app`'s declarations.
+verily_app = { path = "../verily_app", features = ["service"] }
 
 [lints.rust]
 unsafe_code = "deny"

@@ -232,3 +232,49 @@ fn plant(rewards: &Rewards, pool: &verily_shared::RewardPoolView, creator: Addre
 		},
 	);
 }
+
+#[tokio::test]
+async fn requirement_ids_survive_a_save_and_an_unfunded_reward_is_the_creators_alone() {
+	let db = leptoskit_db::testing::sqlite().await;
+	let creator = Uuid::new_v4();
+	let rewards = rewards();
+	let created = create_action(&db, &rewards, creator, "Ada", &request("ids"))
+		.await
+		.unwrap();
+	let action = verily_rewards::schema::ActionRow::query()
+		.one(&db)
+		.await
+		.unwrap();
+	let before = verily_rewards::store::requirements(&action).unwrap();
+	assert_eq!(before.len(), 1);
+	assert_eq!(before[0].id, created.requirements[0].id);
+
+	let saved = verily_rewards::save_action(
+		&db,
+		&rewards,
+		creator,
+		created.id,
+		created.revision,
+		&request("ids"),
+	)
+	.await
+	.unwrap();
+	assert_eq!(saved.requirements[0].id, before[0].id);
+
+	let action = verily_rewards::schema::ActionRow::query()
+		.one(&db)
+		.await
+		.unwrap();
+	let mine = verily_rewards::store::opportunity(&db, &rewards, &action, creator)
+		.await
+		.unwrap();
+	assert!(mine.viewer_is_creator && mine.reward.is_some());
+	let theirs = verily_rewards::store::opportunity(&db, &rewards, &action, Uuid::new_v4())
+		.await
+		.unwrap();
+	assert!(!theirs.viewer_is_creator);
+	assert!(
+		theirs.reward.is_none(),
+		"a pool nobody funded is not advertised"
+	);
+}

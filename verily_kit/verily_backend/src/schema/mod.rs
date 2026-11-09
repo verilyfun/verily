@@ -1,9 +1,10 @@
-//! Verily's `leptoskit_db` schema: accounts, attempts, and evidence, plus the
+//! Verily's `leptoskit_db` schema: accounts, attempts, evidence, capture
+//! windows, review decisions, appeals, and places, plus the
 //! action and reward tables linked from `verily_rewards`.
 //!
 //! Tables are declared with `leptoskit_db` macros from leptoskit `main`. Auth
-//! and IdP packs sit beside them. After changing a table, use
-//! the LeptosKit CLI (never ad-hoc SQL scripts) from this package directory:
+//! and `IdP` packs sit beside them. After changing a table, use
+//! the `LeptosKit` CLI (never ad-hoc SQL scripts) from this package directory:
 //!
 //! ```sh
 //! cd verily_kit/verily_backend
@@ -27,11 +28,30 @@ use leptoskit_db_schema as _;
 
 mod accounts;
 mod attempts;
+mod capture;
 mod evidence;
+mod places;
+mod review;
 
 pub use accounts::Account;
+pub use accounts::AccountClosureRow;
+pub use accounts::NewAccountClosureRow;
 pub use attempts::Attempt;
+pub use attempts::NewAttempt;
+pub use capture::CaptureWindowRow;
+pub use capture::NewCaptureWindowRow;
+pub use capture::NewSpokenChallengeRow;
+pub use capture::SpokenChallengeRow;
 pub use evidence::Evidence;
+pub use evidence::NewEvidence;
+pub use places::ActionPlace;
+pub use places::NewActionPlace;
+pub use review::Appeal;
+pub use review::EvidenceDecision;
+pub use review::NewAppeal;
+pub use review::NewEvidenceDecision;
+pub use review::NewReviewer;
+pub use review::Reviewer;
 pub use verily_rewards::schema::ActionRow;
 pub use verily_rewards::schema::PayoutWalletRow;
 pub use verily_rewards::schema::RewardPayoutRow;
@@ -47,6 +67,6 @@ leptoskit_db::export_schema!();
 /// Every migration, embedded for the host to apply at startup.
 pub static MIGRATIONS: &[leptoskit_db::Migration] = leptoskit_db::migrations!("migrations");
 
-/// Postgres-shaped migrations for multi-server deploys (PostGIS host).
+/// Postgres-shaped migrations for multi-server deploys (`PostGIS` host).
 pub static POSTGRES_MIGRATIONS: &[leptoskit_db::Migration] =
 	leptoskit_db::migrations!("migrations-postgres");

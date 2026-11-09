@@ -15,6 +15,7 @@ members = [
   "macos",
   "vendor/skribble_leptoskit",
   "vendor/skribble_rough",
+  "verily_api",
   "verily_app",
   "verily_backend",
   "verily_rewards",
@@ -80,7 +81,7 @@ thiserror = "2"
 [dependencies]
 leptoskit = { workspace = true, features = ["server", "web", "db-postgres"] }
 leptoskit_axum = { workspace = true }
-verily_app = { path = "verily_app", default-features = false }
+verily_app = { path = "verily_app", default-features = false, features = ["service"] }
 verily_backend = { path = "verily_backend" }
 
 [profile.release]

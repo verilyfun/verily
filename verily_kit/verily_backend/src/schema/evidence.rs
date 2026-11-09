@@ -8,14 +8,29 @@ use leptoskit_db::policy;
 use leptoskit_db::table;
 
 use crate::schema::Attempt;
+use crate::schema::Reviewer;
 
 /// Private evidence for one requirement on one attempt.
 ///
 /// Almost every column is private: evidence originals stay off public feeds.
-/// Policies let only the participant select the row; write paths are server
-/// system transactions in `verily_verification`.
-#[table(name = "evidence", index(attempt_id), unique(attempt_id, requirement_key))]
+/// The participant reads and adds proof for their own attempt; a Verily
+/// reviewer reads proof on someone else's. Nobody changes a row once written.
+#[table(
+	name = "evidence",
+	index(attempt_id),
+	unique(attempt_id, requirement_key)
+)]
 #[policy(select, |evidence, cx| {
+	cx.signed_in(|me| {
+		cx.exists(Attempt::query().filter(|attempt| {
+			attempt.id.eq(evidence.attempt_id) & attempt.participant_id.eq(me.account)
+		})) | (cx.exists(Reviewer::query().filter(|reviewer| reviewer.account_id.eq(me.account)))
+			& cx.exists(Attempt::query().filter(|attempt| {
+				attempt.id.eq(evidence.attempt_id) & attempt.participant_id.ne(me.account)
+			})))
+	})
+})]
+#[policy(insert, |evidence, cx| {
 	cx.signed_in(|me| {
 		cx.exists(Attempt::query().filter(|attempt| {
 			attempt.id.eq(evidence.attempt_id) & attempt.participant_id.eq(me.account)
@@ -62,5 +77,3 @@ pub struct Evidence {
 	#[db(created_at)]
 	pub submitted_at: Timestamp,
 }
-
-
