@@ -41,9 +41,12 @@ the LeptosKit kit `8184`, Postgres `8191`.
 Cursor cloud agents on Linux install that toolchain with
 `bash .cursor/cloud-install.sh` and start the Nix daemon with
 `bash .cursor/cloud-start.sh` (also the environment install and start
-commands). Then `devenv shell lint:all` and `devenv shell test:all`. iOS
-builds, SwiftLint, and the Seeker device flow need macOS or a phone, and
-Android app builds need an SDK the cloud install does not download.
+commands). The install puts Nix, with flakes and nix-command, and devenv on
+the default PATH for login and non-login shells, trusts the devenv binary
+cache, and warms this shell with `devenv shell -- true`. Then
+`devenv shell lint:all` and `devenv shell test:all`. iOS builds, SwiftLint,
+and the Seeker device flow need macOS or a phone, and Android app builds
+need an SDK the cloud install does not download.
 
 ## Commits and pull requests
 
