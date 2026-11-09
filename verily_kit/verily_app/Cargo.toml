@@ -14,10 +14,10 @@ crate-type = ["rlib", "cdylib"]
 
 [dependencies]
 leptos = { version = "0.9.0-rc0", default-features = false, optional = true }
-leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "c7a85ef05c4a1a510f6136b444ad4a0c2ef1af5e", default-features = false, features = ["l10n", "query", "rpc"] }
-leptoskit_bridge = { git = "https://github.com/ifiokjr/leptoskit", rev = "c7a85ef05c4a1a510f6136b444ad4a0c2ef1af5e", default-features = false, optional = true }
-leptoskit_l10n = { git = "https://github.com/ifiokjr/leptoskit", rev = "c7a85ef05c4a1a510f6136b444ad4a0c2ef1af5e", default-features = false }
-leptoskit_router = { git = "https://github.com/ifiokjr/leptoskit", rev = "c7a85ef05c4a1a510f6136b444ad4a0c2ef1af5e", default-features = false }
+leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "7e61e9bceefea4db7c8e3a70fdd31deb21597898", default-features = false, features = ["l10n", "query", "rpc"] }
+leptoskit_bridge = { git = "https://github.com/ifiokjr/leptoskit", rev = "7e61e9bceefea4db7c8e3a70fdd31deb21597898", default-features = false, optional = true }
+leptoskit_l10n = { git = "https://github.com/ifiokjr/leptoskit", rev = "7e61e9bceefea4db7c8e3a70fdd31deb21597898", default-features = false }
+leptoskit_router = { git = "https://github.com/ifiokjr/leptoskit", rev = "7e61e9bceefea4db7c8e3a70fdd31deb21597898", default-features = false }
 # Signals that outlive a screen rebuild (see `state.rs`).
 reactive_graph = "0.3.0-rc0"
 schemars = { version = "1.2", features = ["semver1"] }
@@ -58,4 +58,4 @@ leptoskit_build = { workspace = true }
 
 [dev-dependencies]
 any_spawner = { version = "0.3", features = ["futures-executor"] }
-leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "c7a85ef05c4a1a510f6136b444ad4a0c2ef1af5e", default-features = false, features = ["leptos"] }
+leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "7e61e9bceefea4db7c8e3a70fdd31deb21597898", default-features = false, features = ["leptos"] }
