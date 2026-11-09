@@ -7,11 +7,6 @@ license = "Apache-2.0"
 publish = false
 description = "Verily screens for doing, capturing, creating, reviewing, and account."
 
-# Standalone until the shell workspace lists this member. LeptosKit is pinned
-# here so `cargo test` does not wait on that file.
-[workspace]
-resolver = "2"
-
 [dependencies]
 leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false, features = ["l10n", "query", "rpc"] }
 leptoskit_bridge = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false, optional = true }

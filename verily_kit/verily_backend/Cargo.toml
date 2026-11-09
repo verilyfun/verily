@@ -7,28 +7,6 @@ publish = false
 rust-version.workspace = true
 description = "Verily's LeptosKit Axum host: db, auth, idp, RPC, and mounts for verification and rewards."
 
-# Temporary until verily_kit/Cargo.toml lists this member and drops the table.
-[workspace]
-resolver = "2"
-members = ["."]
-
-[workspace.package]
-edition = "2024"
-license = "Apache-2.0"
-rust-version = "1.95.0"
-
-[workspace.dependencies]
-# Pin every leptoskit crate the same way. No crates.io, no branch.
-leptoskit_auth = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
-leptoskit_axum = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
-leptoskit_config = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
-leptoskit_db = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
-leptoskit_db_macros = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
-leptoskit_db_schema = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
-leptoskit_rpc = { git = "https://github.com/ifiokjr/leptoskit", rev = "365e2a2341ba4c675048e2a05e4caf946d4c623b", default-features = false }
-monosecret = { version = "0.5.0", default-features = false, features = ["client"] }
-thiserror = "2"
-
 [dependencies]
 leptoskit_auth = { workspace = true, features = ["axum", "oauth", "postgres", "rpc", "sqlite"] }
 leptoskit_axum = { workspace = true }

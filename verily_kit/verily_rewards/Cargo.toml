@@ -1,7 +1,3 @@
-# Keeps this crate out of the escrow workspace at the repository root.
-# Delete this table once verily_kit/Cargo.toml lists the member.
-[workspace]
-
 [package]
 name = "verily_rewards"
 version = "0.1.0"
