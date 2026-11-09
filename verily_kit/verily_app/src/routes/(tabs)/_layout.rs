@@ -53,6 +53,7 @@ fn Tab(
 			label=label.into()
 			selected=selected
 			seed=seed
+			class="flex-1"
 			on_press=move || navigation.navigate(route.clone())
 		/>
 	}

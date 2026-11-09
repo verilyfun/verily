@@ -2,11 +2,9 @@
 
 use leptoskit::component;
 use leptoskit::prelude::Element;
-use leptoskit::prelude::For;
 use leptoskit::prelude::Get;
 use leptoskit::prelude::RwSignal;
 use leptoskit::prelude::Set;
-use leptoskit::prelude::Show;
 use leptoskit::prelude::View;
 use leptoskit::rpc::client::use_rpc_query;
 use leptoskit::view;
@@ -32,7 +30,40 @@ pub fn Page(navigation: &Navigation) -> Element {
 		latitude: None,
 		longitude: None,
 	});
-	let navigation = navigation.clone();
+	// One state at a time: the screen rebuilds when the query moves on, and
+	// a hidden placeholder would still take its share of the page's gaps.
+	let body = if actions.is_loading() {
+		view! { <chrome::Muted text=l10n.do_loading() /> }
+	} else if actions.is_error() {
+		view! {
+			<chrome::Card seed=21>
+				<chrome::Title text=l10n.do_load_failed_title() />
+				<chrome::Quiet
+					label=l10n.dialog_retry()
+					on_press=move || {
+						actions.refetch();
+					}
+				/>
+			</chrome::Card>
+		}
+	} else {
+		let cards = actions.data().unwrap_or_default();
+		if cards.is_empty() {
+			view! {
+				<chrome::Empty
+					picture=draw::place_map(23)
+					title=l10n.do_empty_title()
+					body=l10n.do_empty_body()
+				/>
+			}
+		} else {
+			let cards = cards
+				.into_iter()
+				.map(|card| view! { <CatalogueCard navigation=navigation.clone() card=card /> })
+				.collect::<Vec<_>>();
+			view! { <View class=theme::LIST.as_str()>{cards}</View> }
+		}
+	};
 	view! {
 		<View class="flex flex-col gap-6">
 			<View class=theme::STACK.as_str()>
@@ -40,43 +71,7 @@ pub fn Page(navigation: &Navigation) -> Element {
 				<chrome::Body text=l10n.do_subtitle() />
 			</View>
 			<Filters filter=filter />
-			{Show(
-				move || actions.is_loading(),
-				move || view! { <chrome::Muted text=l10n.do_loading() /> },
-			)}
-			{Show(
-				move || actions.is_error(),
-				move || {
-					view! {
-						<chrome::Card seed=21>
-							<chrome::Title text=l10n.do_load_failed_title() />
-							<chrome::Quiet
-								label=l10n.dialog_retry()
-								on_press=move || {
-									actions.refetch();
-								}
-							/>
-						</chrome::Card>
-					}
-				},
-			)}
-			{Show(
-				move || actions.data().is_some_and(|rows| rows.is_empty()),
-				move || {
-					view! {
-						<chrome::Empty
-							picture=draw::place_map(23)
-							title=l10n.do_empty_title()
-							body=l10n.do_empty_body()
-						/>
-					}
-				},
-			)}
-			{For(
-				move || actions.data().unwrap_or_default(),
-				|card: &ActionCard| card.id.clone(),
-				move |card| view! { <CatalogueCard navigation=navigation.clone() card=card /> },
-			)}
+			{body}
 		</View>
 	}
 }

@@ -8,7 +8,6 @@ use leptoskit::component;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::Get;
 use leptoskit::prelude::Set;
-use leptoskit::prelude::Show;
 use leptoskit::prelude::View;
 use leptoskit::query::use_mutation;
 use leptoskit::rpc::client::mutation_scope;
@@ -76,9 +75,7 @@ pub fn Page(navigation: &Navigation) -> Element {
 					on_press=move || confirm_open.set(true)
 				/>
 			</chrome::Card>
-			{Show(
-				move || confirm_open.get(),
-				move || {
+			{(confirm_open.get()).then(|| {
 					view! {
 						<chrome::Card seed=239>
 							<chrome::Title text=l10n.settings_close_account_dialog_title() />
@@ -112,12 +109,8 @@ pub fn Page(navigation: &Navigation) -> Element {
 							</View>
 						</chrome::Card>
 					}
-				},
-			)}
-			{Show(move || !notice.get().is_empty(), move || {
-				let text = notice.get();
-				view! { <chrome::Body text=text /> }
-			})}
+				})}
+			{(!notice.get().is_empty()).then(|| view! { <chrome::Body text=notice.get() /> })}
 		</View>
 	}
 }

@@ -29,7 +29,7 @@ macro_rules! classes {
 
 classes! {
 	/// The page: a 16dp gutter and room between groups.
-	PAGE = "flex flex-col gap-6 px-4 pt-4 pb-8".to_owned();
+	PAGE = "flex min-h-screen flex-col gap-6 px-4 pt-4 pb-8".to_owned();
 	/// One plain promise at the top of a screen.
 	DISPLAY = format!("text-4xl font-bold {}", class("text", verily_ink::TEXT));
 	/// An action's name or a section's title.
@@ -44,13 +44,15 @@ classes! {
 	PLACE_LABEL = format!("text-sm font-bold {}", class("text", verily_ink::PLACE));
 	/// Related items, 12dp apart.
 	STACK = "flex flex-col gap-3".to_owned();
+	/// Cards one under another.
+	LIST = "flex flex-col gap-4".to_owned();
 	/// Items side by side that wrap rather than clip.
 	ROW = "flex flex-row flex-wrap items-center gap-2".to_owned();
 	/// A row that keeps its drawing beside its words.
 	LINE = "flex flex-row items-center gap-3".to_owned();
 	/// The camera's night page.
 	FINDER = format!(
-		"relative h-72 w-full overflow-hidden rounded-3xl {}",
+		"relative h-72 w-[328px] self-center overflow-hidden rounded-3xl {}",
 		class("bg", verily_ink::NIGHT_PAGE)
 	);
 	/// Words on the viewfinder.
@@ -60,5 +62,5 @@ classes! {
 	/// The live challenge, large, over the viewfinder.
 	HUD_WORD = format!("text-2xl font-bold {}", class("text", verily_ink::INK.light.ink.into()));
 	/// The tab bar under the roots.
-	TABS = "flex flex-row items-center justify-between gap-2 pt-2".to_owned();
+	TABS = "flex flex-row items-center gap-3 pt-2".to_owned();
 }

@@ -5,10 +5,8 @@
 
 use leptoskit::component;
 use leptoskit::prelude::Element;
-use leptoskit::prelude::For;
 use leptoskit::prelude::Get;
 use leptoskit::prelude::Set;
-use leptoskit::prelude::Show;
 use leptoskit::prelude::View;
 use leptoskit::query::use_mutation;
 use leptoskit::rpc::client::mutation_scope;
@@ -38,23 +36,15 @@ pub fn Page(navigation: &Navigation) -> Element {
 				<chrome::Display text=l10n.review_title() />
 				<chrome::Body text=l10n.review_reason_needs_person() />
 			</View>
-			{Show(
-				move || queue.is_loading(),
-				move || view! { <chrome::Muted text=l10n.review_loading() /> },
-			)}
-			{Show(
-				move || queue.is_error(),
-				move || {
+			{(queue.is_loading()).then(|| view! { <chrome::Muted text=l10n.review_loading() /> })}
+			{(queue.is_error()).then(|| {
 					view! {
 						<chrome::Card seed=211>
 							<chrome::Title text=l10n.review_load_failed_title() />
 						</chrome::Card>
 					}
-				},
-			)}
-			{Show(
-				move || queue.data().is_some_and(|rows| rows.is_empty()),
-				move || {
+				})}
+			{(queue.data().is_some_and(|rows| rows.is_empty())).then(|| {
 					view! {
 						<chrome::Empty
 							picture=draw::stamp(96.0, 213)
@@ -62,13 +52,8 @@ pub fn Page(navigation: &Navigation) -> Element {
 							body=l10n.review_empty_body()
 						/>
 					}
-				},
-			)}
-			{For(
-				move || queue.data().unwrap_or_default(),
-				|row: &ReviewRow| row.id.clone(),
-				|row| view! { <ReviewCard row=row /> },
-			)}
+				})}
+			<View class=theme::LIST.as_str()>{queue.data().unwrap_or_default().into_iter().map(|row| view! { <ReviewCard row=row /> }).collect::<Vec<_>>()}</View>
 		</View>
 	}
 }
@@ -143,10 +128,7 @@ fn ReviewCard(row: ReviewRow) -> Element {
 					}
 				/>
 			</View>
-			{Show(move || !message.get().is_empty(), move || {
-				let text = message.get();
-				view! { <chrome::Body text=text /> }
-			})}
+			{(!message.get().is_empty()).then(|| view! { <chrome::Body text=message.get() /> })}
 		</chrome::Card>
 	}
 }

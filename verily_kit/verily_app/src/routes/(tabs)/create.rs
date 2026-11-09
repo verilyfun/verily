@@ -2,8 +2,6 @@
 
 use leptoskit::component;
 use leptoskit::prelude::Element;
-use leptoskit::prelude::For;
-use leptoskit::prelude::Show;
 use leptoskit::prelude::View;
 use leptoskit::rpc::client::use_rpc_query;
 use leptoskit::view;
@@ -39,23 +37,15 @@ pub fn Page(navigation: &Navigation) -> Element {
 					});
 				}
 			/>
-			{Show(
-				move || rows.is_loading(),
-				move || view! { <chrome::Muted text=l10n.hub_loading() /> },
-			)}
-			{Show(
-				move || rows.is_error(),
-				move || {
+			{(rows.is_loading()).then(|| view! { <chrome::Muted text=l10n.hub_loading() /> })}
+			{(rows.is_error()).then(|| {
 					view! {
 						<chrome::Card seed=123>
 							<chrome::Title text=l10n.hub_load_failed_title() />
 						</chrome::Card>
 					}
-				},
-			)}
-			{Show(
-				move || rows.data().is_some_and(|list| list.is_empty()),
-				move || {
+				})}
+			{(rows.data().is_some_and(|list| list.is_empty())).then(|| {
 					view! {
 						<chrome::Empty
 							picture=draw::escrow_jar(125)
@@ -63,13 +53,8 @@ pub fn Page(navigation: &Navigation) -> Element {
 							body=l10n.hub_empty_body()
 						/>
 					}
-				},
-			)}
-			{For(
-				move || rows.data().unwrap_or_default(),
-				|row: &DraftRow| row.id.clone(),
-				move |row| view! { <DraftCard navigation=navigation.clone() row=row /> },
-			)}
+				})}
+			<View class=theme::LIST.as_str()>{rows.data().unwrap_or_default().into_iter().map(|row| view! { <DraftCard navigation=navigation.clone() row=row /> }).collect::<Vec<_>>()}</View>
 		</View>
 	}
 }

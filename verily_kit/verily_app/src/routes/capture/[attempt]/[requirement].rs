@@ -10,7 +10,6 @@ use leptoskit::component;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::Get;
 use leptoskit::prelude::Set;
-use leptoskit::prelude::Show;
 use leptoskit::prelude::Text;
 use leptoskit::prelude::View;
 use leptoskit::query::use_mutation;
@@ -132,39 +131,28 @@ pub fn Page(route: &Capture, navigation: &Navigation) -> Element {
 	let live = l10n.capture_live();
 	view! {
 		<View class="flex flex-col gap-6">
-			<chrome::Display text=l10n.capture_review_title() />
+			<chrome::Display text=l10n.action_your_proof() />
 			<Viewfinder label=live word=spoken.get().map(|word| l10n.capture_challenge_say(&word)) />
-			{Show(
-				move || spoken.get().is_some(),
-				move || view! { <chrome::Muted text=l10n.capture_challenge_intro() /> },
-			)}
-			{Show(
-				move || phase.get() == Phase::PluginMissing,
-				move || {
+			{(spoken.get().is_some()).then(|| view! { <chrome::Muted text=l10n.capture_challenge_intro() /> })}
+			{(phase.get() == Phase::PluginMissing).then(|| {
 					view! {
 						<chrome::Card seed=71>
 							<chrome::Title text=l10n.capture_integrity_title() />
 							<chrome::Muted text=l10n.capture_integrity_body() />
 						</chrome::Card>
 					}
-				},
-			)}
-			{Show(
-				move || phase.get() == Phase::Failed,
-				move || {
+				})}
+			{(phase.get() == Phase::Failed).then(|| {
 					view! {
 						<chrome::Card seed=73>
 							<chrome::Title text=l10n.capture_problem_title() />
 						</chrome::Card>
 					}
-				},
-			)}
-			{Show(move || phase.get() == Phase::Review, {
+				})}
+			{(phase.get() == Phase::Review).then(|| {
 				let attempt_id = attempt_id.clone();
 				let requirement_id = requirement_id.clone();
-				move || {
-					let attempt_id = attempt_id.clone();
-					let requirement_id = requirement_id.clone();
+				{
 					view! {
 						<View class=theme::STACK.as_str()>
 							<chrome::Muted text=l10n.capture_review_preview_unavailable() />
@@ -192,9 +180,7 @@ pub fn Page(route: &Capture, navigation: &Navigation) -> Element {
 					}
 				}
 			})}
-			{Show(
-				move || phase.get() == Phase::Finished,
-				move || {
+			{(phase.get() == Phase::Finished).then(|| {
 					view! {
 						<View class="flex flex-col items-center gap-3">
 							{draw::stamp(132.0, 79)}
@@ -202,11 +188,8 @@ pub fn Page(route: &Capture, navigation: &Navigation) -> Element {
 							<chrome::Muted text=l10n.action_verified_body() />
 						</View>
 					}
-				},
-			)}
-			{Show(
-				move || matches!(phase.get(), Phase::Ready | Phase::Working),
-				move || {
+				})}
+			{(matches!(phase.get(), Phase::Ready | Phase::Working)).then(|| {
 					let attempt_id = attempt_for_begin.clone();
 					let requirement_id = requirement_for_begin.clone();
 					let working = phase.get() == Phase::Working;
@@ -224,8 +207,7 @@ pub fn Page(route: &Capture, navigation: &Navigation) -> Element {
 							}
 						/>
 					}
-				},
-			)}
+				})}
 		</View>
 	}
 }
@@ -247,7 +229,7 @@ fn Viewfinder(label: impl Into<String>, word: Option<String>) -> Element {
 	});
 	view! {
 		<View class=theme::FINDER.as_str() aria_label=label.clone()>
-			{draw::viewfinder(340.0, 288.0, 83)}
+			{draw::viewfinder(328.0, 288.0, 83)}
 			<View class="absolute left-6 top-6 flex flex-row items-center gap-2">
 				<View class=theme::HUD_DOT.as_str() />
 				<Text class=theme::HUD.as_str()>{label}</Text>

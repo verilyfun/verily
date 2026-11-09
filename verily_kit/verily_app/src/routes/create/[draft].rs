@@ -5,7 +5,6 @@ use leptoskit::prelude::Element;
 use leptoskit::prelude::Get;
 use leptoskit::prelude::RwSignal;
 use leptoskit::prelude::Set;
-use leptoskit::prelude::Show;
 use leptoskit::prelude::View;
 use leptoskit::query::use_mutation;
 use leptoskit::rpc::client::mutation_scope;
@@ -85,17 +84,14 @@ pub fn Page(route: &Editor, navigation: &Navigation) -> Element {
 				<chrome::Title text=l10n.editor_proof_heading() />
 				<chrome::ProofRow
 					text=l10n.do_proof_photo()
-					detail=l10n.editor_kind_photo_help()
+					detail=l10n.editor_kind_photo_help().to_owned()
 					seed=159
 				/>
 			</chrome::Card>
-			{Show(
-				move || !notice.get().is_empty(),
-				move || {
+			{(!notice.get().is_empty()).then(|| {
 					let text = notice.get();
 					view! { <chrome::Body text=text /> }
-				},
-			)}
+				})}
 			<chrome::Primary
 				label=l10n.editor_save()
 				seed=161

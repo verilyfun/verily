@@ -93,6 +93,7 @@ pub fn Choice(
 	selected: bool,
 	on_press: impl Fn() + Send + Sync + 'static,
 	#[prop(default = 5)] seed: i64,
+	#[prop(optional, into)] class: Option<String>,
 ) -> Element {
 	let variant = if selected {
 		ButtonVariant::Primary
@@ -106,6 +107,7 @@ pub fn Choice(
 			variant=variant
 			seed=seed
 			theme=theme::ACTION
+			class=class.unwrap_or_default()
 		/>
 	}
 }
@@ -193,11 +195,11 @@ pub fn ReviewChip(text: impl Into<String>, #[prop(default = 17)] seed: i64) -> E
 #[component]
 pub fn ProofRow(
 	text: impl Into<String>,
-	detail: impl Into<String>,
+	#[prop(optional, into)] detail: Option<String>,
 	#[prop(default = 19)] seed: i64,
 ) -> Element {
 	let text = text.into();
-	let detail = detail.into();
+	let detail = detail.map(|detail| view! { <Text class=theme::MUTED.as_str()>{detail}</Text> });
 	view! {
 		<View class=theme::LINE.as_str()>
 			<WiredBox seed=seed theme=theme::INK class="size-7 shrink-0">
@@ -205,7 +207,7 @@ pub fn ProofRow(
 			</WiredBox>
 			<View class="flex flex-1 flex-col gap-1">
 				<Text class=theme::LABEL.as_str()>{text}</Text>
-				<Text class=theme::MUTED.as_str()>{detail}</Text>
+				{detail}
 			</View>
 		</View>
 	}
@@ -271,12 +273,14 @@ mod tests {
 			view! { <Quiet label="Back" on_press=|| {} /> },
 			view! { <Choice label="Nearby" selected=true on_press=|| {} /> },
 			view! { <Choice label="All" selected=false on_press=|| {} /> },
+			view! { <Choice label="Do" selected=true on_press=|| {} class="flex-1" /> },
 			view! { <Card><Title text="Inside" /></Card> },
 			view! { <PlaceChip name="Hackney Marshes" detail="Within 100 m" /> },
 			view! { <RewardChip label="5 USDC · in escrow" /> },
 			view! { <RewardChip label="5 USDC" detail="On its way" /> },
 			view! { <ReviewChip text="With a reviewer" /> },
-			view! { <ProofRow text="Photo" detail="Taken live" /> },
+			view! { <ProofRow text="Photo" /> },
+			view! { <ProofRow text="Be there" detail="Inside the place" /> },
 			view! { <Field label="Title" value=String::new() on_change=|_: &str| {} /> },
 			view! {
 				<Field
@@ -288,6 +292,6 @@ mod tests {
 			},
 			view! { <Empty picture=draw::escrow_jar(1) title="Nothing yet" body="Post one." /> },
 		];
-		assert_eq!(pieces.len(), 18);
+		assert_eq!(pieces.len(), 20);
 	}
 }

@@ -4,10 +4,8 @@
 
 use leptoskit::component;
 use leptoskit::prelude::Element;
-use leptoskit::prelude::For;
 use leptoskit::prelude::Get;
 use leptoskit::prelude::Set;
-use leptoskit::prelude::Show;
 use leptoskit::prelude::View;
 use leptoskit::query::use_mutation;
 use leptoskit::rpc::client::mutation_scope;
@@ -48,39 +46,16 @@ pub fn Page(navigation: &Navigation) -> Element {
 			<WalletCard wallet=wallet />
 			<View class=theme::STACK.as_str()>
 				<chrome::Title text=l10n.me_attempts_title() />
-				{Show(
-					move || attempts.is_loading(),
-					move || view! { <chrome::Muted text=l10n.me_loading_attempts() /> },
-				)}
-				{Show(
-					move || attempts.is_error(),
-					move || view! { <chrome::Muted text=l10n.me_load_failed_title() /> },
-				)}
-				{Show(
-					move || attempts.data().is_some_and(|rows| rows.is_empty()),
-					move || view! { <chrome::Muted text=l10n.me_attempts_empty() /> },
-				)}
-				{For(
-					move || attempts.data().unwrap_or_default(),
-					|row: &AttemptRow| row.id.clone(),
-					|row| view! { <AttemptTile row=row /> },
-				)}
+				{(attempts.is_loading()).then(|| view! { <chrome::Muted text=l10n.me_loading_attempts() /> })}
+				{(attempts.is_error()).then(|| view! { <chrome::Muted text=l10n.me_load_failed_title() /> })}
+				{(attempts.data().is_some_and(|rows| rows.is_empty())).then(|| view! { <chrome::Muted text=l10n.me_attempts_empty() /> })}
+				<View class=theme::LIST.as_str()>{attempts.data().unwrap_or_default().into_iter().map(|row| view! { <AttemptTile row=row /> }).collect::<Vec<_>>()}</View>
 			</View>
 			<View class=theme::STACK.as_str()>
 				<chrome::Title text=l10n.me_payouts_title() />
-				{Show(
-					move || payouts.is_loading(),
-					move || view! { <chrome::Muted text=l10n.me_loading_payouts() /> },
-				)}
-				{Show(
-					move || payouts.data().is_some_and(|rows| rows.is_empty()),
-					move || view! { <chrome::Muted text=l10n.me_payouts_empty() /> },
-				)}
-				{For(
-					move || payouts.data().unwrap_or_default(),
-					|row: &PayoutRow| row.id.clone(),
-					|row| view! { <PayoutTile row=row /> },
-				)}
+				{(payouts.is_loading()).then(|| view! { <chrome::Muted text=l10n.me_loading_payouts() /> })}
+				{(payouts.data().is_some_and(|rows| rows.is_empty())).then(|| view! { <chrome::Muted text=l10n.me_payouts_empty() /> })}
+				<View class=theme::LIST.as_str()>{payouts.data().unwrap_or_default().into_iter().map(|row| view! { <PayoutTile row=row /> }).collect::<Vec<_>>()}</View>
 			</View>
 			<AppealForm />
 			<View class=theme::ROW.as_str()>
@@ -222,10 +197,7 @@ fn AppealForm() -> Element {
 					});
 				}
 			/>
-			{Show(
-				move || sent.get(),
-				move || view! { <chrome::ReviewChip text=l10n.me_appeal_sent() seed=209 /> },
-			)}
+			{(sent.get()).then(|| view! { <chrome::ReviewChip text=l10n.me_appeal_sent() seed=209 /> })}
 		</chrome::Card>
 	}
 }
