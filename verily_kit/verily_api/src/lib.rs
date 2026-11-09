@@ -55,6 +55,8 @@ pub struct ActionDetail {
 	pub radius_meters: i64,
 	pub proofs: Vec<ProofNeed>,
 	pub reward_label: String,
+	/// The action pays a reward. Without one there is nothing to fund.
+	pub rewarded: bool,
 	pub funded: bool,
 }
 
@@ -162,6 +164,8 @@ pub struct ReviewRow {
 pub struct DraftRow {
 	pub id: String,
 	pub title: String,
+	/// The draft pays a reward, so it must be funded before it goes live.
+	pub rewarded: bool,
 	pub funded: bool,
 	pub live: bool,
 }
@@ -210,14 +214,17 @@ pub struct DraftSaved {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct PublishOutcome {
 	pub published: bool,
+	/// The action pays a reward, so `funded` decides whether it is live.
+	pub rewarded: bool,
 	pub funded: bool,
 }
 
 impl PublishOutcome {
-	/// The screen may say the action is live only when both are true.
+	/// The screen may say the action is live only when it published and, if
+	/// it pays a reward, the escrow was verified from chain state.
 	#[must_use]
 	pub const fn is_live(&self) -> bool {
-		self.published && self.funded
+		self.published && (self.funded || !self.rewarded)
 	}
 }
 

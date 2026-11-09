@@ -18,6 +18,7 @@ not port those back. Crypto appears only as the unit a reward is paid in.
 | `verily_client/`                 | Generated Serverpod client; never edit by hand                    |
 | `verily_flutter/`                | The Flutter app (Android first, then iOS and web)                 |
 | `verily_kit/verily_site/`        | verily.fun, the landing page: static, deployed apart from the app |
+| `verily_kit/verily_ink/`         | The hand-drawn brand the site and the kit app share (Skribble)    |
 | `packages/verily_evidence/`      | Pure Dart evidence contract shared by app and server              |
 | `packages/verily_brand/`         | Brand tokens, mark, wordmark, stamp, promo reel, launch cover     |
 | `packages/verily_lints/`         | Analyzer plugin: colour tokens, pinned app dependencies           |
@@ -25,6 +26,12 @@ not port those back. Crypto appears only as the unit a reward is paid in.
 | `programs/verily_escrow/`        | Pina reward escrow program (`_sbf` is its deploy-only cdylib)     |
 | `brand/`                         | Exported logo and icon files                                      |
 | `docs/`                          | Verification, storage, escrow, provenance research, brand         |
+
+The kit pins every leptoskit crate to one git `rev`, never a branch. Skribble
+comes from its pull request (openbudgetfun/skribble#278) and asks for
+leptoskit from crates.io; the kit's `[patch.crates-io]` sends that to the same
+rev. Bump every `rev` in `verily_kit/Cargo.toml` together, the patch included,
+or cargo builds leptoskit twice.
 
 Run everything through `devenv shell` so local work uses the pinned Flutter,
 Rust, Pina, and Serverpod toolchains. Verily's local ports avoid other

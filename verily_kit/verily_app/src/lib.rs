@@ -2,7 +2,8 @@
 //!
 //! The shell mounts [`App`] and nothing else from this crate. Screens are
 //! files under `src/routes/`; [`routes::Route`] parses those paths. Copy
-//! comes from `l10n/app_en.arb`. Colours come from [`theme`].
+//! comes from `l10n/app_en.arb`. Colours and the pen come from [`theme`],
+//! which builds on `verily_ink`.
 
 mod chrome;
 mod host;
@@ -24,9 +25,9 @@ pub use routes::Route;
 use leptoskit::component;
 use leptoskit::prelude::Element;
 
-/// What every screen reads: Verily's paper tokens, one query cache, and the
-/// messages. Create it once where the app starts; [`screen`] provides it to
-/// each rebuild, so a rebuild never drops the cache.
+/// What every screen reads: one query cache, the messages, and the state
+/// that outlives a rebuild. Create it once where the app starts; [`screen`]
+/// provides it to each rebuild, so a rebuild never drops the cache.
 #[derive(Clone)]
 pub struct Shared {
 	query: leptoskit::query::QueryClient,
@@ -35,11 +36,9 @@ pub struct Shared {
 }
 
 impl Shared {
-	/// Installs the paper tokens and starts an empty cache with English
-	/// messages.
+	/// Starts an empty cache with English messages.
 	#[must_use]
 	pub fn new() -> Self {
-		theme::install_paper();
 		Self {
 			// leptoskit rebuilds a screen when its data arrives, which mounts
 			// its queries again: half a minute of freshness keeps a rebuild

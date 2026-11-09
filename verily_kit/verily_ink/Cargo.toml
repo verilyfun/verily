@@ -1,0 +1,15 @@
+[package]
+name = "verily_ink"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+rust-version.workspace = true
+description = "Verily's hand-drawn brand for leptoskit: the Skribble theme, role tones, the mark, and the drawings."
+
+[dependencies]
+leptoskit = { workspace = true }
+skribble_leptoskit = { workspace = true }
+
+[dev-dependencies]
+leptoskit = { workspace = true, features = ["web"] }

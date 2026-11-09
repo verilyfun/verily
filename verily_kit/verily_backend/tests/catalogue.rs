@@ -127,7 +127,7 @@ async fn the_seed_fills_the_catalogue_once_and_funds_rewards_from_chain_state() 
 		.await
 		.unwrap();
 	assert!(
-		detail.funded,
+		detail.rewarded && detail.funded,
 		"the seed's escrow was read back from the gateway"
 	);
 	assert_eq!(detail.proofs.len(), 2);
@@ -259,7 +259,7 @@ async fn a_draft_is_its_creators_alone() {
 	let mine = world.call(&ada.identity, ListMyActions {}).await.unwrap();
 	assert_eq!(mine.len(), 1);
 	assert_eq!(mine[0].id, saved.id);
-	assert!(!mine[0].live && !mine[0].funded);
+	assert!(!mine[0].live && !mine[0].rewarded && !mine[0].funded);
 	assert!(
 		world
 			.call(&bea.identity, ListMyActions {})
@@ -349,8 +349,12 @@ async fn an_unrewarded_draft_publishes_and_a_published_action_does_not_change() 
 		)
 		.await
 		.unwrap();
-	assert!(outcome.published);
+	assert!(outcome.published && !outcome.rewarded);
 	assert!(!outcome.funded, "no reward, so no escrow to call funded");
+	assert!(
+		outcome.is_live(),
+		"an action without a reward is live once published"
+	);
 	let cards = world
 		.call(&bea.identity, list(ActionFilter::All))
 		.await
@@ -391,7 +395,8 @@ async fn a_rewarded_draft_waits_for_its_escrow_on_chain() {
 		)
 		.await
 		.unwrap();
-	assert!(!outcome.published && !outcome.funded);
+	assert!(!outcome.published && outcome.rewarded && !outcome.funded);
+	assert!(!outcome.is_live());
 	assert!(
 		world
 			.call(&bea.identity, list(ActionFilter::All))

@@ -1,14 +1,13 @@
 //! Appearance and account, `/settings`.
 //!
-//! Nothing on this screen is a token, a key, or a chain address.
+//! Nothing on this screen is a token, a key, or a chain address. The
+//! appearance follows the phone's light or dark setting; leptoskit has no
+//! per-app override yet.
 
 use leptoskit::component;
-use leptoskit::prelude::Button;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::Get;
 use leptoskit::prelude::Set;
-use leptoskit::prelude::Show;
-use leptoskit::prelude::TextInput;
 use leptoskit::prelude::View;
 use leptoskit::query::use_mutation;
 use leptoskit::rpc::client::mutation_scope;
@@ -16,10 +15,10 @@ use leptoskit::view;
 
 use crate::chrome;
 use crate::l10n::use_l10n;
-use crate::state::remember;
 use crate::ops::CloseAccount;
 use crate::ops::SignOut;
 use crate::routes::Navigation;
+use crate::state::remember;
 use crate::theme;
 
 /// Appearance and account actions.
@@ -51,47 +50,48 @@ pub fn Page(navigation: &Navigation) -> Element {
 	);
 
 	view! {
-		<View class="flex flex-col gap-4">
-			<chrome::Title text=l10n.settings_title() />
-			<chrome::Muted text=l10n.settings_subtitle() />
-			<chrome::Title text=l10n.appearance_title() />
-			<chrome::Muted text=l10n.appearance_subtitle() />
-			<View class=theme::ROW>
-				<Button class=theme::QUIET on:press=theme::install_paper>
-					{l10n.appearance_system()}
-				</Button>
-				<Button class=theme::QUIET on:press=theme::install_paper>
-					{l10n.appearance_light()}
-				</Button>
-				<Button class=theme::QUIET on:press=theme::install_night>
-					{l10n.appearance_dark()}
-				</Button>
+		<View class="flex flex-col gap-6">
+			<View class=theme::STACK.as_str()>
+				<chrome::Display text=l10n.settings_title() />
+				<chrome::Body text=l10n.settings_subtitle() />
 			</View>
-			<chrome::Title text=l10n.settings_account_title() />
-			<chrome::Muted text=l10n.settings_sign_out_subtitle() />
-			<Button class=theme::QUIET on:press=move || sign_out.mutate(SignOut {})>
-				{l10n.settings_sign_out()}
-			</Button>
-			<chrome::Muted text=l10n.settings_close_account_subtitle() />
-			<Button class=theme::PRIMARY on:press=move || confirm_open.set(true)>
-				{l10n.settings_close_account()}
-			</Button>
-			{Show(
-				move || confirm_open.get(),
-				move || {
+			<chrome::Card seed=231>
+				<chrome::Title text=l10n.appearance_title() />
+				<chrome::Body text=l10n.appearance_system() />
+				<chrome::Muted text=l10n.appearance_system_subtitle() />
+			</chrome::Card>
+			<chrome::Card seed=233>
+				<chrome::Title text=l10n.settings_account_title() />
+				<chrome::Muted text=l10n.settings_sign_out_subtitle() />
+				<chrome::Quiet
+					label=l10n.settings_sign_out()
+					seed=235
+					on_press=move || sign_out.mutate(SignOut {})
+				/>
+				<chrome::Muted text=l10n.settings_close_account_subtitle() />
+				<chrome::Quiet
+					label=l10n.settings_close_account()
+					seed=237
+					on_press=move || confirm_open.set(true)
+				/>
+			</chrome::Card>
+			{(confirm_open.get()).then(|| {
 					view! {
-						<View class=theme::CARD>
+						<chrome::Card seed=239>
 							<chrome::Title text=l10n.settings_close_account_dialog_title() />
-							<chrome::Muted text=l10n.settings_close_account_dialog_body() />
-							<chrome::Muted text=l10n.settings_close_account_confirmation_label() />
-							<TextInput
-								class=theme::FIELD
-								on:change=move |next| confirmation.set(next.to_owned())
+							<chrome::Body text=l10n.settings_close_account_dialog_body() />
+							<chrome::Field
+								label=l10n.settings_close_account_confirmation_label()
+								value=confirmation.get()
+								seed=241
+								on_change=move |next: &str| confirmation.set(next.to_owned())
 							/>
-							<View class=theme::ROW>
-								<Button
-									class=theme::PRIMARY
-									on:press=move || {
+							<View class=theme::ROW.as_str()>
+								<chrome::Choice
+									label=l10n.settings_close_account_confirm()
+									selected=true
+									seed=243
+									on_press=move || {
 										let phrase = confirmation.get();
 										if phrase.trim().is_empty() {
 											return;
@@ -100,21 +100,17 @@ pub fn Page(navigation: &Navigation) -> Element {
 											confirmation: phrase,
 										});
 									}
-								>
-									{l10n.settings_close_account_confirm()}
-								</Button>
-								<Button class=theme::QUIET on:press=move || confirm_open.set(false)>
-									{l10n.dialog_cancel()}
-								</Button>
+								/>
+								<chrome::Quiet
+									label=l10n.dialog_cancel()
+									seed=245
+									on_press=move || confirm_open.set(false)
+								/>
 							</View>
-						</View>
+						</chrome::Card>
 					}
-				},
-			)}
-			{Show(move || !notice.get().is_empty(), move || {
-				let text = notice.get();
-				view! { <chrome::Muted text=text /> }
-			})}
+				})}
+			{(!notice.get().is_empty()).then(|| view! { <chrome::Body text=notice.get() /> })}
 		</View>
 	}
 }

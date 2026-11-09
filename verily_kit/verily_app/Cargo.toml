@@ -28,6 +28,7 @@ skribble_leptoskit = { workspace = true }
 verily_api = { path = "../verily_api" }
 # The server's bodies for `ops.rs`; only the `service` feature links it.
 verily_backend = { path = "../verily_backend", optional = true }
+verily_ink = { workspace = true }
 # The CLI's embedded wasm-bindgen accepts exactly its matching library version.
 wasm-bindgen = { version = "=0.2.129", optional = true }
 
