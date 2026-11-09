@@ -1,6 +1,6 @@
 # Patched leptoskit_idp
 
-Pinned against leptoskit rev `284fd8831fbc6ae5e085c4270152e74863c2965c`.
+Pinned against leptoskit rev `33ad5e1171f97f4086bf6ec9290e75aef956cdc0`.
 
 Upstream `idp.grants` has `unique(account_id, client_id)` but no
 `on_account_merge`, so `lk db check` fails when the auth pack is linked.

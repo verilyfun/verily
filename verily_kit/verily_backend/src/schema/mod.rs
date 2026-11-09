@@ -2,7 +2,7 @@
 //! action and reward tables linked from `verily_rewards`.
 //!
 //! Tables are declared with `leptoskit_db` macros at leptoskit rev
-//! `284fd8831fbc6ae5e085c4270152e74863c2965c`. Auth and IdP packs sit beside
+//! `33ad5e1171f97f4086bf6ec9290e75aef956cdc0`. Auth and IdP packs sit beside
 //! them (`leptoskit_idp` is the vendored patch that gives `idp.grants` an
 //! `on_account_merge` strategy). After changing a table, use the LeptosKit
 //! CLI (never ad-hoc SQL scripts) from this package directory:
