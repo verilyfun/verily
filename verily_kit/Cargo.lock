@@ -2995,7 +2995,7 @@ dependencies = [
 [[package]]
 name = "leptoskit"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "leptos",
  "leptos_axum",
@@ -3033,7 +3033,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_3d"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "bytemuck",
  "glam",
@@ -3057,7 +3057,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_android"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "jni",
  "leptoskit_native",
@@ -3069,7 +3069,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_animation"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "serde",
 ]
@@ -3077,7 +3077,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_apm"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "axum",
  "getrandom 0.4.3",
@@ -3095,7 +3095,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_appkit"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "leptoskit_native",
  "leptoskit_yoga",
@@ -3111,7 +3111,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_aria"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "leptoskit_native",
  "leptoskit_yoga",
@@ -3120,7 +3120,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_auth"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "aes-gcm-siv",
  "axum",
@@ -3161,7 +3161,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_axum"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "any_spawner",
  "axum",
@@ -3180,7 +3180,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_bridge"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "bytes",
  "leptoskit_log",
@@ -3192,7 +3192,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_bridge_ffi"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "leptoskit_appkit",
  "leptoskit_bridge",
@@ -3210,12 +3210,12 @@ dependencies = [
 [[package]]
 name = "leptoskit_build"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 
 [[package]]
 name = "leptoskit_codepush"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "axum",
  "base64 0.22.1",
@@ -3239,7 +3239,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_config"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "semver",
  "serde",
@@ -3252,7 +3252,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_db"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "bytes",
  "chrono",
@@ -3278,7 +3278,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_db_macros"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "convert_case 0.11.0",
  "proc-macro-crate",
@@ -3293,7 +3293,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_db_schema"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "serde",
  "serde_json",
@@ -3304,7 +3304,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_devtools"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "gloo-net",
  "gloo-timers",
@@ -3327,7 +3327,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_devtools_protocol"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "serde",
  "serde_json",
@@ -3337,7 +3337,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_form"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "leptoskit_aria",
  "leptoskit_native",
@@ -3347,7 +3347,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_gtk"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "gtk4",
  "leptoskit_native",
@@ -3358,7 +3358,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_idp"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "axum",
  "base64 0.22.1",
@@ -3386,7 +3386,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_l10n"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "intl_pluralrules",
  "js-sys",
@@ -3399,7 +3399,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_log"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "cc",
  "log",
@@ -3410,7 +3410,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_macros"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "proc-macro2",
  "proc-macro2-diagnostics",
@@ -3422,7 +3422,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_native"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "futures",
  "leptos",
@@ -3444,7 +3444,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "leptoskit_config",
  "serde",
@@ -3456,7 +3456,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_crypto"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "getrandom 0.4.3",
  "leptoskit_bridge",
@@ -3466,7 +3466,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_device"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "js-sys",
  "leptoskit_bridge",
@@ -3481,7 +3481,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_devtools"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "leptoskit_bridge",
  "leptoskit_devtools_protocol",
@@ -3492,7 +3492,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_filesystem"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "cap-std",
  "fs4",
@@ -3508,7 +3508,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_http"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "leptoskit_bridge",
  "reqwest",
@@ -3522,7 +3522,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_local_authentication"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "leptoskit_bridge",
 ]
@@ -3530,7 +3530,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_location"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "futures",
  "gloo-events",
@@ -3545,7 +3545,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_passkeys"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "leptoskit_bridge",
  "serde",
@@ -3555,7 +3555,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_permissions"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "js-sys",
  "leptoskit_bridge",
@@ -3567,7 +3567,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_secure_store"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "dirs",
  "fs4",
@@ -3579,7 +3579,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_sensors"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "leptoskit_bridge",
  "leptoskit_sensor",
@@ -3588,7 +3588,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_speech"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "futures",
  "gloo-events",
@@ -3601,7 +3601,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_store"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "cap-std",
  "leptoskit_bridge",
@@ -3615,7 +3615,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_web_auth"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "leptoskit_bridge",
  "open",
@@ -3625,7 +3625,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_websocket"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "futures",
  "gloo-timers",
@@ -3642,7 +3642,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_query"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "any_spawner",
  "futures",
@@ -3662,7 +3662,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_rive"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "base64 0.22.1",
  "cc",
@@ -3679,7 +3679,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_rive_runtime"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "cc",
  "flate2",
@@ -3690,7 +3690,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_router"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "leptoskit_native",
  "leptoskit_router_macros",
@@ -3705,7 +3705,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_router_macros"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3715,7 +3715,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_rpc"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "any_spawner",
  "axum",
@@ -3755,7 +3755,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_rpc_codegen"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "indexmap",
  "serde",
@@ -3766,7 +3766,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_rpc_macros"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "convert_case 0.11.0",
  "proc-macro2",
@@ -3777,7 +3777,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_sensor"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "futures",
  "gloo-events",
@@ -3792,7 +3792,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_uikit"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "leptoskit_native",
  "leptoskit_yoga",
@@ -3808,7 +3808,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_wasm"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "leptoskit_bridge",
  "leptoskit_log",
@@ -3827,7 +3827,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_windows"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "image",
  "leptoskit_native",
@@ -3839,7 +3839,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_yoga"
 version = "0.3.0"
-source = "git+https://github.com/ifiokjr/leptoskit?rev=4098fdeaad90eebb87c3ee635d5969bcb534c2fa#4098fdeaad90eebb87c3ee635d5969bcb534c2fa"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=a93214edc8e5f6c7999c628285093f15cf188639#a93214edc8e5f6c7999c628285093f15cf188639"
 dependencies = [
  "serde",
 ]
@@ -3887,9 +3887,9 @@ dependencies = [
 
 [[package]]
 name = "libsqlite3-sys"
-version = "0.38.2"
+version = "0.39.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1d20bef17f513b9b3004532233187769cd072d790971f4e4da0e346eb6401e8"
+checksum = "14a5f01b87b92705d07b433c06f96cbc764637d81a0bffb5734ce17cf0f9a2b3"
 dependencies = [
  "cc",
  "pkg-config",
@@ -5369,9 +5369,9 @@ dependencies = [
 
 [[package]]
 name = "rusqlite"
-version = "0.40.2"
+version = "0.41.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23f2a97da3e3873c73cb2a2e71b35c40ff95e0b1eefa8d72d8499a6928c3b5b3"
+checksum = "da9bba6f3506135e120a6586df05be18b48d18896600646a4bec8f993d91a594"
 dependencies = [
  "bitflags 2.13.2",
  "fallible-iterator 0.3.0",
