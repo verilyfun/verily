@@ -14,7 +14,7 @@ crate-type = ["rlib", "cdylib"]
 
 [dependencies]
 leptos = { version = "0.9.0-rc0", default-features = false, optional = true }
-leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "10a1d5dbcfd61ecb6eaefa14e0a55670a5680dcd", default-features = false, features = ["l10n", "query", "rpc"] }
+leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "10a1d5dbcfd61ecb6eaefa14e0a55670a5680dcd", default-features = false, features = ["auth", "l10n", "query", "rpc"] }
 leptoskit_bridge = { git = "https://github.com/ifiokjr/leptoskit", rev = "10a1d5dbcfd61ecb6eaefa14e0a55670a5680dcd", default-features = false, optional = true }
 leptoskit_l10n = { git = "https://github.com/ifiokjr/leptoskit", rev = "10a1d5dbcfd61ecb6eaefa14e0a55670a5680dcd", default-features = false }
 leptoskit_router = { git = "https://github.com/ifiokjr/leptoskit", rev = "10a1d5dbcfd61ecb6eaefa14e0a55670a5680dcd", default-features = false }

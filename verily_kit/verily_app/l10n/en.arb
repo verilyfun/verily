@@ -3301,6 +3301,60 @@
   "@signInUnavailable": {
     "description": "Shown when no sign-in method is configured."
   },
+  "signInEmailLabel": "Email",
+  "@signInEmailLabel": {
+    "description": "Label of the email field on the sign-in screen."
+  },
+  "signInEmailHint": "you@example.com",
+  "@signInEmailHint": {
+    "description": "Hint in the empty email field on the sign-in screen."
+  },
+  "signInSendCode": "Email me a code",
+  "@signInSendCode": {
+    "description": "Button that emails a sign-in code."
+  },
+  "signInCodeSent": "We sent a code to {email}. It's good for a few minutes.",
+  "@signInCodeSent": {
+    "description": "Shown after a sign-in code was emailed.",
+    "placeholders": {
+      "email": {
+        "type": "String",
+        "example": "ada@example.com"
+      }
+    }
+  },
+  "signInCodeLabel": "Code",
+  "@signInCodeLabel": {
+    "description": "Label of the field the emailed sign-in code is typed into."
+  },
+  "signInVerify": "Sign in",
+  "@signInVerify": {
+    "description": "Button that signs in with the emailed code."
+  },
+  "signInOtherEmail": "Use a different email",
+  "@signInOtherEmail": {
+    "description": "Button that goes back to the email step of signing in."
+  },
+  "signInSecondFactorPrompt": "Enter the code from your authenticator app, or a recovery code.",
+  "@signInSecondFactorPrompt": {
+    "description": "Shown when an account with two-step verification signs in."
+  },
+  "signInSecondFactorLabel": "Authenticator code",
+  "@signInSecondFactorLabel": {
+    "description": "Label of the field for the second sign-in step."
+  },
+  "signInCodeInvalid": "That code didn't work. Check it, or ask for a new one.",
+  "@signInCodeInvalid": {
+    "description": "Shown when the emailed or authenticator code is wrong."
+  },
+  "signInRateLimited": "That's a lot of tries. Wait a minute, then try again.",
+  "@signInRateLimited": {
+    "description": "Shown when sign-in is rate limited."
+  },
+  "signInChecking": "Checking who you are…",
+  "@signInChecking": {
+    "description": "Shown while the app reads whether someone is signed in."
+  },
   "signInIntentKept": "Your place is saved. Sign in when you're ready and we'll bring you back.",
   "@signInIntentKept": {
     "description": "Shown above the button that leaves sign-in without an account."

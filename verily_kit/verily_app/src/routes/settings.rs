@@ -9,6 +9,7 @@ use leptoskit::prelude::Element;
 use leptoskit::prelude::Get;
 use leptoskit::prelude::Set;
 use leptoskit::prelude::View;
+use leptoskit::query::MutateCallbacks;
 use leptoskit::query::use_mutation;
 use leptoskit::rpc::client::mutation_scope;
 use leptoskit::view;
@@ -16,7 +17,6 @@ use leptoskit::view;
 use crate::chrome;
 use crate::l10n::use_l10n;
 use crate::ops::CloseAccount;
-use crate::ops::SignOut;
 use crate::routes::Navigation;
 use crate::state::remember;
 use crate::theme;
@@ -29,20 +29,22 @@ pub fn Page(navigation: &Navigation) -> Element {
 	let notice = remember("settings.notice", String::new);
 	let confirmation = remember("settings.confirmation", String::new);
 	let confirm_open = remember("settings.confirm_open", || false);
-	let sign_out = use_mutation(
-		mutation_scope::<SignOut>()
-			.with_on_success(move |_| {
-				notice.set(l10n.settings_sign_out_subtitle().to_owned());
-			})
-			.with_on_error(move |_| {
+	// Signing out empties the session query, so the app shows sign-in.
+	let sign_out = use_mutation(leptoskit::auth::client::sign_out_mutation());
+	let sign_out_now = move || {
+		sign_out.mutate_with(
+			(),
+			MutateCallbacks::new().on_error(move |_| {
 				notice.set(l10n.settings_sign_out_failed().to_owned());
 			}),
-	);
+		);
+	};
 	let close = use_mutation(
 		mutation_scope::<CloseAccount>()
 			.with_on_success(move |_| {
-				notice.set(l10n.settings_close_account_subtitle().to_owned());
+				// The server ended every session; forget this one too.
 				confirm_open.set(false);
+				sign_out_now();
 			})
 			.with_on_error(move |_| {
 				notice.set(l10n.settings_close_account_failed().to_owned());
@@ -66,7 +68,7 @@ pub fn Page(navigation: &Navigation) -> Element {
 				<chrome::Quiet
 					label=l10n.settings_sign_out()
 					seed=235
-					on_press=move || sign_out.mutate(SignOut {})
+					on_press=sign_out_now
 				/>
 				<chrome::Muted text=l10n.settings_close_account_subtitle() />
 				<chrome::Quiet

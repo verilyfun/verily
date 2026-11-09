@@ -2,7 +2,7 @@
 //!
 //! The shell mounts [`App`] and nothing else from this crate. Screens are
 //! files under `src/routes/`; [`routes::Route`] parses those paths. Copy
-//! comes from `l10n/app_en.arb`. Colours and the pen come from [`theme`],
+//! comes from `l10n/en.arb`. Colours and the pen come from [`theme`],
 //! which builds on `verily_ink`.
 
 mod chrome;
@@ -10,6 +10,7 @@ mod host;
 #[allow(dead_code)]
 mod l10n;
 mod routes;
+mod sign_in;
 mod state;
 
 pub mod model;
@@ -75,7 +76,53 @@ impl Default for Shared {
 #[must_use]
 pub fn screen(shared: &Shared, navigation: &Navigation) -> Element {
 	shared.provide();
+	// Every screen is someone's: their attempts, drafts, and payouts. Until
+	// the session query says who, nothing below asks the server anything.
+	let session = leptoskit::auth::client::use_auth();
+	match session.data() {
+		Some(Some(_)) => route(shared, navigation),
+		Some(None) => sign_in::page(),
+		None if session.is_error() => sign_in::page(),
+		None => sign_in::checking(),
+	}
+}
+
+/// The current route's screen without the sign-in gate, for tests and
+/// previews. It shows nothing private by itself: every operation a screen
+/// calls runs as the signed-in person, and the server refuses it otherwise.
+#[must_use]
+pub fn route(shared: &Shared, navigation: &Navigation) -> Element {
+	shared.provide();
 	navigation.render()
+}
+
+/// Points sign-in, and the operations that run as the signed-in person, at
+/// the server: the page's own origin in the browser, and in a native app the
+/// origin `VERILY_API_ORIGIN` named at build time. A debug build falls back
+/// to the kit server as the iOS Simulator and the Android emulator reach it.
+/// A release build without one says sign-in isn't available.
+pub fn connect() {
+	let config = leptoskit::auth::client::ClientConfig::new();
+	let config = match native_origin() {
+		Some(origin) => config.origin(origin),
+		None => config,
+	};
+	leptoskit::auth::client::configure(config);
+}
+
+/// The server a native build talks to, if any.
+#[must_use]
+pub fn native_origin() -> Option<&'static str> {
+	if !cfg!(feature = "native") {
+		return None;
+	}
+	option_env!("VERILY_API_ORIGIN").or(if !cfg!(debug_assertions) {
+		None
+	} else if cfg!(feature = "android") {
+		Some("http://10.0.2.2:8184")
+	} else {
+		Some("http://127.0.0.1:8184")
+	})
 }
 
 /// The root a test or a single render mounts, inside a reactive owner:
@@ -118,6 +165,7 @@ pub fn WebApp(#[prop(optional, into)] path: String) -> impl leptos::prelude::Int
 	};
 	#[cfg(not(target_arch = "wasm32"))]
 	let navigation = Navigation::new(initial_route(&path));
+	connect();
 	let shared = Shared::new();
 	move || leptoskit::web::render(screen(&shared, &navigation))
 }
@@ -155,6 +203,7 @@ pub fn start() {
 pub extern "C" fn leptoskit_main() {
 	let navigation = Navigation::new(Route::Do);
 	navigation.bind_system_back();
+	connect();
 	let shared = Shared::new();
 	leptoskit::guest::mount(move || screen(&shared, &navigation));
 }

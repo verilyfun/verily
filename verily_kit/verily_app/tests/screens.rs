@@ -119,9 +119,26 @@ fn the_do_screen_builds() {
 		];
 		for route in routes {
 			let navigation = verily_app::Navigation::new(route);
-			let screen = view! { <verily_app::App navigation=navigation /> };
+			let screen = verily_app::route(&verily_app::Shared::new(), &navigation);
 			assert!(!screen.children.is_empty());
 		}
+	});
+}
+
+#[test]
+fn nothing_shows_before_the_session_answers() {
+	let _ = any_spawner::Executor::init_futures_executor();
+	let owner = leptoskit::leptos::prelude::Owner::new();
+	owner.with(|| {
+		let navigation = verily_app::Navigation::new(verily_app::Route::Me);
+		let gated = view! { <verily_app::App navigation=navigation.clone() /> };
+		let open = verily_app::route(&verily_app::Shared::new(), &navigation);
+		assert!(!gated.children.is_empty());
+		assert_ne!(
+			format!("{gated:?}"),
+			format!("{open:?}"),
+			"the gate shows the checking page, not the screen"
+		);
 	});
 }
 
