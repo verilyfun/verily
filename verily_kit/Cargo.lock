@@ -5923,6 +5923,7 @@ checksum = "33f4fe9184a62d842c9ef383018f3306d8ba224fd9d836f56d7288308847c256"
 [[package]]
 name = "skribble_leptoskit"
 version = "0.1.0"
+source = "git+https://github.com/openbudgetfun/skribble?rev=9e401c7293f70bda076a63404e37208535ea3cfa#9e401c7293f70bda076a63404e37208535ea3cfa"
 dependencies = [
  "leptoskit",
  "skribble_rough",
@@ -5931,6 +5932,7 @@ dependencies = [
 [[package]]
 name = "skribble_rough"
 version = "0.1.0"
+source = "git+https://github.com/openbudgetfun/skribble?rev=9e401c7293f70bda076a63404e37208535ea3cfa#9e401c7293f70bda076a63404e37208535ea3cfa"
 
 [[package]]
 name = "slab"
@@ -6915,6 +6917,7 @@ dependencies = [
  "skribble_leptoskit",
  "verily_api",
  "verily_backend",
+ "verily_ink",
  "wasm-bindgen",
 ]
 
@@ -6946,6 +6949,14 @@ dependencies = [
  "verily_rewards",
  "verily_shared",
  "verily_verification",
+]
+
+[[package]]
+name = "verily_ink"
+version = "0.1.0"
+dependencies = [
+ "leptoskit",
+ "skribble_leptoskit",
 ]
 
 [[package]]
@@ -7087,6 +7098,7 @@ dependencies = [
  "leptoskit",
  "serde_json",
  "skribble_leptoskit",
+ "verily_ink",
 ]
 
 [[package]]

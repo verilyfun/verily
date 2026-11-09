@@ -22,5 +22,8 @@ fn each_screen_opens_at_its_own_path() {
 
 #[test]
 fn an_unknown_path_opens_the_not_found_screen() {
-	assert!(matches!(initial_route("/nowhere/at/all"), Route::NotFound(_)));
+	assert!(matches!(
+		initial_route("/nowhere/at/all"),
+		Route::NotFound(_)
+	));
 }

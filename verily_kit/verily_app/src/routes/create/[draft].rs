@@ -1,13 +1,11 @@
 //! The editor, `/create/:draft`. `new` starts a blank draft.
 
 use leptoskit::component;
-use leptoskit::prelude::Button;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::Get;
 use leptoskit::prelude::RwSignal;
 use leptoskit::prelude::Set;
 use leptoskit::prelude::Show;
-use leptoskit::prelude::TextInput;
 use leptoskit::prelude::View;
 use leptoskit::query::use_mutation;
 use leptoskit::rpc::client::mutation_scope;
@@ -16,12 +14,12 @@ use leptoskit_router::Route;
 
 use crate::chrome;
 use crate::l10n::use_l10n;
-use crate::state::remember;
 use crate::model::DraftInput;
 use crate::model::ProofKind;
 use crate::ops::PublishAction;
 use crate::ops::SaveAction;
 use crate::routes::Navigation;
+use crate::state::remember;
 use crate::theme;
 
 #[derive(Route, Clone, Debug, PartialEq)]
@@ -61,27 +59,46 @@ pub fn Page(route: &Editor, navigation: &Navigation) -> Element {
 	let saved_for_publish = saved_id;
 	let back = navigation.clone();
 	view! {
-		<View class="flex flex-col gap-4">
-			<chrome::Title text=l10n.editor_new_title() />
-			<chrome::Muted text=l10n.editor_new_subtitle() />
-			<Field label=l10n.editor_title_label() value=title />
-			<Field label=l10n.editor_description_label() value=summary />
-			<Field label=l10n.editor_place_pin() value=place />
-			<chrome::Muted text=l10n.editor_radius(100) />
-			<Field label=l10n.editor_reward_amount_label() value=reward />
-			<chrome::Muted text=l10n.editor_proof_heading() />
-			<chrome::Muted text=l10n.do_proof_photo() />
-			<chrome::Muted text=l10n.editor_fund_first() />
+		<View class="flex flex-col gap-6">
+			<View class=theme::STACK.as_str()>
+				<chrome::Display text=l10n.editor_new_title() />
+				<chrome::Body text=l10n.editor_new_subtitle() />
+			</View>
+			<chrome::Card seed=141>
+				<Field label=l10n.editor_title_label() value=title seed=143 />
+				<Field label=l10n.editor_description_label() value=summary seed=145 />
+			</chrome::Card>
+			<chrome::Card seed=147>
+				<Field label=l10n.editor_place_pin() value=place seed=149 />
+				<chrome::PlaceChip
+					name=place.get()
+					detail=l10n.editor_radius(100)
+					seed=151
+				/>
+			</chrome::Card>
+			<chrome::Card seed=153>
+				<Field label=l10n.editor_reward_amount_label() value=reward seed=155 />
+				<chrome::Muted text=l10n.editor_fund_first() />
+			</chrome::Card>
+			<chrome::Card seed=157>
+				<chrome::Title text=l10n.editor_proof_heading() />
+				<chrome::ProofRow
+					text=l10n.do_proof_photo()
+					detail=l10n.editor_kind_photo_help()
+					seed=159
+				/>
+			</chrome::Card>
 			{Show(
 				move || !notice.get().is_empty(),
 				move || {
 					let text = notice.get();
-					view! { <chrome::Muted text=text /> }
+					view! { <chrome::Body text=text /> }
 				},
 			)}
-			<Button
-				class=theme::PRIMARY
-				on:press=move || {
+			<chrome::Primary
+				label=l10n.editor_save()
+				seed=161
+				on_press=move || {
 					let draft = DraftInput {
 						id: saved_id.get(),
 						title: title.get(),
@@ -97,33 +114,33 @@ pub fn Page(route: &Editor, navigation: &Navigation) -> Element {
 					}
 					save.mutate(SaveAction { draft });
 				}
-			>
-				{l10n.editor_save()}
-			</Button>
-			<Button
-				class=theme::QUIET
-				on:press=move || {
-					let Some(action_id) = saved_for_publish.get() else {
-						notice.set(l10n.editor_fund_first().to_owned());
-						return;
-					};
-					publish.mutate(PublishAction { action_id });
-				}
-			>
-				{l10n.editor_publish()}
-			</Button>
-			<Button class=theme::QUIET on:press=move || { back.back(); }>{l10n.action_back()}</Button>
+			/>
+			<View class=theme::ROW.as_str()>
+				<chrome::Quiet
+					label=l10n.editor_publish()
+					seed=163
+					on_press=move || {
+						let Some(action_id) = saved_for_publish.get() else {
+							notice.set(l10n.editor_fund_first().to_owned());
+							return;
+						};
+						publish.mutate(PublishAction { action_id });
+					}
+				/>
+				<chrome::Quiet label=l10n.action_back() seed=165 on_press=move || { back.back(); } />
+			</View>
 		</View>
 	}
 }
 
 #[component]
-fn Field(label: impl Into<String>, value: RwSignal<String>) -> Element {
-	let label = label.into();
+fn Field(label: impl Into<String>, value: RwSignal<String>, seed: i64) -> Element {
 	view! {
-		<View class="flex flex-col gap-2">
-			<chrome::Muted text=label />
-			<TextInput class=theme::FIELD on:change=move |next| value.set(next.to_owned()) />
-		</View>
+		<chrome::Field
+			label=label.into()
+			value=value.get()
+			seed=seed
+			on_change=move |next: &str| value.set(next.to_owned())
+		/>
 	}
 }

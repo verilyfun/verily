@@ -1,13 +1,9 @@
-//! Verily's brand for the site: the colour tokens from `DESIGN.md`, the
-//! Skribble theme the ink draws with, and the mark.
+//! Verily's brand for the site: the colour tokens from `DESIGN.md` and the
+//! mark as inline SVG. The Skribble theme and tones come from [`verily_ink`],
+//! which the app draws with too.
 //!
 //! These are the only raw colours in the site. The page and its stylesheet
 //! use the CSS custom properties [`TOKENS_CSS`] declares.
-
-use leptoskit::native::Color;
-use skribble_leptoskit::Palette;
-use skribble_leptoskit::Theme;
-use skribble_leptoskit::Tone;
 
 /// A brand colour by its `DESIGN.md` name, with its night-paper twin.
 pub struct Token {
@@ -157,64 +153,16 @@ pub fn tokens_css() -> String {
 	)
 }
 
-const fn hex(rgb: u32) -> Color {
-	Color::rgba((rgb >> 16) as u8, (rgb >> 8) as u8, rgb as u8, 0xff)
-}
-
-/// Plum ink on floral paper, with the night page in dark mode.
-pub const INK: Theme = Theme {
-	light: Palette {
-		ink: hex(0x34_28_3F),
-		paper: hex(0xFF_FA_F0),
-		accent: hex(0xD1_3F_22),
-		on_accent: hex(0xFF_FA_F0),
-	},
-	dark: Palette {
-		ink: hex(0xFF_FA_F0),
-		paper: hex(0x29_23_31),
-		accent: hex(0xF2_85_6A),
-		on_accent: hex(0x29_23_31),
-	},
-	stroke_width: 2.2,
-	roughness: 1.1,
-};
-
-/// The verified vermilion: the brand and "verified", nothing else.
-pub const STAMP: Tone = Tone {
-	light: hex(0xD1_3F_22),
-	dark: hex(0xF2_85_6A),
-};
-/// Place green: pins and radii.
-pub const PLACE: Tone = Tone {
-	light: hex(0x2F_6B_4F),
-	dark: hex(0x86_C7_A0),
-};
-/// Reward gold: coins and the escrow jar.
-pub const REWARD: Tone = Tone {
-	light: hex(0x9A_6A_12),
-	dark: hex(0xE6_BC_5C),
-};
-/// Review violet: anything a person decides.
-pub const REVIEW: Tone = Tone {
-	light: hex(0x6B_4F_A0),
-	dark: hex(0xBB_A6_EC),
-};
-/// Muted ink: streets and quiet doodles.
-pub const MUTED: Tone = Tone {
-	light: hex(0xB9_AC_BF),
-	dark: hex(0x73_66_78),
-};
-
-/// The pin's silhouette on the 512 artboard.
-pub const MARK_PIN: &str = "M 240 486 C 240 486 90 330.56 90 218 C 90 135.15 157.15 68 240 68 C \
-                            322.85 68 390 135.15 390 218 C 390 330.56 240 486 240 486 Z";
-/// The check knocked out of the pin's head. It runs past the rim on purpose,
-/// so the long arm cuts the rim open.
-pub const MARK_CHECK: &str = "M 162 230 L 220 292 L 457.3 2.5";
-/// The long arm's flick outside the rim.
-pub const MARK_FLICK: &str = "M 380.7 95.9 L 420 48";
-/// The pen width of the check and the flick.
-pub const MARK_PEN: f64 = 42.0;
+pub use verily_ink::INK;
+pub use verily_ink::MARK_CHECK;
+pub use verily_ink::MARK_FLICK;
+pub use verily_ink::MARK_PEN;
+pub use verily_ink::MARK_PIN;
+pub use verily_ink::MUTED;
+pub use verily_ink::PLACE;
+pub use verily_ink::REVIEW;
+pub use verily_ink::REWARD;
+pub use verily_ink::STAMP;
 
 /// The mark as inline SVG in `currentColor`, with `id` naming its knockout
 /// mask so several marks can share a page.

@@ -13,11 +13,10 @@ members = [
   "ios",
   "linux",
   "macos",
-  "vendor/skribble_leptoskit",
-  "vendor/skribble_rough",
   "verily_api",
   "verily_app",
   "verily_backend",
+  "verily_ink",
   "verily_rewards",
   "verily_shared",
   "verily_site",
@@ -71,18 +70,24 @@ leptoskit_rpc = { git = "https://github.com/ifiokjr/leptoskit", rev = "d161fdf43
 leptoskit_uikit = { git = "https://github.com/ifiokjr/leptoskit", rev = "d161fdf435c8f5e64cfb09f2ff53feec5619c921", default-features = false }
 monosecret = { version = "0.5.0", default-features = false, features = ["client"] }
 serde_json = "1"
-# Skribble path vendor: upstream still uses branch = "main" for leptoskit,
-# which duplicates Verily's rev pin. See vendor/VENDOR.md.
-skribble_leptoskit = { path = "vendor/skribble_leptoskit" }
-skribble_rough = { path = "vendor/skribble_rough" }
+# Skribble's leptoskit components, from its pull request
+# openbudgetfun/skribble#278 until leptoskit releases and Skribble publishes.
+skribble_leptoskit = { git = "https://github.com/openbudgetfun/skribble", rev = "9e401c7293f70bda076a63404e37208535ea3cfa" }
 solana_kit = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32dcfccc4f73b6b5d68bdc6f541151c7e047" }
 thiserror = "2"
+verily_ink = { path = "verily_ink" }
 
 [dependencies]
 leptoskit = { workspace = true, features = ["server", "web", "db-postgres"] }
 leptoskit_axum = { workspace = true }
 verily_app = { path = "verily_app", default-features = false, features = ["service"] }
 verily_backend = { path = "verily_backend" }
+
+# Skribble asks for leptoskit 0.3 from crates.io. Patch it to the commit every
+# leptoskit crate above is pinned to, so the graph holds one leptoskit. Bump
+# this rev with the others.
+[patch.crates-io]
+leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "a7b4d400154fef9c3dcc13e434766a66240c90b2" }
 
 [profile.release]
 lto = "thin"
