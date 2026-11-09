@@ -8,7 +8,12 @@ use leptoskit_db::policy;
 use leptoskit_db::table;
 use verily_rewards::schema::ActionRow;
 
+use crate::schema::Reviewer;
+
 /// One account attempt per action period; retries reuse the same attempt.
+///
+/// The participant reads and moves their own attempt. A Verily reviewer
+/// reads and decides someone else's, never their own.
 #[table(
 	name = "attempts",
 	public,
@@ -19,13 +24,14 @@ use verily_rewards::schema::ActionRow;
 	unique(participant_id, idempotency_key),
 	on_account_merge = reassign_skip_conflicts
 )]
-#[policy(select, |attempt, cx| {
-	cx.signed_in(|me| attempt.participant_id.eq(me.account))
+#[policy(select, update, |attempt, cx| {
+	cx.signed_in(|me| {
+		attempt.participant_id.eq(me.account)
+			| (attempt.participant_id.ne(me.account)
+				& cx.exists(Reviewer::query().filter(|reviewer| reviewer.account_id.eq(me.account))))
+	})
 })]
 #[policy(insert, |attempt, cx| {
-	cx.signed_in(|me| attempt.participant_id.eq(me.account))
-})]
-#[policy(update, |attempt, cx| {
 	cx.signed_in(|me| attempt.participant_id.eq(me.account))
 })]
 pub struct Attempt {

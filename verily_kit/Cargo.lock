@@ -6887,6 +6887,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
 
 [[package]]
+name = "verily_api"
+version = "0.1.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "verily_app"
 version = "0.1.0"
 dependencies = [
@@ -6902,6 +6911,8 @@ dependencies = [
  "serde",
  "serde_json",
  "skribble_leptoskit",
+ "verily_api",
+ "verily_backend",
  "wasm-bindgen",
 ]
 
@@ -6909,6 +6920,7 @@ dependencies = [
 name = "verily_backend"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "leptoskit_auth",
  "leptoskit_axum",
  "leptoskit_config",
@@ -6918,9 +6930,19 @@ dependencies = [
  "leptoskit_idp",
  "leptoskit_rpc",
  "monosecret",
+ "serde",
+ "serde_json",
+ "solana_kit_associated_token_account",
+ "solana_kit_core",
  "thiserror 2.0.21",
  "tokio",
+ "tower",
+ "tracing",
+ "uuid",
+ "verily_api",
+ "verily_app",
  "verily_rewards",
+ "verily_shared",
  "verily_verification",
 ]
 

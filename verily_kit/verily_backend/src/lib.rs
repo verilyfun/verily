@@ -1,4 +1,4 @@
-//! Verily's LeptosKit Axum host.
+//! Verily's `LeptosKit` Axum host.
 //!
 //! This crate wires the database, sign-in, identity provider, and RPC server,
 //! then mounts [`verily_verification::Verification`] and
@@ -18,8 +18,12 @@ mod auth;
 mod mounts;
 pub mod schema;
 mod secrets;
+#[cfg(debug_assertions)]
+mod seed;
+pub mod serve;
 
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use leptoskit_auth::Auth;
 use leptoskit_auth::AuthBuilder;
@@ -40,6 +44,8 @@ pub use auth::AuthSetup;
 pub use auth::build_auth;
 pub use auth::build_idp;
 pub use mounts::DomainMount;
+pub use mounts::HostIdentify;
+pub use mounts::identify;
 pub use mounts::rewards;
 pub use mounts::rewards::Mounted as MountedRewards;
 pub use mounts::verification;
@@ -55,6 +61,16 @@ pub use secrets::HOST_SECRET_NAMES;
 pub use secrets::HostSecrets;
 pub use secrets::SecretsError;
 pub use secrets::load_host_secrets;
+#[cfg(debug_assertions)]
+pub use seed::DEFAULT_LOCATION;
+#[cfg(debug_assertions)]
+pub use seed::SeedError;
+#[cfg(debug_assertions)]
+pub use seed::plant_funded_escrow;
+#[cfg(debug_assertions)]
+pub use seed::seed_development;
+pub use serve::Backend;
+pub use serve::BackendHandle;
 
 /// How to start the Verily Axum host.
 #[derive(Debug, Clone)]
@@ -93,9 +109,12 @@ pub struct Host {
 	/// Optional OAuth / OIDC provider built beside auth.
 	pub idp: Option<Idp>,
 	/// Fail-closed verification ops from `verily_verification`.
-	pub verification: MountedVerification,
-	/// Fail-closed rewards handle from `verily_rewards` (also on RPC context).
+	pub verification: Arc<MountedVerification>,
+	/// Rewards handle from `verily_rewards` (also on RPC context): closed in
+	/// a release build, the planted development gateway in a debug one.
 	pub rewards: verily_rewards::RewardsHandle,
+	/// What the app's operations in [`serve`] reach (also on RPC context).
+	pub backend: BackendHandle,
 	/// Roles this process runs.
 	pub roles: Roles,
 	/// Development mailbox when [`Options::demo_mail`] is on.
@@ -122,7 +141,7 @@ pub enum StartError {
 	/// The identity provider could not be built.
 	#[error(transparent)]
 	Idp(#[from] IdpError),
-	/// Auth / IdP setup from secrets or config failed.
+	/// Auth / `IdP` setup from secrets or config failed.
 	#[error(transparent)]
 	Setup(#[from] AuthSetup),
 	/// Verification mount refused to start (fail closed).
@@ -144,6 +163,14 @@ pub fn operations(db: Db) -> Server {
 	rewards::mount_ops(server)
 }
 
+/// The app's own operations, the ones `verily_app` declares with
+/// `service = "verily-backend"`, on `db`. Its router answers under
+/// [`leptoskit_rpc::service_prefix`]`(`[`serve::SERVICE`]`)`.
+#[must_use]
+pub fn backend_operations(db: Db) -> Server {
+	Server::new(db).service(serve::SERVICE)
+}
+
 /// Installs `POST /api/<name>` for every registered operation, plus the host's
 /// own health route and domain mounts.
 pub fn router<S>(operations: &Server) -> Router<S>
@@ -161,8 +188,10 @@ where
 /// Builds Verily on a migrated `db`, with sign-in from `auth`.
 ///
 /// When `config` includes `[auth.idp]`, the identity provider is built and
-/// mounted. Verification and rewards are mounted fail-closed from their
-/// crates (`Verification::closed`, `Rewards::closed`).
+/// mounted. Verification is mounted fail-closed (`Verification::closed`).
+/// Rewards are `Rewards::closed` in a release build and the planted
+/// development gateway in a debug one. The app's operations answer under
+/// `/_leptoskit/services/verily-backend/api/<name>`, as the signed-in person.
 ///
 /// # Errors
 ///
@@ -174,7 +203,13 @@ pub fn start(
 	config: Option<&LeptoskitConfig>,
 	options: Options,
 ) -> Result<Host, StartError> {
-	let mailbox = options.demo_mail.then(Mailbox::new);
+	let Options {
+		origin,
+		site_root,
+		roles,
+		demo_mail,
+	} = options;
+	let mailbox = demo_mail.then(Mailbox::new);
 	if let Some(mailbox) = &mailbox {
 		auth = auth.mailer(mailbox.clone());
 		#[cfg(debug_assertions)]
@@ -182,7 +217,7 @@ pub fn start(
 			auth = auth.dev_sign_in();
 		}
 	}
-	if let Some(origin) = &options.origin {
+	if let Some(origin) = &origin {
 		auth = auth.origin(origin.clone());
 	}
 	// Each new auth account gets a Verily `accounts` profile row.
@@ -193,27 +228,46 @@ pub fn start(
 		None => None,
 	};
 
-	let verification = verification::mount()?;
+	let verification = Arc::new(verification::mount()?);
+	#[cfg(debug_assertions)]
+	let rewards = rewards::handle(rewards::mount_development()?);
+	#[cfg(not(debug_assertions))]
 	let rewards = rewards::handle(rewards::mount()?);
+	let backend = BackendHandle::new(Backend {
+		rewards: rewards.0.clone(),
+		verification: verification.clone(),
+		auth: Some(auth.clone()),
+		db: Some(db.clone()),
+	});
 
-	let roles = options.roles;
-	let identify = rewards::identify(auth.clone(), rewards.clone());
-	let rpc = operations(db.clone()).identify(identify);
+	let identify = identify(auth.clone(), rewards.clone(), backend.clone());
+	let rpc = operations(db.clone()).identify(identify.clone());
+	let service = backend_operations(db.clone()).identify(identify);
 	let mut live = match auth.origin() {
 		Some(origin) => rpc.live().origin(origin),
 		None => rpc.live(),
 	};
-	if let Some(origin) = &options.origin {
+	if let Some(origin) = &origin {
 		live = live.origin(origin);
 	}
 
 	let mut app = Router::new();
 	if roles.web() {
-		app = app.merge(router(&rpc)).merge(auth.router());
+		app = app
+			.merge(router(&rpc))
+			.nest(
+				&leptoskit_rpc::service_prefix(serve::SERVICE),
+				service.router(),
+			)
+			.merge(auth.router());
+		// Building a router installs its server for in-process calls; the
+		// app's must be the installed one, or its `rpc.service_token`
+		// refuses the browser as if this were the service's own process.
+		rpc.install();
 		if let Some(idp) = &idp {
 			app = app.merge(idp.router());
 		}
-		if let Some(root) = &options.site_root {
+		if let Some(root) = &site_root {
 			app = app.fallback_service(leptoskit_axum::static_files(root));
 		}
 	}
@@ -235,6 +289,7 @@ pub fn start(
 		idp,
 		verification,
 		rewards,
+		backend,
 		roles,
 		mailbox,
 	})

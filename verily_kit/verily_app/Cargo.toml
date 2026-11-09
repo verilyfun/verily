@@ -24,6 +24,10 @@ schemars = { version = "1.2", features = ["semver1"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 skribble_leptoskit = { workspace = true }
+# The records the operations in `ops.rs` send and return, shared with the backend.
+verily_api = { path = "../verily_api" }
+# The server's bodies for `ops.rs`; only the `service` feature links it.
+verily_backend = { path = "../verily_backend", optional = true }
 # The CLI's embedded wasm-bindgen accepts exactly its matching library version.
 wasm-bindgen = { version = "=0.2.129", optional = true }
 
@@ -42,6 +46,10 @@ ios = ["native", "leptoskit/ios"]
 macos = ["native", "leptoskit/macos"]
 windows = ["native", "leptoskit/windows"]
 linux = ["native", "leptoskit/linux"]
+# The server's build: keeps the bodies of the `service = "verily-backend"`
+# operations in `ops.rs`, which call `verily_backend::serve`. The browser and
+# the native guest never turn it on. `leptoskit_rpc` requires this name.
+service = ["dep:verily_backend"]
 # The DevTools agents; `lk dev` turns this on, `lk build` never does.
 devtools = ["leptoskit/devtools"]
 
