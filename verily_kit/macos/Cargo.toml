@@ -10,7 +10,7 @@ name = "leptoskit_app"
 crate-type = ["staticlib"]
 
 [target.'cfg(target_os = "macos")'.dependencies]
-leptoskit_bridge_ffi = { workspace = true, features = ["app"] }
+leptoskit_bridge_ffi = { workspace = true, features = ["app", "async-host"] }
 leptoskit_plugin_http = { workspace = true, features = ["async-host"] }
 leptoskit_plugin_location = { workspace = true }
 leptoskit_plugin_sensors = { workspace = true }

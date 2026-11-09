@@ -5,4 +5,5 @@
 /.leptoskit
 /android/.gradle
 /android/**/build
+/android/**/.cxx
 /android/local.properties
