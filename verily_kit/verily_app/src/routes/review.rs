@@ -8,7 +8,6 @@ use leptoskit::prelude::Button;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::For;
 use leptoskit::prelude::Get;
-use leptoskit::prelude::RwSignal;
 use leptoskit::prelude::Set;
 use leptoskit::prelude::Show;
 use leptoskit::prelude::Text;
@@ -21,6 +20,7 @@ use leptoskit::view;
 
 use crate::chrome;
 use crate::l10n::use_l10n;
+use crate::state::remember;
 use crate::model::ProofKind;
 use crate::model::ReviewRow;
 use crate::ops::ListReviewQueue;
@@ -69,8 +69,8 @@ pub fn Page(navigation: &Navigation) -> Element {
 #[component]
 fn ReviewCard(row: ReviewRow) -> Element {
 	let l10n = use_l10n();
-	let note = RwSignal::new(String::new());
-	let message = RwSignal::new(String::new());
+	let note = remember("review.note", String::new);
+	let message = remember("review.message", String::new);
 	let id = row.id.clone();
 	let decide = use_mutation(
 		mutation_scope::<ReviewAttempt>().with_on_success(move |args| {

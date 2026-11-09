@@ -5,7 +5,9 @@ name = "verily_kit"
 version = "0.1.0"
 default_platform = "web"
 platforms = ["web", "ios", "android", "macos", "windows", "linux"]
-render = "ssr"
+# The app renders in the browser: it sits behind sign-in, so server rendering
+# buys no search traffic, and the landing page (verily_site) is static.
+render = "csr"
 
 [serve]
 address = "127.0.0.1"

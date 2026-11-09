@@ -15,6 +15,7 @@ use leptoskit::view;
 
 use crate::chrome;
 use crate::l10n::use_l10n;
+use crate::state::remember;
 use crate::model::ActionCard;
 use crate::model::ActionFilter;
 use crate::ops::ListAvailableActions;
@@ -26,7 +27,7 @@ use crate::theme;
 #[component]
 pub fn Page(navigation: &Navigation) -> Element {
 	let l10n = use_l10n();
-	let filter = RwSignal::new(ActionFilter::all());
+	let filter = remember("do.filter", ActionFilter::all);
 	let actions = use_rpc_query(move || ListAvailableActions {
 		filter: filter.get(),
 		latitude: None,

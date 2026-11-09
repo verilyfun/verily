@@ -16,6 +16,7 @@ use leptoskit_router::Route;
 
 use crate::chrome;
 use crate::l10n::use_l10n;
+use crate::state::remember;
 use crate::model::DraftInput;
 use crate::model::ProofKind;
 use crate::ops::PublishAction;
@@ -32,16 +33,15 @@ pub struct Editor {
 #[component]
 pub fn Page(route: &Editor, navigation: &Navigation) -> Element {
 	let l10n = use_l10n();
-	let title = RwSignal::new(String::new());
-	let summary = RwSignal::new(String::new());
-	let place = RwSignal::new(String::new());
-	let reward = RwSignal::new(String::new());
-	let notice = RwSignal::new(String::new());
 	let draft_id = route.draft.clone();
-	let saved_id = RwSignal::new(if draft_id == "new" {
-		None
-	} else {
-		Some(draft_id)
+	let key = format!("create.{draft_id}");
+	let title = remember(&format!("{key}.title"), String::new);
+	let summary = remember(&format!("{key}.summary"), String::new);
+	let place = remember(&format!("{key}.place"), String::new);
+	let reward = remember(&format!("{key}.reward"), String::new);
+	let notice = remember(&format!("{key}.notice"), String::new);
+	let saved_id = remember(&format!("{key}.saved"), || {
+		(draft_id != "new").then(|| draft_id.clone())
 	});
 
 	let publish = use_mutation(
