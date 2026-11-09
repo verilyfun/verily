@@ -18,6 +18,8 @@ leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "ab557f9fdf7ae
 leptoskit_bridge = { git = "https://github.com/ifiokjr/leptoskit", rev = "ab557f9fdf7ae39f376f76bf6b00bcce950b89f7", default-features = false, optional = true }
 leptoskit_l10n = { git = "https://github.com/ifiokjr/leptoskit", rev = "ab557f9fdf7ae39f376f76bf6b00bcce950b89f7", default-features = false }
 leptoskit_router = { git = "https://github.com/ifiokjr/leptoskit", rev = "ab557f9fdf7ae39f376f76bf6b00bcce950b89f7", default-features = false }
+# Signals that outlive a screen rebuild (see `state.rs`).
+reactive_graph = "0.3.0-rc0"
 schemars = { version = "1.2", features = ["semver1"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

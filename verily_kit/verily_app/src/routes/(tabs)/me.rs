@@ -7,7 +7,6 @@ use leptoskit::prelude::Button;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::For;
 use leptoskit::prelude::Get;
-use leptoskit::prelude::RwSignal;
 use leptoskit::prelude::Set;
 use leptoskit::prelude::Show;
 use leptoskit::prelude::Text;
@@ -20,6 +19,7 @@ use leptoskit::view;
 
 use crate::chrome;
 use crate::l10n::use_l10n;
+use crate::state::remember;
 use crate::model::AttemptRow;
 use crate::model::AttemptStatus;
 use crate::model::PayoutRow;
@@ -169,9 +169,9 @@ fn PayoutTile(row: PayoutRow) -> Element {
 #[component]
 fn AppealForm() -> Element {
 	let l10n = use_l10n();
-	let attempt_id = RwSignal::new(String::new());
-	let reason = RwSignal::new(String::new());
-	let sent = RwSignal::new(false);
+	let attempt_id = remember("me.appeal.attempt", String::new);
+	let reason = remember("me.appeal.reason", String::new);
+	let sent = remember("me.appeal.sent", || false);
 	let submit = use_mutation(mutation_scope::<SubmitAppeal>().with_on_success(move |_| {
 		sent.set(true);
 	}));

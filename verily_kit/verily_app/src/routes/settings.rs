@@ -6,7 +6,6 @@ use leptoskit::component;
 use leptoskit::prelude::Button;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::Get;
-use leptoskit::prelude::RwSignal;
 use leptoskit::prelude::Set;
 use leptoskit::prelude::Show;
 use leptoskit::prelude::TextInput;
@@ -17,6 +16,7 @@ use leptoskit::view;
 
 use crate::chrome;
 use crate::l10n::use_l10n;
+use crate::state::remember;
 use crate::ops::CloseAccount;
 use crate::ops::SignOut;
 use crate::routes::Navigation;
@@ -27,9 +27,9 @@ use crate::theme;
 pub fn Page(navigation: &Navigation) -> Element {
 	let _ = navigation;
 	let l10n = use_l10n();
-	let notice = RwSignal::new(String::new());
-	let confirmation = RwSignal::new(String::new());
-	let confirm_open = RwSignal::new(false);
+	let notice = remember("settings.notice", String::new);
+	let confirmation = remember("settings.confirmation", String::new);
+	let confirm_open = remember("settings.confirm_open", || false);
 	let sign_out = use_mutation(
 		mutation_scope::<SignOut>()
 			.with_on_success(move |_| {

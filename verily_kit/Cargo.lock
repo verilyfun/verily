@@ -6876,6 +6876,7 @@ dependencies = [
  "leptoskit_build",
  "leptoskit_l10n",
  "leptoskit_router",
+ "reactive_graph",
  "schemars",
  "serde",
  "serde_json",
@@ -6906,7 +6907,6 @@ dependencies = [
 name = "verily_kit"
 version = "0.1.0"
 dependencies = [
- "leptos",
  "leptoskit",
  "leptoskit_axum",
  "verily_app",

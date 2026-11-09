@@ -10,7 +10,6 @@ use leptoskit::prelude::Button;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::Get;
 use leptoskit::prelude::PathData;
-use leptoskit::prelude::RwSignal;
 use leptoskit::prelude::Set;
 use leptoskit::prelude::Show;
 use leptoskit::prelude::Stroke;
@@ -27,6 +26,7 @@ use crate::chrome;
 use crate::host;
 use crate::host::HostFault;
 use crate::l10n::use_l10n;
+use crate::state::remember;
 use crate::ops::BeginCapture;
 use crate::ops::CompleteAttempt;
 use crate::ops::IssueSpokenChallenge;
@@ -61,8 +61,9 @@ pub fn Page(route: &Capture, navigation: &Navigation) -> Element {
 	let l10n = use_l10n();
 	let attempt_id = route.attempt.clone();
 	let requirement_id = route.requirement.clone();
-	let phase = RwSignal::new(Phase::Ready);
-	let digest = RwSignal::new(String::new());
+	let key = format!("capture.{attempt_id}.{requirement_id}");
+	let phase = remember(&format!("{key}.phase"), || Phase::Ready);
+	let digest = remember(&format!("{key}.digest"), String::new);
 	let spoken = use_rpc_query({
 		let attempt_id = attempt_id.clone();
 		let requirement_id = requirement_id.clone();

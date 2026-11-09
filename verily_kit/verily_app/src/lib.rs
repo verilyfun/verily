@@ -9,6 +9,7 @@ mod host;
 #[allow(dead_code)]
 mod l10n;
 mod routes;
+mod state;
 
 pub mod model;
 pub mod ops;
@@ -22,28 +23,70 @@ pub use routes::Route;
 
 use leptoskit::component;
 use leptoskit::prelude::Element;
-use leptoskit::prelude::Show;
 
-/// The root the shell mounts, inside a reactive owner.
+/// What every screen reads: Verily's paper tokens, one query cache, and the
+/// messages. Create it once where the app starts; [`screen`] provides it to
+/// each rebuild, so a rebuild never drops the cache.
+#[derive(Clone)]
+pub struct Shared {
+	query: leptoskit::query::QueryClient,
+	l10n: l10n::L10n,
+	state: state::Store,
+}
+
+impl Shared {
+	/// Installs the paper tokens and starts an empty cache with English
+	/// messages.
+	#[must_use]
+	pub fn new() -> Self {
+		theme::install_paper();
+		Self {
+			// leptoskit rebuilds a screen when its data arrives, which mounts
+			// its queries again: half a minute of freshness keeps a rebuild
+			// from fetching what it just fetched, and a failed query waits
+			// for "Try again" instead of retrying on every redraw.
+			query: leptoskit::query::QueryClient::new().with_defaults(
+				leptoskit::query::QueryDefaults::new()
+					.with_stale_time(std::time::Duration::from_secs(30))
+					.with_retry_on_mount(false),
+			),
+			l10n: l10n::L10n::new(&[]),
+			state: state::Store::default(),
+		}
+	}
+
+	/// Makes the cache and messages available to every component below.
+	pub fn provide(&self) {
+		self.query.provide();
+		self.l10n.provide();
+		reactive_graph::owner::provide_context(self.state.clone());
+	}
+}
+
+impl Default for Shared {
+	fn default() -> Self {
+		Self::new()
+	}
+}
+
+/// The screen for the current route. Hosts call this from the closure that
+/// rebuilds the screen, so every signal it reads, the route included, is
+/// tracked there; the browser and the native runtime rebuild it when one
+/// changes.
+#[must_use]
+pub fn screen(shared: &Shared, navigation: &Navigation) -> Element {
+	shared.provide();
+	navigation.render()
+}
+
+/// The root a test or a single render mounts, inside a reactive owner:
+/// fresh [`Shared`] state and the current route's screen.
 ///
-/// Provides Verily's paper tokens, the query cache, and English messages,
-/// then draws the current route inside its layouts. Android is the first
-/// native target; the same tree is the web target. Live capture calls the
-/// shell plugins and does not offer a gallery.
+/// Native is Android first; the same tree is the web target. Live capture
+/// calls the shell plugins and does not offer a gallery.
 #[component]
 pub fn App(navigation: Navigation) -> Element {
-	theme::install_paper();
-	leptoskit::query::QueryClient::new().provide();
-	l10n::L10n::new(&[]).provide();
-	let watch = navigation.clone();
-	let build = navigation.clone();
-	Show(
-		move || {
-			let _ = watch.current();
-			true
-		},
-		move || build.render(),
-	)
+	screen(&Shared::new(), &navigation)
 }
 
 /// The route a path on this site opens. The site's root opens Do; a path no
@@ -76,7 +119,8 @@ pub fn WebApp(#[prop(optional, into)] path: String) -> impl leptos::prelude::Int
 	};
 	#[cfg(not(target_arch = "wasm32"))]
 	let navigation = Navigation::new(initial_route(&path));
-	leptoskit::web::render(App(navigation))
+	let shared = Shared::new();
+	move || leptoskit::web::render(screen(&shared, &navigation))
 }
 
 /// Whether the browser is at the site's root, which opens Do.
@@ -112,7 +156,8 @@ pub fn start() {
 pub extern "C" fn leptoskit_main() {
 	let navigation = Navigation::new(Route::Do);
 	navigation.bind_system_back();
-	leptoskit::guest::mount(move || App(navigation.clone()));
+	let shared = Shared::new();
+	leptoskit::guest::mount(move || screen(&shared, &navigation));
 }
 
 /// Android system Back and similar host signals: 1 when the router popped a
