@@ -20,17 +20,18 @@ import 'package:verily_brand/verily_brand.dart';
 
 const String _out = String.fromEnvironment('BRANDING_OUT');
 
-/// Paints [stroke] (laid out on a [artboard] square) in [color], clean,
-/// centred in the canvas at [scale] of its side.
+/// Paints [mark] (laid out on a [artboard] square) in [color], clean,
+/// centred in the canvas at [scale] of its side. The mark's cut check is
+/// transparent, so the launcher or splash background shows through it.
 class _MarkPainter extends CustomPainter {
   const _MarkPainter({
-    required this.stroke,
+    required this.mark,
     required this.artboard,
     required this.color,
     this.scale = 1,
   });
 
-  final BrandStroke stroke;
+  final BrandGlyph mark;
   final double artboard;
   final Color color;
   final double scale;
@@ -38,10 +39,14 @@ class _MarkPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final side = size.shortestSide * scale;
-    canvas
-      ..translate((size.width - side) / 2, (size.height - side) / 2)
-      ..scale(side / artboard);
-    BrandInkPainter.paint(canvas, stroke, color: color, rough: false);
+    canvas.translate((size.width - side) / 2, (size.height - side) / 2);
+    BrandGlyphPainter(
+      glyph: mark,
+      box: BrandBox(0, 0, artboard, artboard),
+      accentColor: color,
+      bodyColor: color,
+      rough: false,
+    ).paint(canvas, Size.square(side));
   }
 
   @override
@@ -90,7 +95,7 @@ void main() {
       name: 'launcher_foreground.png',
       side: 432,
       painter: _MarkPainter(
-        stroke: VerilyGeometry.adaptiveIconMark,
+        mark: VerilyGeometry.adaptiveIconMark,
         artboard: VerilyGeometry.adaptiveIconArtboard,
         color: VerilyBrandColors.paper,
       ),
@@ -110,7 +115,7 @@ void main() {
         name: name,
         side: 384,
         painter: _MarkPainter(
-          stroke: VerilyGeometry.appIconMark,
+          mark: VerilyGeometry.appIconMark,
           artboard: VerilyGeometry.appIconArtboard,
           color: color,
         ),
@@ -130,7 +135,7 @@ void main() {
         name: name,
         side: 960,
         painter: _MarkPainter(
-          stroke: VerilyGeometry.appIconMark,
+          mark: VerilyGeometry.appIconMark,
           artboard: VerilyGeometry.appIconArtboard,
           color: color,
           scale: 0.62,
