@@ -834,6 +834,28 @@ in
         config.scripts."lint:kit".scriptPackage
       ];
     };
+    "site:build" = {
+      exec = ''
+        set -euo pipefail
+        out="''${1:-$DEVENV_ROOT/verily_kit/dist/site}"
+        cd "$DEVENV_ROOT/verily_kit"
+        cargo run --release --package verily_site -- "$out"
+      '';
+      description = "Render verily.fun, the landing page, to static files (default verily_kit/dist/site).";
+      binary = "bash";
+    };
+    "site:serve" = {
+      exec = ''
+        set -euo pipefail
+        out="$DEVENV_ROOT/verily_kit/dist/site"
+        site:build "$out"
+        echo "verily.fun on http://127.0.0.1:8183"
+        ${pkgs.python3}/bin/python3 -m http.server 8183 --bind 127.0.0.1 --directory "$out"
+      '';
+      description = "Render the landing page and serve it on port 8183.";
+      binary = "bash";
+      packages = [ config.scripts."site:build".scriptPackage ];
+    };
     "lint:kit" = {
       exec = ''
         set -euo pipefail

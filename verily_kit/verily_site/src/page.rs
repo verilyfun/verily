@@ -29,7 +29,9 @@ pub fn document(config: &SiteConfig) -> String {
 		.iter()
 		.filter(|(name, _)| name.starts_with("SkribblePlayful") || name.contains("Medium"))
 		.map(|(name, _)| {
-			format!("<link rel=\"preload\" href=\"/fonts/{name}\" as=\"font\" type=\"font/woff2\" crossorigin>")
+			format!(
+				"<link rel=\"preload\" href=\"/fonts/{name}\" as=\"font\" type=\"font/woff2\" crossorigin>"
+			)
 		})
 		.collect::<String>();
 	format!(
@@ -284,10 +286,22 @@ fn no_upload() -> impl IntoView + use<> {
 
 fn how() -> impl IntoView + use<> {
 	let steps = [
-		("Post", "Say what to do, pin where it happens, and choose what counts as proof."),
-		("Fund", "Add a reward if you like. It’s locked in escrow before anyone starts."),
-		("Do", "People go there and capture it live in Verily, with a fresh challenge each time."),
-		("Stamped", "Verily checks the proof. When it passes, the page is stamped and the reward pays out."),
+		(
+			"Post",
+			"Say what to do, pin where it happens, and choose what counts as proof.",
+		),
+		(
+			"Fund",
+			"Add a reward if you like. It’s locked in escrow before anyone starts.",
+		),
+		(
+			"Do",
+			"People go there and capture it live in Verily, with a fresh challenge each time.",
+		),
+		(
+			"Stamped",
+			"Verily checks the proof. When it passes, the page is stamped and the reward pays out.",
+		),
 	];
 	html! {
 		<section id="how" class="band" aria-labelledby="how-title">
@@ -362,11 +376,31 @@ fn proof() -> impl IntoView + use<> {
 
 fn creators() -> impl IntoView + use<> {
 	let uses = [
-		("☕", "A café’s opening", "Be one of the first fifty through the door this Saturday."),
-		("🏋️", "A coach’s challenge", "Ten squats a day for a week, counted by the camera."),
-		("🗺️", "A city scavenger hunt", "Find six murals and prove each one on the spot."),
-		("🚏", "Field research", "A photo of every bus stop on route 38, taken there."),
-		("🎲", "A dare between friends", "Sing the chorus at the top of the hill. Live."),
+		(
+			"☕",
+			"A café’s opening",
+			"Be one of the first fifty through the door this Saturday.",
+		),
+		(
+			"🏋️",
+			"A coach’s challenge",
+			"Ten squats a day for a week, counted by the camera.",
+		),
+		(
+			"🗺️",
+			"A city scavenger hunt",
+			"Find six murals and prove each one on the spot.",
+		),
+		(
+			"🚏",
+			"Field research",
+			"A photo of every bus stop on route 38, taken there.",
+		),
+		(
+			"🎲",
+			"A dare between friends",
+			"Sing the chorus at the top of the hill. Live.",
+		),
 	];
 	html! {
 		<section id="creators" class="band" aria-labelledby="creators-title">

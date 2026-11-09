@@ -17,6 +17,7 @@ members = [
   "verily_backend",
   "verily_rewards",
   "verily_shared",
+  "verily_site",
   "verily_verification",
   "windows",
 ]

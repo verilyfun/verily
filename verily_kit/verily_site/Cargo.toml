@@ -11,3 +11,6 @@ description = "verily.fun, the landing page: leptoskit and Skribble, rendered to
 leptos = { version = "0.9.0-rc0", features = ["ssr"] }
 leptoskit = { workspace = true, features = ["web"] }
 skribble_leptoskit = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
