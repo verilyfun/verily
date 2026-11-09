@@ -14,8 +14,9 @@ render = "csr"
 
 [serve]
 address = "127.0.0.1"
-# Verily's local API port family avoids other Serverpod projects (8180).
-port = 8180
+# The kit serves on 8184, beside the Serverpod ports (8180 to 8182) and the
+# landing page (8183).
+port = 8184
 
 [build]
 client_package = "verily_backend"

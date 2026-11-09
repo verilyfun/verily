@@ -47,12 +47,16 @@ pub struct HostSecrets {
 impl HostSecrets {
 	/// Snapshot [`HOST_SECRET_NAMES`] from the process environment once.
 	///
+	/// A debug build starts without `AUTH_ENCRYPTION_KEYS`, so `lk dev` runs
+	/// with no secrets at all: [`crate::build_auth`] then signs with its fixed
+	/// development key. Release builds require every name.
+	///
 	/// # Errors
 	///
 	/// When any required name is missing. Fail closed — do not retry.
 	pub fn load() -> Result<Self, SecretsError> {
 		Ok(Self {
-			client: Client::from_env(HOST_SECRET_NAMES.iter().copied())?,
+			client: Client::from_env(required_names(|name| std::env::var_os(name).is_some()))?,
 		})
 	}
 
@@ -94,6 +98,17 @@ impl HostSecrets {
 	}
 }
 
+/// The names this build must find, given which ones are `present`. Release
+/// builds need all of [`HOST_SECRET_NAMES`]; debug builds skip an absent
+/// `AUTH_ENCRYPTION_KEYS`.
+fn required_names(present: impl Fn(&str) -> bool) -> Vec<&'static str> {
+	HOST_SECRET_NAMES
+		.iter()
+		.copied()
+		.filter(|name| !cfg!(debug_assertions) || *name != "AUTH_ENCRYPTION_KEYS" || present(name))
+		.collect()
+}
+
 /// Load the host secret snapshot. Prefer this over reading `std::env` in
 /// application code.
 ///
@@ -111,6 +126,18 @@ mod tests {
 	#[test]
 	fn host_secret_names_are_stable() {
 		assert_eq!(HOST_SECRET_NAMES, &["DATABASE_URL", "AUTH_ENCRYPTION_KEYS"]);
+	}
+
+	#[test]
+	fn debug_builds_start_without_the_auth_key_ring() {
+		let missing = required_names(|_| false);
+		let present = required_names(|_| true);
+		assert_eq!(present, HOST_SECRET_NAMES);
+		if cfg!(debug_assertions) {
+			assert_eq!(missing, ["DATABASE_URL"]);
+		} else {
+			assert_eq!(missing, HOST_SECRET_NAMES);
+		}
 	}
 
 	#[test]

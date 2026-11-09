@@ -96,11 +96,11 @@ struct PluginBound {
 }
 
 fn plugin_installed(name: &str) -> bool {
-	#[cfg(all(feature = "guest", target_arch = "wasm32"))]
+	#[cfg(all(feature = "native", target_arch = "wasm32"))]
 	{
 		leptoskit_bridge::guest::Client::new(name).is_ok()
 	}
-	#[cfg(not(all(feature = "guest", target_arch = "wasm32")))]
+	#[cfg(not(all(feature = "native", target_arch = "wasm32")))]
 	{
 		let _ = name;
 		false
@@ -112,7 +112,7 @@ async fn call_plugin(
 	method: u32,
 	payload: &serde_json::Value,
 ) -> Result<Vec<u8>, HostFault> {
-	#[cfg(all(feature = "guest", target_arch = "wasm32"))]
+	#[cfg(all(feature = "native", target_arch = "wasm32"))]
 	{
 		let client =
 			leptoskit_bridge::guest::Client::new(name).map_err(|_| HostFault::PluginMissing)?;
@@ -123,7 +123,7 @@ async fn call_plugin(
 		let bytes = call.await.map_err(|_| HostFault::Rejected)?;
 		Ok(bytes.to_vec())
 	}
-	#[cfg(not(all(feature = "guest", target_arch = "wasm32")))]
+	#[cfg(not(all(feature = "native", target_arch = "wasm32")))]
 	{
 		let _ = (name, method, payload);
 		Err(HostFault::PluginMissing)
