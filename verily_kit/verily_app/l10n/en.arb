@@ -3518,9 +3518,17 @@
   "@meAppealReasonHint": {
     "description": "Example appeal reason."
   },
-  "meAppealReasonHelper": "At least 10 characters.",
+  "meAppealReasonHelper": "Up to 1,000 characters.",
   "@meAppealReasonHelper": {
-    "description": "Explains the appeal reason's minimum length."
+    "description": "Explains the appeal reason's maximum length."
+  },
+  "meAppealCancel": "Cancel",
+  "@meAppealCancel": {
+    "description": "Close the appeal form and keep its draft."
+  },
+  "meAppealFailed": "We couldn't send your appeal. Please try again.",
+  "@meAppealFailed": {
+    "description": "An appeal could not be submitted."
   },
   "meAppealSend": "Send appeal",
   "@meAppealSend": {

@@ -3531,13 +3531,21 @@ pub trait Messages: Send + Sync {
 	///
 	/// `Tell the action's creator what your proof shows. You can appeal once.`
 	fn me_appeal_body(&self) -> &'static str;
+	/// Close the appeal form and keep its draft.
+	///
+	/// `Cancel`
+	fn me_appeal_cancel(&self) -> &'static str;
+	/// An appeal could not be submitted.
+	///
+	/// `We couldn't send your appeal. Please try again.`
+	fn me_appeal_failed(&self) -> &'static str;
 	/// An appeal waiting for a decision.
 	///
 	/// `Appeal sent · waiting for the creator`
 	fn me_appeal_pending(&self) -> &'static str;
-	/// Explains the appeal reason's minimum length.
+	/// Explains the appeal reason's maximum length.
 	///
-	/// `At least 10 characters.`
+	/// `Up to 1,000 characters.`
 	fn me_appeal_reason_helper(&self) -> &'static str;
 	/// Example appeal reason.
 	///
@@ -7812,11 +7820,17 @@ impl Messages for En {
 	fn me_appeal_body(&self) -> &'static str {
 		"Tell the action's creator what your proof shows. You can appeal once."
 	}
+	fn me_appeal_cancel(&self) -> &'static str {
+		"Cancel"
+	}
+	fn me_appeal_failed(&self) -> &'static str {
+		"We couldn't send your appeal. Please try again."
+	}
 	fn me_appeal_pending(&self) -> &'static str {
 		"Appeal sent · waiting for the creator"
 	}
 	fn me_appeal_reason_helper(&self) -> &'static str {
-		"At least 10 characters."
+		"Up to 1,000 characters."
 	}
 	fn me_appeal_reason_hint(&self) -> &'static str {
 		"For example: all ten squats are in the second half of the video."

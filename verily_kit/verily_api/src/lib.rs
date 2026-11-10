@@ -107,6 +107,35 @@ pub struct AttemptRow {
 	pub id: String,
 	pub action_title: String,
 	pub status: AttemptStatus,
+	/// Server-owned eligibility and the outcome of any existing appeal.
+	#[serde(default)]
+	pub appeal: AppealStatus,
+}
+
+/// An attempt's appeal, as the server permits it. Missing data fails closed.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum AppealStatus {
+	#[default]
+	Unavailable,
+	Available,
+	Pending,
+	Accepted,
+	Rejected,
+}
+
+/// The shared limit for a participant's appeal, counted in characters.
+pub const MAX_APPEAL_REASON_CHARS: usize = 1000;
+
+/// Whether an appeal contains a bounded, nonblank explanation.
+#[must_use]
+pub fn valid_appeal_reason(reason: &str) -> bool {
+	let reason = reason.trim();
+	!reason.is_empty()
+		&& reason.chars().count() <= MAX_APPEAL_REASON_CHARS
+		&& !reason
+			.chars()
+			.any(|c| c.is_control() && c != '\n' && c != '\t')
 }
 
 /// What the server says about an attempt. The words on screen come from translations.
@@ -280,4 +309,38 @@ pub struct ReviewDecision {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct AppealReceipt {
 	pub id: String,
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn older_attempt_records_do_not_offer_an_appeal() {
+		let row: AttemptRow = serde_json::from_value(serde_json::json!({
+			"id": "attempt", "action_title": "Visit the market", "status": "rejected"
+		}))
+		.unwrap();
+		assert_eq!(row.appeal, AppealStatus::Unavailable);
+	}
+
+	#[test]
+	fn appeal_reasons_are_bounded_by_characters_and_allow_paragraphs() {
+		assert!(valid_appeal_reason(
+			"  Please check the last ten seconds.\nThank you.  "
+		));
+		assert!(valid_appeal_reason(&"é".repeat(MAX_APPEAL_REASON_CHARS)));
+		assert!(!valid_appeal_reason(
+			&"é".repeat(MAX_APPEAL_REASON_CHARS + 1)
+		));
+		for reason in [
+			"",
+			" \n\t ",
+			"please\0look",
+			"please\rlook",
+			"please\u{7f}look",
+		] {
+			assert!(!valid_appeal_reason(reason), "{reason:?}");
+		}
+	}
 }

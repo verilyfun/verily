@@ -16,6 +16,7 @@ use leptoskit_db::Id;
 use leptoskit_db::Read;
 use leptoskit_rpc as rpc;
 use uuid::Uuid;
+use verily_api::AppealStatus;
 use verily_api::AttemptOpened;
 use verily_api::AttemptOutcome;
 use verily_api::AttemptRow;
@@ -46,6 +47,7 @@ use super::name;
 use super::parse_id;
 use super::require_active;
 use super::requirements;
+use crate::schema::Appeal;
 use crate::schema::Attempt;
 use crate::schema::CaptureWindowRow;
 use crate::schema::Evidence;
@@ -75,6 +77,20 @@ pub async fn list_my_attempts(cx: &rpc::QueryCx) -> rpc::Result<Vec<AttemptRow>>
 		.map_err(db)?;
 	let mut rows = Vec::with_capacity(attempts.len());
 	for attempt in attempts {
+		let appeal = Appeal::query()
+			.filter(|row| row.attempt_id.eq(attempt.id))
+			.first(cx.db())
+			.await
+			.map_err(db)?;
+		let appeal = match appeal.as_ref().map(|row| row.status.as_str()) {
+			Some("open") => AppealStatus::Pending,
+			Some("overturned") => AppealStatus::Accepted,
+			Some("upheld") => AppealStatus::Rejected,
+			None if status_of(&attempt.status) == AttemptStatus::Rejected => {
+				AppealStatus::Available
+			}
+			_ => AppealStatus::Unavailable,
+		};
 		let title = ActionRow::query()
 			.filter(|row| row.id.eq(attempt.action_id))
 			.first(cx.db())
@@ -86,6 +102,7 @@ pub async fn list_my_attempts(cx: &rpc::QueryCx) -> rpc::Result<Vec<AttemptRow>>
 			id: attempt.id.to_string(),
 			action_title: title,
 			status: status_of(&attempt.status),
+			appeal,
 		});
 	}
 	Ok(rows)
