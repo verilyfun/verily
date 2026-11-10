@@ -1,9 +1,8 @@
 //! Appearance and account, `/settings`.
 //!
-//! Nothing on this screen is a token, a key, or a chain address. The
-//! appearance follows the phone's light or dark setting; leptoskit has no
-//! per-app override yet.
+//! Nothing on this screen is a token, a key, or a chain address.
 
+use leptoskit::appearance::Appearance;
 use leptoskit::component;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::Get;
@@ -63,8 +62,8 @@ pub fn Page(navigation: &Navigation) -> Element {
 			</View>
 			<chrome::Card seed=231>
 				<chrome::Title text=l10n.appearance_title() />
-				<chrome::Body text=l10n.appearance_system() />
-				<chrome::Muted text=l10n.appearance_system_subtitle() />
+				<chrome::Muted text=l10n.appearance_subtitle() />
+				<AppearanceChoices />
 			</chrome::Card>
 			<chrome::Card seed=233>
 				<chrome::Title text=l10n.settings_account_title() />
@@ -117,6 +116,55 @@ pub fn Page(navigation: &Navigation) -> Element {
 					}
 				})}
 			{(!notice.get().is_empty()).then(|| view! { <chrome::Body text=notice.get() /> })}
+		</View>
+	}
+}
+
+/// Match device, Light, or Dark. Every `dark:` class, Skribble's ink
+/// included, follows the choice.
+#[component]
+fn AppearanceChoices() -> Element {
+	let l10n = use_l10n();
+	let chosen = leptoskit::appearance::get();
+	let choices = [
+		(
+			Appearance::System,
+			l10n.appearance_system(),
+			l10n.appearance_system_subtitle(),
+		),
+		(
+			Appearance::Light,
+			l10n.appearance_light(),
+			l10n.appearance_light_subtitle(),
+		),
+		(
+			Appearance::Dark,
+			l10n.appearance_dark(),
+			l10n.appearance_dark_subtitle(),
+		),
+	];
+	let current = choices
+		.iter()
+		.find(|(appearance, _, _)| *appearance == chosen)
+		.map_or_else(String::new, |(_, _, about)| (*about).to_owned());
+	let buttons = choices
+		.into_iter()
+		.enumerate()
+		.map(|(index, (appearance, label, _))| {
+			view! {
+				<chrome::Choice
+					label=label
+					selected=appearance == chosen
+					seed=251 + index as i64 * 2
+					on_press=move || leptoskit::appearance::set(appearance)
+				/>
+			}
+		})
+		.collect::<Vec<_>>();
+	view! {
+		<View class=theme::STACK.as_str()>
+			<View class=theme::ROW.as_str()>{buttons}</View>
+			<chrome::Muted text=current />
 		</View>
 	}
 }
