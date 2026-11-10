@@ -243,6 +243,41 @@ impl ::leptoskit_router::Routable for Route {
 		}
 	}
 }
+/// Paths for `leptos_axum::LeptosRoutes::leptos_routes`.
+#[allow(
+	dead_code,
+	reason = "client-rendered apps do not need the SSR route list"
+)]
+pub fn axum_route_list() -> ::std::vec::Vec<::std::string::String> {
+	::std::vec![
+		::leptoskit_router::Pattern::new(&[::leptoskit_router::Segment::Static("create")])
+			.axum_path(),
+		::leptoskit_router::Pattern::new(&[::leptoskit_router::Segment::Static("do")]).axum_path(),
+		::leptoskit_router::Pattern::new(&[::leptoskit_router::Segment::Static("me")]).axum_path(),
+		::leptoskit_router::Pattern::new(&[::leptoskit_router::Segment::Static("review")])
+			.axum_path(),
+		::leptoskit_router::Pattern::new(&[::leptoskit_router::Segment::Static("settings")])
+			.axum_path(),
+		::leptoskit_router::Pattern::new(&[
+			::leptoskit_router::Segment::Static("create"),
+			::leptoskit_router::Segment::Param("draft")
+		])
+		.axum_path(),
+		::leptoskit_router::Pattern::new(&[
+			::leptoskit_router::Segment::Static("do"),
+			::leptoskit_router::Segment::Param("action")
+		])
+		.axum_path(),
+		::leptoskit_router::Pattern::new(&[
+			::leptoskit_router::Segment::Static("capture"),
+			::leptoskit_router::Segment::Param("attempt"),
+			::leptoskit_router::Segment::Param("requirement")
+		])
+		.axum_path(),
+		::leptoskit_router::Pattern::new(&[::leptoskit_router::Segment::OptionalRest("path")])
+			.axum_path()
+	]
+}
 /// The app's router: pages and layouts that take a `navigation` prop
 /// receive it, to navigate with and to build links.
 pub type Navigation = ::leptoskit_router::Router<Route>;
