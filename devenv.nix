@@ -960,7 +960,7 @@ in
         # here with `--output packages`; `[clients.dart].output` names it.
         pina generate --project programs/verily_escrow --client dart --output packages --npx node
         # The renderer emits unformatted Dart; format before committing.
-        dart format packages/verily_escrow_client
+        dart format --trailing-commas=preserve packages/verily_escrow_client
       '';
       description = "Regenerate the escrow program's Dart client package.";
       binary = "bash";
@@ -1002,7 +1002,11 @@ in
             done
         )
         if [ "''${#dart_files[@]}" -gt 0 ]; then
-          "$flutter_sdk/bin/dart" format --output none --set-exit-if-changed "''${dart_files[@]}"
+          # Every package's analysis_options.yaml sets this, but they include
+          # package: options that resolve only after `pub get`; without them
+          # dart format falls back to its default and flags 283 files.
+          "$flutter_sdk/bin/dart" format --trailing-commas=preserve --output none \
+            --set-exit-if-changed "''${dart_files[@]}"
         fi
       '';
       description = "Check project formatting with the pinned toolchains.";
@@ -1051,7 +1055,7 @@ in
         nixfmt devenv.nix
         RUSTFMT=${rustToolchain}/bin/rustfmt \
           ${rustToolchain}/bin/cargo fmt --all
-        dart format .
+        dart format --trailing-commas=preserve .
       '';
       description = "Format project files.";
       binary = "bash";
