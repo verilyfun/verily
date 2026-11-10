@@ -31,9 +31,9 @@ classes! {
 	/// The page: a 16dp gutter and room between groups.
 	PAGE = "flex min-h-screen flex-col gap-6 px-4 pt-4 pb-8".to_owned();
 	/// One plain promise at the top of a screen.
-	DISPLAY = format!("text-4xl font-bold {}", class("text", verily_ink::TEXT));
+	DISPLAY = format!("text-4xl font-extrabold leading-tight {}", class("text", verily_ink::TEXT));
 	/// An action's name or a section's title.
-	TITLE = format!("text-xl font-bold {}", class("text", verily_ink::TEXT));
+	TITLE = format!("text-xl font-extrabold leading-snug {}", class("text", verily_ink::TEXT));
 	/// Explanations, kept short.
 	BODY = format!("text-base {}", class("text", verily_ink::TEXT));
 	/// Secondary copy.
@@ -60,7 +60,7 @@ classes! {
 	/// The dot beside "Live".
 	HUD_DOT = format!("size-2 rounded-full {}", class("bg", verily_ink::HUD));
 	/// The live challenge, large, over the viewfinder.
-	HUD_WORD = format!("text-2xl font-bold {}", class("text", verily_ink::INK.light.ink.into()));
+	HUD_WORD = format!("text-2xl font-extrabold {}", class("text", verily_ink::INK.light.ink.into()));
 	/// The tab bar under the roots.
 	TABS = "flex flex-row items-center gap-3 pt-2".to_owned();
 }
