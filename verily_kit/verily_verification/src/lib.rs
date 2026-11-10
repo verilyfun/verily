@@ -18,6 +18,7 @@ pub mod location;
 pub mod model_input;
 pub mod motion;
 pub mod movement;
+pub mod openrouter;
 pub mod ops;
 pub mod payout;
 pub mod reasons;

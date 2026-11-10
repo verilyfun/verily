@@ -16,6 +16,8 @@ pub const SPOKEN_SUMMARY: &str = "We could not hear the challenge word in this r
 pub enum Verdict {
 	Fulfilled,
 	NotFulfilled,
+	/// The model abstained. It does not count toward a quorum.
+	Uncertain,
 	Failed,
 }
 
@@ -23,7 +25,10 @@ pub enum Verdict {
 pub enum SpokenVerdict {
 	Heard,
 	NotHeard,
+	/// This model cannot hear the recording.
 	Abstained,
+	/// A hearing model gave no clear word verdict, or injection cleared it.
+	Unclear,
 }
 
 #[derive(Debug, Clone, PartialEq)]
