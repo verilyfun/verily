@@ -116,6 +116,36 @@ pub fn capture_integrity_request_hash(
 	Ok(URL_SAFE_NO_PAD.encode(Sha256::digest(joined.as_bytes())))
 }
 
+/// The 32 raw bytes behind [`capture_integrity_request_hash`].
+///
+/// Play Integrity commits to this digest. The base64url text and these bytes
+/// are the same hash; a token over anything else vouches for a different proof.
+pub fn capture_integrity_request_nonce(
+	attempt_id: &str,
+	requirement_id: &str,
+	capture_challenge: &str,
+	evidence_binding_hash: &str,
+) -> Result<[u8; 32], EvidenceError> {
+	let encoded = capture_integrity_request_hash(
+		attempt_id,
+		requirement_id,
+		capture_challenge,
+		evidence_binding_hash,
+	)?;
+	let bytes = URL_SAFE_NO_PAD.decode(encoded).map_err(|_| {
+		invalid(
+			"requestHash",
+			"Must be an unpadded base64url SHA-256 digest.",
+		)
+	})?;
+	bytes.try_into().map_err(|_| {
+		invalid(
+			"requestHash",
+			"Must be an unpadded base64url SHA-256 digest.",
+		)
+	})
+}
+
 /// Android Key Attestation challenge: `SHA-256(captureChallenge ‖ attemptId)`.
 ///
 /// `captureChallenge` is the nonce's 32 raw bytes and `attemptId` its UTF-8 text.

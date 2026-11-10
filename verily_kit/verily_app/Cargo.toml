@@ -17,6 +17,9 @@ leptos = { version = "0.9.0-rc0", default-features = false, optional = true }
 leptoskit = { workspace = true, features = ["auth", "l10n", "query", "rpc"] }
 leptoskit_bridge = { workspace = true, optional = true }
 leptoskit_l10n = { workspace = true }
+leptoskit_plugin_app_integrity = { workspace = true, optional = true }
+leptoskit_plugin_camera = { workspace = true, optional = true }
+leptoskit_plugin_permissions = { workspace = true, optional = true }
 leptoskit_router = { workspace = true }
 # Signals that outlive a screen rebuild (see `state.rs`).
 reactive_graph = "0.3.0-rc0"
@@ -29,6 +32,7 @@ verily_api = { path = "../verily_api" }
 # The server's bodies for `ops.rs`; only the `service` feature links it.
 verily_backend = { path = "../verily_backend", optional = true }
 verily_ink = { workspace = true }
+verily_shared = { path = "../verily_shared" }
 # The CLI's embedded wasm-bindgen accepts exactly its matching library version.
 wasm-bindgen = { version = "=0.2.129", optional = true }
 
@@ -41,7 +45,16 @@ csr = ["web", "leptos/csr"]
 hydrate = ["web", "leptos/hydrate"]
 ssr = ["web", "leptos/ssr"]
 # Native guest. Android is the first phone target; iOS uses the same guest.
-native = ["leptoskit/guest", "dep:leptoskit_bridge"]
+native = [
+  "leptoskit/guest",
+  "dep:leptoskit_bridge",
+  "dep:leptoskit_plugin_app_integrity",
+  "dep:leptoskit_plugin_camera",
+  "dep:leptoskit_plugin_permissions",
+  "leptoskit_plugin_app_integrity/guest",
+  "leptoskit_plugin_camera/guest",
+  "leptoskit_plugin_permissions/guest",
+]
 android = ["native", "leptoskit/android"]
 ios = ["native", "leptoskit/ios"]
 macos = ["native", "leptoskit/macos"]
