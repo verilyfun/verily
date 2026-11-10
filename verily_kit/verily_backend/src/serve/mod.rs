@@ -44,6 +44,8 @@ use verily_shared::ActionRequirementKind;
 use verily_shared::ActionRequirementView;
 
 pub use account::close_account;
+pub use account::create_wallet_link_challenge;
+pub use account::link_payout_wallet;
 pub use account::list_my_payouts;
 pub use account::sign_out;
 pub use account::wallet_status;

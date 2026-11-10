@@ -13,6 +13,7 @@ description = "Verily screens for doing, capturing, creating, reviewing, and acc
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
+base64 = "0.22"
 leptos = { version = "0.9.0-rc0", default-features = false, optional = true }
 leptoskit = { workspace = true, features = ["auth", "l10n", "query", "rpc"] }
 leptoskit_bridge = { workspace = true, optional = true }
@@ -27,6 +28,9 @@ schemars = { version = "1.2", features = ["semver1"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 skribble_leptoskit = { workspace = true }
+solana_kit_core = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32dcfccc4f73b6b5d68bdc6f541151c7e047", features = ["crypto"] }
+solana_kit_leptoskit = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32dcfccc4f73b6b5d68bdc6f541151c7e047", optional = true, default-features = false, features = ["wallet-platform", "wallet-session"] }
+solana_kit_wallet = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32dcfccc4f73b6b5d68bdc6f541151c7e047", optional = true, default-features = false, features = ["mwa"] }
 # The records the operations in `ops.rs` send and return, shared with the backend.
 verily_api = { path = "../verily_api" }
 # The server's bodies for `ops.rs`; only the `service` feature links it.
@@ -55,7 +59,7 @@ native = [
   "leptoskit_plugin_camera/guest",
   "leptoskit_plugin_permissions/guest",
 ]
-android = ["native", "leptoskit/android"]
+android = ["native", "leptoskit/android", "dep:solana_kit_leptoskit", "dep:solana_kit_wallet"]
 ios = ["native", "leptoskit/ios"]
 macos = ["native", "leptoskit/macos"]
 windows = ["native", "leptoskit/windows"]

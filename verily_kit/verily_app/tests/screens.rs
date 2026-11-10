@@ -9,6 +9,7 @@ use verily_app::model::ActionFilter;
 use verily_app::model::EvidenceSource;
 use verily_app::model::ProofKind;
 use verily_app::model::PublishOutcome;
+use verily_app::model::WalletChallenge;
 use verily_app::model::WalletLink;
 use verily_app::ops::BACKEND;
 use verily_app::ops::ListAvailableActions;
@@ -68,6 +69,19 @@ fn the_wallet_record_has_no_address() {
 	assert!(!object.contains_key("address"));
 	assert!(!object.contains_key("secret"));
 	assert!(!object.contains_key("token"));
+}
+
+#[test]
+fn the_wallet_challenge_is_the_text_to_sign() {
+	let json = serde_json::to_value(WalletChallenge {
+		message: "Verily payout wallet\nAddress: abc\nNonce: n\n".into(),
+	})
+	.expect("json");
+	let object = json.as_object().expect("object");
+	assert!(object.contains_key("message"));
+	assert!(!object.contains_key("address"));
+	assert!(!object.contains_key("signature"));
+	assert!(!object.contains_key("secret"));
 }
 
 #[test]

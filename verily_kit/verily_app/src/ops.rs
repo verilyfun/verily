@@ -26,6 +26,7 @@ use crate::model::PublishOutcome;
 use crate::model::ReviewDecision;
 use crate::model::ReviewRow;
 use crate::model::SpokenWord;
+use crate::model::WalletChallenge;
 use crate::model::WalletLink;
 
 /// Service name `verily_backend` is reached by. Lowercase, as the RPC client requires.
@@ -72,6 +73,26 @@ pub async fn list_my_payouts(
 #[leptoskit::rpc::query(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn wallet_status(cx: &leptoskit::rpc::QueryCx) -> leptoskit::rpc::Result<WalletLink> {
 	verily_backend::serve::wallet_status(cx).await
+}
+
+/// The text a payout wallet signs. Signing does not move funds.
+#[leptoskit::rpc::mutation(service = "verily-backend", crate = "leptoskit::rpc")]
+pub async fn create_wallet_link_challenge(
+	cx: &leptoskit::rpc::MutationCx,
+	wallet_address: String,
+) -> leptoskit::rpc::Result<WalletChallenge> {
+	verily_backend::serve::create_wallet_link_challenge(cx, wallet_address).await
+}
+
+/// Links a payout wallet after the stored challenge signature verifies.
+/// Linking does not release a payout.
+#[leptoskit::rpc::mutation(service = "verily-backend", crate = "leptoskit::rpc")]
+pub async fn link_payout_wallet(
+	cx: &leptoskit::rpc::MutationCx,
+	wallet_address: String,
+	signature: String,
+) -> leptoskit::rpc::Result<WalletLink> {
+	verily_backend::serve::link_payout_wallet(cx, wallet_address, signature).await
 }
 
 /// Proof a person still has to accept.

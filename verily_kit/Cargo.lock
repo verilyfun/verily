@@ -27,6 +27,22 @@ dependencies = [
  "cfg-if",
  "cipher",
  "cpufeatures 0.2.17",
+ "zeroize",
+]
+
+[[package]]
+name = "aes-gcm"
+version = "0.10.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "831010a0f742e1209b3bcea8fab6a8e149051ba6099432c8cb2cc117dec3ead1"
+dependencies = [
+ "aead",
+ "aes",
+ "cipher",
+ "ctr",
+ "ghash",
+ "subtle",
+ "zeroize",
 ]
 
 [[package]]
@@ -558,7 +574,7 @@ dependencies = [
  "maybe-owned",
  "rustix",
  "rustix-linux-procfs",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
  "winx",
 ]
 
@@ -1145,7 +1161,7 @@ dependencies = [
  "libc",
  "option-ext",
  "redox_users",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -1299,6 +1315,7 @@ dependencies = [
  "ff 0.13.1",
  "generic-array",
  "group 0.13.0",
+ "hkdf",
  "pem-rfc7468",
  "pkcs8",
  "rand_core 0.6.4",
@@ -1386,7 +1403,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -1786,6 +1803,17 @@ dependencies = [
  "r-efi 6.0.0",
  "rand_core 0.10.1",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "ghash"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f0d8a4362ccb29cb0b265253fb0a2728f592895ee6854fd9bc13f2ffda266ff1"
+dependencies = [
+ "opaque-debug",
+ "polyval",
+ "zeroize",
 ]
 
 [[package]]
@@ -2616,6 +2644,12 @@ name = "ipnet"
 version = "2.12.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "791930b43c0d5973160d90a8f3894509f2b273430f5c5c73b668636d0287c5c0"
+
+[[package]]
+name = "iri-string"
+version = "0.7.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1663ee7d8cf2900cc1414b1e1eec9f348d6eaa3bcab07579f4726a4b8499f447"
 
 [[package]]
 name = "is-docker"
@@ -4794,6 +4828,7 @@ dependencies = [
  "cpufeatures 0.2.17",
  "opaque-debug",
  "universal-hash",
+ "zeroize",
 ]
 
 [[package]]
@@ -5030,7 +5065,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -5446,7 +5481,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -5994,7 +6029,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -6031,6 +6066,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "solana_kit_leptoskit"
+version = "0.2.0"
+source = "git+https://github.com/pina-rs/solana_kit?rev=a46f32dcfccc4f73b6b5d68bdc6f541151c7e047#a46f32dcfccc4f73b6b5d68bdc6f541151c7e047"
+dependencies = [
+ "leptoskit_bridge",
+ "serde_json",
+ "solana_kit_client",
+ "solana_kit_core",
+ "solana_kit_wallet",
+]
+
+[[package]]
 name = "solana_kit_native"
 version = "0.2.0"
 source = "git+https://github.com/pina-rs/solana_kit?rev=a46f32dcfccc4f73b6b5d68bdc6f541151c7e047#a46f32dcfccc4f73b6b5d68bdc6f541151c7e047"
@@ -6045,6 +6092,26 @@ dependencies = [
  "tokio-rustls",
  "tokio-tungstenite 0.29.0",
  "webpki-roots 1.0.10",
+]
+
+[[package]]
+name = "solana_kit_wallet"
+version = "0.3.0"
+source = "git+https://github.com/pina-rs/solana_kit?rev=a46f32dcfccc4f73b6b5d68bdc6f541151c7e047#a46f32dcfccc4f73b6b5d68bdc6f541151c7e047"
+dependencies = [
+ "aes",
+ "aes-gcm",
+ "base64 0.22.1",
+ "ghash",
+ "hkdf",
+ "iri-string",
+ "p256 0.13.2",
+ "polyval",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "solana_kit_core",
+ "zeroize",
 ]
 
 [[package]]
@@ -6245,7 +6312,7 @@ dependencies = [
  "getrandom 0.4.3",
  "once_cell",
  "rustix",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -6753,7 +6820,7 @@ checksum = "f2f6fb2847f6742cd76af783a2a2c49e9375d0a111c7bef6f71cd9e738c72d6e"
 dependencies = [
  "memoffset",
  "tempfile",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -6936,6 +7003,7 @@ name = "verily_app"
 version = "0.1.0"
 dependencies = [
  "any_spawner",
+ "base64 0.22.1",
  "leptos",
  "leptoskit",
  "leptoskit_bridge",
@@ -6951,6 +7019,9 @@ dependencies = [
  "serde",
  "serde_json",
  "skribble_leptoskit",
+ "solana_kit_core",
+ "solana_kit_leptoskit",
+ "solana_kit_wallet",
  "verily_api",
  "verily_backend",
  "verily_ink",
@@ -7716,7 +7787,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]

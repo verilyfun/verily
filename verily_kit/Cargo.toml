@@ -80,9 +80,14 @@ verily_backend = { path = "verily_backend" }
 
 # Skribble asks for leptoskit 0.3 from crates.io. Patch it to the commit every
 # leptoskit crate above is pinned to, so the graph holds one leptoskit. Bump
-# this rev with the others.
+# this rev with the others. solana_kit a46f32d selects the bridge, native, and
+# wasm crates from crates.io at =0.3.0; those follow the same revision.
 [patch.crates-io]
 leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "fa3d29f8e8c837b19f92f1e9a95f699803543767" }
+leptoskit_bridge = { git = "https://github.com/ifiokjr/leptoskit", rev = "fa3d29f8e8c837b19f92f1e9a95f699803543767" }
+leptoskit_bridge_ffi = { git = "https://github.com/ifiokjr/leptoskit", rev = "fa3d29f8e8c837b19f92f1e9a95f699803543767" }
+leptoskit_native = { git = "https://github.com/ifiokjr/leptoskit", rev = "fa3d29f8e8c837b19f92f1e9a95f699803543767" }
+leptoskit_wasm = { git = "https://github.com/ifiokjr/leptoskit", rev = "fa3d29f8e8c837b19f92f1e9a95f699803543767" }
 
 [profile.release]
 lto = "thin"
