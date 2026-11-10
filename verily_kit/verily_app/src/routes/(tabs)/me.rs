@@ -30,6 +30,9 @@ use crate::routes::Route;
 use crate::state::mutation;
 use crate::state::remember;
 use crate::theme;
+use crate::wallet::LinkFault;
+use crate::wallet::begin_link;
+use crate::wallet::mobile_link_supported;
 
 /// Attempts, payouts, the wallet card, and the way into review and settings.
 #[component]
@@ -81,7 +84,13 @@ fn WalletCard(
 	wallet: leptoskit::query::QueryHandle<crate::model::WalletLink, leptoskit::rpc::FnError>,
 ) -> Element {
 	let l10n = use_l10n();
-	let linked = wallet.data().is_some_and(|link| link.linked);
+	let linking = remember("me.wallet.linking", || false);
+	let fault = remember("me.wallet.fault", || None::<LinkFault>);
+	let linked_here = remember("me.wallet.linked_here", || false);
+	let linked = wallet.data().is_some_and(|link| link.linked) || linked_here.get();
+	let busy = linking.get();
+	let can_link = mobile_link_supported();
+	let fault_line = fault.get().map(|fault| wallet_fault(&l10n, fault));
 	let (title, body) = if linked {
 		(l10n.me_wallet_linked(), l10n.me_wallet_linked_body())
 	} else {
@@ -89,6 +98,13 @@ fn WalletCard(
 			l10n.me_wallet_unlinked_title(),
 			l10n.me_wallet_unlinked_body(),
 		)
+	};
+	let label = if busy {
+		l10n.me_wallet_linking()
+	} else if linked {
+		l10n.me_wallet_change()
+	} else {
+		l10n.me_wallet_link()
 	};
 	view! {
 		<chrome::Card seed=175>
@@ -98,7 +114,61 @@ fn WalletCard(
 			</View>
 			<chrome::Body text=title />
 			<chrome::Muted text=body />
+			{(!can_link).then(|| view! { <chrome::Muted text=l10n.me_wallet_unsupported() /> })}
+			{(can_link && !linked).then(move || view! {
+				<chrome::Primary
+					label=label
+					seed=179
+					disabled=busy
+					on_press=move || press_wallet_link(linking, fault, linked_here, wallet)
+				/>
+			})}
+			{(can_link && linked).then(move || view! {
+				<chrome::Quiet
+					label=label
+					seed=179
+					disabled=busy
+					on_press=move || press_wallet_link(linking, fault, linked_here, wallet)
+				/>
+			})}
+			{fault_line.map(|text| view! { <chrome::Muted text=text /> })}
 		</chrome::Card>
+	}
+}
+
+fn press_wallet_link(
+	linking: leptoskit::prelude::RwSignal<bool>,
+	fault: leptoskit::prelude::RwSignal<Option<LinkFault>>,
+	linked_here: leptoskit::prelude::RwSignal<bool>,
+	wallet: leptoskit::query::QueryHandle<crate::model::WalletLink, leptoskit::rpc::FnError>,
+) {
+	if linking.get() {
+		return;
+	}
+	linking.set(true);
+	fault.set(None);
+	begin_link(move |result| {
+		linking.set(false);
+		match result {
+			Ok(()) => {
+				fault.set(None);
+				linked_here.set(true);
+				wallet.invalidate();
+			}
+			Err(error) => fault.set(Some(error)),
+		}
+	});
+}
+
+fn wallet_fault(l10n: &crate::l10n::L10n, fault: LinkFault) -> &'static str {
+	match fault {
+		LinkFault::Unsupported => l10n.me_wallet_unsupported(),
+		LinkFault::Unavailable => l10n.me_wallet_failure_unavailable(),
+		LinkFault::Cancelled => l10n.me_wallet_failure_cancelled(),
+		LinkFault::TimedOut => l10n.me_wallet_failure_timed_out(),
+		LinkFault::Invalid => l10n.me_wallet_failure_invalid_response(),
+		LinkFault::WrongAccount => l10n.me_wallet_failure_wrong_account(),
+		LinkFault::Failed => l10n.me_wallet_failure_failed(),
 	}
 }
 

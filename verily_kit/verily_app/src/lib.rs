@@ -12,6 +12,7 @@ mod l10n;
 mod routes;
 mod sign_in;
 mod state;
+mod wallet;
 
 use std::sync::Arc;
 use std::sync::Mutex;

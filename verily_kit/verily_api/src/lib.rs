@@ -177,6 +177,13 @@ pub struct WalletLink {
 	pub linked: bool,
 }
 
+/// The text a payout wallet signs. Signing does not move funds and does not
+/// fund an escrow. The text names the address; this record has no key.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct WalletChallenge {
+	pub message: String,
+}
+
 /// One item in the review queue.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ReviewRow {
