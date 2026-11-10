@@ -12,6 +12,9 @@ mod editor;
 mod host;
 #[allow(dead_code)]
 mod l10n;
+// The generated module publishes `axum_route_list`, which this app does not
+// call, and each path is built with `.into()` the router generator emits.
+#[allow(dead_code, clippy::useless_conversion)]
 mod routes;
 mod state;
 
@@ -29,9 +32,9 @@ pub use routes::Route;
 use leptoskit::component;
 use leptoskit::prelude::Element;
 
-/// What every screen reads: Verily's paper tokens, one query cache, and the
-/// messages. Create it once where the app starts; [`screen`] provides it to
-/// each rebuild, so a rebuild never drops the cache.
+/// What every screen reads: one query cache, the messages, and the state
+/// that outlives a rebuild. Create it once where the app starts; [`screen`]
+/// provides it to each rebuild, so a rebuild never drops the cache.
 #[derive(Clone)]
 pub struct Shared {
 	query: leptoskit::query::QueryClient,

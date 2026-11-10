@@ -62,6 +62,11 @@ impl<A: AndroidAttestation> Verification<A> {
 		}
 	}
 
+	/// Whether a capture must carry a device signature.
+	pub fn signature_mode(&self) -> SignatureMode {
+		self.signature_mode
+	}
+
 	pub fn begin_capture(
 		&self,
 		attempt_id: &str,
@@ -173,5 +178,21 @@ fn map_capture(error: crate::capture::CaptureError) -> OpError {
 		crate::capture::CaptureError::Refused | crate::capture::CaptureError::Replayed => {
 			OpError::Refused
 		}
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn the_closed_service_reviews_by_hand_and_does_not_demand_a_signature() {
+		let closed = Verification::closed().unwrap();
+		assert_eq!(closed.signature_mode(), SignatureMode::Optional);
+		let decision = closed.decide_media(&[], 0.7, true);
+		assert_eq!(
+			decision.status,
+			verily_shared::EvidenceDecisionStatus::ManualReview
+		);
 	}
 }

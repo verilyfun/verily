@@ -286,7 +286,8 @@ fn parse_uuid(value: &str) -> Result<Uuid, rpc::Error> {
 		.map_err(|_| rpc::Error::invalid("invalidRequest"))
 }
 
-fn into_rpc(error: RewardsError) -> rpc::Error {
+/// A rewards failure as the caller hears it: a stable code, no store details.
+pub fn into_rpc(error: RewardsError) -> rpc::Error {
 	match error {
 		RewardsError::Unauthorized => rpc::Error::unauthorized("sign in"),
 		RewardsError::NotFound => rpc::Error::not_found("notFound"),

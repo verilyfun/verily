@@ -45,4 +45,15 @@ impl OnSignUp for Account {
 	}
 }
 
-// Keep AuthContext linked so policy expansions resolve in this module.
+/// A closed account. Sign-in stays blocked; the verification and payout
+/// history it produced stays for audit.
+///
+/// A merge never moves a closure onto the surviving account.
+#[table(name = "account_closures", unique(account_id), on_account_merge = keep_survivor)]
+pub struct AccountClosureRow {
+	pub id: Id<AccountClosureRow>,
+	#[db(on_delete = cascade)]
+	pub account_id: Id<AuthAccount>,
+	#[db(created_at)]
+	pub closed_at: Timestamp,
+}

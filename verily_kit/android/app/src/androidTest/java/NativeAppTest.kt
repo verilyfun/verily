@@ -1,4 +1,4 @@
-package fun.verily.app
+package `fun`.verily.app
 
 import android.content.Intent
 import androidx.test.ext.junit.runners.AndroidJUnit4

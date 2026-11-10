@@ -48,20 +48,16 @@ fn live_proof_never_comes_from_a_library() {
 
 #[test]
 fn an_unfunded_publish_is_not_live() {
-	assert!(
-		!PublishOutcome {
-			published: true,
-			funded: false,
-		}
-		.is_live()
-	);
-	assert!(
-		PublishOutcome {
-			published: true,
-			funded: true,
-		}
-		.is_live()
-	);
+	let outcome = |published, rewarded, funded| PublishOutcome {
+		published,
+		rewarded,
+		funded,
+	};
+	assert!(!outcome(true, true, false).is_live());
+	assert!(outcome(true, true, true).is_live());
+	assert!(outcome(true, false, false).is_live());
+	assert!(!outcome(false, false, false).is_live());
+	assert!(!outcome(false, true, true).is_live());
 }
 
 #[test]

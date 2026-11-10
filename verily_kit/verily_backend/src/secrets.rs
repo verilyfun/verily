@@ -22,10 +22,7 @@ use monosecret::client::MissingSecret;
 /// Keep these aligned with `leptoskit.toml`'s `_env` fields once the shell
 /// writes that file. Domain crates (`verily_verification`, `verily_rewards`)
 /// resolve their own secrets; this list is the host half only.
-pub const HOST_SECRET_NAMES: &[&str] = &[
-	"DATABASE_URL",
-	"AUTH_ENCRYPTION_KEYS",
-];
+pub const HOST_SECRET_NAMES: &[&str] = &["DATABASE_URL", "AUTH_ENCRYPTION_KEYS"];
 
 /// Errors while snapshotting host secrets.
 #[derive(Debug, thiserror::Error)]

@@ -9,6 +9,7 @@ use leptoskit::native::VectorScaling;
 use leptoskit::native::ViewBox;
 use leptoskit::prelude::Vector;
 use leptoskit::prelude::View;
+use leptoskit::view;
 use skribble_leptoskit::Tone;
 
 use crate::brand::MARK_CHECK;
@@ -35,10 +36,13 @@ pub fn mark(size: f32, label: Option<&str>) -> Element {
 		],
 	);
 	let knockout = layer(PAPER, vec![pen(MARK_CHECK)]);
-	let frame = View()
-		.class(format!("relative w-[{size}px] h-[{size}px]"))
-		.child(pin)
-		.child(knockout);
+	let class = format!("relative w-[{size}px] h-[{size}px]");
+	let frame = view! {
+		<View class=class>
+			{pin}
+			{knockout}
+		</View>
+	};
 	match label {
 		Some(label) => frame.aria_label(label.to_owned()),
 		None => frame.aria_hidden(true),
@@ -47,14 +51,14 @@ pub fn mark(size: f32, label: Option<&str>) -> Element {
 
 fn layer(tone: Tone, paths: Vec<VectorPath>) -> Element {
 	let view_box = ViewBox::new(0.0, 0.0, 512.0, 512.0).expect("the mark's artboard is 512 square");
-	paths.into_iter().fold(
-		Vector(view_box)
-			.scaling(VectorScaling::Fit)
-			.class("absolute top-0 left-0 w-full h-full")
-			.class(tone_class("text", tone))
-			.aria_hidden(true),
-		Element::path,
-	)
+	let class = format!(
+		"absolute top-0 left-0 w-full h-full {}",
+		tone_class("text", tone)
+	);
+	let drawn = view! {
+		<Vector view_box=view_box scaling=VectorScaling::Fit class=class aria_hidden=true />
+	};
+	paths.into_iter().fold(drawn, Element::path)
 }
 
 fn pen(data: &str) -> VectorPath {

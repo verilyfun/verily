@@ -137,10 +137,12 @@ fn Place(name: String, radius_meters: i64, seed: i64) -> Element {
 	} else {
 		l10n.editor_place_tap_hint().to_owned()
 	};
-	let map = View()
-		.class("items-center")
-		.aria_label(l10n.action_place_map_label(&name))
-		.child(sketches::place_map(seed));
+	let label = l10n.action_place_map_label(&name);
+	let map = view! {
+		<View class="items-center" aria_label=label>
+			{sketches::place_map(seed)}
+		</View>
+	};
 	view! {
 		<chrome::RoleCard role=Role::Place seed=seed + 1>
 			{map}

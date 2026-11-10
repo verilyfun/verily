@@ -5,6 +5,7 @@ use leptoskit::component;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::For;
 use leptoskit::prelude::Get;
+use leptoskit::prelude::Pressable;
 use leptoskit::prelude::RwSignal;
 use leptoskit::prelude::Set;
 use leptoskit::prelude::Show;
@@ -121,15 +122,17 @@ fn FilterChip(
 	} else {
 		(FillStyle::None, theme::ink())
 	};
-	let chip = view! {
-		<WiredBadge seed=seed theme=theme::PEN fill_style=fill_style class=text>
-			<Text class=theme::LABEL>{label.clone()}</Text>
-		</WiredBadge>
-	};
-	leptoskit::prelude::Pressable(label)
-		.class("min-h-11 justify-center")
-		.on_press(move || filter.set(value.clone()))
-		.child(chip)
+	view! {
+		<Pressable
+			accessibility_label=label.clone()
+			class="min-h-11 justify-center"
+			on:press=move || filter.set(value.clone())
+		>
+			<WiredBadge seed=seed theme=theme::PEN fill_style=fill_style class=text>
+				<Text class=theme::LABEL>{label}</Text>
+			</WiredBadge>
+		</Pressable>
+	}
 }
 
 /// One action: its name, where, and what it pays. The whole card opens it.
@@ -148,26 +151,28 @@ fn CatalogueCard(navigation: Navigation, card: ActionCard) -> Element {
 			</View>
 		}
 	});
-	let body = view! {
-		<chrome::Card seed=seed>
-			<chrome::Title text=card.title.clone() />
-			<chrome::Muted text=creator />
-			<View class="flex flex-row items-center gap-2">
-				{sketches::pin(24.0, seed + 3)}
-				<Text class=format!("{} {}", theme::LABEL, theme::role_text(Role::Place))>
-					{card.place_name.clone()}
-				</Text>
-			</View>
-			{radius.map(|radius| view! { <chrome::Muted text=radius /> })}
-			{reward}
-		</chrome::Card>
-	};
-	navigation
-		.link(
-			Action {
-				action: card.id.clone(),
-			},
-			card.title,
-		)
-		.child(body)
+	let title = card.title.clone();
+	let id = card.id.clone();
+	view! {
+		<Pressable
+			accessibility_label=title.clone()
+			class="w-full"
+			on:press=move || {
+				navigation.navigate(Action { action: id.clone() });
+			}
+		>
+			<chrome::Card seed=seed>
+				<chrome::Title text=title />
+				<chrome::Muted text=creator />
+				<View class="flex flex-row items-center gap-2">
+					{sketches::pin(24.0, seed + 3)}
+					<Text class=format!("{} {}", theme::LABEL, theme::role_text(Role::Place))>
+						{card.place_name.clone()}
+					</Text>
+				</View>
+				{radius.map(|radius| view! { <chrome::Muted text=radius /> })}
+				{reward}
+			</chrome::Card>
+		</Pressable>
+	}
 }

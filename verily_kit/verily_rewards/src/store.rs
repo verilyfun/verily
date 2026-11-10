@@ -760,7 +760,9 @@ fn pool_view(pool: &RewardPoolRow) -> RewardPoolView {
 	}
 }
 
-async fn opportunity(
+/// `action` as `viewer` sees it. The reward is shown to the creator, and to
+/// everyone else only once its escrow was funded from chain state.
+pub async fn opportunity(
 	connection: &impl Read,
 	rewards: &Rewards,
 	action: &ActionRow,
@@ -830,6 +832,11 @@ fn pool_is_public(pool: &RewardPoolRow) -> bool {
 		parse_status(&pool.status),
 		Some(RewardPoolStatus::Funded | RewardPoolStatus::Ended | RewardPoolStatus::Closed)
 	)
+}
+
+/// The requirements `action` stores, in order, with their stable ids.
+pub fn requirements(action: &ActionRow) -> Result<Vec<ActionRequirementView>, RewardsError> {
+	Ok(requirement_views(&load_requirements(action)?))
 }
 
 fn requirement_views(stored: &[StoredRequirement]) -> Vec<ActionRequirementView> {
