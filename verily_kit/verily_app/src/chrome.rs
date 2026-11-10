@@ -222,11 +222,12 @@ pub fn Field(
 	value: String,
 	on_change: impl Fn(&str) + Send + Sync + 'static,
 	#[prop(optional, into)] placeholder: Option<String>,
+	#[prop(optional)] disabled: bool,
 	#[prop(default = 23)] seed: i64,
 ) -> Element {
 	let label = label.into();
 	view! {
-		<View class="flex flex-col gap-1">
+		<View class="flex flex-col gap-1" enabled=!disabled>
 			<Text class=theme::LABEL.as_str()>{label.clone()}</Text>
 			<WiredInput
 				label=label

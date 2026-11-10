@@ -11,6 +11,7 @@ mod support;
 
 use support::*;
 use verily_api::ActionFilter;
+use verily_api::AppealStatus;
 use verily_api::AttemptStatus;
 use verily_api::PayoutStatus;
 use verily_api::ProofKind;
@@ -277,6 +278,17 @@ async fn a_rejection_can_be_appealed_once_by_its_participant() {
 		attempt_id: attempt.clone(),
 		reason: reason.to_owned(),
 	};
+	assert_eq!(
+		world.call(&ada.identity, ListMyAttempts {}).await.unwrap()[0].appeal,
+		AppealStatus::Unavailable
+	);
+	assert!(
+		world
+			.call(&eve.identity, ListMyAttempts {})
+			.await
+			.unwrap()
+			.is_empty()
+	);
 
 	assert_invalid(
 		world.call(&ada.identity, appeal("not yet rejected")).await,
@@ -293,6 +305,10 @@ async fn a_rejection_can_be_appealed_once_by_its_participant() {
 		.await
 		.unwrap();
 	assert_eq!(status(&world, &ada).await, AttemptStatus::Rejected);
+	assert_eq!(
+		world.call(&ada.identity, ListMyAttempts {}).await.unwrap()[0].appeal,
+		AppealStatus::Available
+	);
 	assert!(
 		world
 			.call(&ada.identity, ListMyPayouts {})
@@ -313,10 +329,43 @@ async fn a_rejection_can_be_appealed_once_by_its_participant() {
 		.await
 		.unwrap();
 	assert!(!receipt.id.is_empty());
+	assert_eq!(
+		world.call(&ada.identity, ListMyAttempts {}).await.unwrap()[0].appeal,
+		AppealStatus::Pending
+	);
+	assert!(
+		world
+			.call(&eve.identity, ListMyAttempts {})
+			.await
+			.unwrap()
+			.is_empty()
+	);
 	assert_conflict(
 		world.call(&ada.identity, appeal("once more")).await,
 		"alreadyAppealed",
 	);
+	for (stored, expected) in [
+		("upheld", AppealStatus::Rejected),
+		("overturned", AppealStatus::Accepted),
+	] {
+		verily_backend::schema::Appeal::update()
+			.filter(|row| {
+				row.id
+					.eq(leptoskit_db::Id::from_uuid(receipt.id.parse().unwrap()))
+			})
+			.set(|row| row.status, stored.to_owned())
+			.run(&world.db.system("test appeal outcome"))
+			.await
+			.unwrap();
+		assert_eq!(
+			world.call(&ada.identity, ListMyAttempts {}).await.unwrap()[0].appeal,
+			expected
+		);
+		assert_conflict(
+			world.call(&ada.identity, appeal("another request")).await,
+			"alreadyAppealed",
+		);
+	}
 }
 
 #[tokio::test]

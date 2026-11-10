@@ -3793,6 +3793,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "leptoskit_testing"
+version = "0.3.0"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=011854e681643ab8ea28bac74329ef95c0ba5429#011854e681643ab8ea28bac74329ef95c0ba5429"
+dependencies = [
+ "leptoskit_native",
+ "leptoskit_yoga",
+ "png 0.17.16",
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "leptoskit_uikit"
 version = "0.3.0"
 source = "git+https://github.com/ifiokjr/leptoskit?rev=011854e681643ab8ea28bac74329ef95c0ba5429#011854e681643ab8ea28bac74329ef95c0ba5429"
@@ -6911,6 +6922,7 @@ dependencies = [
  "leptoskit_build",
  "leptoskit_l10n",
  "leptoskit_router",
+ "leptoskit_testing",
  "reactive_graph",
  "schemars",
  "serde",

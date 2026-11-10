@@ -60,3 +60,4 @@ leptoskit_build = { workspace = true }
 [dev-dependencies]
 any_spawner = { workspace = true, features = ["futures-executor"] }
 leptoskit = { workspace = true, features = ["leptos"] }
+leptoskit_testing = { workspace = true }
