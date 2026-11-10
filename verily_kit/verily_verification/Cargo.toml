@@ -13,6 +13,7 @@ chrono = { version = "0.4", default-features = false, features = ["clock", "std"
 getrandom = "0.2"
 p256 = { version = "0.13", features = ["ecdsa"] }
 regex = "1"
+serde_json = { workspace = true }
 sha2 = "0.10"
 thiserror = "2"
 verily_shared = { path = "../verily_shared" }
