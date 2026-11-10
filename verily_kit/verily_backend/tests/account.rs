@@ -9,12 +9,15 @@
 
 mod support;
 
+use solana_kit_core::crypto::Keypair;
 use support::*;
 use verily_api::ActionFilter;
 use verily_api::DraftInput;
 use verily_api::ProofKind;
 use verily_app::ops::BeginAttempt;
 use verily_app::ops::CloseAccount;
+use verily_app::ops::CreateWalletLinkChallenge;
+use verily_app::ops::LinkPayoutWallet;
 use verily_app::ops::ListAvailableActions;
 use verily_app::ops::ListMyPayouts;
 use verily_app::ops::PublishAction;
@@ -28,6 +31,27 @@ async fn nobody_signed_out_reads_payouts_or_leaves() {
 	let nobody = world.anonymous();
 	assert_unauthorized(world.call(&nobody, ListMyPayouts {}).await);
 	assert_unauthorized(world.call(&nobody, WalletStatus {}).await);
+	assert_unauthorized(
+		world
+			.call(
+				&nobody,
+				CreateWalletLinkChallenge {
+					wallet_address: "not-signed-in".into(),
+				},
+			)
+			.await,
+	);
+	assert_unauthorized(
+		world
+			.call(
+				&nobody,
+				LinkPayoutWallet {
+					wallet_address: "not-signed-in".into(),
+					signature: "not-signed-in".into(),
+				},
+			)
+			.await,
+	);
 	assert_unauthorized(world.call(&nobody, SignOut {}).await);
 	assert_unauthorized(
 		world
@@ -58,6 +82,93 @@ async fn a_new_account_has_no_payouts_and_no_wallet() {
 			.await
 			.unwrap()
 			.linked
+	);
+}
+
+#[tokio::test]
+async fn linking_a_payout_wallet_does_not_release_anything() {
+	let world = world().await;
+	let ada = world.person("ada@example.com").await;
+	let rejected = world
+		.call(
+			&ada.identity,
+			CreateWalletLinkChallenge {
+				wallet_address: "not-an-address".into(),
+			},
+		)
+		.await;
+	assert!(rejected.is_err(), "a payout address has to parse");
+	assert!(
+		!world
+			.call(&ada.identity, WalletStatus {})
+			.await
+			.unwrap()
+			.linked
+	);
+
+	let key = Keypair::from_seed(&[9; 32]);
+	let address = key.address().to_string();
+	let challenge = world
+		.call(
+			&ada.identity,
+			CreateWalletLinkChallenge {
+				wallet_address: address.clone(),
+			},
+		)
+		.await
+		.unwrap();
+	assert!(challenge.message.contains(&address));
+	let signature = key.sign(challenge.message.as_bytes()).to_string();
+	let linked = world
+		.call(
+			&ada.identity,
+			LinkPayoutWallet {
+				wallet_address: address.clone(),
+				signature,
+			},
+		)
+		.await
+		.unwrap();
+	assert!(linked.linked);
+	assert!(
+		world
+			.call(&ada.identity, WalletStatus {})
+			.await
+			.unwrap()
+			.linked
+	);
+	assert!(
+		world
+			.call(&ada.identity, ListMyPayouts {})
+			.await
+			.unwrap()
+			.is_empty()
+	);
+
+	let wrong = world
+		.call(
+			&ada.identity,
+			LinkPayoutWallet {
+				wallet_address: address,
+				signature: key.sign(b"other").to_string(),
+			},
+		)
+		.await;
+	assert!(wrong.is_err(), "a different message is not the challenge");
+	assert!(
+		world
+			.call(&ada.identity, WalletStatus {})
+			.await
+			.unwrap()
+			.linked
+	);
+	assert!(
+		world
+			.call(&ada.identity, ListMyPayouts {})
+			.await
+			.unwrap()
+			.is_empty(),
+		"linking never releases a payout"
 	);
 }
 

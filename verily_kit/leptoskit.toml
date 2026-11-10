@@ -14,6 +14,13 @@ address = "127.0.0.1"
 port = 8184
 probes = true
 
+[l10n]
+# One ARB file per locale, named for its language tag. `lk l10n` writes the
+# typed module the screens read; `lk dev` and `lk build` keep it current.
+dir = "verily_app/l10n"
+output = "verily_app/src/l10n.rs"
+template = "en"
+
 [build]
 backend = true
 # The crate the browser's Wasm module and the native guest are built from.
@@ -32,6 +39,8 @@ plugins = [
   "filesystem",
   "local-authentication",
   "device",
+  "camera",
+  "app-integrity",
 ]
 
 [native.plugin-options.http]

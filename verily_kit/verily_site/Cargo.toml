@@ -7,6 +7,10 @@ publish = false
 rust-version.workspace = true
 description = "verily.fun, the landing page: leptoskit and Skribble, rendered to static HTML."
 
+[[bin]]
+name = "verily-site"
+path = "src/main.rs"
+
 [dependencies]
 leptos = { version = "0.9.0-rc0", features = ["ssr"] }
 leptoskit = { workspace = true, features = ["web"] }

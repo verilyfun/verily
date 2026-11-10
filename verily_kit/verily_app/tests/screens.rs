@@ -9,6 +9,7 @@ use verily_app::model::ActionFilter;
 use verily_app::model::EvidenceSource;
 use verily_app::model::ProofKind;
 use verily_app::model::PublishOutcome;
+use verily_app::model::WalletChallenge;
 use verily_app::model::WalletLink;
 use verily_app::ops::BACKEND;
 use verily_app::ops::ListAvailableActions;
@@ -71,6 +72,19 @@ fn the_wallet_record_has_no_address() {
 }
 
 #[test]
+fn the_wallet_challenge_is_the_text_to_sign() {
+	let json = serde_json::to_value(WalletChallenge {
+		message: "Verily payout wallet\nAddress: abc\nNonce: n\n".into(),
+	})
+	.expect("json");
+	let object = json.as_object().expect("object");
+	assert!(object.contains_key("message"));
+	assert!(!object.contains_key("address"));
+	assert!(!object.contains_key("signature"));
+	assert!(!object.contains_key("secret"));
+}
+
+#[test]
 fn routes_round_trip() {
 	let routes = [
 		verily_app::Route::Do,
@@ -123,9 +137,26 @@ fn every_screen_builds() {
 		];
 		for route in routes {
 			let navigation = verily_app::Navigation::new(route);
-			let screen = view! { <verily_app::App navigation=navigation /> };
+			let screen = verily_app::route(&verily_app::Shared::new(), &navigation);
 			assert!(!screen.children.is_empty());
 		}
+	});
+}
+
+#[test]
+fn nothing_shows_before_the_session_answers() {
+	let _ = any_spawner::Executor::init_futures_executor();
+	let owner = leptoskit::leptos::prelude::Owner::new();
+	owner.with(|| {
+		let navigation = verily_app::Navigation::new(verily_app::Route::Me);
+		let gated = view! { <verily_app::App navigation=navigation.clone() /> };
+		let open = verily_app::route(&verily_app::Shared::new(), &navigation);
+		assert!(!gated.children.is_empty());
+		assert_ne!(
+			format!("{gated:?}"),
+			format!("{open:?}"),
+			"the gate shows the checking page, not the screen"
+		);
 	});
 }
 

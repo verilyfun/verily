@@ -39,9 +39,6 @@ use crate::schema::NewAppeal;
 use crate::schema::NewReviewer;
 use crate::schema::Reviewer;
 
-/// Longest appeal a participant may write.
-const APPEAL_LENGTH: usize = 1000;
-
 /// Lets `account` decide proof sent to a person. Server code only, such as
 /// an administrator's tool; no operation grants it. Granting twice is fine.
 ///
@@ -218,11 +215,7 @@ pub async fn submit_appeal(
 		return Err(rpc::Error::invalid("notRejected"));
 	}
 	let reason = reason.trim();
-	let length = reason.chars().count();
-	let control = reason
-		.chars()
-		.any(|character| character.is_control() && character != '\n' && character != '\t');
-	if length == 0 || length > APPEAL_LENGTH || control {
+	if !verily_api::valid_appeal_reason(reason) {
 		return Err(rpc::Error::invalid("appealReason"));
 	}
 	let already = Appeal::query()

@@ -44,6 +44,8 @@ use verily_shared::ActionRequirementKind;
 use verily_shared::ActionRequirementView;
 
 pub use account::close_account;
+pub use account::create_wallet_link_challenge;
+pub use account::link_payout_wallet;
 pub use account::list_my_payouts;
 pub use account::sign_out;
 pub use account::wallet_status;
@@ -162,7 +164,7 @@ fn requirements(action: &ActionRow) -> Result<Vec<ActionRequirementView>, rpc::E
 }
 
 /// What the screens call a requirement kind.
-fn proof_kind(kind: ActionRequirementKind) -> ProofKind {
+pub(crate) fn proof_kind(kind: ActionRequirementKind) -> ProofKind {
 	match kind {
 		ActionRequirementKind::Video => ProofKind::Video,
 		ActionRequirementKind::Photo => ProofKind::Photo,

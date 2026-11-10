@@ -14,6 +14,15 @@ let
   # Pina lint drivers are tied to one rustc revision. Keep this aligned with
   # Pina 0.23.0's published driver so the security-lint lane cannot disappear.
   rustToolchain = pkgs.rust-bin.nightly."2026-09-15".default.override {
+    # LeptosKit builds the browser/native guest and each phone host with
+    # this same pinned compiler when invoked through devenv shell.
+    targets = [
+      "wasm32-unknown-unknown"
+      "aarch64-apple-ios"
+      "aarch64-apple-ios-sim"
+      "aarch64-linux-android"
+      "x86_64-linux-android"
+    ];
     extensions = [
       "clippy"
       "llvm-tools-preview"
@@ -860,7 +869,7 @@ in
       exec = ''
         set -euo pipefail
         if ! command -v lk >/dev/null 2>&1; then
-          echo "lk is not on PATH. Install it from the pinned leptoskit rev: cargo install --git https://github.com/ifiokjr/leptoskit --rev a9678a57ec571f2318342fd1f04d68c9666b072d leptoskit_cli --locked" >&2
+          echo "lk is not on PATH. Install it from the pinned leptoskit rev: cargo install --git https://github.com/ifiokjr/leptoskit --rev 1f7f1462a17a9a33eccb933909f6cdae20d03052 leptoskit_cli --locked" >&2
           exit 1
         fi
         cd "$DEVENV_ROOT/verily_kit"
@@ -951,7 +960,7 @@ in
         # here with `--output packages`; `[clients.dart].output` names it.
         pina generate --project programs/verily_escrow --client dart --output packages --npx node
         # The renderer emits unformatted Dart; format before committing.
-        dart format packages/verily_escrow_client
+        dart format --trailing-commas=preserve packages/verily_escrow_client
       '';
       description = "Regenerate the escrow program's Dart client package.";
       binary = "bash";
@@ -993,7 +1002,11 @@ in
             done
         )
         if [ "''${#dart_files[@]}" -gt 0 ]; then
-          "$flutter_sdk/bin/dart" format --output none --set-exit-if-changed "''${dart_files[@]}"
+          # Every package's analysis_options.yaml sets this, but they include
+          # package: options that resolve only after `pub get`; without them
+          # dart format falls back to its default and flags 283 files.
+          "$flutter_sdk/bin/dart" format --trailing-commas=preserve --output none \
+            --set-exit-if-changed "''${dart_files[@]}"
         fi
       '';
       description = "Check project formatting with the pinned toolchains.";
@@ -1042,7 +1055,7 @@ in
         nixfmt devenv.nix
         RUSTFMT=${rustToolchain}/bin/rustfmt \
           ${rustToolchain}/bin/cargo fmt --all
-        dart format .
+        dart format --trailing-commas=preserve .
       '';
       description = "Format project files.";
       binary = "bash";

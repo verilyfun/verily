@@ -17,6 +17,7 @@ use leptoskit_db::Id;
 use leptoskit_rpc as rpc;
 use verily_api::PayoutRow;
 use verily_api::PayoutStatus;
+use verily_api::WalletChallenge;
 use verily_api::WalletLink;
 use verily_rewards::ops::into_rpc;
 use verily_rewards::schema::ActionRow;
@@ -52,6 +53,38 @@ pub async fn list_my_payouts(cx: &rpc::QueryCx) -> rpc::Result<Vec<PayoutRow>> {
 			status: payout_status(payout.status),
 		})
 		.collect())
+}
+
+/// The text the payout wallet signs. The record is that text, not an address
+/// field and not a key. Signing does not fund an escrow or move tokens.
+pub async fn create_wallet_link_challenge(
+	cx: &rpc::MutationCx,
+	wallet_address: String,
+) -> rpc::Result<WalletChallenge> {
+	let account = me(cx.context())?;
+	super::require_active(cx.tx(), account).await?;
+	let challenge =
+		verily_rewards::store::create_wallet_challenge(cx.tx(), account.uuid(), &wallet_address)
+			.await
+			.map_err(into_rpc)?;
+	Ok(WalletChallenge {
+		message: challenge.message,
+	})
+}
+
+/// Stores the payout wallet when the signature matches the stored challenge.
+/// A successful link does not release a payout.
+pub async fn link_payout_wallet(
+	cx: &rpc::MutationCx,
+	wallet_address: String,
+	signature: String,
+) -> rpc::Result<WalletLink> {
+	let account = me(cx.context())?;
+	super::require_active(cx.tx(), account).await?;
+	verily_rewards::store::link_payout_wallet(cx.tx(), account.uuid(), &wallet_address, &signature)
+		.await
+		.map_err(into_rpc)?;
+	Ok(WalletLink { linked: true })
 }
 
 /// Whether the signed-in person linked a payout wallet. No address.

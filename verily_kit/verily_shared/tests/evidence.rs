@@ -1,5 +1,6 @@
 //! Every digest helper, including the refuse paths.
 
+use base64::Engine;
 use chrono::TimeZone;
 use chrono::Utc;
 use verily_shared::CaptureChallenge;
@@ -9,6 +10,7 @@ use verily_shared::app_attest_assertion_client_data_hash;
 use verily_shared::app_attest_device_client_data;
 use verily_shared::app_attest_registration_client_data_hash;
 use verily_shared::capture_integrity_request_hash;
+use verily_shared::capture_integrity_request_nonce;
 use verily_shared::capture_key_attestation_challenge;
 use verily_shared::capture_provenance_manifest;
 use verily_shared::capture_public_key_id;
@@ -50,6 +52,12 @@ fn capture_challenge_and_binding_wrappers_round_trip() {
 fn integrity_request_key_attestation_and_manifest_match_goldens() {
 	assert_eq!(
 		capture_integrity_request_hash("attempt", "requirement", CHALLENGE, BINDING).expect("hash"),
+		"8lR_I1KQkSn4128SNfCNkdjvbTPLfm35Rh1ZDqGdguE"
+	);
+	let nonce = capture_integrity_request_nonce("attempt", "requirement", CHALLENGE, BINDING)
+		.expect("nonce");
+	assert_eq!(
+		base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(nonce),
 		"8lR_I1KQkSn4128SNfCNkdjvbTPLfm35Rh1ZDqGdguE"
 	);
 	assert_eq!(

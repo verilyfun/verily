@@ -155,6 +155,30 @@ pub fn Quiet(
 	}
 }
 
+/// A choice among several, filled when it is the chosen one.
+#[component]
+pub fn Choice(
+	label: impl Into<String>,
+	selected: bool,
+	on_press: impl Fn() + Send + Sync + 'static,
+	#[prop(default = 5)] seed: i64,
+) -> Element {
+	let variant = if selected {
+		ButtonVariant::Primary
+	} else {
+		ButtonVariant::Secondary
+	};
+	view! {
+		<WiredButton
+			label=label.into()
+			on_press=on_press
+			variant=variant
+			seed=seed
+			theme=theme::PEN
+		/>
+	}
+}
+
 /// A labelled text field in a rough frame.
 #[component]
 pub fn Field(
@@ -162,18 +186,21 @@ pub fn Field(
 	value: impl Into<String>,
 	on_change: impl Fn(&str) + Send + Sync + 'static,
 	#[prop(optional, into)] placeholder: Option<String>,
+	#[prop(optional)] disabled: bool,
 	#[prop(default = 1)] seed: i64,
 ) -> Element {
 	view! {
-		<WiredInput
-			label=label.into()
-			value=value.into()
-			on_change=on_change
-			placeholder=placeholder.unwrap_or_default()
-			seed=seed
-			theme=theme::PEN
-			class="w-full"
-		/>
+		<View class="flex flex-col gap-1" enabled=!disabled>
+			<WiredInput
+				label=label.into()
+				value=value.into()
+				on_change=on_change
+				placeholder=placeholder.unwrap_or_default()
+				seed=seed
+				theme=theme::PEN
+				class="w-full"
+			/>
+		</View>
 	}
 }
 
@@ -182,7 +209,9 @@ pub fn Field(
 pub enum Outcome {
 	/// Still to do: an empty box.
 	Open,
-	/// Passed: the box gets the vermilion check.
+	/// Passed: the box gets the vermilion check. Screens pass this once a
+	/// proof is in; until then only `Open` is constructed.
+	#[allow(dead_code)]
 	Done,
 }
 

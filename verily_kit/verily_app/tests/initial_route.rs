@@ -44,3 +44,8 @@ fn an_unknown_path_opens_the_not_found_screen() {
 		Route::NotFound(_)
 	));
 }
+
+#[test]
+fn the_browser_build_signs_in_on_its_own_origin() {
+	assert_eq!(verily_app::native_origin(), None);
+}
