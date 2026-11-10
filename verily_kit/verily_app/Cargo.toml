@@ -14,10 +14,10 @@ crate-type = ["rlib", "cdylib"]
 
 [dependencies]
 leptos = { version = "0.9.0-rc0", default-features = false, optional = true }
-leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "10a1d5dbcfd61ecb6eaefa14e0a55670a5680dcd", default-features = false, features = ["auth", "l10n", "query", "rpc"] }
-leptoskit_bridge = { git = "https://github.com/ifiokjr/leptoskit", rev = "10a1d5dbcfd61ecb6eaefa14e0a55670a5680dcd", default-features = false, optional = true }
-leptoskit_l10n = { git = "https://github.com/ifiokjr/leptoskit", rev = "10a1d5dbcfd61ecb6eaefa14e0a55670a5680dcd", default-features = false }
-leptoskit_router = { git = "https://github.com/ifiokjr/leptoskit", rev = "10a1d5dbcfd61ecb6eaefa14e0a55670a5680dcd", default-features = false }
+leptoskit = { workspace = true, features = ["auth", "l10n", "query", "rpc"] }
+leptoskit_bridge = { workspace = true, optional = true }
+leptoskit_l10n = { workspace = true }
+leptoskit_router = { workspace = true }
 # Signals that outlive a screen rebuild (see `state.rs`).
 reactive_graph = "0.3.0-rc0"
 schemars = { version = "1.2", features = ["semver1"] }
@@ -58,5 +58,5 @@ devtools = ["leptoskit/devtools"]
 leptoskit_build = { workspace = true }
 
 [dev-dependencies]
-any_spawner = { version = "0.3", features = ["futures-executor"] }
-leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "10a1d5dbcfd61ecb6eaefa14e0a55670a5680dcd", default-features = false, features = ["leptos"] }
+any_spawner = { workspace = true, features = ["futures-executor"] }
+leptoskit = { workspace = true, features = ["leptos"] }
