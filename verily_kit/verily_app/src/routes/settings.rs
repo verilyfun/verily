@@ -10,7 +10,6 @@ use leptoskit::prelude::Get;
 use leptoskit::prelude::Set;
 use leptoskit::prelude::View;
 use leptoskit::query::MutateCallbacks;
-use leptoskit::query::use_mutation;
 use leptoskit::rpc::client::mutation_scope;
 use leptoskit::view;
 
@@ -18,6 +17,7 @@ use crate::chrome;
 use crate::l10n::use_l10n;
 use crate::ops::CloseAccount;
 use crate::routes::Navigation;
+use crate::state::mutation;
 use crate::state::remember;
 use crate::theme;
 
@@ -30,7 +30,10 @@ pub fn Page(navigation: &Navigation) -> Element {
 	let confirmation = remember("settings.confirmation", String::new);
 	let confirm_open = remember("settings.confirm_open", || false);
 	// Signing out empties the session query, so the app shows sign-in.
-	let sign_out = use_mutation(leptoskit::auth::client::sign_out_mutation());
+	let sign_out = mutation(
+		"settings.sign_out",
+		leptoskit::auth::client::sign_out_mutation(),
+	);
 	let sign_out_now = move || {
 		sign_out.mutate_with(
 			(),
@@ -39,7 +42,8 @@ pub fn Page(navigation: &Navigation) -> Element {
 			}),
 		);
 	};
-	let close = use_mutation(
+	let close = mutation(
+		"settings.close",
 		mutation_scope::<CloseAccount>()
 			.with_on_success(move |_| {
 				// The server ended every session; forget this one too.

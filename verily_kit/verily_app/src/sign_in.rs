@@ -18,7 +18,6 @@ use leptoskit::prelude::Get;
 use leptoskit::prelude::Set;
 use leptoskit::prelude::View;
 use leptoskit::query::MutateCallbacks;
-use leptoskit::query::use_mutation;
 use leptoskit::view;
 use skribble_leptoskit::SkribblePage;
 use verily_ink::draw;
@@ -26,6 +25,7 @@ use verily_ink::draw;
 use crate::chrome;
 use crate::l10n::L10n;
 use crate::l10n::use_l10n;
+use crate::state::mutation;
 use crate::state::remember;
 use crate::theme;
 
@@ -43,6 +43,7 @@ pub(crate) enum Step {
 /// What to say about a failed step, in product language.
 pub(crate) fn problem(l10n: &L10n, error: &ErrorResponse) -> String {
 	match error.error.as_str() {
+		"invalid_email" => l10n.sign_in_email_invalid().to_owned(),
 		"invalid_code" | "sign_in_expired" => l10n.sign_in_code_invalid().to_owned(),
 		"rate_limited" => l10n.sign_in_rate_limited().to_owned(),
 		"config" | "unsupported" => l10n.sign_in_unavailable().to_owned(),
@@ -80,9 +81,9 @@ pub fn SignIn() -> Element {
 	let email = remember("sign_in.email", String::new);
 	let code = remember("sign_in.code", String::new);
 	let notice = remember("sign_in.notice", String::new);
-	let send = use_mutation(send_code());
-	let verify = use_mutation(verify_code());
-	let finish = use_mutation(complete_sign_in());
+	let send = mutation("sign_in.send", send_code());
+	let verify = mutation("sign_in.verify", verify_code());
+	let finish = mutation("sign_in.finish", complete_sign_in());
 	let working = send.is_pending() || verify.is_pending() || finish.is_pending();
 
 	let form = match step.get() {
@@ -94,11 +95,15 @@ pub fn SignIn() -> Element {
 					value=email.get()
 					placeholder=l10n.sign_in_email_hint()
 					seed=303
-					on_change=move |next: &str| email.set(next.trim().to_owned())
+					on_change=move |next: &str| {
+						if !working {
+							email.set(next.trim().to_owned());
+						}
+					}
 				/>
 				<chrome::Primary
 					label=l10n.sign_in_send_code()
-					disabled=working
+					disabled=working || email.get().is_empty()
 					seed=305
 					on_press=move || {
 						let address = email.get();
@@ -131,7 +136,7 @@ pub fn SignIn() -> Element {
 				/>
 				<chrome::Primary
 					label=l10n.sign_in_verify()
-					disabled=working
+					disabled=working || code.get().is_empty()
 					seed=309
 					on_press=move || {
 						let typed = code.get();
@@ -157,6 +162,7 @@ pub fn SignIn() -> Element {
 				/>
 				<chrome::Quiet
 					label=l10n.sign_in_other_email()
+					disabled=working
 					seed=311
 					on_press=move || {
 						notice.set(String::new());
@@ -177,7 +183,7 @@ pub fn SignIn() -> Element {
 				/>
 				<chrome::Primary
 					label=l10n.sign_in_verify()
-					disabled=working
+					disabled=working || code.get().is_empty()
 					seed=315
 					on_press=move || {
 						let typed = code.get();
@@ -201,7 +207,7 @@ pub fn SignIn() -> Element {
 	};
 
 	view! {
-		<View class="flex flex-col gap-6 pt-6">
+		<View class="w-full max-w-md self-center flex flex-col gap-6 pt-6">
 			<View class="flex flex-col items-center gap-4">
 				{draw::mark(88.0, 301, Some("Verily"))}
 				<chrome::Display text=l10n.welcome_title() />
@@ -211,17 +217,8 @@ pub fn SignIn() -> Element {
 				{form}
 				{(!notice.get().is_empty()).then(|| view! { <chrome::Body text=notice.get() /> })}
 			</chrome::Card>
-			{dev_mailbox_hint()}
 		</View>
 	}
-}
-
-/// In a development build, where the emailed codes land. Release builds
-/// send real mail and show nothing here.
-fn dev_mailbox_hint() -> Option<Element> {
-	cfg!(debug_assertions).then(|| {
-		view! { <chrome::Muted text="Development build: codes are at /_leptoskit/mail." /> }
-	})
 }
 
 #[cfg(test)]
@@ -236,6 +233,10 @@ mod tests {
 	#[test]
 	fn problems_are_said_in_product_language() {
 		let l10n = L10n::new(&[]);
+		assert_eq!(
+			problem(&l10n, &error("invalid_email")),
+			l10n.sign_in_email_invalid()
+		);
 		assert_eq!(
 			problem(&l10n, &error("invalid_code")),
 			l10n.sign_in_code_invalid()

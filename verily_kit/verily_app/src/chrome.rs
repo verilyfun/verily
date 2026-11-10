@@ -73,6 +73,7 @@ pub fn Primary(
 pub fn Quiet(
 	label: impl Into<String>,
 	on_press: impl Fn() + Send + Sync + 'static,
+	#[prop(optional)] disabled: bool,
 	#[prop(default = 3)] seed: i64,
 ) -> Element {
 	view! {
@@ -80,6 +81,7 @@ pub fn Quiet(
 			label=label.into()
 			on_press=on_press
 			variant=ButtonVariant::Secondary
+			disabled=disabled
 			seed=seed
 			theme=theme::ACTION
 		/>

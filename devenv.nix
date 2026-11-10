@@ -14,6 +14,15 @@ let
   # Pina lint drivers are tied to one rustc revision. Keep this aligned with
   # Pina 0.23.0's published driver so the security-lint lane cannot disappear.
   rustToolchain = pkgs.rust-bin.nightly."2026-09-15".default.override {
+    # LeptosKit builds the browser/native guest and each phone host with
+    # this same pinned compiler when invoked through devenv shell.
+    targets = [
+      "wasm32-unknown-unknown"
+      "aarch64-apple-ios"
+      "aarch64-apple-ios-sim"
+      "aarch64-linux-android"
+      "x86_64-linux-android"
+    ];
     extensions = [
       "clippy"
       "llvm-tools-preview"

@@ -4471,6 +4471,10 @@ pub trait Messages: Send + Sync {
 	///
 	/// `you@example.com`
 	fn sign_in_email_hint(&self) -> &'static str;
+	/// Help after the sign-in email address was refused.
+	///
+	/// `Enter a valid email address.`
+	fn sign_in_email_invalid(&self) -> &'static str;
 	/// Label of the email field on the sign-in screen.
 	///
 	/// `Email`
@@ -8577,6 +8581,9 @@ impl Messages for En {
 	}
 	fn sign_in_email_hint(&self) -> &'static str {
 		"you@example.com"
+	}
+	fn sign_in_email_invalid(&self) -> &'static str {
+		"Enter a valid email address."
 	}
 	fn sign_in_email_label(&self) -> &'static str {
 		"Email"

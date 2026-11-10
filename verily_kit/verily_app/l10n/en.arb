@@ -3310,6 +3310,10 @@
     "description": "Hint in the empty email field on the sign-in screen."
   },
   "signInSendCode": "Email me a code",
+  "signInEmailInvalid": "Enter a valid email address.",
+  "@signInEmailInvalid": {
+    "description": "Help after the sign-in email address was refused."
+  },
   "@signInSendCode": {
     "description": "Button that emails a sign-in code."
   },
