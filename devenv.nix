@@ -14,6 +14,15 @@ let
   # Pina lint drivers are tied to one rustc revision. Keep this aligned with
   # Pina 0.23.0's published driver so the security-lint lane cannot disappear.
   rustToolchain = pkgs.rust-bin.nightly."2026-09-15".default.override {
+    # LeptosKit builds the browser/native guest and each phone host with
+    # this same pinned compiler when invoked through devenv shell.
+    targets = [
+      "wasm32-unknown-unknown"
+      "aarch64-apple-ios"
+      "aarch64-apple-ios-sim"
+      "aarch64-linux-android"
+      "x86_64-linux-android"
+    ];
     extensions = [
       "clippy"
       "llvm-tools-preview"
@@ -860,7 +869,7 @@ in
       exec = ''
         set -euo pipefail
         if ! command -v lk >/dev/null 2>&1; then
-          echo "lk is not on PATH. Install it from the pinned leptoskit rev: cargo install --git https://github.com/ifiokjr/leptoskit --rev 10a1d5dbcfd61ecb6eaefa14e0a55670a5680dcd leptoskit_cli --locked" >&2
+          echo "lk is not on PATH. Install it from the pinned leptoskit rev: cargo install --git https://github.com/ifiokjr/leptoskit --rev 011854e681643ab8ea28bac74329ef95c0ba5429 leptoskit_cli --locked" >&2
           exit 1
         fi
         cd "$DEVENV_ROOT/verily_kit"

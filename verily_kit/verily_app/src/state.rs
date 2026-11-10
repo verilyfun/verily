@@ -14,14 +14,24 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::sync::PoisonError;
 
+use leptoskit::prelude::Get;
 use leptoskit::prelude::RwSignal;
+use leptoskit::query::MutationHandle;
+use leptoskit::query::MutationScope;
+use leptoskit::query::QueryData;
+use leptoskit::query::QueryError;
+use leptoskit::query::use_mutation_in;
+use leptoskit::query::use_query_client;
+use reactive_graph::owner::Owner;
 use reactive_graph::owner::use_context;
-use reactive_graph::signal::ArcRwSignal;
 
 /// Values that live as long as the app, by key.
 #[derive(Clone, Default)]
 pub struct Store {
 	values: Arc<Mutex<HashMap<String, Box<dyn Any + Send + Sync>>>>,
+	// Detached from each screen's render owner: cleanup on a redraw must
+	// not dispose the handles an in-flight callback still holds.
+	owner: Owner,
 }
 
 impl Store {
@@ -38,11 +48,10 @@ impl Store {
 		let mut values = self.values.lock().unwrap_or_else(PoisonError::into_inner);
 		let value = values
 			.entry(key.to_owned())
-			.or_insert_with(|| Box::new(ArcRwSignal::new(init())))
-			.downcast_ref::<ArcRwSignal<T>>()
-			.unwrap_or_else(|| panic!("`{key}` holds a different type: keys must be unique"))
-			.clone();
-		RwSignal::from(value)
+			.or_insert_with(|| Box::new(self.owner.with(|| RwSignal::new(init()))))
+			.downcast_ref::<RwSignal<T>>()
+			.unwrap_or_else(|| panic!("`{key}` holds a different type: keys must be unique"));
+		*value
 	}
 }
 
@@ -57,6 +66,23 @@ where
 		Some(store) => store.signal(key, init),
 		None => RwSignal::new(init()),
 	}
+}
+
+/// A mutation observer that survives screen rebuilds, including its pending
+/// state. The explicit client comes from the screen, before entering the
+/// store's independent owner.
+pub fn mutation<V, T, E, C>(
+	key: &str,
+	scope: MutationScope<V, T, E, C>,
+) -> MutationHandle<V, T, E, C>
+where
+	V: QueryData,
+	T: QueryData,
+	E: QueryError,
+	C: QueryData,
+{
+	let client = use_query_client();
+	remember(key, || use_mutation_in(client, scope)).get()
 }
 
 #[cfg(test)]
@@ -85,6 +111,46 @@ mod tests {
 			remember("do.filter", || 0).get()
 		});
 		assert_eq!((chosen, again), (3, 3));
+	}
+
+	#[test]
+	fn a_callback_can_write_through_its_original_handle_after_render_cleanup() {
+		let store = Store::default();
+		let render = Owner::new();
+		let original = render.with(|| {
+			provide_context(store.clone());
+			remember("sign_in.notice", String::new)
+		});
+		render.cleanup();
+		original.set("Please check your code".to_owned());
+		render.with(|| {
+			provide_context(store);
+			assert_eq!(
+				remember("sign_in.notice", String::new).get(),
+				"Please check your code"
+			);
+		});
+	}
+
+	#[test]
+	fn a_pending_mutation_stays_pending_after_render_cleanup() {
+		let _ = any_spawner::Executor::init_futures_executor();
+		let store = Store::default();
+		let client = leptoskit::query::QueryClient::new();
+		let scope = MutationScope::new(|()| std::future::pending::<Result<(), ()>>());
+		let render = Owner::new();
+		let start = render.with(|| {
+			provide_context(store.clone());
+			client.provide();
+			mutation("sign_in.send", scope.clone())
+		});
+		start.mutate(());
+		render.cleanup();
+		render.with(|| {
+			provide_context(store);
+			client.provide();
+			assert!(mutation("sign_in.send", scope).is_pending());
+		});
 	}
 
 	#[test]

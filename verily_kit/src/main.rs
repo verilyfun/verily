@@ -16,7 +16,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let db = leptoskit::db::Db::connect(secrets.database_url()?).await?;
 	db.migrate(verily_backend::POSTGRES_MIGRATIONS).await?;
 	let auth = verily_backend::build_auth(&db, &secrets, Some(&config))?;
-	let host = verily_backend::start(&db, auth, Some(&config), verily_backend::Options::new(&db))?;
+	// Use LeptosKit's development mailbox and its debug-only route. The
+	// backend's in-memory test mailer alone has no page to read codes from.
+	#[cfg(debug_assertions)]
+	let auth = auth.dev_mailbox().dev_sign_in();
+	let options = verily_backend::Options {
+		demo_mail: false,
+		..verily_backend::Options::new(&db)
+	};
+	let host = verily_backend::start(&db, auth, Some(&config), options)?;
 	// A debug build puts a few live actions in the Do catalogue, once.
 	#[cfg(debug_assertions)]
 	verily_backend::seed_development(&db, &host.rewards.0).await?;
