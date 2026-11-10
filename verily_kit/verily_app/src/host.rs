@@ -1,24 +1,16 @@
-//! Calls the shell's capture and attestation plugins.
+//! Calls the shell's camera and app-integrity plugins.
 //!
-//! `beginCapture` has already succeeded before [`open_live`] runs. The camera,
-//! microphone, sensors, and scanner stay closed until then. This module does
-//! not open a gallery, a file picker, or an upload. A missing plugin is a
-//! failed live capture. The viewfinder widget this rev does not ship is drawn
-//! with `Vector` in the capture screen; a real camera surface belongs in
-//! LeptosKit, not in a library fallback here.
+//! `beginCapture` has already succeeded before [`open_live`] runs. The key
+//! challenge is sent before the camera, microphone, or scanner. A photo uses
+//! `camera`. Video, audio, and a venue code have no live plugin on this pin,
+//! so they stop. This module does not open an image picker, a document picker,
+//! or a file. App integrity returns unavailable, or an opaque token that is
+//! not a certificate chain; either way the proof is refused.
 
+use crate::live;
+use crate::live::DeviceAnswer;
 use crate::model::CaptureWindow;
 use crate::model::LiveProof;
-
-/// Plugin the shell registers for live capture.
-pub const CAPTURE_PLUGIN: &str = "verily_capture";
-/// Plugin the shell registers for Play Integrity, Key Attestation, and App Attest.
-pub const ATTEST_PLUGIN: &str = "verily_attest";
-
-/// Opens the sensor named in the payload. The payload is `OpenLive` JSON.
-pub const OPEN_LIVE: u32 = 1;
-/// Signs `Attest` JSON, binding the signature to the digest the server stored.
-pub const ATTEST: u32 = 1;
 
 /// What the screen does after `beginCapture` returns.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -48,86 +40,149 @@ pub enum HostFault {
 	Rejected,
 }
 
-/// Opens the live sensor for `window`. The challenge nonce goes to the plugin
-/// and is not returned for display.
+/// Opens the live sensor for `window`, then refuses the proof.
+///
+/// The refusal is the honest result: the camera plugin returns a cache URI
+/// rather than the JPEG, and app integrity does not return a certificate
+/// chain. A URI is not hashed, and an unavailable attestation is not stored
+/// as success.
 pub async fn open_live(window: &CaptureWindow) -> Result<LiveProof, HostFault> {
-	if next_capture_step(plugin_installed(CAPTURE_PLUGIN)) != CaptureStep::OpenPlugin {
-		return Err(HostFault::PluginMissing);
-	}
-
-	let payload = serde_json::json!({
-		"attempt_id": window.attempt_id,
-		"requirement_id": window.requirement_id,
-		"challenge": window.challenge,
-	});
-	let bytes = call_plugin(CAPTURE_PLUGIN, OPEN_LIVE, &payload).await?;
-	let reply: PluginDigest = serde_json::from_slice(&bytes).map_err(|_| HostFault::Rejected)?;
-	if reply.digest_hex.is_empty() {
+	if !live::plugin_allowed(live::CAMERA)
+		|| !live::plugin_allowed(live::APP_INTEGRITY)
+		|| !live::plugin_allowed(live::PERMISSIONS)
+		|| live::plugin_allowed(live::IMAGE_PICKER)
+		|| live::plugin_allowed(live::DOCUMENT_PICKER)
+	{
 		return Err(HostFault::Rejected);
 	}
-	Ok(LiveProof {
-		digest_hex: reply.digest_hex,
-	})
-}
+	let planned = live::run(
+		window.kind,
+		true,
+		false,
+		DeviceAnswer::Unavailable,
+		DeviceAnswer::Unavailable,
+	);
+	if planned.fault == live::Fault::WindowClosed || planned.steps.is_empty() {
+		return Err(HostFault::Rejected);
+	}
 
-/// Asks the shell to attest `digest_hex`, the digest the server stored.
-pub async fn attest(digest_hex: &str) -> Result<(), HostFault> {
-	if !plugin_installed(ATTEST_PLUGIN) {
+	// The key challenge is the first step whenever a sensor is involved.
+	let challenge = live::key_challenge(window).map_err(|_| HostFault::Rejected)?;
+	let key = attest_key(&challenge).await;
+	if planned.fault == live::Fault::PluginMissing {
+		let _ = key;
 		return Err(HostFault::PluginMissing);
 	}
-	let payload = serde_json::json!({ "digest_hex": digest_hex });
-	let bytes = call_plugin(ATTEST_PLUGIN, ATTEST, &payload).await?;
-	let reply: PluginBound = serde_json::from_slice(&bytes).map_err(|_| HostFault::Rejected)?;
-	if reply.bound {
-		Ok(())
-	} else {
-		Err(HostFault::Rejected)
+
+	if live::sensor(window.kind) != live::Sensor::Camera {
+		return Err(HostFault::Rejected);
 	}
+	if next_capture_step(camera_ready()) != CaptureStep::OpenPlugin {
+		return Err(HostFault::PluginMissing);
+	}
+
+	// Permission, then one still. Both come after the key challenge above.
+	let uri = take_still().await?;
+	if live::uri_fault(&uri) == live::Fault::Library {
+		return Err(HostFault::Rejected);
+	}
+	// The still is a URI. The bytes were not returned, so there is no digest
+	// to bind and no Play Integrity request to make.
+	let _ = key;
+	Err(HostFault::Rejected)
 }
 
-#[derive(serde::Deserialize)]
-struct PluginDigest {
-	digest_hex: String,
+/// Asks the shell to attest `digest_hex`.
+///
+/// A hex digest is not a signature. App integrity cannot turn it into a
+/// trusted chain, so this does not report success.
+pub async fn attest(digest_hex: &str) -> Result<(), HostFault> {
+	// The stored digest is not a device signature. App integrity cannot
+	// turn it into a trusted chain, so a well-formed digest is refused too.
+	let _ = digest_hex;
+	Err(HostFault::Rejected)
 }
 
-#[derive(serde::Deserialize)]
-struct PluginBound {
-	bound: bool,
-}
-
-fn plugin_installed(name: &str) -> bool {
+async fn attest_key(challenge: &[u8; 32]) -> DeviceAnswer {
 	#[cfg(all(feature = "native", target_arch = "wasm32"))]
 	{
-		leptoskit_bridge::guest::Client::new(name).is_ok()
+		ask_app_integrity(challenge).await
 	}
 	#[cfg(not(all(feature = "native", target_arch = "wasm32")))]
 	{
-		let _ = name;
+		let _ = challenge;
+		DeviceAnswer::Unavailable
+	}
+}
+
+/// One still, as a URI. The JPEG itself is not in the reply.
+async fn take_still() -> Result<String, HostFault> {
+	#[cfg(all(feature = "native", target_arch = "wasm32"))]
+	{
+		camera_uri().await
+	}
+	#[cfg(not(all(feature = "native", target_arch = "wasm32")))]
+	{
+		Err(HostFault::PluginMissing)
+	}
+}
+
+fn camera_ready() -> bool {
+	#[cfg(all(feature = "native", target_arch = "wasm32"))]
+	{
+		leptoskit_plugin_camera::guest::Camera::new().is_ok()
+	}
+	#[cfg(not(all(feature = "native", target_arch = "wasm32")))]
+	{
 		false
 	}
 }
 
-async fn call_plugin(
-	name: &str,
-	method: u32,
-	payload: &serde_json::Value,
-) -> Result<Vec<u8>, HostFault> {
-	#[cfg(all(feature = "native", target_arch = "wasm32"))]
-	{
-		let client =
-			leptoskit_bridge::guest::Client::new(name).map_err(|_| HostFault::PluginMissing)?;
-		let body = serde_json::to_vec(payload).map_err(|_| HostFault::Rejected)?;
-		let call = client
-			.call(leptoskit_bridge::MethodId(method), &body)
-			.map_err(|_| HostFault::PluginMissing)?;
-		let bytes = call.await.map_err(|_| HostFault::Rejected)?;
-		Ok(bytes.to_vec())
+#[cfg(all(feature = "native", target_arch = "wasm32"))]
+async fn ask_app_integrity(challenge: &[u8; 32]) -> DeviceAnswer {
+	use leptoskit_plugin_app_integrity::Attestation;
+	use leptoskit_plugin_app_integrity::Challenge;
+
+	let Ok(plugin) = leptoskit_plugin_app_integrity::guest::AppIntegrity::new() else {
+		return DeviceAnswer::Unavailable;
+	};
+	let Ok(challenge) = Challenge::new(challenge.to_vec()) else {
+		return DeviceAnswer::Unavailable;
+	};
+	match plugin.attest(&challenge).await {
+		Ok(Attestation::Token(token)) if !token.is_empty() => DeviceAnswer::Opaque,
+		_ => DeviceAnswer::Unavailable,
 	}
-	#[cfg(not(all(feature = "native", target_arch = "wasm32")))]
-	{
-		let _ = (name, method, payload);
-		Err(HostFault::PluginMissing)
+}
+
+#[cfg(all(feature = "native", target_arch = "wasm32"))]
+async fn camera_uri() -> Result<String, HostFault> {
+	use leptoskit_plugin_camera::Facing;
+	use leptoskit_plugin_camera::TakePicture;
+	use leptoskit_plugin_permissions::Permission;
+	use leptoskit_plugin_permissions::Status;
+
+	let permissions = leptoskit_plugin_permissions::guest::Permissions::new()
+		.map_err(|_| HostFault::PluginMissing)?;
+	let auth = permissions
+		.request(Permission::Camera)
+		.await
+		.map_err(|_| HostFault::Rejected)?;
+	if auth.status != Status::Granted {
+		return Err(HostFault::Rejected);
 	}
+	let camera =
+		leptoskit_plugin_camera::guest::Camera::new().map_err(|_| HostFault::PluginMissing)?;
+	let session = camera
+		.create(Facing::Back)
+		.await
+		.map_err(|_| HostFault::Rejected)?;
+	let shot = camera
+		.take_picture(TakePicture::default_budget(session))
+		.await;
+	let _ = camera.release(session).await;
+	let asset = shot.map_err(|_| HostFault::Rejected)?;
+	Ok(asset.uri)
 }
 
 #[cfg(test)]
@@ -138,5 +193,7 @@ mod tests {
 	fn a_missing_plugin_does_not_become_a_library() {
 		assert_eq!(next_capture_step(false), CaptureStep::PluginMissing);
 		assert_eq!(next_capture_step(true), CaptureStep::OpenPlugin);
+		assert!(!live::plugin_allowed(live::IMAGE_PICKER));
+		assert!(!live::plugin_allowed(live::DOCUMENT_PICKER));
 	}
 }

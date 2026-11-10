@@ -216,6 +216,7 @@ pub async fn begin_capture(
 		requirement_id: window.requirement_id,
 		challenge: window.capture_challenge,
 		spoken_word,
+		kind: super::proof_kind(requirement.kind),
 	})
 }
 

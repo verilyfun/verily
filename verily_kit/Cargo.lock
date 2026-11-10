@@ -3456,6 +3456,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "leptoskit_plugin_app_integrity"
+version = "0.3.0"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=fa3d29f8e8c837b19f92f1e9a95f699803543767#fa3d29f8e8c837b19f92f1e9a95f699803543767"
+dependencies = [
+ "leptoskit_bridge",
+]
+
+[[package]]
+name = "leptoskit_plugin_camera"
+version = "0.3.0"
+source = "git+https://github.com/ifiokjr/leptoskit?rev=fa3d29f8e8c837b19f92f1e9a95f699803543767#fa3d29f8e8c837b19f92f1e9a95f699803543767"
+dependencies = [
+ "js-sys",
+ "leptoskit_bridge",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
 name = "leptoskit_plugin_crypto"
 version = "0.3.0"
 source = "git+https://github.com/ifiokjr/leptoskit?rev=fa3d29f8e8c837b19f92f1e9a95f699803543767#fa3d29f8e8c837b19f92f1e9a95f699803543767"
@@ -6921,6 +6941,9 @@ dependencies = [
  "leptoskit_bridge",
  "leptoskit_build",
  "leptoskit_l10n",
+ "leptoskit_plugin_app_integrity",
+ "leptoskit_plugin_camera",
+ "leptoskit_plugin_permissions",
  "leptoskit_router",
  "leptoskit_testing",
  "reactive_graph",
@@ -6931,6 +6954,7 @@ dependencies = [
  "verily_api",
  "verily_backend",
  "verily_ink",
+ "verily_shared",
  "wasm-bindgen",
 ]
 
@@ -6987,6 +7011,8 @@ name = "verily_kit_android"
 version = "0.1.0"
 dependencies = [
  "leptoskit_bridge_ffi",
+ "leptoskit_plugin_app_integrity",
+ "leptoskit_plugin_camera",
  "leptoskit_plugin_crypto",
  "leptoskit_plugin_device",
  "leptoskit_plugin_filesystem",
@@ -7004,6 +7030,8 @@ name = "verily_kit_ios"
 version = "0.1.0"
 dependencies = [
  "leptoskit_bridge_ffi",
+ "leptoskit_plugin_app_integrity",
+ "leptoskit_plugin_camera",
  "leptoskit_plugin_crypto",
  "leptoskit_plugin_device",
  "leptoskit_plugin_filesystem",
@@ -7022,6 +7050,8 @@ version = "0.1.0"
 dependencies = [
  "leptoskit",
  "leptoskit_bridge_ffi",
+ "leptoskit_plugin_app_integrity",
+ "leptoskit_plugin_camera",
  "leptoskit_plugin_crypto",
  "leptoskit_plugin_device",
  "leptoskit_plugin_filesystem",
@@ -7039,6 +7069,8 @@ name = "verily_kit_macos"
 version = "0.1.0"
 dependencies = [
  "leptoskit_bridge_ffi",
+ "leptoskit_plugin_app_integrity",
+ "leptoskit_plugin_camera",
  "leptoskit_plugin_crypto",
  "leptoskit_plugin_device",
  "leptoskit_plugin_filesystem",
@@ -7057,6 +7089,8 @@ version = "0.1.0"
 dependencies = [
  "leptoskit",
  "leptoskit_bridge_ffi",
+ "leptoskit_plugin_app_integrity",
+ "leptoskit_plugin_camera",
  "leptoskit_plugin_crypto",
  "leptoskit_plugin_device",
  "leptoskit_plugin_filesystem",

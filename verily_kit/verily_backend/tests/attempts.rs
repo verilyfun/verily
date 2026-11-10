@@ -324,6 +324,7 @@ async fn proof_needs_an_open_window_and_is_pinned_to_its_digest() {
 	assert_eq!(window.requirement_id, photo);
 	assert_eq!(window.challenge.len(), 43, "32 bytes, unpadded base64url");
 	assert!(window.spoken_word.is_none(), "a photo has no spoken word");
+	assert_eq!(window.kind, ProofKind::Photo);
 
 	for bad in ["", "zz", &"g".repeat(64), &digest(1)[..63]] {
 		assert_invalid(

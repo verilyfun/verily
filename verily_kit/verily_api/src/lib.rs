@@ -272,6 +272,8 @@ pub struct CaptureWindow {
 	pub requirement_id: String,
 	pub challenge: String,
 	pub spoken_word: Option<String>,
+	/// Which sensor may open. A library is not one of them.
+	pub kind: ProofKind,
 }
 
 /// The spoken word for this window, from the server's list.
