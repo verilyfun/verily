@@ -1,9 +1,20 @@
-//! Verily's brand for the site: the colour tokens from `DESIGN.md` and the
-//! mark as inline SVG. The Skribble theme and tones come from [`verily_ink`],
-//! which the app draws with too.
+//! Verily's brand for the site: the colour tokens from `DESIGN.md` as CSS
+//! custom properties, and the mark as inline SVG. The Skribble theme and the
+//! tones come from [`verily_ink`], which the app shares.
 //!
 //! These are the only raw colours in the site. The page and its stylesheet
 //! use the CSS custom properties [`TOKENS_CSS`] declares.
+
+pub use verily_ink::INK;
+pub use verily_ink::MARK_CHECK;
+pub use verily_ink::MARK_FLICK;
+pub use verily_ink::MARK_PEN;
+pub use verily_ink::MARK_PIN;
+pub use verily_ink::MUTED;
+pub use verily_ink::PLACE;
+pub use verily_ink::REVIEW;
+pub use verily_ink::REWARD;
+pub use verily_ink::STAMP;
 
 /// A brand colour by its `DESIGN.md` name, with its night-paper twin.
 pub struct Token {
@@ -152,17 +163,6 @@ pub fn tokens_css() -> String {
 		declare(true)
 	)
 }
-
-pub use verily_ink::INK;
-pub use verily_ink::MARK_CHECK;
-pub use verily_ink::MARK_FLICK;
-pub use verily_ink::MARK_PEN;
-pub use verily_ink::MARK_PIN;
-pub use verily_ink::MUTED;
-pub use verily_ink::PLACE;
-pub use verily_ink::REVIEW;
-pub use verily_ink::REWARD;
-pub use verily_ink::STAMP;
 
 /// The mark as inline SVG in `currentColor`, with `id` naming its knockout
 /// mask so several marks can share a page.

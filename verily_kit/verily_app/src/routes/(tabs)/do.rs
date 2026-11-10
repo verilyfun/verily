@@ -1,14 +1,21 @@
-//! The catalogue, `/do`.
+//! The catalogue, `/do`: actions to do, each with its place and reward in
+//! view before anyone starts.
 
 use leptoskit::component;
 use leptoskit::prelude::Element;
+use leptoskit::prelude::For;
 use leptoskit::prelude::Get;
+use leptoskit::prelude::Pressable;
 use leptoskit::prelude::RwSignal;
 use leptoskit::prelude::Set;
+use leptoskit::prelude::Show;
+use leptoskit::prelude::Text;
 use leptoskit::prelude::View;
 use leptoskit::rpc::client::use_rpc_query;
 use leptoskit::view;
-use verily_ink::draw;
+use skribble_leptoskit::FillStyle;
+use skribble_leptoskit::WiredBadge;
+use verily_ink::sketches;
 
 use crate::chrome;
 use crate::l10n::use_l10n;
@@ -19,6 +26,7 @@ use crate::routes::Action;
 use crate::routes::Navigation;
 use crate::state::remember;
 use crate::theme;
+use crate::theme::Role;
 
 /// The catalogue.
 #[component]
@@ -30,121 +38,141 @@ pub fn Page(navigation: &Navigation) -> Element {
 		latitude: None,
 		longitude: None,
 	});
-	// One state at a time: the screen rebuilds when the query moves on, and
-	// a hidden placeholder would still take its share of the page's gaps.
-	let body = if actions.is_loading() {
-		view! { <chrome::Muted text=l10n.do_loading() /> }
-	} else if actions.is_error() {
-		view! {
-			<chrome::Card seed=21>
-				<chrome::Title text=l10n.do_load_failed_title() />
-				<chrome::Quiet
-					label=l10n.dialog_retry()
-					on_press=move || {
-						actions.refetch();
-					}
-				/>
-			</chrome::Card>
-		}
-	} else {
-		let cards = actions.data().unwrap_or_default();
-		if cards.is_empty() {
-			view! {
-				<chrome::Empty
-					picture=draw::place_map(23)
-					title=l10n.do_empty_title()
-					body=l10n.do_empty_body()
-				/>
-			}
-		} else {
-			let cards = cards
-				.into_iter()
-				.map(|card| view! { <CatalogueCard navigation=navigation.clone() card=card /> })
-				.collect::<Vec<_>>();
-			view! { <View class=theme::LIST.as_str()>{cards}</View> }
-		}
-	};
+	let navigation = navigation.clone();
 	view! {
-		<View class="flex flex-col gap-6">
-			<View class=theme::STACK.as_str()>
-				<chrome::Display text=l10n.do_title() />
-				<chrome::Body text=l10n.do_subtitle() />
-			</View>
+		<chrome::Page>
+			<chrome::Heading text=l10n.do_title() body=l10n.do_subtitle() />
 			<Filters filter=filter />
-			{body}
-		</View>
+			{Show(
+				move || actions.is_loading(),
+				move || view! { <chrome::Loading text=l10n.do_loading() /> },
+			)}
+			{Show(
+				move || actions.is_error(),
+				move || {
+					view! {
+						<chrome::Failed
+							title=l10n.do_load_failed_title()
+							retry=l10n.dialog_retry()
+							on_retry=move || {
+								actions.refetch();
+							}
+						/>
+					}
+				},
+			)}
+			{Show(
+				move || actions.data().is_some_and(|rows| rows.is_empty()),
+				move || {
+					view! {
+						<chrome::Empty
+							title=l10n.do_empty_title()
+							body=l10n.do_empty_body()
+							picture=sketches::arrow_up(96.0, 84.0, 31)
+						/>
+					}
+				},
+			)}
+			<View class=theme::STACK>
+				{For(
+					move || actions.data().unwrap_or_default(),
+					|card: &ActionCard| card.id.clone(),
+					move |card| view! { <CatalogueCard navigation=navigation.clone() card=card /> },
+				)}
+			</View>
+		</chrome::Page>
 	}
 }
 
 #[component]
 fn Filters(filter: RwSignal<ActionFilter>) -> Element {
 	let l10n = use_l10n();
-	let choices = [
+	let chips = [
 		(ActionFilter::All, l10n.do_filter_all()),
 		(ActionFilter::Nearby, l10n.do_filter_nearby()),
 		(ActionFilter::Place, l10n.do_filter_place()),
 		(ActionFilter::Movement, l10n.do_filter_movement()),
 		(ActionFilter::VenueCode, l10n.do_filter_venue_code()),
 		(ActionFilter::Apps, l10n.do_filter_apps()),
-	];
-	let chosen = filter.get();
-	let buttons = choices
-		.into_iter()
-		.enumerate()
-		.map(|(index, (value, label))| {
-			let selected = chosen == value;
-			view! {
-				<chrome::Choice
-					label=label
-					selected=selected
-					seed=31 + index as i64 * 2
-					on_press=move || filter.set(value.clone())
-				/>
-			}
-		})
-		.collect::<Vec<_>>();
-	view! { <View class=theme::ROW.as_str()>{buttons}</View> }
+	]
+	.into_iter()
+	.enumerate()
+	.map(|(index, (value, label))| {
+		view! { <FilterChip filter=filter value=value label=label seed=101 + index as i64 /> }
+	})
+	.collect::<Vec<_>>();
+	view! { <View class=theme::ROW>{chips}</View> }
 }
 
-/// Stable per-card seeds, so a card wobbles the same way on every rebuild.
-fn seed_for(id: &str) -> i64 {
-	id.bytes()
-		.fold(17_i64, |seed, byte| {
-			seed.wrapping_mul(31).wrapping_add(i64::from(byte))
-		})
-		.rem_euclid(10_000)
+/// A filter as a hand-drawn capsule: ink-filled when chosen.
+#[component]
+fn FilterChip(
+	filter: RwSignal<ActionFilter>,
+	value: ActionFilter,
+	label: impl Into<String>,
+	seed: i64,
+) -> Element {
+	let selected = filter.get() == value;
+	let label = label.into();
+	let (fill_style, text) = if selected {
+		(
+			FillStyle::Solid,
+			verily_ink::tone_class("text", verily_ink::PAPER),
+		)
+	} else {
+		(FillStyle::None, theme::ink())
+	};
+	view! {
+		<Pressable
+			accessibility_label=label.clone()
+			class="min-h-11 justify-center"
+			on:press=move || filter.set(value.clone())
+		>
+			<WiredBadge seed=seed theme=theme::PEN fill_style=fill_style class=text>
+				<Text class=theme::LABEL>{label}</Text>
+			</WiredBadge>
+		</Pressable>
+	}
 }
 
+/// One action: its name, where, and what it pays. The whole card opens it.
 #[component]
 fn CatalogueCard(navigation: Navigation, card: ActionCard) -> Element {
 	let l10n = use_l10n();
-	let id = card.id.clone();
-	let seed = seed_for(&card.id);
-	let radius = if card.radius_meters > 0 {
-		l10n.action_place_radius(card.radius_meters)
-	} else {
-		l10n.do_map_empty_title().to_owned()
-	};
+	let seed = chrome::seed_for(&card.id);
+	let radius = (card.radius_meters > 0).then(|| l10n.action_place_radius(card.radius_meters));
 	let creator = l10n.do_creator_by(&card.creator);
 	let reward = (!card.reward_label.is_empty()).then(|| {
 		let label = l10n.reward_in_escrow(&card.reward_label);
-		view! { <chrome::RewardChip label=label seed=seed + 5 /> }
-	});
-	view! {
-		<chrome::Card seed=seed>
-			<chrome::Title text=card.title />
-			<chrome::Muted text=creator />
-			<View class=theme::ROW.as_str()>
-				<chrome::PlaceChip name=card.place_name detail=radius seed=seed + 3 />
-				{reward}
+		view! {
+			<View class="flex flex-row items-center gap-2">
+				{sketches::coin(28.0, seed + 5)}
+				<chrome::Chip role=Role::Reward text=label seed=seed + 7 />
 			</View>
-			<chrome::Primary
-				label=l10n.action_start()
-				seed=seed + 7
-				on_press=move || {
-					navigation.navigate(Action { action: id.clone() });
-				}
-			/>
-		</chrome::Card>
+		}
+	});
+	let title = card.title.clone();
+	let id = card.id.clone();
+	view! {
+		<Pressable
+			accessibility_label=title.clone()
+			class="w-full"
+			on:press=move || {
+				navigation.navigate(Action { action: id.clone() });
+			}
+		>
+			<chrome::Card seed=seed>
+				<chrome::Title text=title />
+				<chrome::Muted text=creator />
+				<View class="flex flex-row items-center gap-2">
+					{sketches::pin(24.0, seed + 3)}
+					<Text class=format!("{} {}", theme::LABEL, theme::role_text(Role::Place))>
+						{card.place_name.clone()}
+					</Text>
+				</View>
+				{radius.map(|radius| view! { <chrome::Muted text=radius /> })}
+				{reward}
+			</chrome::Card>
+		</Pressable>
 	}
 }

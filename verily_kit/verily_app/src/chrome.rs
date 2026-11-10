@@ -1,56 +1,143 @@
-//! The notebook's furniture: type, buttons, cards, chips, fields, and the
-//! proof checklist, drawn with Skribble's seeded pen.
+//! The notebook's parts: pages, type, cards, chips, buttons, fields, and the
+//! proof checklist, all drawn with Verily's Skribble pen.
 //!
-//! Seeds are fixed per use so a control always wobbles the same way when the
-//! screen is rebuilt.
+//! Screens build from these, so the look lives in one place: rough seeded
+//! outlines, washes behind the colour roles, ink for the one filled button,
+//! and vermilion only on a verified tick or stamp.
 
 use leptoskit::component;
 use leptoskit::prelude::Children;
 use leptoskit::prelude::Element;
+use leptoskit::prelude::ScrollView;
 use leptoskit::prelude::Text;
 use leptoskit::prelude::View;
 use leptoskit::view;
 use skribble_leptoskit::ButtonVariant;
 use skribble_leptoskit::FillStyle;
-use skribble_leptoskit::WiredBox;
+use skribble_leptoskit::WiredBadge;
 use skribble_leptoskit::WiredButton;
 use skribble_leptoskit::WiredCard;
 use skribble_leptoskit::WiredInput;
-use verily_ink::draw;
+use verily_ink::sketches;
 
 use crate::theme;
+use crate::theme::Role;
 
-/// The one promise at the top of a screen.
+/// One page of the notebook: it scrolls, keeps the gutter, and spaces its
+/// groups. The paper itself is the root layout's.
+#[component]
+pub fn Page(children: Children) -> Element {
+	view! {
+		<ScrollView class="flex-1 w-full">
+			<View class=theme::PAGE>{children}</View>
+		</ScrollView>
+	}
+}
+
+/// The display line at the top of a page, with its explanation under it.
+#[component]
+pub fn Heading(text: impl Into<String>, #[prop(optional, into)] body: Option<String>) -> Element {
+	let text = text.into();
+	view! {
+		<View class=theme::STACK>
+			<Text class=format!("{} {}", theme::HEADLINE, theme::ink())>{text}</Text>
+			{body.map(|body| view! { <Muted text=body /> })}
+		</View>
+	}
+}
+
+/// A plain promise in display type.
 #[component]
 pub fn Display(text: impl Into<String>) -> Element {
 	let text = text.into();
-	view! { <Text class=theme::DISPLAY.as_str()>{text}</Text> }
+	view! { <Text class=format!("{} {}", theme::DISPLAY, theme::ink())>{text}</Text> }
 }
 
 /// A section or card title.
 #[component]
 pub fn Title(text: impl Into<String>) -> Element {
 	let text = text.into();
-	view! { <Text class=theme::TITLE.as_str()>{text}</Text> }
+	view! { <Text class=format!("{} {}", theme::TITLE, theme::ink())>{text}</Text> }
 }
 
-/// Body copy.
+/// Body copy in ink.
 #[component]
 pub fn Body(text: impl Into<String>) -> Element {
 	let text = text.into();
-	view! { <Text class=theme::BODY.as_str()>{text}</Text> }
+	view! { <Text class=format!("{} {}", theme::BODY, theme::ink())>{text}</Text> }
 }
 
 /// Secondary copy.
 #[component]
 pub fn Muted(text: impl Into<String>) -> Element {
 	let text = text.into();
-	view! { <Text class=theme::MUTED.as_str()>{text}</Text> }
+	view! { <Text class=format!("{} {}", theme::BODY, theme::muted())>{text}</Text> }
 }
 
-/// The one action a screen is about: ink on paper, full width.
+/// A short status word or place name.
+#[component]
+pub fn Label(text: impl Into<String>) -> Element {
+	let text = text.into();
+	view! { <Text class=format!("{} {}", theme::LABEL, theme::ink())>{text}</Text> }
+}
+
+/// A rough ink card on the page.
+#[component]
+pub fn Card(#[prop(default = 1)] seed: i64, children: Children) -> Element {
+	view! { <WiredCard seed=seed theme=theme::PEN class="w-full">{children}</WiredCard> }
+}
+
+/// A card for one colour role: outlined in the role's colour over its wash.
+/// Text on it stays ink.
+#[component]
+pub fn RoleCard(role: Role, #[prop(default = 1)] seed: i64, children: Children) -> Element {
+	view! {
+		<WiredCard
+			seed=seed
+			theme=role.pen()
+			fill=role.wash()
+			fill_style=FillStyle::Solid
+			class=format!("w-full {}", theme::ink())
+		>
+			{children}
+		</WiredCard>
+	}
+}
+
+/// A status chip in a role's colours, always with its word.
+#[component]
+pub fn Chip(role: Role, text: impl Into<String>, #[prop(default = 1)] seed: i64) -> Element {
+	let text = text.into();
+	view! {
+		<WiredBadge seed=seed theme=role.pen() fill=role.wash() class=theme::ink()>
+			<Text class=theme::LABEL>{text}</Text>
+		</WiredBadge>
+	}
+}
+
+/// The screen's one primary action: ink on paper, full width.
 #[component]
 pub fn Primary(
+	label: impl Into<String>,
+	on_press: impl Fn() + Send + Sync + 'static,
+	#[prop(optional)] disabled: bool,
+	#[prop(default = 1)] seed: i64,
+) -> Element {
+	view! {
+		<WiredButton
+			label=label.into()
+			on_press=on_press
+			disabled=disabled
+			seed=seed
+			theme=theme::PEN
+			class="w-full min-h-14"
+		/>
+	}
+}
+
+/// Every other action: an ink outline.
+#[component]
+pub fn Quiet(
 	label: impl Into<String>,
 	on_press: impl Fn() + Send + Sync + 'static,
 	#[prop(optional)] disabled: bool,
@@ -62,28 +149,8 @@ pub fn Primary(
 			on_press=on_press
 			disabled=disabled
 			seed=seed
-			theme=theme::ACTION
-			class="w-full"
-		/>
-	}
-}
-
-/// Every other action: an outline.
-#[component]
-pub fn Quiet(
-	label: impl Into<String>,
-	on_press: impl Fn() + Send + Sync + 'static,
-	#[prop(optional)] disabled: bool,
-	#[prop(default = 3)] seed: i64,
-) -> Element {
-	view! {
-		<WiredButton
-			label=label.into()
-			on_press=on_press
 			variant=ButtonVariant::Secondary
-			disabled=disabled
-			seed=seed
-			theme=theme::ACTION
+			theme=theme::PEN
 		/>
 	}
 }
@@ -95,7 +162,6 @@ pub fn Choice(
 	selected: bool,
 	on_press: impl Fn() + Send + Sync + 'static,
 	#[prop(default = 5)] seed: i64,
-	#[prop(optional, into)] class: Option<String>,
 ) -> Element {
 	let variant = if selected {
 		ButtonVariant::Primary
@@ -108,110 +174,8 @@ pub fn Choice(
 			on_press=on_press
 			variant=variant
 			seed=seed
-			theme=theme::ACTION
-			class=class.unwrap_or_default()
+			theme=theme::PEN
 		/>
-	}
-}
-
-/// A page of the notebook: a rough ink outline on the same paper.
-#[component]
-pub fn Card(#[prop(default = 7)] seed: i64, children: Children) -> Element {
-	view! {
-		<WiredCard seed=seed theme=theme::INK class="flex flex-col gap-3 p-4">
-			{children}
-		</WiredCard>
-	}
-}
-
-/// Where: a pin and the place's name, on the sage wash.
-#[component]
-pub fn PlaceChip(
-	name: impl Into<String>,
-	detail: impl Into<String>,
-	#[prop(default = 11)] seed: i64,
-) -> Element {
-	let name = name.into();
-	let detail = detail.into();
-	view! {
-		<WiredBox
-			seed=seed
-			theme=theme::INK
-			fill=verily_ink::PLACE_WASH
-			fill_style=FillStyle::Solid
-			class="flex flex-row items-center gap-3 px-3 py-2"
-		>
-			{draw::pin(22.0, seed + 1)}
-			<View class="flex flex-col">
-				<Text class=theme::PLACE_LABEL.as_str()>{name}</Text>
-				<Text class=theme::MUTED.as_str()>{detail}</Text>
-			</View>
-		</WiredBox>
-	}
-}
-
-/// What it pays: a coin and the amount, on butter, before the work.
-#[component]
-pub fn RewardChip(
-	label: impl Into<String>,
-	#[prop(optional, into)] detail: Option<String>,
-	#[prop(default = 13)] seed: i64,
-) -> Element {
-	let label = label.into();
-	let detail = detail.map(|detail| view! { <Text class=theme::MUTED.as_str()>{detail}</Text> });
-	view! {
-		<WiredBox
-			seed=seed
-			theme=theme::INK
-			fill=verily_ink::REWARD_WASH
-			fill_style=FillStyle::Solid
-			class="flex flex-row items-center gap-3 px-3 py-2"
-		>
-			{draw::coin(22.0, seed + 1)}
-			<View class="flex flex-col">
-				<Text class=theme::LABEL.as_str()>{label}</Text>
-				{detail}
-			</View>
-		</WiredBox>
-	}
-}
-
-/// Something a person decides, on the violet wash.
-#[component]
-pub fn ReviewChip(text: impl Into<String>, #[prop(default = 17)] seed: i64) -> Element {
-	let text = text.into();
-	view! {
-		<WiredBox
-			seed=seed
-			theme=theme::INK
-			fill=verily_ink::REVIEW_WASH
-			fill_style=FillStyle::Solid
-			class="self-start px-3 py-1"
-		>
-			<Text class=theme::LABEL.as_str()>{text}</Text>
-		</WiredBox>
-	}
-}
-
-/// One row of the proof checklist: an empty box until the proof is in.
-#[component]
-pub fn ProofRow(
-	text: impl Into<String>,
-	#[prop(optional, into)] detail: Option<String>,
-	#[prop(default = 19)] seed: i64,
-) -> Element {
-	let text = text.into();
-	let detail = detail.map(|detail| view! { <Text class=theme::MUTED.as_str()>{detail}</Text> });
-	view! {
-		<View class=theme::LINE.as_str()>
-			<WiredBox seed=seed theme=theme::INK class="size-7 shrink-0">
-				<View />
-			</WiredBox>
-			<View class="flex flex-1 flex-col gap-1">
-				<Text class=theme::LABEL.as_str()>{text}</Text>
-				{detail}
-			</View>
-		</View>
 	}
 }
 
@@ -219,82 +183,103 @@ pub fn ProofRow(
 #[component]
 pub fn Field(
 	label: impl Into<String>,
-	value: String,
+	value: impl Into<String>,
 	on_change: impl Fn(&str) + Send + Sync + 'static,
 	#[prop(optional, into)] placeholder: Option<String>,
 	#[prop(optional)] disabled: bool,
-	#[prop(default = 23)] seed: i64,
+	#[prop(default = 1)] seed: i64,
 ) -> Element {
-	let label = label.into();
 	view! {
 		<View class="flex flex-col gap-1" enabled=!disabled>
-			<Text class=theme::LABEL.as_str()>{label.clone()}</Text>
 			<WiredInput
-				label=label
-				value=value
+				label=label.into()
+				value=value.into()
 				on_change=on_change
 				placeholder=placeholder.unwrap_or_default()
 				seed=seed
-				theme=theme::INK
+				theme=theme::PEN
 				class="w-full"
 			/>
 		</View>
 	}
 }
 
-/// An empty or waiting page: a drawing, a title, and a line of help.
+/// What a checklist row says happened to one plain outcome.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Outcome {
+	/// Still to do: an empty box.
+	Open,
+	/// Passed: the box gets the vermilion check. Screens pass this once a
+	/// proof is in; until then only `Open` is constructed.
+	#[allow(dead_code)]
+	Done,
+}
+
+/// One row of the proof checklist.
 #[component]
-pub fn Empty(picture: Element, title: impl Into<String>, body: impl Into<String>) -> Element {
-	let title = title.into();
-	let body = body.into();
+pub fn ProofRow(
+	text: impl Into<String>,
+	outcome: Outcome,
+	#[prop(optional, into)] detail: Option<String>,
+	#[prop(default = 1)] seed: i64,
+) -> Element {
+	let text = text.into();
+	let mark = match outcome {
+		Outcome::Done => sketches::tick(seed),
+		Outcome::Open => sketches::open_box(seed),
+	};
 	view! {
-		<View class="flex flex-col items-center gap-3 py-6">
-			{picture}
-			<Title text=title />
-			<Text class=format!("{} text-center", theme::MUTED.as_str())>{body}</Text>
+		<View class="flex flex-row items-center gap-3 min-h-11">
+			{mark}
+			<View class="flex flex-col flex-1 gap-1">
+				<Body text=text />
+				{detail.map(|detail| view! { <Muted text=detail /> })}
+			</View>
 		</View>
 	}
 }
 
-#[cfg(test)]
-mod tests {
-	use leptoskit::view;
+/// A page that is still loading.
+#[component]
+pub fn Loading(text: impl Into<String>) -> Element {
+	view! { <Muted text=text.into() /> }
+}
 
-	use super::*;
-
-	/// Every piece, with every optional part, builds: a class the renderer
-	/// does not know panics here rather than on a phone.
-	#[test]
-	fn every_piece_builds() {
-		let pieces = vec![
-			view! { <Display text="Prove it." /> },
-			view! { <Title text="Plant a tree" /> },
-			view! { <Body text="Do it, live." /> },
-			view! { <Muted text="by Ada" /> },
-			view! { <Primary label="Start" on_press=|| {} /> },
-			view! { <Primary label="Start" on_press=|| {} disabled=true /> },
-			view! { <Quiet label="Back" on_press=|| {} /> },
-			view! { <Choice label="Nearby" selected=true on_press=|| {} /> },
-			view! { <Choice label="All" selected=false on_press=|| {} /> },
-			view! { <Choice label="Do" selected=true on_press=|| {} class="flex-1" /> },
-			view! { <Card><Title text="Inside" /></Card> },
-			view! { <PlaceChip name="Hackney Marshes" detail="Within 100 m" /> },
-			view! { <RewardChip label="5 USDC · in escrow" /> },
-			view! { <RewardChip label="5 USDC" detail="On its way" /> },
-			view! { <ReviewChip text="With a reviewer" /> },
-			view! { <ProofRow text="Photo" /> },
-			view! { <ProofRow text="Be there" detail="Inside the place" /> },
-			view! { <Field label="Title" value=String::new() on_change=|_: &str| {} /> },
-			view! {
-				<Field
-					label="Title"
-					value="Plant a tree".to_owned()
-					placeholder="What to do"
-					on_change=|_: &str| {}
-				/>
-			},
-			view! { <Empty picture=draw::escrow_jar(1) title="Nothing yet" body="Post one." /> },
-		];
-		assert_eq!(pieces.len(), 20);
+/// A load that failed, with the way to try again.
+#[component]
+pub fn Failed(
+	title: impl Into<String>,
+	retry: impl Into<String>,
+	on_retry: impl Fn() + Send + Sync + 'static,
+) -> Element {
+	view! {
+		<Card seed=91>
+			<Title text=title.into() />
+			<Quiet label=retry.into() on_press=on_retry />
+		</Card>
 	}
+}
+
+/// Nothing here yet: a picture, what that means, and what to do.
+#[component]
+pub fn Empty(
+	title: impl Into<String>,
+	body: impl Into<String>,
+	#[prop(optional)] picture: Option<Element>,
+) -> Element {
+	view! {
+		<Card seed=93>
+			<View class="items-center">{picture}</View>
+			<Title text=title.into() />
+			<Muted text=body.into() />
+		</Card>
+	}
+}
+
+/// A stable seed for a record, so its card wobbles the same way every time
+/// it is drawn.
+#[must_use]
+pub fn seed_for(id: &str) -> i64 {
+	id.bytes()
+		.fold(7_i64, |seed, byte| (seed * 31 + i64::from(byte)) % 10_007)
 }

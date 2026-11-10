@@ -11,7 +11,7 @@
 //! ```
 
 pub mod brand;
-mod ink;
+
 mod page;
 
 use std::path::Path;

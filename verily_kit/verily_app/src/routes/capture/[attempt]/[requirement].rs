@@ -1,22 +1,22 @@
 //! Live capture, `/capture/:attempt/:requirement`.
 //!
-//! The viewfinder is night paper with sketched corner brackets, a "Live"
-//! label, and the spoken challenge in a speech bubble: no face boxes, no
-//! grids, no scores. The sensor opens only after `beginCapture` returns,
-//! through the shell plugin. A missing plugin shows the integrity failure.
-//! It does not open a gallery or a file picker.
+//! The frame is night paper with sketched corner brackets: no face boxes,
+//! no grids, no scores. The camera surface itself arrives with the capture
+//! plugin. The sensor opens only after
+//! `beginCapture` returns, through the shell plugin. A missing plugin shows
+//! the integrity failure. It does not open a gallery or a file picker.
 
 use leptoskit::component;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::Get;
 use leptoskit::prelude::Set;
+use leptoskit::prelude::Show;
 use leptoskit::prelude::Text;
 use leptoskit::prelude::View;
 use leptoskit::query::use_mutation;
 use leptoskit::rpc::client::mutation_scope;
+use leptoskit::rpc::client::use_rpc_query;
 use leptoskit::view;
-use leptoskit_router::Route;
-use verily_ink::draw;
 
 use crate::chrome;
 use crate::host;
@@ -24,11 +24,16 @@ use crate::host::HostFault;
 use crate::l10n::use_l10n;
 use crate::ops::BeginCapture;
 use crate::ops::CompleteAttempt;
+use crate::ops::IssueSpokenChallenge;
 use crate::ops::SubmitAttestation;
 use crate::ops::SubmitLiveProof;
-use crate::routes::Navigation;
 use crate::state::remember;
+use leptoskit_router::Route;
+
+use crate::routes::Navigation;
 use crate::theme;
+use crate::theme::Role;
+use verily_ink::sketches;
 
 #[derive(Route, Clone, Debug, PartialEq)]
 pub struct Capture {
@@ -57,9 +62,15 @@ pub fn Page(route: &Capture, navigation: &Navigation) -> Element {
 	let key = format!("capture.{attempt_id}.{requirement_id}");
 	let phase = remember(&format!("{key}.phase"), || Phase::Ready);
 	let digest = remember(&format!("{key}.digest"), String::new);
-	// The word comes with the capture window, from the server's list, and
-	// only for a proof that asks for one.
-	let spoken = remember(&format!("{key}.word"), || None::<String>);
+	let spoken = use_rpc_query({
+		let attempt_id = attempt_id.clone();
+		let requirement_id = requirement_id.clone();
+		move || IssueSpokenChallenge {
+			attempt_id: attempt_id.clone(),
+			requirement_id: requirement_id.clone(),
+		}
+	});
+
 	let finish = use_mutation(
 		mutation_scope::<CompleteAttempt>().with_on_success(move |_| {
 			phase.set(Phase::Finished);
@@ -110,7 +121,6 @@ pub fn Page(route: &Capture, navigation: &Navigation) -> Element {
 			.with_on_success_async(move |args| {
 				let phase = phase;
 				let digest = digest;
-				spoken.set(args.data.spoken_word.clone());
 				async move {
 					match host::open_live(&args.data).await {
 						Ok(proof) => {
@@ -130,35 +140,69 @@ pub fn Page(route: &Capture, navigation: &Navigation) -> Element {
 
 	let live = l10n.capture_live();
 	view! {
-		<View class="flex flex-col gap-6">
-			<chrome::Display text=l10n.action_your_proof() />
-			<Viewfinder label=live word=spoken.get().map(|word| l10n.capture_challenge_say(&word)) />
-			{(spoken.get().is_some()).then(|| view! { <chrome::Muted text=l10n.capture_challenge_intro() /> })}
-			{(phase.get() == Phase::PluginMissing).then(|| {
+		<chrome::Page>
+			<chrome::Heading text=l10n.capture_review_title() body=l10n.capture_challenge_intro() />
+			<View class="relative w-full h-[440px] overflow-hidden rounded-xl">
+				<View class=format!(
+					"absolute inset-0 {}",
+					verily_ink::tone_class("bg", verily_ink::NIGHT)
+				) />
+				{sketches::viewfinder(328.0, 440.0, 71)}
+				<View class="absolute left-4 top-4 flex flex-row items-center gap-2">
+					<Text class=format!(
+						"{} {}",
+						theme::LABEL,
+						verily_ink::tone_class("text", verily_ink::CHALK),
+					)>
+						{live}
+					</Text>
+				</View>
+				{Show(
+					move || spoken.data().is_some(),
+					move || {
+						let word = spoken.data().map(|item| item.word).unwrap_or_default();
+						let said = l10n.capture_challenge_say(&word);
+						view! {
+							<View class="absolute left-6 bottom-8 w-[190px] h-[74px]">
+								{sketches::bubble(190.0, 74.0, 73)}
+								<Text class=format!(
+									"absolute left-4 top-3 {} {}",
+									theme::LABEL,
+									verily_ink::tone_class("text", verily_ink::CHALK_INK),
+								)>
+									{said}
+								</Text>
+							</View>
+						}
+					},
+				)}
+			</View>
+			{Show(
+				move || phase.get() == Phase::PluginMissing,
+				move || {
 					view! {
-						<chrome::Card seed=71>
+						<chrome::RoleCard role=Role::Review seed=801>
 							<chrome::Title text=l10n.capture_integrity_title() />
-							<chrome::Muted text=l10n.capture_integrity_body() />
-						</chrome::Card>
+							<chrome::Body text=l10n.capture_integrity_body() />
+						</chrome::RoleCard>
 					}
-				})}
-			{(phase.get() == Phase::Failed).then(|| {
-					view! {
-						<chrome::Card seed=73>
-							<chrome::Title text=l10n.capture_problem_title() />
-						</chrome::Card>
-					}
-				})}
-			{(phase.get() == Phase::Review).then(|| {
+				},
+			)}
+			{Show(
+				move || phase.get() == Phase::Failed,
+				move || view! { <chrome::Title text=l10n.capture_problem_title() /> },
+			)}
+			{Show(move || phase.get() == Phase::Review, {
 				let attempt_id = attempt_id.clone();
 				let requirement_id = requirement_id.clone();
-				{
+				move || {
+					let attempt_id = attempt_id.clone();
+					let requirement_id = requirement_id.clone();
 					view! {
-						<View class=theme::STACK.as_str()>
+						<View class=theme::STACK>
 							<chrome::Muted text=l10n.capture_review_preview_unavailable() />
 							<chrome::Primary
 								label=l10n.capture_review_send()
-								seed=75
 								on_press=move || {
 									phase.set(Phase::Working);
 									submit.mutate(SubmitLiveProof {
@@ -167,37 +211,43 @@ pub fn Page(route: &Capture, navigation: &Navigation) -> Element {
 										digest_hex: digest.get(),
 									});
 								}
+								seed=803
 							/>
 							<chrome::Quiet
 								label=l10n.capture_review_retake()
-								seed=77
 								on_press=move || {
 									digest.set(String::new());
 									phase.set(Phase::Ready);
 								}
+								seed=805
 							/>
 						</View>
 					}
 				}
 			})}
-			{(phase.get() == Phase::Finished).then(|| {
+			{Show(
+				move || phase.get() == Phase::Finished,
+				move || {
 					view! {
-						<View class="flex flex-col items-center gap-3">
-							{draw::stamp(132.0, 79)}
+						<chrome::Card seed=807>
+							<View class="items-center -rotate-[8deg]">
+								{sketches::slammed_stamp(132.0, 41, 0, false)}
+							</View>
 							<chrome::Title text=l10n.action_verified_title() />
-							<chrome::Muted text=l10n.action_verified_body() />
-						</View>
+							<chrome::Body text=l10n.action_verified_body() />
+						</chrome::Card>
 					}
-				})}
-			{(matches!(phase.get(), Phase::Ready | Phase::Working)).then(|| {
+				},
+			)}
+			{Show(
+				move || phase.get() != Phase::Review && phase.get() != Phase::Finished,
+				move || {
 					let attempt_id = attempt_for_begin.clone();
 					let requirement_id = requirement_for_begin.clone();
-					let working = phase.get() == Phase::Working;
 					view! {
 						<chrome::Primary
 							label=l10n.capture_record_start()
-							disabled=working
-							seed=81
+							disabled=begin.is_pending()
 							on_press=move || {
 								phase.set(Phase::Working);
 								begin.mutate(BeginCapture {
@@ -205,48 +255,11 @@ pub fn Page(route: &Capture, navigation: &Navigation) -> Element {
 									requirement_id: requirement_id.clone(),
 								});
 							}
+							seed=809
 						/>
 					}
-				})}
-		</View>
-	}
-}
-
-/// The night page with corner brackets, the "Live" label, and the spoken
-/// challenge. It frames the capture; it is not a camera image.
-#[component]
-fn Viewfinder(label: impl Into<String>, word: Option<String>) -> Element {
-	let label = label.into();
-	let challenge = word.map(|said| {
-		view! {
-			<View class="absolute left-6 bottom-6 w-[220px] h-[84px]">
-				{draw::bubble(220.0, 84.0, 85)}
-				<View class="absolute left-4 top-3 right-4">
-					<Text class=theme::HUD_WORD.as_str()>{said}</Text>
-				</View>
-			</View>
-		}
-	});
-	view! {
-		<View class=theme::FINDER.as_str() aria_label=label.clone()>
-			{draw::viewfinder(328.0, 288.0, 83)}
-			<View class="absolute left-6 top-6 flex flex-row items-center gap-2">
-				<View class=theme::HUD_DOT.as_str() />
-				<Text class=theme::HUD.as_str()>{label}</Text>
-			</View>
-			{challenge}
-		</View>
-	}
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-
-	#[test]
-	fn the_viewfinder_builds_with_and_without_a_challenge() {
-		let quiet = view! { <Viewfinder label="Live" word=None /> };
-		let spoken = view! { <Viewfinder label="Live" word=Some("Say “pelican”".to_owned()) /> };
-		assert!(spoken.children.len() > quiet.children.len());
+				},
+			)}
+		</chrome::Page>
 	}
 }

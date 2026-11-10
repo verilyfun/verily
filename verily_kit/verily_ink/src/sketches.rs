@@ -1,10 +1,8 @@
-//! The hand-drawn pictures: the mark, maps, jars, viewfinders, stamps, and
-//! arrows.
+//! The hand-drawn pictures: maps, jars, viewfinders, stamps, and arrows.
 //!
 //! Each is a leptoskit element drawn with Skribble's seeded pen, so the same
-//! seed always wobbles the same way, on the web and on every native backend.
-//! They are decorative unless they carry a label, and they recolour
-//! themselves on night paper.
+//! seed always wobbles the same way. They are decorative unless they carry a
+//! label, and they recolour themselves on night paper.
 
 use leptoskit::prelude::*;
 use skribble_leptoskit::FillStyle;
@@ -13,12 +11,16 @@ use skribble_leptoskit::Shape;
 use skribble_leptoskit::Sketch;
 use skribble_leptoskit::Tone;
 
+use crate::brand;
+
 fn sketch(width: f32, height: f32, seed: i64, shapes: Vec<Shape>) -> Element {
-	view! { <Sketch width=width height=height shapes=shapes seed=seed theme=crate::INK /> }
+	view! { <Sketch width=width height=height shapes=shapes seed=seed theme=brand::INK /> }
 }
 
 fn tinted(width: f32, height: f32, seed: i64, stroke: Tone, shapes: Vec<Shape>) -> Element {
-	view! { <Sketch width=width height=height shapes=shapes seed=seed theme=crate::INK stroke=stroke /> }
+	view! {
+		<Sketch width=width height=height shapes=shapes seed=seed theme=brand::INK stroke=stroke />
+	}
 }
 
 fn filled(
@@ -36,7 +38,7 @@ fn filled(
 			height=height
 			shapes=shapes
 			seed=seed
-			theme=crate::INK
+			theme=brand::INK
 			stroke=stroke
 			fill=fill
 			fill_style=fill_style
@@ -76,14 +78,33 @@ pub fn place_map(seed: i64) -> Element {
 	];
 	view! {
 		<View class="relative w-[300px] h-[220px]" aria_hidden=true>
-			{layer("left-0 top-0", tinted(300.0, 220.0, seed, crate::MUTED, streets))}
 			{layer(
 				"left-0 top-0",
-				filled(300.0, 220.0, seed + 1, crate::PLACE, crate::PLACE, FillStyle::Hachure, radius),
+				tinted(300.0, 220.0, seed, brand::MUTED, streets),
 			)}
 			{layer(
 				"left-0 top-0",
-				filled(300.0, 220.0, seed + 2, crate::PLACE, crate::PLACE, FillStyle::Solid, pin),
+				filled(
+					300.0,
+					220.0,
+					seed + 1,
+					brand::PLACE,
+					brand::PLACE,
+					FillStyle::Hachure,
+					radius,
+				),
+			)}
+			{layer(
+				"left-0 top-0",
+				filled(
+					300.0,
+					220.0,
+					seed + 2,
+					brand::PLACE,
+					brand::PLACE,
+					FillStyle::Solid,
+					pin,
+				),
 			)}
 		</View>
 	}
@@ -153,7 +174,15 @@ pub fn escrow_jar(seed: i64) -> Element {
 		<View class="relative w-[200px] h-[180px]" aria_hidden=true>
 			{layer(
 				"left-0 top-0",
-				filled(200.0, 180.0, seed, crate::REWARD, crate::REWARD, FillStyle::Hachure, coins),
+				filled(
+					200.0,
+					180.0,
+					seed,
+					brand::REWARD,
+					brand::REWARD,
+					FillStyle::Hachure,
+					coins,
+				),
 			)}
 			{layer("left-0 top-0", sketch(200.0, 180.0, seed + 1, jar))}
 			{layer("left-0 top-0", sketch(200.0, 180.0, seed + 2, lock))}
@@ -185,7 +214,7 @@ pub fn viewfinder(width: f32, height: f32, seed: i64) -> Element {
 			(w - inset, h - inset - arm),
 		]),
 	];
-	let paper = Tone::fixed(crate::INK.light.paper);
+	let paper = Tone::fixed(brand::INK.light.paper);
 	view! {
 		<View class="absolute left-0 top-0" aria_hidden=true>
 			<Sketch
@@ -193,7 +222,7 @@ pub fn viewfinder(width: f32, height: f32, seed: i64) -> Element {
 				height=height
 				shapes=corners
 				seed=seed
-				theme=crate::INK
+				theme=brand::INK
 				stroke=paper
 				pen=RoughPen::FINELINER
 			/>
@@ -227,15 +256,18 @@ pub fn stamp(size: f32, seed: i64) -> Element {
 	])];
 	view! {
 		<View class=format!("relative w-[{size}px] h-[{size}px]")>
-			{layer("left-0 top-0", tinted(size, size, seed, crate::STAMP, rings))}
+			{layer(
+				"left-0 top-0",
+				tinted(size, size, seed, brand::STAMP, rings),
+			)}
 			<View class="absolute left-0 top-0">
 				<Sketch
 					width=size
 					height=size
 					shapes=check
 					seed=seed + 1
-					theme=crate::INK
-					stroke=crate::STAMP
+					theme=brand::INK
+					stroke=brand::STAMP
 					pen=RoughPen::BRUSH
 				/>
 			</View>
@@ -258,7 +290,26 @@ pub fn arrow_up(width: f32, height: f32, seed: i64) -> Element {
 	];
 	view! {
 		<View aria_hidden=true>
-			<Sketch width=width height=height shapes=shapes seed=seed theme=crate::INK />
+			<Sketch width=width height=height shapes=shapes seed=seed theme=brand::INK />
+		</View>
+	}
+}
+
+/// A doodled arrow pointing back, to the left.
+pub fn arrow_back(size: f32, seed: i64) -> Element {
+	let s = f64::from(size);
+	let shapes = vec![
+		Shape::curve([
+			(s - 4.0, s * 0.55),
+			(s * 0.62, s * 0.42),
+			(s * 0.34, s * 0.58),
+			(4.0, s * 0.5),
+		])
+		.with_arrowhead(),
+	];
+	view! {
+		<View aria_hidden=true>
+			<Sketch width=size height=size shapes=shapes seed=seed theme=brand::APP />
 		</View>
 	}
 }
@@ -279,7 +330,7 @@ pub fn underline(width: f32, seed: i64, tone: Tone) -> Element {
 				height=16.0
 				shapes=shapes
 				seed=seed
-				theme=crate::INK
+				theme=brand::INK
 				stroke=tone
 				pen=RoughPen::BRUSH
 			/>
@@ -313,11 +364,112 @@ pub fn tick(seed: i64) -> Element {
 					height=32.0
 					shapes=check
 					seed=seed + 1
-					theme=crate::INK
-					stroke=crate::STAMP
+					theme=brand::INK
+					stroke=brand::STAMP
 					pen=RoughPen::BRUSH
 				/>
 			</View>
+		</View>
+	}
+}
+
+/// The proof checklist's empty box: an outcome still to come.
+pub fn open_box(seed: i64) -> Element {
+	let boxed = vec![Shape::RoundedRectangle {
+		x: 3.0,
+		y: 5.0,
+		width: 24.0,
+		height: 24.0,
+		radii: [5.0; 4],
+	}];
+	view! {
+		<View class="relative w-[34px] h-[32px]" aria_hidden=true>
+			{layer("left-0 top-0", sketch(34.0, 32.0, seed, boxed))}
+		</View>
+	}
+}
+
+/// A small place pin in place green, for cards and chips.
+pub fn pin(size: f32, seed: i64) -> Element {
+	let s = f64::from(size);
+	let outline = vec![
+		Shape::curve([
+			(s * 0.5, s * 0.96),
+			(s * 0.24, s * 0.62),
+			(s * 0.14, s * 0.46),
+			(s * 0.18, s * 0.3),
+		]),
+		Shape::curve([
+			(s * 0.18, s * 0.3),
+			(s * 0.3, s * 0.02),
+			(s * 0.7, s * 0.02),
+			(s * 0.82, s * 0.3),
+		]),
+		Shape::curve([
+			(s * 0.82, s * 0.3),
+			(s * 0.86, s * 0.46),
+			(s * 0.76, s * 0.62),
+			(s * 0.5, s * 0.96),
+		]),
+	];
+	let dot = vec![Shape::Circle {
+		x: s * 0.5,
+		y: s * 0.34,
+		diameter: s * 0.22,
+	}];
+	view! {
+		<View class=format!("relative w-[{size}px] h-[{size}px]") aria_hidden=true>
+			{layer(
+				"left-0 top-0",
+				tinted(size, size, seed, brand::PLACE, outline),
+			)}
+			{layer(
+				"left-0 top-0",
+				filled(
+					size,
+					size,
+					seed + 1,
+					brand::PLACE,
+					brand::PLACE,
+					FillStyle::Solid,
+					dot,
+				),
+			)}
+		</View>
+	}
+}
+
+/// A coin in reward gold, for amounts.
+pub fn coin(size: f32, seed: i64) -> Element {
+	let s = f64::from(size);
+	let rim = vec![Shape::Circle {
+		x: s / 2.0,
+		y: s / 2.0,
+		diameter: s * 0.86,
+	}];
+	let face = vec![Shape::Circle {
+		x: s / 2.0,
+		y: s / 2.0,
+		diameter: s * 0.5,
+	}];
+	view! {
+		<View class=format!("relative w-[{size}px] h-[{size}px]") aria_hidden=true>
+			{layer(
+				"left-0 top-0",
+				filled(
+					size,
+					size,
+					seed,
+					brand::REWARD,
+					brand::REWARD,
+					FillStyle::Hachure,
+					rim,
+				),
+			)}
+			{layer(
+				"left-0 top-0",
+				tinted(size, size, seed + 1, brand::REWARD, face),
+			)}
 		</View>
 	}
 }
@@ -334,7 +486,7 @@ pub fn bubble(width: f32, height: f32, seed: i64) -> Element {
 		(26.0, h - 17.0),
 		(6.0, h - 18.0),
 	])];
-	let paper = Tone::fixed(crate::INK.light.paper);
+	let paper = Tone::fixed(brand::INK.light.paper);
 	view! {
 		<View class="absolute left-0 top-0" aria_hidden=true>
 			<Sketch
@@ -342,7 +494,7 @@ pub fn bubble(width: f32, height: f32, seed: i64) -> Element {
 				height=height
 				shapes=shapes
 				seed=seed
-				theme=crate::INK
+				theme=brand::INK
 				stroke=paper
 				fill=paper
 				fill_style=FillStyle::Solid
@@ -351,174 +503,48 @@ pub fn bubble(width: f32, height: f32, seed: i64) -> Element {
 	}
 }
 
+/// "Prove it." circled by hand in vermilion.
+pub fn prove_it() -> Element {
+	view! {
+		<skribble_leptoskit::WiredHighlight
+			kind=skribble_leptoskit::HighlightKind::Circle
+			seed=7
+			color=brand::STAMP
+			theme=brand::INK
+		>
+			<Text class="px-2">"Prove it."</Text>
+		</skribble_leptoskit::WiredHighlight>
+	}
+}
+
+/// The stamp, slammed down once with a bounce, `delay` after it's seen.
+pub fn slammed_stamp(size: f32, seed: i64, delay_ms: u64, when_seen: bool) -> Element {
+	let motion = Motion::enter(Pose::new().scale(2.2).rotate(-24.0).opacity(0.0))
+		.spring(Spring::BOUNCY)
+		.delay(std::time::Duration::from_millis(delay_ms));
+	let motion = if when_seen {
+		motion.in_view(ViewRange::entry())
+	} else {
+		motion
+	};
+	view! { <View motion=motion>{stamp(size, seed)}</View> }
+}
+
+/// A picture that rises into place, tilting the way `seed` says, as it
+/// scrolls into view.
+pub fn rising(element: Element, seed: i64) -> Element {
+	let tilt = if seed % 2 == 0 { 2.0 } else { -2.0 };
+	let motion = Motion::enter(Pose::new().y(28.0).rotate(tilt).opacity(0.0))
+		.spring(Spring::GENTLE)
+		.in_view(ViewRange::entry());
+	view! { <View motion=motion>{element}</View> }
+}
+
 /// A step's number, circled by hand.
 pub fn step_number(number: usize, seed: i64) -> Element {
 	view! {
-		<skribble_leptoskit::WiredCircle seed=seed theme=crate::INK class="size-14">
+		<skribble_leptoskit::WiredCircle seed=seed theme=brand::INK class="size-14">
 			<Text class="text-xl font-bold">{number.to_string()}</Text>
 		</skribble_leptoskit::WiredCircle>
-	}
-}
-
-/// The pin's outline on the 512 artboard, as the cubic segments of
-/// [`crate::MARK_PIN`]: tip, left shoulder, crown, right shoulder, tip.
-const PIN_SEGMENTS: [[(f64, f64); 4]; 4] = [
-	[
-		(240.0, 486.0),
-		(240.0, 486.0),
-		(90.0, 330.56),
-		(90.0, 218.0),
-	],
-	[(90.0, 218.0), (90.0, 135.15), (157.15, 68.0), (240.0, 68.0)],
-	[
-		(240.0, 68.0),
-		(322.85, 68.0),
-		(390.0, 135.15),
-		(390.0, 218.0),
-	],
-	[
-		(390.0, 218.0),
-		(390.0, 330.56),
-		(240.0, 486.0),
-		(240.0, 486.0),
-	],
-];
-
-/// The pin's outline as points `scale` times the artboard, `steps` to a
-/// segment.
-fn pin_outline(scale: f64, steps: usize) -> Vec<(f64, f64)> {
-	let mut points = Vec::with_capacity(PIN_SEGMENTS.len() * steps);
-	for [p0, p1, p2, p3] in PIN_SEGMENTS {
-		for step in 0..steps {
-			let t = step as f64 / steps as f64;
-			let u = 1.0 - t;
-			let (a, b, c, d) = (u * u * u, 3.0 * u * u * t, 3.0 * u * t * t, t * t * t);
-			points.push((
-				(a * p0.0 + b * p1.0 + c * p2.0 + d * p3.0) * scale,
-				(a * p0.1 + b * p1.1 + c * p2.1 + d * p3.1) * scale,
-			));
-		}
-	}
-	points
-}
-
-/// The pin-check mark inked by hand: a solid vermilion pin with the check cut
-/// out of its head in the page's colour, and the flick past the rim.
-///
-/// `label` names it for assistive technology; without one it is decorative.
-/// Draw it on the page, not on a wash: the cut is the page showing through.
-pub fn mark(size: f32, seed: i64, label: Option<&str>) -> Element {
-	let scale = f64::from(size) / 512.0;
-	let at = |x: f64, y: f64| (x * scale, y * scale);
-	// The cut and the flick keep their optical weight at small sizes.
-	let pen = if size <= 32.0 { 54.0 } else { crate::MARK_PEN };
-	let cut_theme = skribble_leptoskit::Theme {
-		stroke_width: (pen * scale) as f32,
-		roughness: 0.6,
-		..crate::INK
-	};
-	let pin = vec![Shape::polygon(pin_outline(scale, 10))];
-	let cut = vec![Shape::linear_path([
-		at(162.0, 230.0),
-		at(220.0, 292.0),
-		at(392.0, 82.0),
-	])];
-	let flick = vec![Shape::line(at(380.7, 95.9), at(420.0, 48.0))];
-	let solid = skribble_leptoskit::Theme {
-		roughness: 0.6,
-		..crate::INK
-	};
-	let pin = view! {
-		<Sketch
-			width=size
-			height=size
-			shapes=pin
-			seed=seed
-			theme=solid
-			stroke=crate::STAMP
-			fill=crate::STAMP
-			fill_style=FillStyle::Solid
-		/>
-	};
-	let cut = view! {
-		<Sketch
-			width=size
-			height=size
-			shapes=cut
-			seed=seed + 1
-			theme=cut_theme
-			stroke=crate::PAGE
-			pen=RoughPen::UNIFORM
-		/>
-	};
-	let flick = view! {
-		<Sketch
-			width=size
-			height=size
-			shapes=flick
-			seed=seed + 2
-			theme=cut_theme
-			stroke=crate::STAMP
-			pen=RoughPen::UNIFORM
-		/>
-	};
-	let frame = format!("relative w-[{size}px] h-[{size}px] shrink-0");
-	let body = view! {
-		<View class=frame>
-			{layer("left-0 top-0", pin)}
-			{layer("left-0 top-0", cut)}
-			{layer("left-0 top-0", flick)}
-		</View>
-	};
-	match label {
-		Some(label) => view! { <View aria_label=label.to_owned()>{body}</View> },
-		None => view! { <View aria_hidden=true>{body}</View> },
-	}
-}
-
-/// A small place pin in place green, for chips and rows.
-pub fn pin(size: f32, seed: i64) -> Element {
-	let scale = f64::from(size) / 512.0;
-	let head = vec![Shape::polygon(pin_outline(scale, 6))];
-	let hole = vec![Shape::Circle {
-		x: 240.0 * scale,
-		y: 218.0 * scale,
-		diameter: 120.0 * scale,
-	}];
-	view! {
-		<View class=format!("relative w-[{size}px] h-[{size}px] shrink-0") aria_hidden=true>
-			{layer(
-				"left-0 top-0",
-				filled(size, size, seed, crate::PLACE, crate::PLACE, FillStyle::Solid, head),
-			)}
-			{layer(
-				"left-0 top-0",
-				filled(size, size, seed + 1, crate::PAGE, crate::PAGE, FillStyle::Solid, hole),
-			)}
-		</View>
-	}
-}
-
-/// A gold coin, hatched, for reward chips.
-pub fn coin(size: f32, seed: i64) -> Element {
-	let s = f64::from(size);
-	let rim = vec![Shape::Circle {
-		x: s / 2.0,
-		y: s / 2.0,
-		diameter: s * 0.86,
-	}];
-	let face = vec![Shape::Circle {
-		x: s / 2.0,
-		y: s / 2.0,
-		diameter: s * 0.5,
-	}];
-	view! {
-		<View class=format!("relative w-[{size}px] h-[{size}px] shrink-0") aria_hidden=true>
-			{layer(
-				"left-0 top-0",
-				filled(size, size, seed, crate::REWARD, crate::REWARD, FillStyle::Hachure, rim),
-			)}
-			{layer("left-0 top-0", tinted(size, size, seed + 1, crate::REWARD, face))}
-		</View>
 	}
 }

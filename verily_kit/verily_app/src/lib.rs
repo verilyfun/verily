@@ -1,15 +1,21 @@
 //! Verily's screens.
 //!
 //! The shell mounts [`App`] and nothing else from this crate. Screens are
-//! files under `src/routes/`; [`routes::Route`] parses those paths. Copy
-//! comes from `l10n/en.arb`. Colours and the pen come from [`theme`],
-//! which builds on `verily_ink`.
+//! files under `src/routes/`, laid out by the file router: the root stack in
+//! `_layout.rs`, the tab bar in `(tabs)/_layout.rs`, and one file per page.
+//! [`routes::Route`] parses their paths, which match the old app's links.
+//! Copy comes from `l10n/en.arb`. Colours and the Skribble pen come from
+//! [`theme`], which draws with the ink in `verily_ink`.
 
 mod chrome;
+mod editor;
 mod host;
 #[allow(dead_code)]
 mod l10n;
 mod live;
+// The generated module publishes `axum_route_list`, which this app does not
+// call, and each path is built with `.into()` the router generator emits.
+#[allow(dead_code, clippy::useless_conversion)]
 mod routes;
 mod sign_in;
 mod state;
@@ -25,8 +31,9 @@ pub mod theme;
 
 pub use routes::Action;
 pub use routes::Capture;
-pub use routes::Editor;
+pub use routes::EditAction;
 pub use routes::Navigation;
+pub use routes::NewAction;
 pub use routes::Route;
 
 use leptoskit::component;
@@ -185,17 +192,13 @@ pub fn App(navigation: Navigation) -> Element {
 	screen(&Shared::new(), &navigation)
 }
 
-/// The route a path on this site opens. The site's root opens Do; a path no
-/// screen claims opens the not-found screen.
+/// The route a path on this site opens: the front door at the root, and the
+/// not-found page for a path no page claims.
 #[must_use]
 pub fn initial_route(path: &str) -> Route {
 	use leptoskit_router::Routable as _;
 
-	let bare = path.split(['?', '#']).next().unwrap_or_default();
-	if bare.trim_matches('/').is_empty() {
-		return Route::Do;
-	}
-	Route::parse(path).unwrap_or(Route::Do)
+	Route::parse(path).unwrap_or(Route::Index)
 }
 
 /// The browser and server adapter: the same [`App`], with the route the
@@ -207,26 +210,13 @@ pub fn WebApp(#[prop(optional, into)] path: String) -> impl leptos::prelude::Int
 	#[cfg(target_arch = "wasm32")]
 	let navigation = {
 		let _ = path;
-		let navigation = Navigation::from_browser().unwrap_or_else(|_| Navigation::new(Route::Do));
-		if web_root() {
-			navigation.replace(Route::Do);
-		}
-		navigation
+		Navigation::from_browser().unwrap_or_else(|_| Navigation::new(Route::Index))
 	};
 	#[cfg(not(target_arch = "wasm32"))]
 	let navigation = Navigation::new(initial_route(&path));
 	connect();
 	let shared = Shared::new();
 	move || leptoskit::web::render(screen(&shared, &navigation))
-}
-
-/// Whether the browser is at the site's root, which opens Do.
-#[cfg(all(feature = "web", target_arch = "wasm32"))]
-fn web_root() -> bool {
-	leptos::prelude::window()
-		.location()
-		.pathname()
-		.is_ok_and(|path| path.trim_matches('/').is_empty())
 }
 
 /// Hydrates the server's markup when the document's hydration script calls it.
@@ -247,11 +237,11 @@ pub fn start() {
 	leptos::mount::mount_to_body(|| leptos::prelude::view! { <WebApp /> });
 }
 
-/// Mounts the same app in the native Wasm runtime, on Do.
+/// Mounts the same app in the native Wasm runtime, at the front door.
 #[cfg(all(target_arch = "wasm32", feature = "native"))]
 #[unsafe(no_mangle)]
 pub extern "C" fn leptoskit_main() {
-	let navigation = Navigation::new(Route::Do);
+	let navigation = Navigation::new(Route::Index);
 	navigation.bind_system_back();
 	connect();
 	let shared = Shared::new();

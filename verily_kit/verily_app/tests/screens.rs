@@ -96,12 +96,14 @@ fn routes_round_trip() {
 			requirement: "photo".into(),
 		}),
 		verily_app::Route::Create,
-		verily_app::Route::Editor(verily_app::Editor {
-			draft: "new".into(),
+		verily_app::Route::NewAction,
+		verily_app::Route::EditAction(verily_app::EditAction {
+			action: "plant-a-tree".into(),
 		}),
 		verily_app::Route::Me,
-		verily_app::Route::Review,
+		verily_app::Route::Reviews,
 		verily_app::Route::Settings,
+		verily_app::Route::Index,
 	];
 	for route in routes {
 		let parsed = verily_app::Route::parse(route.href().as_str()).expect("href parses");
@@ -110,7 +112,7 @@ fn routes_round_trip() {
 }
 
 #[test]
-fn the_do_screen_builds() {
+fn every_screen_builds() {
 	let _ = any_spawner::Executor::init_futures_executor();
 	let owner = leptoskit::leptos::prelude::Owner::new();
 	owner.with(|| {
@@ -124,12 +126,14 @@ fn the_do_screen_builds() {
 				requirement: "photo".into(),
 			}),
 			verily_app::Route::Create,
-			verily_app::Route::Editor(verily_app::Editor {
-				draft: "new".into(),
+			verily_app::Route::NewAction,
+			verily_app::Route::EditAction(verily_app::EditAction {
+				action: "plant-a-tree".into(),
 			}),
 			verily_app::Route::Me,
-			verily_app::Route::Review,
+			verily_app::Route::Reviews,
 			verily_app::Route::Settings,
+			verily_app::Route::Index,
 		];
 		for route in routes {
 			let navigation = verily_app::Navigation::new(route);
@@ -159,7 +163,7 @@ fn nothing_shows_before_the_session_answers() {
 #[test]
 fn screen_classes_parse() {
 	for classes in verily_app::theme::class_sheet() {
-		Tailwind::parse(classes).unwrap_or_else(|error| {
+		Tailwind::parse(&classes).unwrap_or_else(|error| {
 			panic!("{classes} failed to parse: {error}");
 		});
 	}

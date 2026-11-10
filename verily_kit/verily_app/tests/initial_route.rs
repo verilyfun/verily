@@ -1,23 +1,40 @@
 //! The route the address bar opens, on the server and in the browser.
+//!
+//! Paths match the links the Flutter app published, so App Links and shared
+//! URLs keep opening the same pages.
 
+use verily_app::Action;
+use verily_app::EditAction;
 use verily_app::Route;
 use verily_app::initial_route;
 
 #[test]
-fn the_root_opens_do() {
-	for path in ["", "/", "//", "/?ref=landing", "/#top"] {
-		assert_eq!(initial_route(path), Route::Do, "{path:?}");
+fn the_root_opens_the_front_door() {
+	for path in ["", "/", "/?ref=landing", "/#top"] {
+		assert_eq!(initial_route(path), Route::Index, "{path:?}");
 	}
 }
 
 #[test]
-fn each_screen_opens_at_its_own_path() {
+fn each_page_opens_at_its_own_path() {
 	assert_eq!(initial_route("/do"), Route::Do);
 	assert_eq!(initial_route("/create"), Route::Create);
 	assert_eq!(initial_route("/me"), Route::Me);
 	assert_eq!(initial_route("/settings"), Route::Settings);
-	assert_eq!(initial_route("/review?tab=open"), Route::Review);
-	assert!(matches!(initial_route("/do/act_123"), Route::Action(_)));
+	assert_eq!(initial_route("/reviews?tab=open"), Route::Reviews);
+	assert_eq!(
+		initial_route("/actions/act_123"),
+		Route::Action(Action {
+			action: "act_123".to_owned()
+		})
+	);
+	assert_eq!(
+		initial_route("/actions/act_123/edit"),
+		Route::EditAction(EditAction {
+			action: "act_123".to_owned()
+		})
+	);
+	assert_eq!(initial_route("/actions/new"), Route::NewAction);
 }
 
 #[test]

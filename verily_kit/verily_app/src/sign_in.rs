@@ -20,7 +20,6 @@ use leptoskit::prelude::View;
 use leptoskit::query::MutateCallbacks;
 use leptoskit::view;
 use skribble_leptoskit::SkribblePage;
-use verily_ink::draw;
 
 use crate::chrome;
 use crate::l10n::L10n;
@@ -54,7 +53,7 @@ pub(crate) fn problem(l10n: &L10n, error: &ErrorResponse) -> String {
 /// The sign-in page on the notebook's paper.
 pub(crate) fn page() -> Element {
 	view! {
-		<SkribblePage theme=theme::INK class=theme::PAGE.as_str()>
+		<SkribblePage theme=theme::PEN class=theme::PAGE>
 			<SignIn />
 		</SkribblePage>
 	}
@@ -64,9 +63,9 @@ pub(crate) fn page() -> Element {
 pub(crate) fn checking() -> Element {
 	let l10n = use_l10n();
 	view! {
-		<SkribblePage theme=theme::INK class=theme::PAGE.as_str()>
+		<SkribblePage theme=theme::PEN class=theme::PAGE>
 			<View class="flex flex-col items-center gap-4 pt-24">
-				{draw::mark(64.0, 301, Some("Verily"))}
+				{verily_ink::mark(64.0, Some("Verily"))}
 				<chrome::Muted text=l10n.sign_in_checking() />
 			</View>
 		</SkribblePage>
@@ -88,7 +87,7 @@ pub fn SignIn() -> Element {
 
 	let form = match step.get() {
 		Step::Email => view! {
-			<View class=theme::STACK.as_str()>
+			<View class=theme::STACK>
 				<chrome::Title text=l10n.sign_in_email_title() />
 				<chrome::Field
 					label=l10n.sign_in_email_label()
@@ -125,7 +124,7 @@ pub fn SignIn() -> Element {
 			</View>
 		},
 		Step::Code => view! {
-			<View class=theme::STACK.as_str()>
+			<View class=theme::STACK>
 				<chrome::Title text=l10n.sign_in_email_title() />
 				<chrome::Body text=l10n.sign_in_code_sent(&email.get()) />
 				<chrome::Field
@@ -172,7 +171,7 @@ pub fn SignIn() -> Element {
 			</View>
 		},
 		Step::SecondFactor => view! {
-			<View class=theme::STACK.as_str()>
+			<View class=theme::STACK>
 				<chrome::Title text=l10n.sign_in_email_title() />
 				<chrome::Body text=l10n.sign_in_second_factor_prompt() />
 				<chrome::Field
@@ -209,7 +208,7 @@ pub fn SignIn() -> Element {
 	view! {
 		<View class="w-full max-w-md self-center flex flex-col gap-6 pt-6">
 			<View class="flex flex-col items-center gap-4">
-				{draw::mark(88.0, 301, Some("Verily"))}
+				{verily_ink::mark(88.0, Some("Verily"))}
 				<chrome::Display text=l10n.welcome_title() />
 				<chrome::Body text=l10n.sign_in_subtitle() />
 			</View>

@@ -1,17 +1,24 @@
-//! Attempts and payouts, `/me`.
+//! Your page, `/me`: the payout wallet, attempts, payouts, and the way into
+//! reviewing and settings.
 //!
-//! The wallet card does not show an address, a key, or a signature.
+//! The wallet card does not show an address, a key, or a signature. An appeal
+//! belongs to one attempt, and the form never prints that attempt's id.
 
 use leptoskit::component;
 use leptoskit::prelude::Element;
+use leptoskit::prelude::For;
 use leptoskit::prelude::Get;
+use leptoskit::prelude::RwSignal;
 use leptoskit::prelude::Set;
+use leptoskit::prelude::Show;
 use leptoskit::prelude::View;
+use leptoskit::query::QueryHandle;
+use leptoskit::rpc::FnError;
 use leptoskit::rpc::client::mutation_scope;
 use leptoskit::rpc::client::query_scope;
 use leptoskit::rpc::client::use_rpc_query;
 use leptoskit::view;
-use verily_ink::draw;
+use verily_ink::sketches;
 
 use crate::chrome;
 use crate::l10n::use_l10n;
@@ -21,6 +28,7 @@ use crate::model::AttemptRow;
 use crate::model::AttemptStatus;
 use crate::model::PayoutRow;
 use crate::model::PayoutStatus;
+use crate::model::WalletLink;
 use crate::ops::ListMyAttempts;
 use crate::ops::ListMyPayouts;
 use crate::ops::SubmitAppeal;
@@ -30,11 +38,12 @@ use crate::routes::Route;
 use crate::state::mutation;
 use crate::state::remember;
 use crate::theme;
+use crate::theme::Role;
 use crate::wallet::LinkFault;
 use crate::wallet::begin_link;
 use crate::wallet::mobile_link_supported;
 
-/// Attempts, payouts, the wallet card, and the way into review and settings.
+/// Attempts, payouts, the wallet card, and the links out.
 #[component]
 pub fn Page(navigation: &Navigation) -> Element {
 	let l10n = use_l10n();
@@ -44,45 +53,75 @@ pub fn Page(navigation: &Navigation) -> Element {
 	let review = navigation.clone();
 	let settings = navigation.clone();
 	view! {
-		<View class="flex flex-col gap-6">
-			<View class=theme::STACK.as_str()>
-				<chrome::Display text=l10n.me_title() />
-				<chrome::Body text=l10n.me_subtitle() />
-			</View>
+		<chrome::Page>
+			<chrome::Heading text=l10n.me_title() body=l10n.me_subtitle() />
 			<WalletCard wallet=wallet />
-			<View class=theme::STACK.as_str()>
+			<View class=theme::STACK>
 				<chrome::Title text=l10n.me_attempts_title() />
-				{(attempts.is_loading()).then(|| view! { <chrome::Muted text=l10n.me_loading_attempts() /> })}
-				{(attempts.is_error()).then(|| view! { <chrome::Muted text=l10n.me_load_failed_title() /> })}
-				{(attempts.data().is_some_and(|rows| rows.is_empty())).then(|| view! { <chrome::Muted text=l10n.me_attempts_empty() /> })}
-				<View class=theme::LIST.as_str()>{attempts.data().unwrap_or_default().into_iter().map(|row| view! { <AttemptTile row=row /> }).collect::<Vec<_>>()}</View>
+				{Show(
+					move || attempts.is_loading(),
+					move || view! { <chrome::Loading text=l10n.me_loading_attempts() /> },
+				)}
+				{Show(
+					move || attempts.is_error(),
+					move || {
+						view! {
+							<chrome::Failed
+								title=l10n.me_load_failed_title()
+								retry=l10n.dialog_retry()
+								on_retry=move || {
+									attempts.refetch();
+								}
+							/>
+						}
+					},
+				)}
+				{Show(
+					move || attempts.data().is_some_and(|rows| rows.is_empty()),
+					move || view! { <chrome::Muted text=l10n.me_attempts_empty() /> },
+				)}
+				{For(
+					move || attempts.data().unwrap_or_default(),
+					|row: &AttemptRow| row.id.clone(),
+					|row| view! { <AttemptTile row=row /> },
+				)}
 			</View>
-			<View class=theme::STACK.as_str()>
+			<View class=theme::STACK>
 				<chrome::Title text=l10n.me_payouts_title() />
-				{(payouts.is_loading()).then(|| view! { <chrome::Muted text=l10n.me_loading_payouts() /> })}
-				{(payouts.data().is_some_and(|rows| rows.is_empty())).then(|| view! { <chrome::Muted text=l10n.me_payouts_empty() /> })}
-				<View class=theme::LIST.as_str()>{payouts.data().unwrap_or_default().into_iter().map(|row| view! { <PayoutTile row=row /> }).collect::<Vec<_>>()}</View>
+				{Show(
+					move || payouts.is_loading(),
+					move || view! { <chrome::Loading text=l10n.me_loading_payouts() /> },
+				)}
+				{Show(
+					move || payouts.data().is_some_and(|rows| rows.is_empty()),
+					move || view! { <chrome::Muted text=l10n.me_payouts_empty() /> },
+				)}
+				{For(
+					move || payouts.data().unwrap_or_default(),
+					|row: &PayoutRow| row.id.clone(),
+					|row| view! { <PayoutTile row=row /> },
+				)}
 			</View>
-			<View class=theme::ROW.as_str()>
+			<View class=theme::ROW>
 				<chrome::Quiet
 					label=l10n.me_link_review()
-					seed=171
-					on_press=move || review.navigate(Route::Review)
+					on_press=move || review.navigate(Route::Reviews)
+					seed=401
 				/>
 				<chrome::Quiet
 					label=l10n.settings_title()
-					seed=173
 					on_press=move || settings.navigate(Route::Settings)
+					seed=403
 				/>
 			</View>
-		</View>
+		</chrome::Page>
 	}
 }
 
+/// Where rewards go: linked or not, in plain words, with the way to link one
+/// on a phone that can talk to a wallet.
 #[component]
-fn WalletCard(
-	wallet: leptoskit::query::QueryHandle<crate::model::WalletLink, leptoskit::rpc::FnError>,
-) -> Element {
+fn WalletCard(wallet: QueryHandle<WalletLink, FnError>) -> Element {
 	let l10n = use_l10n();
 	let linking = remember("me.wallet.linking", || false);
 	let fault = remember("me.wallet.fault", || None::<LinkFault>);
@@ -106,41 +145,46 @@ fn WalletCard(
 	} else {
 		l10n.me_wallet_link()
 	};
+	let button = if can_link && linked {
+		view! {
+			<chrome::Quiet
+				label=label
+				disabled=busy
+				on_press=move || press_wallet_link(linking, fault, linked_here, wallet)
+				seed=407
+			/>
+		}
+	} else if can_link {
+		view! {
+			<chrome::Primary
+				label=label
+				disabled=busy
+				on_press=move || press_wallet_link(linking, fault, linked_here, wallet)
+				seed=407
+			/>
+		}
+	} else {
+		view! { <chrome::Muted text=l10n.me_wallet_unsupported() /> }
+	};
 	view! {
-		<chrome::Card seed=175>
-			<View class=theme::LINE.as_str()>
-				{draw::coin(28.0, 177)}
+		<chrome::RoleCard role=Role::Reward seed=405>
+			<View class="flex flex-row items-center gap-3">
+				{sketches::coin(32.0, 407)}
 				<chrome::Title text=l10n.me_wallet_title() />
 			</View>
 			<chrome::Body text=title />
 			<chrome::Muted text=body />
-			{(!can_link).then(|| view! { <chrome::Muted text=l10n.me_wallet_unsupported() /> })}
-			{(can_link && !linked).then(move || view! {
-				<chrome::Primary
-					label=label
-					seed=179
-					disabled=busy
-					on_press=move || press_wallet_link(linking, fault, linked_here, wallet)
-				/>
-			})}
-			{(can_link && linked).then(move || view! {
-				<chrome::Quiet
-					label=label
-					seed=179
-					disabled=busy
-					on_press=move || press_wallet_link(linking, fault, linked_here, wallet)
-				/>
-			})}
+			{button}
 			{fault_line.map(|text| view! { <chrome::Muted text=text /> })}
-		</chrome::Card>
+		</chrome::RoleCard>
 	}
 }
 
 fn press_wallet_link(
-	linking: leptoskit::prelude::RwSignal<bool>,
-	fault: leptoskit::prelude::RwSignal<Option<LinkFault>>,
-	linked_here: leptoskit::prelude::RwSignal<bool>,
-	wallet: leptoskit::query::QueryHandle<crate::model::WalletLink, leptoskit::rpc::FnError>,
+	linking: RwSignal<bool>,
+	fault: RwSignal<Option<LinkFault>>,
+	linked_here: RwSignal<bool>,
+	wallet: QueryHandle<WalletLink, FnError>,
 ) {
 	if linking.get() {
 		return;
@@ -172,10 +216,13 @@ fn wallet_fault(l10n: &crate::l10n::L10n, fault: LinkFault) -> &'static str {
 	}
 }
 
+/// One attempt. A verified one gets the stamp; one with a person says so in
+/// violet; an appeal, when the server allows it, stays on this card.
 #[component]
 fn AttemptTile(row: AttemptRow) -> Element {
 	let l10n = use_l10n();
-	let status = match row.status {
+	let seed = chrome::seed_for(&row.id);
+	let words = match row.status {
 		AttemptStatus::CollectingEvidence => l10n.attempt_status_collecting_evidence(),
 		AttemptStatus::Verifying => l10n.attempt_status_verifying(),
 		AttemptStatus::PendingReview => l10n.attempt_status_pending_review(),
@@ -183,48 +230,43 @@ fn AttemptTile(row: AttemptRow) -> Element {
 		AttemptStatus::Rejected => l10n.attempt_status_rejected(),
 		AttemptStatus::CapacityReached => l10n.attempt_status_capacity_reached(),
 	};
-	let verified = matches!(row.status, AttemptStatus::Verified);
-	let with_person = matches!(row.status, AttemptStatus::PendingReview);
-	let status = l10n.do_your_attempt(status);
-	let seed = 181 + row.id.len() as i64;
-	let badge = if verified {
-		Some(draw::stamp(56.0, seed + 1))
-	} else {
-		None
-	};
-	let status = if with_person {
-		view! { <chrome::ReviewChip text=status seed=seed + 3 /> }
-	} else {
-		view! { <chrome::Muted text=status /> }
+	let status = match row.status {
+		AttemptStatus::Verified => {
+			view! {
+				<View class="flex flex-row items-center gap-3">
+					<View class="-rotate-[8deg]">{sketches::stamp(56.0, seed + 1)}</View>
+					<chrome::Label text=words />
+				</View>
+			}
+		}
+		AttemptStatus::PendingReview => {
+			view! { <chrome::Chip role=Role::Review text=l10n.do_your_attempt(words) seed=seed + 1 /> }
+		}
+		_ => view! { <chrome::Muted text=l10n.do_your_attempt(words) /> },
 	};
 	let appeal = match row.appeal {
 		AppealStatus::Available => Some(view! { <AppealForm attempt_id=row.id.clone() /> }),
-		AppealStatus::Pending => {
-			Some(view! { <chrome::ReviewChip text=l10n.me_appeal_pending() seed=seed + 5 /> })
-		}
+		AppealStatus::Pending => Some(
+			view! { <chrome::Chip role=Role::Review text=l10n.me_appeal_pending() seed=seed + 5 /> },
+		),
 		AppealStatus::Accepted => Some(view! { <chrome::Muted text=l10n.me_appeal_accepted() /> }),
 		AppealStatus::Rejected => Some(view! { <chrome::Muted text=l10n.me_appeal_rejected() /> }),
 		AppealStatus::Unavailable => None,
 	};
 	view! {
 		<chrome::Card seed=seed>
-			<View class=theme::STACK.as_str()>
-				<View class="flex flex-row items-center justify-between gap-3">
-					<View class="flex flex-1 flex-col gap-2">
-						<chrome::Title text=row.action_title />
-						{status}
-					</View>
-					{badge}
-				</View>
-				{appeal}
-			</View>
+			<chrome::Title text=row.action_title />
+			{status}
+			{appeal}
 		</chrome::Card>
 	}
 }
 
+/// One payout, with its amount next to a coin.
 #[component]
 fn PayoutTile(row: PayoutRow) -> Element {
 	let l10n = use_l10n();
+	let seed = chrome::seed_for(&row.id);
 	let amount = row.amount_label.clone();
 	let status = match row.status {
 		PayoutStatus::AwaitingWallet => l10n.payout_awaiting_wallet(&amount),
@@ -234,15 +276,19 @@ fn PayoutTile(row: PayoutRow) -> Element {
 		PayoutStatus::Failed => l10n.payout_failed(&amount),
 		PayoutStatus::Expired => l10n.payout_expired(&amount),
 	};
-	let seed = 191 + row.id.len() as i64;
 	view! {
 		<chrome::Card seed=seed>
 			<chrome::Title text=row.action_title />
-			<chrome::RewardChip label=amount detail=status seed=seed + 1 />
+			<View class="flex flex-row items-center gap-3">
+				{sketches::coin(28.0, seed + 1)}
+				<chrome::Chip role=Role::Reward text=amount seed=seed + 2 />
+			</View>
+			<chrome::Muted text=status />
 		</chrome::Card>
 	}
 }
 
+/// Contest one decision: the reason stays on this attempt.
 #[component]
 fn AppealForm(attempt_id: String) -> Element {
 	appeal_form(attempt_id, mutation_scope::<SubmitAppeal>())
@@ -250,7 +296,7 @@ fn AppealForm(attempt_id: String) -> Element {
 
 fn appeal_form(
 	attempt_id: String,
-	scope: leptoskit::query::MutationScope<SubmitAppeal, AppealReceipt, leptoskit::rpc::FnError>,
+	scope: leptoskit::query::MutationScope<SubmitAppeal, AppealReceipt, FnError>,
 ) -> Element {
 	let l10n = use_l10n();
 	let key = format!("me.appeal.{attempt_id}");
@@ -269,14 +315,16 @@ fn appeal_form(
 		}),
 	);
 	if sent.get() {
-		return view! { <chrome::ReviewChip text=l10n.me_appeal_pending() seed=209 /> };
+		return view! { <chrome::Chip role=Role::Review text=l10n.me_appeal_pending() seed=209 /> };
 	}
 	if !open.get() {
-		return view! { <chrome::Quiet label=l10n.me_appeal() seed=201 on_press=move || open.set(true) /> };
+		return view! {
+			<chrome::Quiet label=l10n.me_appeal() seed=201 on_press=move || open.set(true) />
+		};
 	}
 	let disabled = submit.is_pending() || !crate::model::valid_appeal_reason(&reason.get());
 	view! {
-		<View class=theme::STACK.as_str()>
+		<View class=theme::STACK>
 			<chrome::Title text=l10n.me_appeal_title() />
 			<chrome::Muted text=l10n.me_appeal_body() />
 			<chrome::Field
@@ -285,10 +333,14 @@ fn appeal_form(
 				value=reason.get()
 				seed=205
 				disabled=submit.is_pending()
-				on_change=move |next: &str| { if !submit.is_pending() { reason.set(next.to_owned()); } }
+				on_change=move |next: &str| {
+					if !submit.is_pending() {
+						reason.set(next.to_owned());
+					}
+				}
 			/>
 			<chrome::Muted text=l10n.me_appeal_reason_helper() />
-			<View class=theme::ROW.as_str()>
+			<View class=theme::ROW>
 				<chrome::Quiet
 					label=l10n.me_appeal_send()
 					seed=207
@@ -303,9 +355,17 @@ fn appeal_form(
 						});
 					}
 				/>
-				<chrome::Quiet label=l10n.me_appeal_cancel() seed=211 disabled=submit.is_pending() on_press=move || open.set(false) />
+				<chrome::Quiet
+					label=l10n.me_appeal_cancel()
+					seed=211
+					disabled=submit.is_pending()
+					on_press=move || open.set(false)
+				/>
 			</View>
-			{submit.is_error().then(|| view! { <chrome::Muted text=l10n.me_appeal_failed() /> })}
+			{Show(
+				move || submit.is_error(),
+				move || view! { <chrome::Muted text=l10n.me_appeal_failed() /> },
+			)}
 		</View>
 	}
 }
@@ -313,14 +373,15 @@ fn appeal_form(
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use leptoskit::native::Role;
+	use leptoskit::native::Role as AriaRole;
 	use leptoskit::query::{MutationScope, QueryClient};
+	use leptoskit::view;
 	use leptoskit_testing::{Finder, WidgetTester};
 	use reactive_graph::owner::{Owner, provide_context};
 	use std::sync::{Arc, Mutex};
 
 	fn button(name: &str) -> Finder {
-		Finder::aria_role(Role::Button, name)
+		Finder::aria_role(AriaRole::Button, name)
 	}
 
 	fn tester(mut render: impl FnMut() -> Element + 'static) -> WidgetTester {
@@ -377,7 +438,7 @@ mod tests {
 			AppealStatus::Accepted,
 			AppealStatus::Rejected,
 		] {
-			let tester = tester(move || AttemptTile(row(status)));
+			let tester = tester(move || view! { <AttemptTile row=row(status) /> });
 			assert!(tester.find_all(&button("Appeal")).is_empty());
 			assert!(
 				tester
@@ -385,7 +446,7 @@ mod tests {
 					.is_empty()
 			);
 		}
-		let mut tester = tester(|| AttemptTile(row(AppealStatus::Available)));
+		let mut tester = tester(|| view! { <AttemptTile row=row(AppealStatus::Available) /> });
 		assert!(tester.find(&button("Appeal")).is_ok());
 		assert!(
 			tester
@@ -415,7 +476,7 @@ mod tests {
 				ListMyAttempts {}.into(),
 				Vec::new(),
 			);
-			Page(&navigation)
+			view! { <Page navigation=&navigation /> }
 		});
 		assert!(
 			tester
