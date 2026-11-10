@@ -21,6 +21,8 @@ leptoskit_plugin_crypto = { workspace = true }
 leptoskit_plugin_filesystem = { workspace = true }
 leptoskit_plugin_local_authentication = { workspace = true }
 leptoskit_plugin_device = { workspace = true }
+leptoskit_plugin_camera = { workspace = true }
+leptoskit_plugin_app_integrity = { workspace = true }
 # The payout wallet's Android host is `solana_kit_leptoskit` with `wallet-host`.
 # That feature pins rustix =1.1.5, and this workspace already selects rustix
 # 1.1.6, which does not resolve beside it. The guest still calls

@@ -39,6 +39,8 @@ plugins = [
   "filesystem",
   "local-authentication",
   "device",
+  "camera",
+  "app-integrity",
 ]
 
 [native.plugin-options.http]

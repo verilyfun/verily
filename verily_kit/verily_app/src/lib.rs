@@ -9,6 +9,7 @@ mod chrome;
 mod host;
 #[allow(dead_code)]
 mod l10n;
+mod live;
 mod routes;
 mod sign_in;
 mod state;

@@ -17,10 +17,11 @@ pub use evidence::{
 	CAPTURE_MANIFEST_DOMAIN, CAPTURE_REQUEST_DOMAIN, CaptureChallenge, EVIDENCE_BINDING_DOMAIN,
 	EvidenceBinding, EvidenceError, MediaEvidenceKind, app_attest_assertion_client_data_hash,
 	app_attest_device_client_data, app_attest_registration_client_data_hash,
-	capture_integrity_request_hash, capture_key_attestation_challenge, capture_provenance_manifest,
-	capture_public_key_id, location_evidence_binding_hash, media_evidence_binding_hash,
-	motion_evidence_binding_hash, normalize_capture_challenge, normalize_evidence_binding_hash,
-	qr_evidence_binding_hash, sha256_hex,
+	capture_integrity_request_hash, capture_integrity_request_nonce,
+	capture_key_attestation_challenge, capture_provenance_manifest, capture_public_key_id,
+	location_evidence_binding_hash, media_evidence_binding_hash, motion_evidence_binding_hash,
+	normalize_capture_challenge, normalize_evidence_binding_hash, qr_evidence_binding_hash,
+	sha256_hex,
 };
 pub use id::{AccountId, ActionId, AttemptId, EvidenceId, PayoutId, PoolId, RequirementId};
 pub use records::{

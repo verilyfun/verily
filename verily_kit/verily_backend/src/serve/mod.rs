@@ -164,7 +164,7 @@ fn requirements(action: &ActionRow) -> Result<Vec<ActionRequirementView>, rpc::E
 }
 
 /// What the screens call a requirement kind.
-fn proof_kind(kind: ActionRequirementKind) -> ProofKind {
+pub(crate) fn proof_kind(kind: ActionRequirementKind) -> ProofKind {
 	match kind {
 		ActionRequirementKind::Video => ProofKind::Video,
 		ActionRequirementKind::Photo => ProofKind::Photo,

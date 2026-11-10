@@ -32,6 +32,7 @@ use verily_rewards::schema::RewardPoolRow;
 use verily_shared::ActionRecurrence;
 use verily_shared::ActionRequirementKind;
 use verily_shared::ActionRequirementView;
+use verily_shared::ActionVerificationPolicy;
 use verily_shared::EvidenceDecisionStatus;
 use verily_shared::RewardPoolStatus;
 use verily_verification::capture::SignatureMode;
@@ -216,6 +217,7 @@ pub async fn begin_capture(
 		requirement_id: window.requirement_id,
 		challenge: window.capture_challenge,
 		spoken_word,
+		kind: super::proof_kind(requirement.kind),
 	})
 }
 
@@ -345,21 +347,7 @@ pub async fn submit_live_proof(
 	.await
 	.map_err(db)?;
 
-	// The phone sent a digest, not the bytes or an observation, so nothing
-	// here can pass the proof by itself: media goes to the configured
-	// verifier (a person without secrets), everything else to a person.
-	let decision = if is_media(requirement.kind) {
-		let decided = backend
-			.verification
-			.decide_media(&[], MIN_CONFIDENCE, spoken);
-		(decided.status, decided.verifier_type, decided.reason_code)
-	} else {
-		(
-			EvidenceDecisionStatus::ManualReview,
-			"manual-review-fallback",
-			"observation_unavailable",
-		)
-	};
+	let decision = proof_decision(backend, &requirement);
 	record_decision(
 		cx.tx(),
 		evidence.id,
@@ -367,7 +355,7 @@ pub async fn submit_live_proof(
 		decision.1,
 		decision.2,
 		None,
-		"",
+		decision.3,
 	)
 	.await?;
 
@@ -742,6 +730,71 @@ async fn live_word(
 		.first(connection)
 		.await
 		.map_err(db)
+}
+
+/// Media goes through the verification checks. A model runs only when the
+/// guard is confirmed, a budget is approved, and this server has issued a URL
+/// for the immutable version. A digest alone has none of those, so a person
+/// reviews. Other proof has no observation here.
+fn proof_decision(
+	backend: &Backend,
+	requirement: &ActionRequirementView,
+) -> (
+	EvidenceDecisionStatus,
+	&'static str,
+	&'static str,
+	&'static str,
+) {
+	if !is_media(requirement.kind) {
+		return (
+			EvidenceDecisionStatus::ManualReview,
+			"manual-review-fallback",
+			"observation_unavailable",
+			"",
+		);
+	}
+	let proof = media_proof(requirement);
+	let decided = match backend.verification.assess_media(&proof) {
+		verily_verification::openrouter::Outcome::Decided(assessment) => assessment.decision,
+		verily_verification::openrouter::Outcome::Unreadable { .. } => {
+			verily_verification::council::manual_review()
+		}
+	};
+	(
+		decided.status,
+		decided.verifier_type,
+		decided.reason_code,
+		decided.summary,
+	)
+}
+
+fn media_proof(
+	requirement: &ActionRequirementView,
+) -> verily_verification::openrouter::MediaProof<'_> {
+	verily_verification::openrouter::MediaProof {
+		verification_prompt: requirement.verification_prompt.as_deref(),
+		policy: requirement
+			.verification_policy
+			.unwrap_or(ActionVerificationPolicy::SingleModel),
+		kind: match requirement.kind {
+			ActionRequirementKind::Photo => verily_verification::openrouter::MediaKind::Photo,
+			ActionRequirementKind::Audio => verily_verification::openrouter::MediaKind::Audio,
+			_ => verily_verification::openrouter::MediaKind::Video,
+		},
+		mime_type: "",
+		duration_seconds: None,
+		min_duration_seconds: seconds(requirement.min_duration_seconds),
+		max_duration_seconds: seconds(requirement.max_duration_seconds),
+		minimum_confidence: requirement.min_confidence.unwrap_or(MIN_CONFIDENCE),
+		spoken_word: None,
+		media: None,
+	}
+}
+
+fn seconds(value: Option<i64>) -> Option<u32> {
+	u32::try_from(value.unwrap_or(0))
+		.ok()
+		.filter(|seconds| *seconds > 0)
 }
 
 const fn is_media(kind: ActionRequirementKind) -> bool {
