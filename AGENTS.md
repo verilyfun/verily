@@ -27,11 +27,13 @@ not port those back. Crypto appears only as the unit a reward is paid in.
 | `brand/`                         | Exported logo and icon files                                      |
 | `docs/`                          | Verification, storage, escrow, provenance research, brand         |
 
-The kit pins every leptoskit crate to one git `rev`, never a branch. Skribble
-comes from its pull request (openbudgetfun/skribble#278) and asks for
-leptoskit from crates.io; the kit's `[patch.crates-io]` sends that to the same
-rev. Bump every `rev` in `verily_kit/Cargo.toml` together, the patch included,
-or cargo builds leptoskit twice.
+The kit pins every LeptosKit crate to crates.io `=0.3.0` in
+`verily_kit/Cargo.toml` `[workspace.dependencies]` (tag `v0.3.0`, commit
+`2e575b1e7e8100910667e7c2e1472a792d569c95`). The CLI is `leptoskit_cli` at
+that same requirement; read it from the `leptoskit` line. Do not patch those
+crates onto a git revision. Skribble comes from its pull request
+(openbudgetfun/skribble#278) and asks for LeptosKit 0.3 from crates.io, so
+one published copy is the whole graph.
 
 Run everything through `devenv shell` so local work uses the pinned Flutter,
 Rust, Pina, and Serverpod toolchains. Verily's local ports avoid other

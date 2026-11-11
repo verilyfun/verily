@@ -231,24 +231,27 @@ mod tests {
 
 	#[test]
 	fn problems_are_said_in_product_language() {
-		let l10n = L10n::new(&[]);
-		assert_eq!(
-			problem(&l10n, &error("invalid_email")),
-			l10n.sign_in_email_invalid()
-		);
-		assert_eq!(
-			problem(&l10n, &error("invalid_code")),
-			l10n.sign_in_code_invalid()
-		);
-		assert_eq!(
-			problem(&l10n, &error("sign_in_expired")),
-			l10n.sign_in_code_invalid()
-		);
-		assert_eq!(
-			problem(&l10n, &error("rate_limited")),
-			l10n.sign_in_rate_limited()
-		);
-		assert_eq!(problem(&l10n, &error("config")), l10n.sign_in_unavailable());
-		assert_eq!(problem(&l10n, &error("server")), l10n.sign_in_failed());
+		let owner = reactive_graph::owner::Owner::new();
+		owner.with(|| {
+			let l10n = L10n::new(&[]);
+			assert_eq!(
+				problem(&l10n, &error("invalid_email")),
+				l10n.sign_in_email_invalid()
+			);
+			assert_eq!(
+				problem(&l10n, &error("invalid_code")),
+				l10n.sign_in_code_invalid()
+			);
+			assert_eq!(
+				problem(&l10n, &error("sign_in_expired")),
+				l10n.sign_in_code_invalid()
+			);
+			assert_eq!(
+				problem(&l10n, &error("rate_limited")),
+				l10n.sign_in_rate_limited()
+			);
+			assert_eq!(problem(&l10n, &error("config")), l10n.sign_in_unavailable());
+			assert_eq!(problem(&l10n, &error("server")), l10n.sign_in_failed());
+		});
 	}
 }

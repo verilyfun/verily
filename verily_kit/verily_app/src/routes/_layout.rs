@@ -1,16 +1,14 @@
-//! The paper under every page, and the stack the pages sit in.
+//! The paper under every page.
 //!
-//! The stack navigator keeps history and offers an edge swipe back; the
-//! layout adds a written "Back" above every page that is not a tab root or
-//! the front door.
+//! The router keeps history. This layout adds a written "Back" above every
+//! page that is not a tab root or the front door. LeptosKit 0.3.0 has no
+//! stack navigator, so there is no edge-swipe gesture here.
 
 use leptoskit::component;
 use leptoskit::prelude::Children;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::View;
 use leptoskit::view;
-use leptoskit_router::navigators::Stack;
-use leptoskit_router::navigators::StackGesture;
 use skribble_leptoskit::SkribblePage;
 use verily_ink::sketches;
 
@@ -19,11 +17,6 @@ use crate::l10n::use_l10n;
 use crate::routes::Navigation;
 use crate::routes::Route;
 use crate::theme;
-
-/// History with an edge swipe back.
-pub fn navigator() -> Stack<Route> {
-	Stack::new().gesture(StackGesture::EdgeSwipe)
-}
 
 /// Paper and ink behind every route, and a way back off the tab roots.
 #[component]

@@ -156,6 +156,10 @@ pub fn Quiet(
 }
 
 /// A choice among several, filled when it is the chosen one.
+///
+/// Appearance no longer offers a pinned light or dark choice, so nothing
+/// on screen selects this yet.
+#[allow(dead_code)]
 #[component]
 pub fn Choice(
 	label: impl Into<String>,

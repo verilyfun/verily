@@ -2,7 +2,7 @@
 //!
 //! The server is [`verily_backend`]. It serves the built client from `dist/`,
 //! which renders [`verily_app::App`] in the browser, and the operations the
-//! app declares, at `/_leptoskit/services/verily-backend/api/<name>`. Start
+//! app declares, at `POST /api/<name>`. Start
 //! this process with `lk dev`.
 
 use leptoskit::server::GracefulShutdown;

@@ -1,7 +1,7 @@
 # Moving Verily to LeptosKit
 
 Verily is moving to one Rust stack: the server, the app, and the tooling all
-run on [LeptosKit](https://github.com/ifiokjr/leptoskit) in `verily_kit/`.
+run on [LeptosKit](https://github.com/leptoskit/leptoskit) 0.3.0 in `verily_kit/`.
 Serverpod (`verily_server/`, `verily_client/`), the Flutter app
 (`verily_flutter/`), and the Dart packages are removed once the kit does
 everything they do. Until then both stacks stay, and the Dart side keeps
@@ -31,15 +31,24 @@ This page tracks what is left. Each phase lands as its own pull request.
 These have no LeptosKit equivalent yet. Phase 6 builds them as Verily plugins
 unless LeptosKit gains them first:
 
-- Video and microphone recording (the camera plugin takes stills only).
+- Video, microphone, and still capture. LeptosKit 0.3.0 does not publish a
+  camera plugin. `permissions` can ask for the camera and the microphone; it
+  does not record.
 - QR scanning.
 - On-device pose and object detection (Flutter uses MediaPipe).
-- Android Key Attestation, Play Integrity, and App Attest (the
-  `app_integrity` plugin is a stub).
+- Android Key Attestation, Play Integrity, and App Attest.
+  `leptoskit_plugin_app_integrity` is not in the 0.3.0 release.
+- Motion samples. 0.3.0 replaces the combined sensors plugin with
+  accelerometer, gyroscope, magnetometer, barometer, light sensor, and
+  pedometer. The capture guest does not call them yet.
 - The Solana mobile wallet adapter on Android (LeptosKit has browser Wallet
   Standard only).
+- Enter and scroll motion. LeptosKit 0.3.0 does not export `Motion`, `Pose`,
+  `Spring`, or `ViewRange`. Stamps and rising pictures render in place.
 - Custom fonts on native hosts, so native screens use the system face rather
   than the Skribble typefaces. The rough ink, colours, and layout still
   follow [`DESIGN.md`](../DESIGN.md).
 - Pinning light or dark from inside the app. The kit follows the device's
   appearance.
+- A hardware Back key. 0.3.0 does not export the router system-back binding.
+  The in-app Back control still walks history.

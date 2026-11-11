@@ -161,7 +161,8 @@ fn binding_covers_every_kind_and_refusal() {
 	assert!(
 		binding::app_attest_registration_client_data_hash(challenge)
 			.unwrap()
-			.len() == 32
+			.len()
+			== 32
 	);
 }
 

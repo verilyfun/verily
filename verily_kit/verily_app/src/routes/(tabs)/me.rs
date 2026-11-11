@@ -4,6 +4,8 @@
 //! The wallet card does not show an address, a key, or a signature. An appeal
 //! belongs to one attempt, and the form never prints that attempt's id.
 
+use std::sync::Arc;
+
 use leptoskit::component;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::For;
@@ -302,19 +304,26 @@ fn appeal_form(
 	let key = format!("me.appeal.{attempt_id}");
 	let reason = remember(&format!("{key}.reason"), String::new);
 	let open = remember(&format!("{key}.open"), || false);
-	let sent = remember(&format!("{key}.sent"), || false);
+	// An atomic, not the signal: the success task runs outside the arena that
+	// owns the signal when sandboxed arenas are enabled, and a signal write
+	// there does not show up on the next paint.
+	let sent = remember(&format!("{key}.sent"), || {
+		Arc::new(std::sync::atomic::AtomicBool::new(false))
+	});
+	let sent_flag = sent.get();
 	let submit = mutation(
 		&format!("{key}.submit"),
-		scope.with_on_success_async(move |args| async move {
-			sent.set(true);
-			open.set(false);
-			reason.set(String::new());
-			args.client
-				.invalidate_scope(&query_scope::<ListMyAttempts>())
-				.await;
+		scope.with_on_success_async(move |args| {
+			let sent_flag = Arc::clone(&sent_flag);
+			async move {
+				sent_flag.store(true, std::sync::atomic::Ordering::SeqCst);
+				args.client
+					.invalidate_scope(&query_scope::<ListMyAttempts>())
+					.await;
+			}
 		}),
 	);
-	if sent.get() {
+	if sent.get().load(std::sync::atomic::Ordering::SeqCst) {
 		return view! { <chrome::Chip role=Role::Review text=l10n.me_appeal_pending() seed=209 /> };
 	}
 	if !open.get() {
@@ -385,13 +394,23 @@ mod tests {
 	}
 
 	fn tester(mut render: impl FnMut() -> Element + 'static) -> WidgetTester {
-		let _ = any_spawner::Executor::init_futures_executor();
-		let owner = Owner::new();
-		let store = crate::state::Store::default();
-		let client = QueryClient::new();
+		crate::state::install_test_executor();
+		// One root so the store, the render owner, and l10n share an arena
+		// when sandboxed arenas are on (the server feature turns them on).
+		let root = Owner::new();
+		let (owner, store, client) = root.with(|| {
+			(
+				Owner::new(),
+				crate::state::Store::default(),
+				QueryClient::new(),
+			)
+		});
 		WidgetTester::new(
 			move || {
-				owner.cleanup();
+				let _root = &root;
+				// Do not clean the render owner here. LeptosKit 0.3.0 cancels
+				// a mutation's success task with that owner, so a rebuild
+				// would drop the appeal's "sent" update before it is painted.
 				owner.with(|| {
 					provide_context(store.clone());
 					crate::l10n::L10n::new(&[]).provide();

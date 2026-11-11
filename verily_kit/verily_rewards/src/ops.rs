@@ -1,6 +1,8 @@
 //! RPC operations `verily_backend` serves.
 //!
-//! The caller is the actor on the database context. Reward settings are the
+//! Each operation is named `rewards.<function>` so it does not collide with
+//! an app operation on the shared `POST /api/<name>` router. The caller is
+//! the actor on the database context. Reward settings are the
 //! [`RewardsHandle`] the backend installs on that context. Arguments that
 //! are domain records are [`verily_shared`] values carried as JSON.
 
@@ -39,13 +41,13 @@ pub fn templates() -> Vec<ActionTemplate> {
 }
 
 /// Lists the server-owned templates.
-#[rpc::query]
+#[rpc::query(name = "rewards.list_templates")]
 pub async fn list_templates(_cx: &rpc::QueryCx) -> rpc::Result<Vec<ActionTemplate>> {
 	Ok(templates())
 }
 
 /// Creates a draft for the signed-in account.
-#[rpc::mutation]
+#[rpc::mutation(name = "rewards.create_action")]
 pub async fn create_action(
 	cx: &rpc::MutationCx,
 	request: serde_json::Value,
@@ -60,7 +62,7 @@ pub async fn create_action(
 }
 
 /// Saves a draft.
-#[rpc::mutation]
+#[rpc::mutation(name = "rewards.save_action_draft")]
 pub async fn save_action_draft(
 	cx: &rpc::MutationCx,
 	action_id: String,
@@ -85,7 +87,7 @@ pub async fn save_action_draft(
 
 /// Publishes a draft. The arguments are the action and the revision the
 /// caller read. No signature and no funded flag are accepted here.
-#[rpc::mutation]
+#[rpc::mutation(name = "rewards.publish_action")]
 pub async fn publish_action(
 	cx: &rpc::MutationCx,
 	action_id: String,
@@ -105,7 +107,7 @@ pub async fn publish_action(
 }
 
 /// Prepares funding. The returned plan does not mark the pool funded.
-#[rpc::mutation]
+#[rpc::mutation(name = "rewards.prepare_reward_funding")]
 pub async fn prepare_reward_funding(
 	cx: &rpc::MutationCx,
 	action_id: String,
@@ -125,7 +127,7 @@ pub async fn prepare_reward_funding(
 }
 
 /// Reads the escrow from chain state and funds the pool only on a match.
-#[rpc::mutation]
+#[rpc::mutation(name = "rewards.confirm_reward_funding")]
 pub async fn confirm_reward_funding(
 	cx: &rpc::MutationCx,
 	action_id: String,
@@ -145,7 +147,7 @@ pub async fn confirm_reward_funding(
 }
 
 /// Stops new reservations and returns the end instruction payload.
-#[rpc::mutation]
+#[rpc::mutation(name = "rewards.end_reward_early")]
 pub async fn end_reward_early(
 	cx: &rpc::MutationCx,
 	action_id: String,
@@ -158,7 +160,7 @@ pub async fn end_reward_early(
 }
 
 /// The creator's pool.
-#[rpc::query]
+#[rpc::query(name = "rewards.get_reward_pool")]
 pub async fn get_reward_pool(cx: &rpc::QueryCx, action_id: String) -> rpc::Result<RewardPoolView> {
 	let (creator, _) = caller(cx.context())?;
 	store::reward_pool(cx.db(), creator, parse_uuid(&action_id)?)
@@ -167,7 +169,7 @@ pub async fn get_reward_pool(cx: &rpc::QueryCx, action_id: String) -> rpc::Resul
 }
 
 /// The caller's payouts.
-#[rpc::query]
+#[rpc::query(name = "rewards.list_my_payouts")]
 pub async fn list_my_payouts(cx: &rpc::QueryCx) -> rpc::Result<Vec<RewardPayoutView>> {
 	let (account, _) = caller(cx.context())?;
 	store::list_payouts(cx.db(), account)
@@ -176,7 +178,7 @@ pub async fn list_my_payouts(cx: &rpc::QueryCx) -> rpc::Result<Vec<RewardPayoutV
 }
 
 /// Settles one payout from chain state. The stored index is reused.
-#[rpc::mutation]
+#[rpc::mutation(name = "rewards.release_payout")]
 pub async fn release_payout(
 	cx: &rpc::MutationCx,
 	payout_id: String,
@@ -189,7 +191,7 @@ pub async fn release_payout(
 }
 
 /// Records a reviewer's acceptance. The reviewer cannot be the participant.
-#[rpc::mutation]
+#[rpc::mutation(name = "rewards.accept_payout_review")]
 pub async fn accept_payout_review(
 	cx: &rpc::MutationCx,
 	payout_id: String,
@@ -201,7 +203,7 @@ pub async fn accept_payout_review(
 }
 
 /// The text a wallet signs. Signing does not move funds.
-#[rpc::mutation]
+#[rpc::mutation(name = "rewards.create_wallet_link_challenge")]
 pub async fn create_wallet_link_challenge(
 	cx: &rpc::MutationCx,
 	wallet_address: String,
@@ -213,7 +215,7 @@ pub async fn create_wallet_link_challenge(
 }
 
 /// Links a wallet after the stored challenge signature verifies.
-#[rpc::mutation]
+#[rpc::mutation(name = "rewards.link_payout_wallet")]
 pub async fn link_payout_wallet(
 	cx: &rpc::MutationCx,
 	wallet_address: String,

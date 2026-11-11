@@ -517,27 +517,18 @@ pub fn prove_it() -> Element {
 	}
 }
 
-/// The stamp, slammed down once with a bounce, `delay` after it's seen.
+/// The stamp. LeptosKit 0.3.0 has no enter-motion types, so it is drawn in
+/// place. `delay_ms` and `when_seen` stay in the signature for the callers.
 pub fn slammed_stamp(size: f32, seed: i64, delay_ms: u64, when_seen: bool) -> Element {
-	let motion = Motion::enter(Pose::new().scale(2.2).rotate(-24.0).opacity(0.0))
-		.spring(Spring::BOUNCY)
-		.delay(std::time::Duration::from_millis(delay_ms));
-	let motion = if when_seen {
-		motion.in_view(ViewRange::entry())
-	} else {
-		motion
-	};
-	view! { <View motion=motion>{stamp(size, seed)}</View> }
+	let _ = (delay_ms, when_seen);
+	stamp(size, seed)
 }
 
-/// A picture that rises into place, tilting the way `seed` says, as it
-/// scrolls into view.
+/// A picture. LeptosKit 0.3.0 has no scroll-linked motion, so `element` is
+/// returned as drawn. `seed` stays in the signature for the callers.
 pub fn rising(element: Element, seed: i64) -> Element {
-	let tilt = if seed % 2 == 0 { 2.0 } else { -2.0 };
-	let motion = Motion::enter(Pose::new().y(28.0).rotate(tilt).opacity(0.0))
-		.spring(Spring::GENTLE)
-		.in_view(ViewRange::entry());
-	view! { <View motion=motion>{element}</View> }
+	let _ = seed;
+	element
 }
 
 /// A step's number, circled by hand.

@@ -104,7 +104,9 @@ jobs:
       - name: install leptoskit
         if: steps.stores.outputs.any == 'true'
         run: |
-          cargo install --git https://github.com/ifiokjr/leptoskit --rev 365e2a2341ba4c675048e2a05e4caf946d4c623b leptoskit_cli --locked
+          requirement=$(sed -n 's/^leptoskit = { version = "\([^"]*\)".*/\1/p' Cargo.toml | head -1)
+          test -n "$requirement"
+          cargo install leptoskit_cli --version "$requirement" --locked
           brew install binaryen
 
       - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1

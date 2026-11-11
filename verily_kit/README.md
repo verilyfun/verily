@@ -25,7 +25,7 @@ The browser uses its own origin and session cookie. Native builds use `VERILY_AP
 
 ## The app's operations
 
-`verily_app/src/ops.rs` declares every operation the screens call, with `service = "verily-backend"`. The wire records they send and return live in `verily_api`, which the backend names too. The browser posts each one to `/_leptoskit/services/verily-backend/api/<name>` on the app's own origin, and this process answers there: the root crate turns on `verily_app`'s `service` feature, which keeps each body, and each body is one call into `verily_backend::serve`, where the rules are. The browser and the native guest never build that feature.
+`verily_app/src/ops.rs` declares every operation the screens call. The wire records they send and return live in `verily_api`, which the backend names too. The browser posts each one to `/api/<name>` on the app's own origin, and this process answers there: the root crate turns on `verily_app`'s `service` feature, which keeps each body, and each body is one call into `verily_backend::serve`, where the rules are. The browser and the native guest never build that feature.
 
 Every operation runs as the signed-in person: attempts, drafts, capture windows, and appeals are read through that identity, so someone else's row is not found. Only accounts granted review (`verily_backend::serve::grant_reviewer`, server code only) see the review queue, and never their own proof in it.
 

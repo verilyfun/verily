@@ -163,14 +163,6 @@ pub fn operations(db: Db) -> Server {
 	rewards::mount_ops(server)
 }
 
-/// The app's own operations, the ones `verily_app` declares with
-/// `service = "verily-backend"`, on `db`. Its router answers under
-/// [`leptoskit_rpc::service_prefix`]`(`[`serve::SERVICE`]`)`.
-#[must_use]
-pub fn backend_operations(db: Db) -> Server {
-	Server::new(db).service(serve::SERVICE)
-}
-
 /// Installs `POST /api/<name>` for every registered operation, plus the host's
 /// own health route and domain mounts.
 pub fn router<S>(operations: &Server) -> Router<S>
@@ -190,8 +182,8 @@ where
 /// When `config` includes `[auth.idp]`, the identity provider is built and
 /// mounted. Verification is mounted fail-closed (`Verification::closed`).
 /// Rewards are `Rewards::closed` in a release build and the planted
-/// development gateway in a debug one. The app's operations answer under
-/// `/_leptoskit/services/verily-backend/api/<name>`, as the signed-in person.
+/// development gateway in a debug one. The app's operations answer at
+/// `POST /api/<name>`, as the signed-in person.
 ///
 /// # Errors
 ///
@@ -241,8 +233,7 @@ pub fn start(
 	});
 
 	let identify = identify(auth.clone(), rewards.clone(), backend.clone());
-	let rpc = operations(db.clone()).identify(identify.clone());
-	let service = backend_operations(db.clone()).identify(identify);
+	let rpc = operations(db.clone()).identify(identify);
 	let mut live = match auth.origin() {
 		Some(origin) => rpc.live().origin(origin),
 		None => rpc.live(),
@@ -253,16 +244,10 @@ pub fn start(
 
 	let mut app = Router::new();
 	if roles.web() {
-		app = app
-			.merge(router(&rpc))
-			.nest(
-				&leptoskit_rpc::service_prefix(serve::SERVICE),
-				service.router(),
-			)
-			.merge(auth.router());
-		// Building a router installs its server for in-process calls; the
-		// app's must be the installed one, or its `rpc.service_token`
-		// refuses the browser as if this were the service's own process.
+		app = app.merge(router(&rpc)).merge(auth.router());
+		// `router` installs this server for in-process calls. Install it
+		// again after the auth router is merged so a later builder cannot
+		// leave a different server in place.
 		rpc.install();
 		if let Some(idp) = &idp {
 			app = app.merge(idp.router());

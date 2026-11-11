@@ -26,12 +26,60 @@ use reactive_graph::owner::Owner;
 use reactive_graph::owner::use_context;
 
 /// Values that live as long as the app, by key.
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct Store {
 	values: Arc<Mutex<HashMap<String, Box<dyn Any + Send + Sync>>>>,
-	// Detached from each screen's render owner: cleanup on a redraw must
-	// not dispose the handles an in-flight callback still holds.
+	// A child of the owner that built the store, so it shares that arena
+	// when sandboxed arenas are on. A derived `Owner::default()` would be a
+	// disconnected arena, and a later render could not read the signal.
 	owner: Owner,
+}
+
+impl Default for Store {
+	fn default() -> Self {
+		Self {
+			values: Arc::new(Mutex::new(HashMap::new())),
+			owner: Owner::new(),
+		}
+	}
+}
+
+/// Polls spawned tasks on the calling thread.
+///
+/// LeptosKit's mutation tasks write signals. With sandboxed arenas those
+/// writes have to happen on the thread whose arena is current. The futures
+/// thread pool is a different thread, so a success callback there cannot
+/// mark an appeal sent.
+#[cfg(test)]
+pub(crate) fn install_test_executor() {
+	struct Inline;
+
+	fn drive(mut fut: impl std::future::Future<Output = ()> + Unpin) {
+		let waker = std::task::Waker::noop();
+		let mut context = std::task::Context::from_waker(waker);
+		// A mutation's success callback is a nested task. Polling a few
+		// times lets the outer task observe a future that was already ready
+		// without a thread-pool wake, which would miss this thread's arena.
+		for _ in 0..16 {
+			if std::pin::Pin::new(&mut fut).poll(&mut context).is_ready() {
+				break;
+			}
+		}
+	}
+
+	impl any_spawner::CustomExecutor for Inline {
+		fn spawn(&self, fut: any_spawner::PinnedFuture<()>) {
+			drive(fut);
+		}
+
+		fn spawn_local(&self, fut: any_spawner::PinnedLocalFuture<()>) {
+			drive(fut);
+		}
+
+		fn poll_local(&self) {}
+	}
+
+	let _ = any_spawner::Executor::init_custom_executor(Inline);
 }
 
 impl Store {
@@ -96,60 +144,72 @@ mod tests {
 
 	#[test]
 	fn a_remembered_signal_survives_a_rebuild() {
-		let store = Store::default();
-		let first = Owner::new();
-		let chosen = first.with(|| {
-			provide_context(store.clone());
-			let filter = remember("do.filter", || 0);
-			filter.set(3);
-			filter.get()
+		// Sandboxed arenas are shared from the root owner down. The store and
+		// both renders have to be children of one root, or each render looks
+		// in an arena that does not hold the remembered signal.
+		let root = Owner::new();
+		root.with(|| {
+			let store = Store::default();
+			let first = Owner::new();
+			let chosen = first.with(|| {
+				provide_context(store.clone());
+				let filter = remember("do.filter", || 0);
+				filter.set(3);
+				filter.get()
+			});
+			drop(first);
+			let second = Owner::new();
+			let again = second.with(|| {
+				provide_context(store.clone());
+				remember("do.filter", || 0).get()
+			});
+			assert_eq!((chosen, again), (3, 3));
 		});
-		drop(first);
-		let second = Owner::new();
-		let again = second.with(|| {
-			provide_context(store.clone());
-			remember("do.filter", || 0).get()
-		});
-		assert_eq!((chosen, again), (3, 3));
 	}
 
 	#[test]
 	fn a_callback_can_write_through_its_original_handle_after_render_cleanup() {
-		let store = Store::default();
-		let render = Owner::new();
-		let original = render.with(|| {
-			provide_context(store.clone());
-			remember("sign_in.notice", String::new)
-		});
-		render.cleanup();
-		original.set("Please check your code".to_owned());
-		render.with(|| {
-			provide_context(store);
-			assert_eq!(
-				remember("sign_in.notice", String::new).get(),
-				"Please check your code"
-			);
+		let root = Owner::new();
+		root.with(|| {
+			let store = Store::default();
+			let render = Owner::new();
+			let original = render.with(|| {
+				provide_context(store.clone());
+				remember("sign_in.notice", String::new)
+			});
+			render.cleanup();
+			original.set("Please check your code".to_owned());
+			render.with(|| {
+				provide_context(store);
+				assert_eq!(
+					remember("sign_in.notice", String::new).get(),
+					"Please check your code"
+				);
+			});
 		});
 	}
 
 	#[test]
 	fn a_pending_mutation_stays_pending_after_render_cleanup() {
-		let _ = any_spawner::Executor::init_futures_executor();
-		let store = Store::default();
-		let client = leptoskit::query::QueryClient::new();
-		let scope = MutationScope::new(|()| std::future::pending::<Result<(), ()>>());
-		let render = Owner::new();
-		let start = render.with(|| {
-			provide_context(store.clone());
-			client.provide();
-			mutation("sign_in.send", scope.clone())
-		});
-		start.mutate(());
-		render.cleanup();
-		render.with(|| {
-			provide_context(store);
-			client.provide();
-			assert!(mutation("sign_in.send", scope).is_pending());
+		install_test_executor();
+		let root = Owner::new();
+		root.with(|| {
+			let store = Store::default();
+			let client = leptoskit::query::QueryClient::new();
+			let scope = MutationScope::new(|()| std::future::pending::<Result<(), ()>>());
+			let render = Owner::new();
+			let start = render.with(|| {
+				provide_context(store.clone());
+				client.provide();
+				mutation("sign_in.send", scope.clone())
+			});
+			start.mutate(());
+			render.cleanup();
+			render.with(|| {
+				provide_context(store);
+				client.provide();
+				assert!(mutation("sign_in.send", scope).is_pending());
+			});
 		});
 	}
 
@@ -164,10 +224,13 @@ mod tests {
 	#[test]
 	#[should_panic(expected = "keys must be unique")]
 	fn one_key_holds_one_type() {
-		let store = Store::default();
-		Owner::new().with(|| {
-			let _ = store.signal("shared", || 0_u8);
-			let _ = store.signal("shared", String::new);
+		let root = Owner::new();
+		root.with(|| {
+			let store = Store::default();
+			Owner::new().with(|| {
+				let _ = store.signal("shared", || 0_u8);
+				let _ = store.signal("shared", String::new);
+			});
 		});
 	}
 }
