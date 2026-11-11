@@ -12,6 +12,7 @@ path = "src/main.rs"
 
 [workspace]
 resolver = "2"
+exclude = ["patches/solana_kit_native"]
 members = [
   "android",
   "ios",
@@ -88,6 +89,12 @@ leptoskit_bridge = { git = "https://github.com/ifiokjr/leptoskit", rev = "1f7f14
 leptoskit_bridge_ffi = { git = "https://github.com/ifiokjr/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052" }
 leptoskit_native = { git = "https://github.com/ifiokjr/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052" }
 leptoskit_wasm = { git = "https://github.com/ifiokjr/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052" }
+
+# solana_kit_native at a46f32d pins rustix =1.1.5. xattr 1.7 in this graph
+# requires rustix ^1.1.6. The patch keeps that revision's sources and accepts
+# 1.1.6, so the Android wallet host can depend on `wallet-host`.
+[patch."https://github.com/pina-rs/solana_kit"]
+solana_kit_native = { path = "patches/solana_kit_native" }
 
 [profile.release]
 lto = "thin"

@@ -1,0 +1,45 @@
+# Local patch of pina-rs/solana_kit a46f32dcfccc4f73b6b5d68bdc6f541151c7e047.
+# Upstream pins `rustix = "=1.1.5"` on Linux and Android. This workspace
+# already selects rustix 1.1.6, because xattr 1.7 requires `^1.1.6`. The
+# caret below accepts 1.1.6, which still provides `renameat_with`. The Rust
+# sources are that revision, unchanged. This is not a published fork.
+[package]
+name = "solana_kit_native"
+version = "0.2.0"
+edition = "2024"
+license = "Unlicense"
+publish = false
+repository = "https://github.com/pina-rs/solana_kit/tree/a46f32dcfccc4f73b6b5d68bdc6f541151c7e047/crates/solana_kit_native"
+rust-version = "1.89"
+description = "Bounded Tokio HTTP and WebSocket transports for off-chain Solana applications"
+
+[features]
+default = []
+keys = ["dep:solana_kit_core", "solana_kit_core/crypto", "dep:rustix", "dep:zeroize"]
+mwa = ["keys", "dep:base64", "dep:solana_kit_wallet", "dep:serde_json", "dep:zeroize"]
+surfpool = ["dep:solana_kit_core", "dep:solana_kit_surfpool", "dep:serde", "dep:serde_json", "tokio/fs"]
+
+[dependencies]
+base64 = { version = "=0.22.1", optional = true }
+bytes = "=1.11.1"
+futures-util = { version = "=0.3.34", default-features = false, features = ["sink", "std"] }
+http-body-util = "=0.1.3"
+hyper = { version = "=1.12.0", default-features = false, features = ["client", "http1", "server"] }
+hyper-util = { version = "=0.1.21", default-features = false, features = ["tokio"] }
+serde = { version = "1.0.229", default-features = false, features = ["alloc"], optional = true }
+serde_json = { version = "1.0.154", default-features = false, features = ["alloc", "arbitrary_precision", "raw_value"], optional = true }
+solana_kit_client = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32dcfccc4f73b6b5d68bdc6f541151c7e047" }
+solana_kit_core = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32dcfccc4f73b6b5d68bdc6f541151c7e047", default-features = false, optional = true }
+solana_kit_surfpool = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32dcfccc4f73b6b5d68bdc6f541151c7e047", optional = true }
+solana_kit_wallet = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32dcfccc4f73b6b5d68bdc6f541151c7e047", default-features = false, features = ["mwa"], optional = true }
+tokio = { version = "=1.54.1", features = ["net", "time", "io-util", "macros"] }
+tokio-rustls = { version = "=0.26.6", default-features = false, features = ["ring", "tls12"] }
+tokio-tungstenite = { version = "=0.29.0", default-features = false, features = ["handshake"] }
+webpki-roots = "=1.0.10"
+zeroize = { version = "1.8.2", default-features = false, features = ["alloc"], optional = true }
+
+[target.'cfg(any(target_os = "linux", target_os = "android"))'.dependencies]
+rustix = { version = "1.1.5", default-features = false, features = ["fs", "std"], optional = true }
+
+# Own workspace so this patch is not claimed by the repo or kit workspaces.
+[workspace]

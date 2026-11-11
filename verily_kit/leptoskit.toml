@@ -41,6 +41,7 @@ plugins = [
   "device",
   "camera",
   "app-integrity",
+  "solana-wallet",
 ]
 
 [native.plugin-options.http]
