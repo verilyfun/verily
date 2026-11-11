@@ -946,6 +946,10 @@ in
       binary = "bash";
       packages = [
         rustToolchain
+        # Clippy builds the Linux host, which compiles leptoskit_rive's C++.
+        # The nix compiler matches the glibc headers. A system clang does not.
+        pkgs.stdenv.cc
+        pkgs.pkg-config
         pkgs.curl
         pkgs.python3
       ];
