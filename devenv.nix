@@ -899,6 +899,10 @@ in
       binary = "bash";
       packages = [
         rustToolchain
+        # Clippy builds the Linux host, which compiles leptoskit_rive's C++.
+        # The pre-push hook is not a devenv shell, so it needs this compiler
+        # to see the nix C++ headers. A system clang does not.
+        pkgs.stdenv.cc
       ];
     };
     "audit:rust" = {
