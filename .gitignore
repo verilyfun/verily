@@ -37,6 +37,9 @@ target/
 **/keys/
 **/keypairs/
 **/*-keypair.json
+# Upstream key-storage sources in the solana_kit_native patch, not keypairs.
+!verily_kit/patches/solana_kit_native/src/keys/
+!verily_kit/patches/solana_kit_native/src/keys/**
 
 # Serverpod local secrets
 **/config/passwords.yaml

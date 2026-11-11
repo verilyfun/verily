@@ -6071,27 +6071,40 @@ version = "0.2.0"
 source = "git+https://github.com/pina-rs/solana_kit?rev=a46f32dcfccc4f73b6b5d68bdc6f541151c7e047#a46f32dcfccc4f73b6b5d68bdc6f541151c7e047"
 dependencies = [
  "leptoskit_bridge",
+ "leptoskit_bridge_ffi",
+ "leptoskit_native",
+ "leptoskit_wasm",
+ "libc",
+ "serde",
  "serde_json",
  "solana_kit_client",
  "solana_kit_core",
+ "solana_kit_native",
  "solana_kit_wallet",
+ "tokio",
+ "zeroize",
 ]
 
 [[package]]
 name = "solana_kit_native"
 version = "0.2.0"
-source = "git+https://github.com/pina-rs/solana_kit?rev=a46f32dcfccc4f73b6b5d68bdc6f541151c7e047#a46f32dcfccc4f73b6b5d68bdc6f541151c7e047"
 dependencies = [
+ "base64 0.22.1",
  "bytes",
  "futures-util",
  "http-body-util",
  "hyper",
  "hyper-util",
+ "rustix",
+ "serde_json",
  "solana_kit_client",
+ "solana_kit_core",
+ "solana_kit_wallet",
  "tokio",
  "tokio-rustls",
  "tokio-tungstenite 0.29.0",
  "webpki-roots 1.0.10",
+ "zeroize",
 ]
 
 [[package]]
@@ -7094,6 +7107,7 @@ dependencies = [
  "leptoskit_plugin_secure_store",
  "leptoskit_plugin_sensors",
  "leptoskit_plugin_speech",
+ "solana_kit_leptoskit",
 ]
 
 [[package]]
@@ -7113,6 +7127,7 @@ dependencies = [
  "leptoskit_plugin_secure_store",
  "leptoskit_plugin_sensors",
  "leptoskit_plugin_speech",
+ "solana_kit_leptoskit",
 ]
 
 [[package]]
@@ -7133,6 +7148,7 @@ dependencies = [
  "leptoskit_plugin_secure_store",
  "leptoskit_plugin_sensors",
  "leptoskit_plugin_speech",
+ "solana_kit_leptoskit",
 ]
 
 [[package]]
@@ -7152,6 +7168,7 @@ dependencies = [
  "leptoskit_plugin_secure_store",
  "leptoskit_plugin_sensors",
  "leptoskit_plugin_speech",
+ "solana_kit_leptoskit",
 ]
 
 [[package]]
