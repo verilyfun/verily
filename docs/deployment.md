@@ -1,8 +1,8 @@
 # Deployment
 
 This is the production plan for Verily's LeptosKit app (`verily_kit/`). It
-follows [LeptosKit 0.3.0](https://github.com/leptoskit/leptoskit/blob/v0.3.0/docs/src/guide/24-deploying.md)
-(tag `v0.3.0`, commit `2e575b1e7e8100910667e7c2e1472a792d569c95`). Nothing in
+follows [LeptosKit's deploy guide](https://github.com/leptoskit/leptoskit/blob/1f7f1462a17a9a33eccb933909f6cdae20d03052/docs/src/guide/24-deploying.md)
+at commit `1f7f1462a17a9a33eccb933909f6cdae20d03052` (`feat: adopt Exact's performance budgets (#770)`). Nothing in
 this document has been provisioned. Do not run `lk infra apply`, `lk deploy`,
 or a store submit until the go-live checklist below is clear.
 
@@ -14,10 +14,12 @@ stack in this plan.
 ## Hosting target
 
 **One Hetzner x86 VM, Cloudflare Tunnel, Kamal, and Postgres, provisioned by
-`lk infra`.** That is the path the 0.3.0 guide puts first for an app whose
+`lk infra`.** That is the path the guide puts first for an app whose
 `[db] dialect` is `postgres`: the website, the API, and live connections on
 the same host, TLS at the tunnel, origin HTTP ports closed, Postgres on the
-primary, encrypted backups in a private bucket.
+primary, a public bucket for signed code-push artifacts, and encrypted
+backups in a separate private bucket. Backups are on unless `[infra.backups]
+enabled` is false.
 
 Verily matches that shape:
 
@@ -53,7 +55,7 @@ over. Do not enable `[infra.services] relay` until the server is built with
 `rpc-relay` and `[rpc.live] relay_url_env` is set. Verily does not use that
 today.
 
-Pick the size with `lk infra offers --min-memory-gb 4` after the provider
+Pick the size with `lk infra offers --min-memory-gb 2` after the provider
 token is in the environment, and set `[infra.budget]` before `plan`. The
 guide's `cx23` example is a starting point for a small app, not a commitment.
 The kit process serves the Wasm client and the API together, and a later
@@ -67,11 +69,18 @@ From `verily_kit/`, with binaryen (`wasm-opt`) on `PATH`:
 lk build --release --platform web --out dist
 ```
 
-`lk` is `leptoskit_cli` at the same `=0.3.0` requirement as the crates in
-`verily_kit/Cargo.toml`. `devenv shell lint:kit` installs that CLI at
-`.devenv/leptoskit-cli/bin/lk` and checks the release checksum. Use that
-binary. Another `lk` on `PATH` can print `0.3.0` and still write route code
-this release removed. A release build fails closed when `wasm-opt` is missing.
+`lk` is `leptoskit_cli` built from the same git revision as the crates in
+`verily_kit/Cargo.toml`:
+
+```sh
+cargo install --git https://github.com/leptoskit/leptoskit --rev 1f7f1462a17a9a33eccb933909f6cdae20d03052 leptoskit_cli --locked
+```
+
+`devenv shell lint:kit` installs that binary at `.devenv/leptoskit-cli/bin/lk`.
+Use that binary. A generated image installs the published CLI from crates.io
+unless the Dockerfile is pointed at this revision. This commit is not the
+published `0.3.0` release, so the image must install this git revision.
+A release build fails closed when `wasm-opt` is missing.
 
 The client crate is `verily_app` (`[build] client_package`). Cargo compiles
 the server and the `wasm32-unknown-unknown` client. wasm-bindgen runs in
@@ -92,11 +101,11 @@ receives `index.html`; the Wasm client routes it. There is no hydration step
 in this mode.
 
 Phone, desktop, and Linux hosts are listed in `leptoskit.toml` and are not
-part of this web release. LeptosKit 0.3.0 does not publish a camera,
-microphone, scanner, or app-integrity plugin, so a kit phone build cannot
-capture proof. Store submission stays on
-`verily_kit/.github/workflows/release.yml`, which installs `leptoskit_cli`
-from the `leptoskit` line in `verily_kit/Cargo.toml`. That workflow has no
+part of this web release. This revision includes a camera plugin for stills
+and an app-integrity plugin that is still a stub, and it does not record
+video, audio, or QR codes. A kit phone build is not proof capture. Store
+submission stays on `verily_kit/.github/workflows/release.yml`, which
+installs `leptoskit_cli` from this same git revision. That workflow has no
 `[publish]` table to upload until one is added on purpose.
 
 The static site is a second artifact:
@@ -178,12 +187,15 @@ RPC URL is a secret because it may carry a provider key.
 
 ## Steps
 
-Do these on a trusted Linux machine with Docker, Rust, `lk` 0.3.0, OpenTofu
-1.10 or newer and older than 2, Kamal 2, and an SSH agent. Verify each new
-host key from the provider console before the first SSH session.
+Do these on a trusted Linux machine with Docker, Rust, `lk` built from
+commit `1f7f1462a17a9a33eccb933909f6cdae20d03052`, OpenTofu 1.10 or newer
+and older than 2, Kamal 2, and an SSH agent. Verify each new host key from
+the provider console before the first SSH session.
 
-1. Confirm `lk --version` prints `0.3.0` and `cargo metadata --locked` in
-   `verily_kit/` resolves every `leptoskit*` crate to crates.io `0.3.0`.
+1. Confirm `cargo metadata --locked` in `verily_kit/` resolves every direct
+   `leptoskit*` crate to
+   `git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052`.
+   `lk` is `leptoskit_cli` installed from that same revision.
 2. Build the web release and the static site. Boot the server against a
    throwaway Postgres with `DATABASE_URL` and `AUTH_ENCRYPTION_KEYS` set.
    `GET /healthz` returns 200 while the process is up. `GET /readyz` returns
@@ -208,6 +220,9 @@ host key from the provider console before the first SSH session.
    image = "ghcr.io/verilyfun/verily"
    registry = "ghcr.io"
    registry_username = "verilyfun"
+   updates_domain = "updates.verily.fun"
+   updates_bucket = "verily-releases"
+   backup_bucket = "verily-backups"
    secrets = []
 
    [infra.backups]
@@ -264,9 +279,15 @@ Verily has no hosted CI. `tool/local_ci.dart` runs devenv lanes and posts
 commit statuses. Keep those lanes. Add the kit to them once `lint:kit` and
 the kit tests are part of the gate.
 
+LeptosKit's own CI at this revision is red. The failures are upstream, on
+the commit the kit is pinned to. They are listed in the pull request that
+introduces the pin. Do not treat a green Verily kit build as a green
+LeptosKit `main`.
+
 The generated deploy workflow, when you choose to commit it:
 
-- Runs on a Linux runner labelled `leptoskit`, with Docker, Rust, `lk` 0.3.0,
+- Runs on a Linux runner labelled `leptoskit`, with Docker, Rust, `lk` from
+  commit `1f7f1462a17a9a33eccb933909f6cdae20d03052`,
   OpenTofu, Kamal, and an SSH agent whose host keys were verified.
 - Builds an amd64 image tagged with the Git commit and pushes it to GHCR.
   The build job uses the GitHub package token. Grant that token permission
@@ -280,7 +301,7 @@ The generated deploy workflow, when you choose to commit it:
 
 `verily_kit/.github/workflows/release.yml` is store publishing, not this
 server deploy. It installs the CLI with
-`cargo install leptoskit_cli --version` set to the `leptoskit` requirement.
+`cargo install --git https://github.com/leptoskit/leptoskit --rev 1f7f1462a17a9a33eccb933909f6cdae20d03052 leptoskit_cli --locked`.
 It does not run on a server release.
 
 The Serverpod image stays the opt-in `test:server-image` lane
@@ -331,11 +352,12 @@ The kit deploy above is safe to rehearse. It is not a launch.
 
 ### Blocker
 
-- **Proof cannot be captured in the kit.** LeptosKit 0.3.0 publishes no
-  camera, microphone, scanner, or app-integrity crate. `verily_app` refuses
-  live capture instead of opening a file picker. Phone proof still depends on
-  the Flutter app, Play Integrity, Android Key Attestation, and App Attest.
-  Those production modes are off unless the Serverpod environment sets them.
+- **Proof cannot be captured in the kit.** This revision's camera plugin
+  takes stills. It does not record video or audio, and it does not scan QR
+  codes. `app_integrity` is a stub, not Play Integrity, Key Attestation, or
+  App Attest. Phase 6 of `docs/leptoskit-port.md` is not started. Phone proof
+  still depends on the Flutter app. Those production modes are off unless
+  the Serverpod environment sets them.
 - **The kit is not the product yet.** Sign-in pages, evidence storage,
   device proof, the verifier worker, payout custody, moderation, and the
   public API are the unfinished port in `docs/leptoskit-port.md`. A release
@@ -392,12 +414,6 @@ The kit deploy above is safe to rehearse. It is not a launch.
 - **Hydration and SSR are unused on purpose.** Turning `render` to `ssr`
   or `islands` is a product change, not a deploy fix. The static landing
   page stays a separate build.
-- **Decorative motion is still.** LeptosKit 0.3.0 does not export the enter
-  and scroll motion types the kit drawings used. Stamps and rising pictures
-  render in place until that API returns.
-- **Hardware Back is not wired.** 0.3.0 removed the router system-back
-  binding. The in-app Back control still walks history. A phone's Back key
-  does not.
 - **Native and extension targets.** Android links the Solana mobile wallet
   host. iOS, desktop, and Linux shells build as kit hosts. There is no
   browser extension. None of them are a store release.
