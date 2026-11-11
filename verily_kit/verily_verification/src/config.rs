@@ -170,8 +170,7 @@ impl VerifierConfig {
 			|| council
 				.iter()
 				.collect::<std::collections::HashSet<_>>()
-				.len()
-				!= 3
+				.len() != 3
 		{
 			return Err(ConfigError::Invalid(
 				"VERILY_OPENROUTER_COUNCIL_MODELS must contain three unique models",

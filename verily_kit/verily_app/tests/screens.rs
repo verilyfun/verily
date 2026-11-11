@@ -11,12 +11,14 @@ use verily_app::model::ProofKind;
 use verily_app::model::PublishOutcome;
 use verily_app::model::WalletChallenge;
 use verily_app::model::WalletLink;
+use verily_app::ops::BACKEND;
 use verily_app::ops::ListAvailableActions;
 
 #[test]
-fn catalogue_query_is_a_named_query() {
+fn catalogue_query_names_the_backend_service() {
 	assert_eq!(ListAvailableActions::NAME, "list_available_actions");
 	assert_eq!(ListAvailableActions::KIND, Kind::Query);
+	assert_eq!(ListAvailableActions::SERVICE, Some(BACKEND));
 	let _ = ListAvailableActions {
 		filter: ActionFilter::Nearby,
 		latitude: None,

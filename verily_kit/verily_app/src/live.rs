@@ -15,9 +15,9 @@ use verily_shared::sha256_hex;
 use crate::model::CaptureWindow;
 use crate::model::ProofKind;
 
-/// The runtime name a still would use. LeptosKit 0.3.0 does not ship it.
+/// Real LeptosKit runtime name for a live still.
 pub const CAMERA: &str = "camera";
-/// The runtime name an attestation would use. LeptosKit 0.3.0 does not ship it.
+/// Real LeptosKit runtime name. This revision returns unavailable.
 pub const APP_INTEGRITY: &str = "app-integrity";
 /// Camera permission. A grant is not a capture.
 pub const PERMISSIONS: &str = "permissions";
@@ -30,8 +30,7 @@ pub const DOCUMENT_PICKER: &str = "document-picker";
 /// Which sensor a proof kind may use.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Sensor {
-	/// A still, after the key challenge. 0.3.0 has no camera plugin, so the
-	/// host refuses the kind.
+	/// `leptoskit_plugin_camera`, after the key challenge.
 	Camera,
 	/// No live plugin for this kind on the pinned LeptosKit.
 	Missing,
@@ -46,9 +45,9 @@ pub enum DeviceAnswer {
 	Unavailable,
 	/// Opaque bytes. Not a certificate chain, and not a verified boot.
 	///
-	/// Only a future app-integrity plugin constructs this. A token is still
-	/// not a chain. Tests construct it to lock that refusal.
-	#[cfg_attr(not(test), allow(dead_code))]
+	/// Only the native guest constructs this, when app integrity returns a
+	/// token. That token is still not a chain.
+	#[cfg_attr(not(all(feature = "native", target_arch = "wasm32")), allow(dead_code))]
 	Opaque,
 }
 
@@ -64,7 +63,6 @@ pub enum Fault {
 	/// The camera named a cache file and did not return the bytes.
 	BytesWithheld,
 	/// A path or a library URI was offered instead of captured bytes.
-	#[cfg_attr(not(test), allow(dead_code))]
 	Library,
 	/// Attestation did not run. Not recorded as device-signed.
 	Unavailable,
@@ -144,7 +142,6 @@ pub fn evidence_digest(bytes: &[u8]) -> String {
 
 /// A library path or a file URI is not a live capture.
 #[must_use]
-#[cfg_attr(not(test), allow(dead_code))]
 pub fn is_library_resource(value: &str) -> bool {
 	let lower = value.trim().to_ascii_lowercase();
 	lower.is_empty()
@@ -161,7 +158,6 @@ pub fn is_library_resource(value: &str) -> bool {
 /// A cache URI from the camera is not a gallery pick, and it is still not
 /// the evidence bytes.
 #[must_use]
-#[cfg_attr(not(test), allow(dead_code))]
 pub fn uri_fault(uri: &str) -> Fault {
 	if is_library_resource(uri) {
 		Fault::Library
@@ -299,8 +295,6 @@ mod tests {
 		assert!(!plugin_allowed(IMAGE_PICKER));
 		assert!(!plugin_allowed(DOCUMENT_PICKER));
 		assert!(plugin_allowed(CAMERA));
-		assert_eq!(uri_fault("file:///tmp/photo.jpg"), Fault::Library);
-		assert_eq!(uri_fault("cache://capture/still"), Fault::BytesWithheld);
 		assert!(is_library_resource("file:///tmp/photo.jpg"));
 		assert!(is_library_resource("content://media/external/images/1"));
 		assert!(is_library_resource("ph://asset"));

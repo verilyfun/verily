@@ -408,9 +408,6 @@ mod tests {
 		WidgetTester::new(
 			move || {
 				let _root = &root;
-				// Do not clean the render owner here. LeptosKit 0.3.0 cancels
-				// a mutation's success task with that owner, so a rebuild
-				// would drop the appeal's "sent" update before it is painted.
 				owner.with(|| {
 					provide_context(store.clone());
 					crate::l10n::L10n::new(&[]).provide();

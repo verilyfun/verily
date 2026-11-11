@@ -170,9 +170,10 @@ in
 
   env = {
     SBF_TOOLS_VERSION = "v1.54";
-    # LeptosKit 0.3.0 stores reactive values in one process-wide arena.
-    # Parallel Rust tests dispose each other's signals, so the kit suite
-    # runs on one thread. `--test-threads` on the command line still overrides.
+    # LeptosKit at this revision stores reactive values in one process-wide
+    # arena. Parallel Rust tests dispose each other's signals, so the kit
+    # suite runs on one thread. `--test-threads` on the command line still
+    # overrides.
     RUST_TEST_THREADS = "1";
   };
 
@@ -872,61 +873,15 @@ in
     "lint:kit" = {
       exec = ''
         set -euo pipefail
-        cd "$DEVENV_ROOT"
-        # The only pin is `leptoskit`'s exact crates.io requirement in
-        # verily_kit/Cargo.toml. The CLI is leptoskit_cli at that requirement.
-        requirement="$(
-          ${pkgs.python3}/bin/python3 -c '
-        import re
-        from pathlib import Path
-        text = Path("verily_kit/Cargo.toml").read_text()
-        match = re.search(r"^leptoskit = \{ version = \"([^\"]+)\"", text, re.M)
-        if match is None:
-            raise SystemExit("leptoskit pin missing from verily_kit/Cargo.toml")
-        print(match.group(1))
-        '
-        )"
-        version="''${requirement#=}"
+        # Same revision as every leptoskit crate in verily_kit/Cargo.toml.
+        rev="1f7f1462a17a9a33eccb933909f6cdae20d03052"
         root="$DEVENV_ROOT/.devenv/leptoskit-cli"
-        if ! "$root/bin/lk" --version 2>/dev/null | grep -q "''${version}"; then
-          case "$(uname -s)-$(uname -m)" in
-            Linux-x86_64) triple=x86_64-unknown-linux-gnu ;;
-            Linux-aarch64) triple=aarch64-unknown-linux-gnu ;;
-            Darwin-arm64) triple=aarch64-apple-darwin ;;
-            Darwin-x86_64) triple=x86_64-apple-darwin ;;
-            *) triple="" ;;
-          esac
-          installed=false
-          if [ -n "$triple" ]; then
-            asset="leptoskit-''${triple}-v''${version}.tar.gz"
-            checksum="leptoskit-''${triple}-v''${version}.sha256"
-            base="https://github.com/leptoskit/leptoskit/releases/download/v''${version}"
-            tmp="$(mktemp -d)"
-            if ${pkgs.curl}/bin/curl -fL --retry 3 -A "verily-devenv" "$base/$asset" -o "$tmp/$asset" \
-              && ${pkgs.curl}/bin/curl -fL --retry 3 -A "verily-devenv" "$base/$checksum" -o "$tmp/$checksum" \
-              && (cd "$tmp" && ${pkgs.coreutils}/bin/sha256sum -c "$checksum"); then
-              mkdir -p "$root/bin"
-              ${pkgs.gnutar}/bin/tar -xzf "$tmp/$asset" -C "$root/bin"
-              installed=true
-            fi
-            rm -rf "$tmp"
-          fi
-          if [ "$installed" != true ]; then
-            mkdir -p "$root"
-            ${rustToolchain}/bin/cargo install leptoskit_cli --version "$requirement" --locked --root "$root" --force
-          fi
+        if ! "$root/bin/lk" --version >/dev/null 2>&1 || ! grep -q "$rev" "$root/rev" 2>/dev/null; then
+          mkdir -p "$root"
+          ${rustToolchain}/bin/cargo install --git https://github.com/leptoskit/leptoskit --rev "$rev" leptoskit_cli --locked --root "$root" --force
+          printf '%s\n' "$rev" > "$root/rev"
         fi
         export PATH="$root/bin:$PATH"
-        if ! command -v lk >/dev/null 2>&1; then
-          echo "lk ''${version} is not installed." >&2
-          exit 1
-        fi
-        cd "$DEVENV_ROOT/verily_kit"
-        # leptoskit_rive 0.3.0 compiles its C++ runtime at -O0 with -Werror.
-        # Nix's glibc headers turn _FORTIFY_SOURCE without optimization into
-        # that error, and the compiler wrapper appends the macro after -U.
-        # -O1 satisfies the header. It applies only to those C++ build scripts.
-        export CXXFLAGS="''${CXXFLAGS:-} -O1"
         # The Linux host links GTK 4. devenv does not ship it; use the system
         # pkg-config file when a distribution package provides one.
         for dir in /usr/lib/x86_64-linux-gnu/pkgconfig /usr/lib64/pkgconfig /usr/lib/pkgconfig; do
@@ -937,21 +892,13 @@ in
             break
           fi
         done
-        if [ "$(uname -s)" = Linux ] && [ ! -f .leptoskit/linux/registrant.rs ]; then
-          lk native prepare linux
-        fi
+        cd "$DEVENV_ROOT/verily_kit"
         lk lint
       '';
       description = "Lint the verily_kit workspace with the pinned LeptosKit CLI.";
       binary = "bash";
       packages = [
         rustToolchain
-        # Clippy builds the Linux host, which compiles leptoskit_rive's C++.
-        # The nix compiler matches the glibc headers. A system clang does not.
-        pkgs.stdenv.cc
-        pkgs.pkg-config
-        pkgs.curl
-        pkgs.python3
       ];
     };
     "audit:rust" = {

@@ -12,6 +12,7 @@ render = "csr"
 [serve]
 address = "127.0.0.1"
 port = 8184
+probes = true
 
 [l10n]
 # One ARB file per locale, named for its language tag. `lk l10n` writes the
@@ -21,19 +22,16 @@ output = "verily_app/src/l10n.rs"
 template = "en"
 
 [build]
+backend = true
 # The crate the browser's Wasm module and the native guest are built from.
-# The server is this workspace's binary. LeptosKit 0.3.0 no longer has a
-# `backend` build flag.
 client_package = "verily_app"
 
 [native]
 package_id = "fun.verily.app"
-# LeptosKit 0.3.0 has no `camera`, `app-integrity`, or combined `sensors`
-# plugin. Motion is six crates (accelerometer, gyroscope, magnetometer,
-# barometer, light-sensor, pedometer); capture does not call them yet.
 plugins = [
   "http",
   "location",
+  "sensors",
   "permissions",
   "speech",
   "secure-store",
@@ -41,6 +39,8 @@ plugins = [
   "filesystem",
   "local-authentication",
   "device",
+  "camera",
+  "app-integrity",
   "solana-wallet",
 ]
 
@@ -74,8 +74,8 @@ markup = "view"
 [lint.rules]
 component_attribute = "deny"
 
-# File routes live in verily_app. `lk plugin:router routes` regenerates
-# that crate's module from those files. `lk routes` forwards to it.
+# File routes live in verily_app. `lk dev` and `lk plugin:router routes`
+# regenerate that crate's module from those files.
 [[plugins]]
 name = "router"
 

@@ -238,16 +238,25 @@ pub fn start() {
 }
 
 /// Mounts the same app in the native Wasm runtime, at the front door.
-///
-/// LeptosKit 0.3.0 does not export a system-back binding. The in-app Back
-/// control uses the router's history. A hardware Back key is not wired here.
 #[cfg(all(target_arch = "wasm32", feature = "native"))]
 #[unsafe(no_mangle)]
 pub extern "C" fn leptoskit_main() {
 	let navigation = Navigation::new(Route::Index);
+	navigation.bind_system_back();
 	connect();
 	let shared = Shared::new();
 	leptoskit::guest::mount(move || screen(&shared, &navigation));
+}
+
+/// Android system Back and similar host signals: 1 when the router popped a
+/// route, 0 when the host should leave the app.
+#[cfg(all(target_arch = "wasm32", feature = "native"))]
+#[unsafe(no_mangle)]
+pub extern "C" fn leptoskit_system_back() -> i32 {
+	match leptoskit_router::dispatch_system_back() {
+		leptoskit_router::SystemBack::Consumed => 1,
+		leptoskit_router::SystemBack::Propagate => 0,
+	}
 }
 
 /// Forwards platform-neutral events to the tree's handlers.

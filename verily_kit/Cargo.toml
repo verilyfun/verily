@@ -36,41 +36,39 @@ edition = "2024"
 license = "Apache-2.0"
 rust-version = "1.95.0"
 
-# LeptosKit v0.3.0 is on crates.io (tag v0.3.0, commit
-# 2e575b1e7e8100910667e7c2e1472a792d569c95). Every crate below is the exact
-# published requirement. The CLI is `leptoskit_cli` at the same requirement;
-# devenv and the store workflow read the `leptoskit` line. Do not add a
-# `[patch.crates-io]` override for these crates: Skribble and solana_kit also
-# select 0.3.0 from crates.io, and a second source would build LeptosKit twice.
-# v0.3.0 does not publish `leptoskit_plugin_camera`,
-# `leptoskit_plugin_app_integrity`, or `leptoskit_plugin_sensors` (motion is
-# accelerometer, gyroscope, magnetometer, barometer, light sensor, and pedometer).
+# Every LeptosKit crate is this git revision of leptoskit/leptoskit
+# (feat: adopt Exact's performance budgets, #770). Not a crates.io version
+# and not a [patch.crates-io] override. The CLI is leptoskit_cli at the
+# same revision.
 [workspace.dependencies]
 any_spawner = "0.3"
-leptoskit = { version = "=0.3.0", default-features = false }
-leptoskit_auth = { version = "=0.3.0", default-features = false }
-leptoskit_axum = { version = "=0.3.0", default-features = false }
-leptoskit_bridge = { version = "=0.3.0", default-features = false }
-leptoskit_bridge_ffi = { version = "=0.3.0", default-features = false }
-leptoskit_build = { version = "=0.3.0", default-features = false }
-leptoskit_config = { version = "=0.3.0", default-features = false }
-leptoskit_db = { version = "=0.3.0", default-features = false }
-leptoskit_db_macros = { version = "=0.3.0", default-features = false }
-leptoskit_db_schema = { version = "=0.3.0", default-features = false }
-leptoskit_idp = { version = "=0.3.0", default-features = false }
-leptoskit_l10n = { version = "=0.3.0", default-features = false }
-leptoskit_plugin_crypto = { version = "=0.3.0", default-features = false }
-leptoskit_plugin_device = { version = "=0.3.0", default-features = false }
-leptoskit_plugin_filesystem = { version = "=0.3.0", default-features = false }
-leptoskit_plugin_http = { version = "=0.3.0", default-features = false }
-leptoskit_plugin_local_authentication = { version = "=0.3.0", default-features = false }
-leptoskit_plugin_location = { version = "=0.3.0", default-features = false }
-leptoskit_plugin_permissions = { version = "=0.3.0", default-features = false }
-leptoskit_plugin_secure_store = { version = "=0.3.0", default-features = false }
-leptoskit_plugin_speech = { version = "=0.3.0", default-features = false }
-leptoskit_router = { version = "=0.3.0", default-features = false }
-leptoskit_rpc = { version = "=0.3.0", default-features = false }
-leptoskit_testing = { version = "=0.3.0", default-features = false }
+leptoskit = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_auth = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_axum = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_bridge = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_bridge_ffi = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_build = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_config = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_db = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_db_macros = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_db_schema = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_idp = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_l10n = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_plugin_app_integrity = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_plugin_camera = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_plugin_crypto = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_plugin_device = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_plugin_filesystem = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_plugin_http = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_plugin_local_authentication = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_plugin_location = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_plugin_permissions = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_plugin_secure_store = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_plugin_sensors = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_plugin_speech = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_router = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_rpc = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
+leptoskit_testing = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052", default-features = false }
 monosecret = { version = "0.5.0", default-features = false, features = ["client"] }
 serde_json = "1"
 # Skribble's leptoskit components, from its pull request
@@ -84,6 +82,16 @@ leptoskit = { workspace = true, features = ["server", "web", "db-postgres"] }
 leptoskit_axum = { workspace = true }
 verily_app = { path = "verily_app", default-features = false, features = ["service"] }
 verily_backend = { path = "verily_backend" }
+
+# solana_kit a46f32d and Skribble 9e401c72 still request leptoskit 0.3.0
+# from crates.io. This repeats the workspace revision so those requests use
+# the same checkout. Without it, `leptoskit_rive_runtime` is linked twice.
+[patch.crates-io]
+leptoskit = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052" }
+leptoskit_bridge = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052" }
+leptoskit_bridge_ffi = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052" }
+leptoskit_native = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052" }
+leptoskit_wasm = { git = "https://github.com/leptoskit/leptoskit", rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052" }
 
 # solana_kit_native at a46f32d pins rustix =1.1.5. xattr 1.7 in this graph
 # requires rustix ^1.1.6. The patch keeps that revision's sources and accepts

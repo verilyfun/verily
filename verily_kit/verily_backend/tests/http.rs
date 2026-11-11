@@ -1,5 +1,5 @@
-//! The host's routes: the app's operations answer at `/api/<name>`, as the
-//! person the session cookie names.
+//! The host's routes: the app's operations answer under the backend's
+//! service prefix, as the person the session cookie names.
 
 #![allow(
 	clippy::assert_is_empty,
@@ -16,7 +16,7 @@ use leptoskit_axum::axum::http::StatusCode;
 use leptoskit_axum::axum::http::header;
 use tower::ServiceExt as _;
 
-const LIST: &str = "/api/list_available_actions";
+const LIST: &str = "/_leptoskit/services/verily-backend/api/list_available_actions";
 
 /// A same-origin `fetch` from the page, as the browser sends it.
 fn post(path: &str, body: &str, cookie: Option<&str>) -> Request<Body> {
@@ -38,7 +38,7 @@ async fn body(response: leptoskit_axum::axum::response::Response) -> String {
 }
 
 #[tokio::test]
-async fn the_catalogue_answers_at_api_for_a_signed_in_browser() {
+async fn the_catalogue_answers_on_the_service_prefix_for_a_signed_in_browser() {
 	// Link `verily_app`'s operations, whose bodies call `verily_backend::serve`.
 	let _ = verily_app::ops::BACKEND;
 	let db = leptoskit_db::testing::sqlite().await;
@@ -87,6 +87,32 @@ async fn the_catalogue_answers_at_api_for_a_signed_in_browser() {
 	assert_eq!(status, StatusCode::OK, "{text}");
 	let cards: Vec<verily_api::ActionCard> = serde_json::from_str(&text).unwrap();
 	assert_eq!(cards.len(), 4);
+
+	// The app's server answers the client's token request before it calls
+	// the backend: no forwarded identity, so no token, and no refusal.
+	let token = app
+		.clone()
+		.oneshot(post(
+			"/api/rpc.service_token",
+			r#"{"service":"verily-backend"}"#,
+			Some(&cookie),
+		))
+		.await
+		.unwrap();
+	assert_eq!(token.status(), StatusCode::OK);
+	assert_eq!(body(token).await, "null");
+
+	// The app's own server does not answer the backend's operation.
+	let app_route = app
+		.clone()
+		.oneshot(post(
+			"/api/list_available_actions",
+			arguments,
+			Some(&cookie),
+		))
+		.await
+		.unwrap();
+	assert_ne!(app_route.status(), StatusCode::OK);
 
 	// Another site's page cannot spend the cookie.
 	let mut forged = post(LIST, arguments, Some(&cookie));

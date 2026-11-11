@@ -1,9 +1,10 @@
-//! The operations `verily_app` declares.
+//! The operations `verily_app` declares with `service = "verily-backend"`.
 //!
 //! `verily_app::ops` keeps each operation's name and argument struct; with its
 //! `service` feature on, the body of each one is a single call into this
-//! module, which owns the rules. The host serves them at `POST /api/<name>`
-//! on the app's own origin.
+//! module, which owns the rules. The host serves them under
+//! [`leptoskit_rpc::service_prefix`]`(`[`SERVICE`]`)`, so the browser reaches
+//! them on the app's own origin.
 //!
 //! Every operation needs a signed-in person. The caller is only ever the
 //! signed-in identity: attempts, drafts, windows, and appeals are read
@@ -67,6 +68,9 @@ pub use review::submit_appeal;
 
 use crate::MountedVerification;
 use crate::schema::AccountClosureRow;
+
+/// The service name the app's operations are declared with.
+pub const SERVICE: &str = "verily-backend";
 
 /// What `close_account` asks the person to type. The screen's copy names it.
 pub const CLOSE_ACCOUNT_CONFIRMATION: &str = "DELETE";

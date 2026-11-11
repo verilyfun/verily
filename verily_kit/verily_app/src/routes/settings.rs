@@ -2,6 +2,7 @@
 //!
 //! Nothing on this screen is a token, a key, or a chain address.
 
+use leptoskit::appearance::Appearance;
 use leptoskit::component;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::Get;
@@ -122,10 +123,51 @@ pub fn Page() -> Element {
 	}
 }
 
-/// LeptosKit 0.3.0 follows the device. The screen says so and does not
-/// offer a pinned light or dark choice.
+/// Match device, Light, or Dark. Every `dark:` class, Skribble's ink
+/// included, follows the choice.
 #[component]
 fn AppearanceChoices() -> Element {
 	let l10n = use_l10n();
-	view! { <chrome::Muted text=l10n.appearance_system_subtitle() /> }
+	let chosen = leptoskit::appearance::get();
+	let choices = [
+		(
+			Appearance::System,
+			l10n.appearance_system(),
+			l10n.appearance_system_subtitle(),
+		),
+		(
+			Appearance::Light,
+			l10n.appearance_light(),
+			l10n.appearance_light_subtitle(),
+		),
+		(
+			Appearance::Dark,
+			l10n.appearance_dark(),
+			l10n.appearance_dark_subtitle(),
+		),
+	];
+	let current = choices
+		.iter()
+		.find(|(appearance, _, _)| *appearance == chosen)
+		.map_or_else(String::new, |(_, _, about)| (*about).to_owned());
+	let buttons = choices
+		.into_iter()
+		.enumerate()
+		.map(|(index, (appearance, label, _))| {
+			view! {
+				<chrome::Choice
+					label=label
+					selected=appearance == chosen
+					seed=651 + index as i64 * 2
+					on_press=move || leptoskit::appearance::set(appearance)
+				/>
+			}
+		})
+		.collect::<Vec<_>>();
+	view! {
+		<View class=theme::STACK>
+			<View class=theme::ROW>{buttons}</View>
+			<chrome::Muted text=current />
+		</View>
+	}
 }

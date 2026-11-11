@@ -27,13 +27,19 @@ not port those back. Crypto appears only as the unit a reward is paid in.
 | `brand/`                         | Exported logo and icon files                                      |
 | `docs/`                          | Verification, storage, escrow, provenance research, brand         |
 
-The kit pins every LeptosKit crate to crates.io `=0.3.0` in
-`verily_kit/Cargo.toml` `[workspace.dependencies]` (tag `v0.3.0`, commit
-`2e575b1e7e8100910667e7c2e1472a792d569c95`). The CLI is `leptoskit_cli` at
-that same requirement; read it from the `leptoskit` line. Do not patch those
-crates onto a git revision. Skribble comes from its pull request
-(openbudgetfun/skribble#278) and asks for LeptosKit 0.3 from crates.io, so
-one published copy is the whole graph.
+The kit pins every LeptosKit crate in `[workspace.dependencies]` to one git
+revision of <https://github.com/leptoskit/leptoskit>, never a branch and never
+a crates.io release:
+
+`rev = "1f7f1462a17a9a33eccb933909f6cdae20d03052"`
+
+That is `feat: adopt Exact's performance budgets (#770)`. The CLI
+(`leptoskit_cli`), devenv's `lint:kit`, and the store workflow install that
+same revision. Skribble (openbudgetfun/skribble#278) is pinned to this same
+revision, but its crate manifest and `solana_kit` a46f32d still request
+leptoskit 0.3.0 from crates.io. `[patch.crates-io]` repeats this revision for
+those requests so Cargo links one `leptoskit_rive_runtime`. Bump the
+workspace entries and that patch together.
 
 Run everything through `devenv shell` so local work uses the pinned Flutter,
 Rust, Pina, and Serverpod toolchains. Verily's local ports avoid other

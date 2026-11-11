@@ -1,7 +1,9 @@
 //! Do, Create, and Me: the three roots, under a hand-drawn tab bar.
 //!
 //! Switching a tab replaces history, so Back never wanders into another tab.
-//! The bar is drawn here.
+//! The pinned router paints its own title row whenever `navigator()` returns
+//! `Tabs`, and that row cannot be restyled, so the bar is drawn here and this
+//! directory exports no navigator.
 
 use leptoskit::component;
 use leptoskit::prelude::Children;
@@ -10,6 +12,7 @@ use leptoskit::prelude::Pressable;
 use leptoskit::prelude::Text;
 use leptoskit::prelude::View;
 use leptoskit::view;
+use leptoskit_router::navigators::route_matches_root;
 use skribble_leptoskit::HighlightKind;
 use skribble_leptoskit::WiredDivider;
 use skribble_leptoskit::WiredHighlight;
@@ -68,7 +71,7 @@ fn Tab(
 	seed: i64,
 ) -> Element {
 	let label = label.into();
-	let selected = current == route;
+	let selected = route_matches_root(&current, &route);
 	let word = if selected {
 		let text = label.clone();
 		view! {

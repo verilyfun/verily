@@ -13,6 +13,7 @@ crate-type = ["staticlib"]
 leptoskit_bridge_ffi = { workspace = true, features = ["app", "async-host"] }
 leptoskit_plugin_http = { workspace = true, features = ["async-host"] }
 leptoskit_plugin_location = { workspace = true }
+leptoskit_plugin_sensors = { workspace = true }
 leptoskit_plugin_permissions = { workspace = true }
 leptoskit_plugin_speech = { workspace = true }
 leptoskit_plugin_secure_store = { workspace = true }
@@ -20,4 +21,6 @@ leptoskit_plugin_crypto = { workspace = true }
 leptoskit_plugin_filesystem = { workspace = true }
 leptoskit_plugin_local_authentication = { workspace = true }
 leptoskit_plugin_device = { workspace = true }
+leptoskit_plugin_camera = { workspace = true }
+leptoskit_plugin_app_integrity = { workspace = true }
 solana_kit_leptoskit = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32dcfccc4f73b6b5d68bdc6f541151c7e047", default-features = false, features = ["wallet-host"] }

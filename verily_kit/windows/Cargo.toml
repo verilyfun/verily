@@ -13,6 +13,7 @@ crate-type = ["staticlib"]
 leptoskit_bridge_ffi = { workspace = true, features = ["app", "async-host"] }
 leptoskit_plugin_http = { workspace = true, features = ["async-host"] }
 leptoskit_plugin_location = { workspace = true }
+leptoskit_plugin_sensors = { workspace = true }
 leptoskit_plugin_permissions = { workspace = true }
 leptoskit_plugin_speech = { workspace = true }
 leptoskit_plugin_secure_store = { workspace = true }
@@ -20,6 +21,8 @@ leptoskit_plugin_crypto = { workspace = true }
 leptoskit_plugin_filesystem = { workspace = true }
 leptoskit_plugin_local_authentication = { workspace = true }
 leptoskit_plugin_device = { workspace = true }
+leptoskit_plugin_camera = { workspace = true }
+leptoskit_plugin_app_integrity = { workspace = true }
 leptoskit = { workspace = true, features = ["wasm", "rive", "windows", "codepush-http"] }
 
 [[bin]]

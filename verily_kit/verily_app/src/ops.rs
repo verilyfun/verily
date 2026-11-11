@@ -1,7 +1,8 @@
 //! Typed operations the screens send to `verily_backend`.
 //!
-//! Each function is an `#[rpc::query]` or `#[rpc::mutation]`. The screen
-//! builds the argument struct and `leptoskit_rpc` posts it to `/api/<name>`
+//! Each function is an `#[rpc::query]` or `#[rpc::mutation]` whose service is
+//! `verily-backend`. The screen builds the argument struct and
+//! `leptoskit_rpc` posts it to `/_leptoskit/services/verily-backend/api/<name>`
 //! on the app's origin. Only a build with this crate's `service` feature, the
 //! server's, keeps the bodies, and each body is one call into
 //! `verily_backend::serve`, which owns the rules. There is no Serverpod client
@@ -28,12 +29,12 @@ use crate::model::SpokenWord;
 use crate::model::WalletChallenge;
 use crate::model::WalletLink;
 
-/// Linked from the server binary so these operations stay registered.
+/// Service name `verily_backend` is reached by. Lowercase, as the RPC client requires.
 pub const BACKEND: &str = "verily-backend";
 
 /// Live actions for the Do catalogue. Coordinates are an input to nearby
 /// search. They are not part of [`ActionCard`].
-#[leptoskit::rpc::query(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::query(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn list_available_actions(
 	cx: &leptoskit::rpc::QueryCx,
 	filter: ActionFilter,
@@ -44,7 +45,7 @@ pub async fn list_available_actions(
 }
 
 /// One action, without precise coordinates.
-#[leptoskit::rpc::query(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::query(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn get_action(
 	cx: &leptoskit::rpc::QueryCx,
 	action_id: String,
@@ -53,7 +54,7 @@ pub async fn get_action(
 }
 
 /// The signed-in person's attempts.
-#[leptoskit::rpc::query(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::query(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn list_my_attempts(
 	cx: &leptoskit::rpc::QueryCx,
 ) -> leptoskit::rpc::Result<Vec<AttemptRow>> {
@@ -61,7 +62,7 @@ pub async fn list_my_attempts(
 }
 
 /// The signed-in person's payouts.
-#[leptoskit::rpc::query(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::query(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn list_my_payouts(
 	cx: &leptoskit::rpc::QueryCx,
 ) -> leptoskit::rpc::Result<Vec<PayoutRow>> {
@@ -69,13 +70,13 @@ pub async fn list_my_payouts(
 }
 
 /// Whether a payout destination is linked.
-#[leptoskit::rpc::query(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::query(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn wallet_status(cx: &leptoskit::rpc::QueryCx) -> leptoskit::rpc::Result<WalletLink> {
 	verily_backend::serve::wallet_status(cx).await
 }
 
 /// The text a payout wallet signs. Signing does not move funds.
-#[leptoskit::rpc::mutation(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::mutation(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn create_wallet_link_challenge(
 	cx: &leptoskit::rpc::MutationCx,
 	wallet_address: String,
@@ -85,7 +86,7 @@ pub async fn create_wallet_link_challenge(
 
 /// Links a payout wallet after the stored challenge signature verifies.
 /// Linking does not release a payout.
-#[leptoskit::rpc::mutation(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::mutation(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn link_payout_wallet(
 	cx: &leptoskit::rpc::MutationCx,
 	wallet_address: String,
@@ -95,7 +96,7 @@ pub async fn link_payout_wallet(
 }
 
 /// Proof a person still has to accept.
-#[leptoskit::rpc::query(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::query(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn list_review_queue(
 	cx: &leptoskit::rpc::QueryCx,
 ) -> leptoskit::rpc::Result<Vec<ReviewRow>> {
@@ -103,7 +104,7 @@ pub async fn list_review_queue(
 }
 
 /// The creator's drafts and live actions.
-#[leptoskit::rpc::query(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::query(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn list_my_actions(
 	cx: &leptoskit::rpc::QueryCx,
 ) -> leptoskit::rpc::Result<Vec<DraftRow>> {
@@ -111,7 +112,7 @@ pub async fn list_my_actions(
 }
 
 /// The spoken word for this window, from the server's list.
-#[leptoskit::rpc::query(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::query(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn issue_spoken_challenge(
 	cx: &leptoskit::rpc::QueryCx,
 	attempt_id: String,
@@ -121,7 +122,7 @@ pub async fn issue_spoken_challenge(
 }
 
 /// Opens an attempt. The capture screen uses the returned ids.
-#[leptoskit::rpc::mutation(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::mutation(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn begin_attempt(
 	cx: &leptoskit::rpc::MutationCx,
 	action_id: String,
@@ -130,7 +131,7 @@ pub async fn begin_attempt(
 }
 
 /// Starts the capture window. The plugin opens only after this returns.
-#[leptoskit::rpc::mutation(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::mutation(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn begin_capture(
 	cx: &leptoskit::rpc::MutationCx,
 	attempt_id: String,
@@ -141,7 +142,7 @@ pub async fn begin_capture(
 
 /// Submits the digest of the live capture. The original stays on the phone
 /// until the shell plugin has handed it to the server's upload for this window.
-#[leptoskit::rpc::mutation(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::mutation(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn submit_live_proof(
 	cx: &leptoskit::rpc::MutationCx,
 	attempt_id: String,
@@ -152,7 +153,7 @@ pub async fn submit_live_proof(
 }
 
 /// Sends the shell attestation that commits to the stored digest.
-#[leptoskit::rpc::mutation(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::mutation(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn submit_attestation(
 	cx: &leptoskit::rpc::MutationCx,
 	attempt_id: String,
@@ -162,7 +163,7 @@ pub async fn submit_attestation(
 }
 
 /// Asks the server to verify the attempt.
-#[leptoskit::rpc::mutation(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::mutation(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn complete_attempt(
 	cx: &leptoskit::rpc::MutationCx,
 	attempt_id: String,
@@ -171,7 +172,7 @@ pub async fn complete_attempt(
 }
 
 /// Saves a draft. Funding is not implied.
-#[leptoskit::rpc::mutation(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::mutation(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn save_action(
 	cx: &leptoskit::rpc::MutationCx,
 	draft: DraftInput,
@@ -180,7 +181,7 @@ pub async fn save_action(
 }
 
 /// Publishes only when `verily_backend` has verified the escrow from chain state.
-#[leptoskit::rpc::mutation(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::mutation(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn publish_action(
 	cx: &leptoskit::rpc::MutationCx,
 	action_id: String,
@@ -189,7 +190,7 @@ pub async fn publish_action(
 }
 
 /// A person's accept or reject. A model verdict is not this call.
-#[leptoskit::rpc::mutation(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::mutation(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn review_attempt(
 	cx: &leptoskit::rpc::MutationCx,
 	review_id: String,
@@ -200,7 +201,7 @@ pub async fn review_attempt(
 }
 
 /// Asks for another look at an attempt.
-#[leptoskit::rpc::mutation(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::mutation(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn submit_appeal(
 	cx: &leptoskit::rpc::MutationCx,
 	attempt_id: String,
@@ -210,13 +211,13 @@ pub async fn submit_appeal(
 }
 
 /// Ends the session. The shell owns the sign-in UI; this is the signed-in person's action.
-#[leptoskit::rpc::mutation(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::mutation(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn sign_out(cx: &leptoskit::rpc::MutationCx) -> leptoskit::rpc::Result<()> {
 	verily_backend::serve::sign_out(cx).await
 }
 
 /// Closes the account after the person confirms with the phrase the screen asked for.
-#[leptoskit::rpc::mutation(crate = "leptoskit::rpc")]
+#[leptoskit::rpc::mutation(service = "verily-backend", crate = "leptoskit::rpc")]
 pub async fn close_account(
 	cx: &leptoskit::rpc::MutationCx,
 	confirmation: String,

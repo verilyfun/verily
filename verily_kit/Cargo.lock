@@ -70,6 +70,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "allocator-api2"
+version = "0.2.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
+
+[[package]]
 name = "ambient-authority"
 version = "0.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -113,6 +119,15 @@ name = "arrayvec"
 version = "0.7.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3fb67a6e08acf24fdeccbac2cb6ac4305825bd1f117462e0e6f2f193345ad56"
+
+[[package]]
+name = "ash"
+version = "0.38.0+1.3.281"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0bb44936d800fea8f016d7f2311c6a4f97aebd5dc86f09906139ec848cf3a46f"
+dependencies = [
+ "libloading",
+]
 
 [[package]]
 name = "async-broadcast"
@@ -388,6 +403,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "bit-set"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "09ec2f926cc3060f09db9ebc5b52823d85268d24bb917e472c0c4bea35780a7d"
+dependencies = [
+ "bit-vec",
+]
+
+[[package]]
+name = "bit-vec"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b71798fca2c1fe1086445a7258a4bc81e6e49dcd24c8d0dd9a1e57395b603f51"
+
+[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -427,6 +457,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "block2"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cdeb9d870516001442e364c5220d3574d2da8dc765554b4a617230d33fa58ef5"
+dependencies = [
+ "objc2",
+]
+
+[[package]]
 name = "blocking"
 version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -459,6 +498,20 @@ name = "bytemuck"
 version = "1.25.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95832e849adfb21180ccb6826a99da14e5d266ae5c2e668e1602cf234f153797"
+dependencies = [
+ "bytemuck_derive",
+]
+
+[[package]]
+name = "bytemuck_derive"
+version = "1.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6a1f896587b6f2c069c73d2f0913e2d590c3990285cd2f0b6aa02b786b4c679c"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 3.0.10",
+]
 
 [[package]]
 name = "byteorder"
@@ -636,6 +689,17 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.21",
+]
+
+[[package]]
+name = "codespan-reporting"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "af491d569909a7e4dee0ad7db7f5341fef5c614d5b8ec8cf765732aba3cff681"
+dependencies = [
+ "serde",
+ "termcolor",
+ "unicode-width",
 ]
 
 [[package]]
@@ -824,6 +888,12 @@ name = "crossbeam-utils"
 version = "0.8.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a31eee39dddec8330830986fcd7625edb5a24ec90ea038215273bbc3adb08ac6"
+
+[[package]]
+name = "crunchy"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "460fbee9c2c2f33933d720630a6a0bac33ba7053db5344fac858d4b8952d77d5"
 
 [[package]]
 name = "crypto-bigint"
@@ -1113,6 +1183,24 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 3.0.10",
+]
+
+[[package]]
+name = "dlib"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab8ecd87370524b461f8557c119c405552c396ed91fc0a8eec68679eab26f94a"
+dependencies = [
+ "libloading",
+]
+
+[[package]]
+name = "document-features"
+version = "0.2.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d4b8a88685455ed29a21542a33abd9cb6510b6b129abadabdcef0f4c55bc8f61"
+dependencies = [
+ "litrs",
 ]
 
 [[package]]
@@ -1769,6 +1857,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "gl_generator"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a95dfc23a2b4a9a2f5ab41d194f8bfda3cabec42af4e39f08c339eb2a0c124d"
+dependencies = [
+ "khronos_api",
+ "log",
+ "xml-rs",
+]
+
+[[package]]
+name = "glam"
+version = "0.34.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "627003914c6057c9c8f0832ee4f870b5a4f599d0cfa83f4072675114860cd0ff"
+dependencies = [
+ "bytemuck",
+]
+
+[[package]]
 name = "glib"
 version = "0.20.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1869,6 +1977,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "glow"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "29038e1c483364cc6bb3cf78feee1816002e127c331a1eec55a4d202b9e1adb5"
+dependencies = [
+ "js-sys",
+ "slotmap",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
+name = "glutin_wgl_sys"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c4ee00b289aba7a9e5306d57c2d05499b2e5dc427f84ac708bd2c090212cf3e"
+dependencies = [
+ "gl_generator",
+]
+
+[[package]]
 name = "gobject-sys"
 version = "0.20.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1877,6 +2006,20 @@ dependencies = [
  "glib-sys",
  "libc",
  "system-deps",
+]
+
+[[package]]
+name = "gpu-allocator"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "51255ea7cfaadb6c5f1528d43e92a82acb2b96c43365989a28b2d44ee38f8795"
+dependencies = [
+ "ash",
+ "hashbrown 0.16.1",
+ "log",
+ "presser",
+ "thiserror 2.0.21",
+ "windows 0.62.2",
 ]
 
 [[package]]
@@ -2033,12 +2176,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "half"
+version = "2.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6ea2d84b969582b4b1864a92dc5d27cd2b77b622a8d79306834f1be5ba20d84b"
+dependencies = [
+ "cfg-if",
+ "crunchy",
+ "num-traits",
+ "zerocopy",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.15.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9229cfe53dfd69f0609a49f65461bd93001ea1ef889cd5529dd176593f5338a1"
 dependencies = [
  "foldhash 0.1.5",
+]
+
+[[package]]
+name = "hashbrown"
+version = "0.16.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
+dependencies = [
+ "allocator-api2",
+ "equivalent",
+ "foldhash 0.2.0",
 ]
 
 [[package]]
@@ -2602,6 +2768,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "khronos-egl"
+version = "6.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6aae1df220ece3c0ada96b8153459b67eebe9ae9212258bb0134ae60416fdf76"
+dependencies = [
+ "libc",
+ "libloading",
+ "pkg-config",
+]
+
+[[package]]
+name = "khronos_api"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e2db585e1d738fc771bf08a151420d3ed193d9d895a36df7f6f8a9456b911ddc"
+
+[[package]]
 name = "konst"
 version = "0.2.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2645,7 +2828,7 @@ dependencies = [
  "paste",
  "rand 0.10.3",
  "reactive_graph",
- "rustc-hash",
+ "rustc-hash 2.1.3",
  "rustc_version",
  "send_wrapper",
  "serde",
@@ -2846,15 +3029,15 @@ dependencies = [
 [[package]]
 name = "leptoskit"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "598c5cad1cb289130092138e7448de56a29a89ebbaf7d62ede2334fe8845b22a"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "leptos",
  "leptos_axum",
  "leptos_meta",
  "leptos_router",
- "leptoskit_analytics",
+ "leptoskit_3d",
  "leptoskit_android",
+ "leptoskit_apm",
  "leptoskit_appkit",
  "leptoskit_auth",
  "leptoskit_axum",
@@ -2878,13 +3061,57 @@ dependencies = [
  "leptoskit_windows",
  "leptoskit_yoga",
  "monosecret",
+ "reactive_stores",
 ]
 
 [[package]]
-name = "leptoskit_analytics"
+name = "leptoskit_3d"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a9d365c9c4212bc6fc8f4e5ed12d220c2df58a55ffce64e015371aa3d237b9d7"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
+dependencies = [
+ "bytemuck",
+ "glam",
+ "half",
+ "js-sys",
+ "leptoskit_bridge",
+ "leptoskit_log",
+ "log",
+ "png 0.17.16",
+ "pollster",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "wgpu",
+ "zune-jpeg",
+]
+
+[[package]]
+name = "leptoskit_android"
+version = "0.3.0"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
+dependencies = [
+ "jni",
+ "leptoskit_native",
+ "leptoskit_yoga",
+ "serde_json",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "leptoskit_animation"
+version = "0.3.0"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "leptoskit_apm"
+version = "0.3.0"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "axum",
  "getrandom 0.4.3",
@@ -2900,23 +3127,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "leptoskit_android"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fbc615e2acbee940d4c6023876321b8d5bd537348158935c59b77d8927af37b6"
-dependencies = [
- "jni",
- "leptoskit_native",
- "leptoskit_yoga",
- "serde_json",
- "thiserror 2.0.21",
-]
-
-[[package]]
 name = "leptoskit_appkit"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c079f4c34aa75b66bb578633324f9850a4781198452a084445ef5ff2d68ae652"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "leptoskit_native",
  "leptoskit_yoga",
@@ -2932,8 +3145,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_aria"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0282cfce8ec7eadb2bccfdc8cc4c14680c785a6471f48d32b15b6b09f78ab34b"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "leptoskit_native",
  "leptoskit_yoga",
@@ -2942,8 +3154,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_auth"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc1f31a41bd0e891c82b070e38b2bac597452412405eb9765015782747a95fb0"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "aes-gcm-siv",
  "axum",
@@ -2984,15 +3195,16 @@ dependencies = [
 [[package]]
 name = "leptoskit_axum"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "983c530ca94d2faa2b26c26784df6a32f88514279b42f8039103c0546cb6133b"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
+ "any_spawner",
  "axum",
  "hyper",
  "hyper-util",
  "leptoskit_codepush",
  "leptoskit_config",
  "serde_json",
+ "subtle",
  "thiserror 2.0.21",
  "tokio",
  "tower",
@@ -3002,10 +3214,11 @@ dependencies = [
 [[package]]
 name = "leptoskit_bridge"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52f9ad7b0f8bc3483665c1a5790fab3ee96e48f3fca684bc6727c1d2a84314da"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "bytes",
+ "leptoskit_log",
+ "log",
  "thiserror 2.0.21",
  "tokio-util",
 ]
@@ -3013,17 +3226,18 @@ dependencies = [
 [[package]]
 name = "leptoskit_bridge_ffi"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d5f765e7c9377708b2e1e3aa496cdec96413836b40acec8e6318fca09db6b0bc"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "futures",
  "leptoskit_appkit",
  "leptoskit_bridge",
  "leptoskit_codepush",
+ "leptoskit_log",
  "leptoskit_native",
  "leptoskit_uikit",
  "leptoskit_wasm",
  "leptoskit_yoga",
+ "log",
  "serde",
  "serde_json",
  "tokio",
@@ -3032,14 +3246,12 @@ dependencies = [
 [[package]]
 name = "leptoskit_build"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f063270ed4fdf18070487ff6f38a4a27211e4b0bc5eb032910996ddd5a2f0620"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 
 [[package]]
 name = "leptoskit_codepush"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46c60439a04fdee414cbcdd61a48172e56bd8085458506884096ae2151b67f91"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "axum",
  "base64 0.22.1",
@@ -3063,8 +3275,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_config"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e24d2fec8cb06e34e3a301a4c780b30ab9d0bc75ca3f828871e0e2dc0a9381c7"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "semver",
  "serde",
@@ -3077,8 +3288,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_db"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "759c75d02a9a3133b6c9d1eea937e00779a5d42804184fcd904821efe0abdf11"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "bytes",
  "chrono",
@@ -3104,8 +3314,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_db_macros"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a06752cc9cd8d9e9ec5e9c3b4a522430280cad3316e1ea62649325a8d997ef13"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "convert_case 0.11.0",
  "proc-macro-crate",
@@ -3120,8 +3329,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_db_schema"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "462d0a302e4d480d6ad4c31e68e9e06d69c4ee9cf84dac8e9870b3c9ff8c0f0b"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "serde",
  "serde_json",
@@ -3132,8 +3340,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_devtools"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a39c99932026f05efeb79cd7420b25e901de00dd33b2aa037a29f8249a5867c"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "gloo-net",
  "gloo-timers",
@@ -3156,8 +3363,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_devtools_protocol"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d89bf6d26e4c5f940a307825e0d2a0de726f95c337c61ec14941568575371cf"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "serde",
  "serde_json",
@@ -3167,8 +3373,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_form"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e95b213a5085fab949687515015653c2f4cc9a6cf500d1ea4dcc29cbcdb6d87a"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "leptoskit_aria",
  "leptoskit_native",
@@ -3178,8 +3383,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_gtk"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae6f19b619fb7274ca20f21542367dfdefd83346accaf3e1400aec58a7a089a3"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "gtk4",
  "leptoskit_native",
@@ -3190,8 +3394,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_idp"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bf7e50a4c9d95128358a6a14fd45706e4f50cb23cf4cea4751e8ab959b1b9c97"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "axum",
  "base64 0.22.1",
@@ -3219,8 +3422,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_l10n"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "643c5baa889511389ffb40ad0c4c3c9ff029ead8816c3d1145f375f9e005dba0"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "intl_pluralrules",
  "js-sys",
@@ -3231,10 +3433,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "leptoskit_log"
+version = "0.3.0"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
+dependencies = [
+ "cc",
+ "log",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
 name = "leptoskit_macros"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26ae80a00a985eb6619f0d05f97f04e91e749796dc323e12b0093d5481ca0d4b"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "proc-macro2",
  "proc-macro2-diagnostics",
@@ -3246,15 +3458,18 @@ dependencies = [
 [[package]]
 name = "leptoskit_native"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "01d1e9bd2a36e5bd6a8780599c811e01f39ff961e0e834952e19c4909cf66244"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "futures",
  "leptos",
+ "leptoskit_3d",
+ "leptoskit_animation",
  "leptoskit_devtools_protocol",
+ "leptoskit_log",
  "leptoskit_rive",
  "leptoskit_yoga",
  "reactive_graph",
+ "reactive_stores",
  "serde",
  "serde_json",
  "sha2 0.10.9",
@@ -3265,8 +3480,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "912ab60fa681a5ea70eca0cd3b380e59d60491b6cc693faebc01571af3fee655"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "leptoskit_config",
  "serde",
@@ -3276,10 +3490,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "leptoskit_plugin_app_integrity"
+version = "0.3.0"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
+dependencies = [
+ "leptoskit_bridge",
+]
+
+[[package]]
+name = "leptoskit_plugin_camera"
+version = "0.3.0"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
+dependencies = [
+ "js-sys",
+ "leptoskit_bridge",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
 name = "leptoskit_plugin_crypto"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e925833a84a25df67509dc1778b46e73c3501fd167835167a7118618695b58c7"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "getrandom 0.4.3",
  "leptoskit_bridge",
@@ -3289,21 +3522,22 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_device"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "66fff95b61d0abe37bfd4dc27b04476adafe163907c25b8efb692c992acd7db9"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "js-sys",
  "leptoskit_bridge",
+ "libc",
  "sysinfo",
  "wasm-bindgen",
+ "wasm-bindgen-futures",
  "web-sys",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
 name = "leptoskit_plugin_devtools"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "785cec6a242f843e1cd2559dfc1c3acb98bc67b3b1b41d5023af988078953b43"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "leptoskit_bridge",
  "leptoskit_devtools_protocol",
@@ -3314,8 +3548,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_filesystem"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af110620333f6bd0016a9fa0fa2915f7309e4afc3ef9991455b5b87107eb249b"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "cap-std",
  "fs4",
@@ -3331,8 +3564,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_http"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d37dad7ebabcbf959f886e8b509a87fd7682c0e48423bb66e422108298cac99"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "leptoskit_bridge",
  "reqwest",
@@ -3346,8 +3578,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_local_authentication"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b57d9b3f16d57735854af00bdb19ec7f9955adbaeab0a2a20bf646b369668ec"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "leptoskit_bridge",
 ]
@@ -3355,8 +3586,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_location"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e82d3dfeb976674f806a292c172d2ab59ca82ac500682b9b8ed95ad78ad9aa5e"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "futures",
  "gloo-events",
@@ -3371,8 +3601,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_passkeys"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1cdf3dae7628fa6a3d411a8fe31d8bc5ca503bbccbbb54432614f567edb42ab"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "leptoskit_bridge",
  "serde",
@@ -3382,8 +3611,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_permissions"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "998e15fba0c4ec08c3fc6c466d66ef6330ced500f5e898de6261b6f7e1a3ac79"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "js-sys",
  "leptoskit_bridge",
@@ -3395,8 +3623,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_secure_store"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a1e4b619c4a59b78453f002a3838587cba5d15f0b2d694557dc8460c8762926"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "dirs",
  "fs4",
@@ -3406,10 +3633,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "leptoskit_plugin_sensors"
+version = "0.3.0"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
+dependencies = [
+ "leptoskit_bridge",
+ "leptoskit_sensor",
+]
+
+[[package]]
 name = "leptoskit_plugin_speech"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a1c540d12e05c748f5887aa51622ecc4ff4fb59ece2f81fe30f7670dff57a0c"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "futures",
  "gloo-events",
@@ -3422,8 +3657,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_store"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ec1e66e6d89b52b83fe2fe4ee1799968afa5ffe50c300e158dcd5033dd10369"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "cap-std",
  "leptoskit_bridge",
@@ -3437,8 +3671,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_web_auth"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c6d2fcef300587cf9a0e76d355b1f2db64fb615231043c6d834933e827d87b0"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "leptoskit_bridge",
  "open",
@@ -3448,8 +3681,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_plugin_websocket"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5e116cea36c30f2b954f7bb13e739ffdd4b6392732cf5a472e864f5befa0109"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "futures",
  "gloo-timers",
@@ -3466,13 +3698,13 @@ dependencies = [
 [[package]]
 name = "leptoskit_query"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37d0d889c8f8d0c36ac5050e5f5487b23f39e211c871d4939a90f3194279a34e"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "any_spawner",
  "futures",
  "hydration_context",
  "leptos",
+ "leptoskit_bridge",
  "leptoskit_db",
  "parking_lot",
  "send_wrapper",
@@ -3486,8 +3718,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_rive"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad45bb7caba5f579f3b606975e4df6236c84abf2bb349064c7f70f8f666c52e4"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "base64 0.22.1",
  "cc",
@@ -3504,8 +3735,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_rive_runtime"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "79d9d80a62a46c63508139505c13b70a6b807120d49010fc3f497e1bc85e7374"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "cc",
  "flate2",
@@ -3516,14 +3746,14 @@ dependencies = [
 [[package]]
 name = "leptoskit_router"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "766237364783802a2f1cd6d33254ce7fd943974de1c0a8f2ce5233b4ecbf1f29"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "leptoskit_native",
  "leptoskit_router_macros",
  "reactive_graph",
  "send_wrapper",
  "thiserror 2.0.21",
+ "url",
  "wasm-bindgen",
  "web-sys",
 ]
@@ -3531,8 +3761,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_router_macros"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f7535b0cdf0f2bc39aa4fc314629541a7ad2bd0a52937dfdb2e71e53be95ac0"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3542,14 +3771,15 @@ dependencies = [
 [[package]]
 name = "leptoskit_rpc"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac1db616fb491b5911fc299c0098b1ad3d3acccfea5b734df181f2f9429c7ce6"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "any_spawner",
  "axum",
+ "base64 0.22.1",
  "chrono",
  "futures",
  "getrandom 0.4.3",
+ "hmac 0.12.1",
  "http",
  "inventory",
  "leptos",
@@ -3564,6 +3794,7 @@ dependencies = [
  "leptoskit_query",
  "leptoskit_rpc_codegen",
  "leptoskit_rpc_macros",
+ "reqwest",
  "schemars",
  "send_wrapper",
  "serde",
@@ -3571,6 +3802,7 @@ dependencies = [
  "sha2 0.10.9",
  "thiserror 2.0.21",
  "tokio",
+ "uuid",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
@@ -3579,8 +3811,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_rpc_codegen"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a7c03b8dfb770e95c168171bff5031ebdd3a0611b100e52ee67914555ef85b8"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "indexmap",
  "serde",
@@ -3591,20 +3822,34 @@ dependencies = [
 [[package]]
 name = "leptoskit_rpc_macros"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a124c28af7e967b7cee86381e3fa84957a16912e900e4c21e3d39b7c2fd96586"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "convert_case 0.11.0",
  "proc-macro2",
  "quote",
  "syn 3.0.10",
+ "toml 0.9.12+spec-1.1.0",
+]
+
+[[package]]
+name = "leptoskit_sensor"
+version = "0.3.0"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
+dependencies = [
+ "futures",
+ "gloo-events",
+ "gloo-timers",
+ "js-sys",
+ "leptoskit_bridge",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
 ]
 
 [[package]]
 name = "leptoskit_testing"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45d754e9105b940f789d685a9de2eb59e66a225f03dcf01e34d116850cc0eb37"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "leptoskit_native",
  "leptoskit_yoga",
@@ -3615,8 +3860,7 @@ dependencies = [
 [[package]]
 name = "leptoskit_uikit"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9df4bd9694c4db1ee14698120875a23257875add42911e1ec71cc2c9266f6c07"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "leptoskit_native",
  "leptoskit_yoga",
@@ -3632,15 +3876,17 @@ dependencies = [
 [[package]]
 name = "leptoskit_wasm"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d1f843494e2ce5d4779ca8b21aa773bb9e7e8e803ed564933f7a53b4ca4dca92"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "leptoskit_bridge",
+ "leptoskit_log",
  "leptoskit_native",
  "leptoskit_rive",
  "leptoskit_yoga",
+ "log",
  "serde",
  "serde_json",
+ "serde_path_to_error",
  "thiserror 2.0.21",
  "wasmi",
  "wasmi_core",
@@ -3649,21 +3895,19 @@ dependencies = [
 [[package]]
 name = "leptoskit_windows"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c49e08fe61329c9e2e427618da495550eef366fbf43bbe755c21d078f348db7"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "image",
  "leptoskit_native",
  "leptoskit_yoga",
- "windows",
+ "windows 0.61.3",
  "windows-core 0.61.2",
 ]
 
 [[package]]
 name = "leptoskit_yoga"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a868758f37467088383f1ad02f3455a8ba7be4527059bda6a4aa5aac08eeb077"
+source = "git+https://github.com/leptoskit/leptoskit?rev=1f7f1462a17a9a33eccb933909f6cdae20d03052#1f7f1462a17a9a33eccb933909f6cdae20d03052"
 dependencies = [
  "serde",
 ]
@@ -3685,6 +3929,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "libloading"
+version = "0.8.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d7c4b02199fee7c5d21a5ae7d8cfa79a6ef5bb2fc834d6e9058e89c825efdc55"
+dependencies = [
+ "cfg-if",
+ "windows-link 0.2.1",
+]
+
+[[package]]
 name = "libm"
 version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3701,9 +3955,9 @@ dependencies = [
 
 [[package]]
 name = "libsqlite3-sys"
-version = "0.38.2"
+version = "0.39.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1d20bef17f513b9b3004532233187769cd072d790971f4e4da0e346eb6401e8"
+checksum = "14a5f01b87b92705d07b433c06f96cbc764637d81a0bffb5734ce17cf0f9a2b3"
 dependencies = [
  "cc",
  "pkg-config",
@@ -3721,6 +3975,12 @@ name = "litemap"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "47d9d19d1d6efa0109d2f65ff4c85cddd50bd572e5a00127ab10987290bcefae"
+
+[[package]]
+name = "litrs"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4744e383959f0db86ede514b809b1c53251889093803c05267acc7d4e7030d70"
 
 [[package]]
 name = "lock_api"
@@ -3899,6 +4159,53 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "743fb55ba31b18fb1ecef6bdc9aa2743314978ac084044301a7eee33fb99a20d"
 
 [[package]]
+name = "naga"
+version = "30.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a616d2fb8c89516ac2723a581f69d6c18576046bed761bd6b305e5618e6ae130"
+dependencies = [
+ "arrayvec",
+ "bit-set",
+ "bitflags 2.13.2",
+ "cfg-if",
+ "cfg_aliases",
+ "codespan-reporting",
+ "half",
+ "hashbrown 0.17.1",
+ "indexmap",
+ "libm",
+ "log",
+ "naga-types",
+ "num-traits",
+ "once_cell",
+ "rustc-hash 1.1.0",
+ "spirv",
+ "thiserror 2.0.21",
+ "unicode-ident",
+]
+
+[[package]]
+name = "naga-types"
+version = "30.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "590afbf58a6f4f62873cd5cff4468061844bafa1cdf399cc954537c22d768d49"
+dependencies = [
+ "hashbrown 0.17.1",
+ "indexmap",
+ "rustc-hash 1.1.0",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "ndk-sys"
+version = "0.6.0+11769913"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee6cda3051665f1fb8d9e08fc35c96d5a244fb1be711a03b71118828afc9a873"
+dependencies = [
+ "jni-sys 0.3.1",
+]
+
+[[package]]
 name = "next_tuple"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3996,6 +4303,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
 dependencies = [
  "autocfg",
+ "libm",
 ]
 
 [[package]]
@@ -4096,6 +4404,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "objc2-metal"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a0125f776a10d00af4152d74616409f0d4a2053a6f57fa5b7d6aa2854ac04794"
+dependencies = [
+ "bitflags 2.13.2",
+ "block2",
+ "objc2",
+ "objc2-foundation",
+]
+
+[[package]]
 name = "objc2-quartz-core"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4106,6 +4426,7 @@ dependencies = [
  "objc2-core-foundation",
  "objc2-core-graphics",
  "objc2-foundation",
+ "objc2-metal",
 ]
 
 [[package]]
@@ -4222,6 +4543,15 @@ name = "or_poisoned"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8c04f5d74368e4d0dfe06c45c8627c81bd7c317d52762d118fb9b3076f6420fd"
+
+[[package]]
+name = "ordered-float"
+version = "5.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f59006ce1e204c30956638535b74d317bca99477b9356dfaec54c37f6f600ab"
+dependencies = [
+ "num-traits",
+]
 
 [[package]]
 name = "ordered-stream"
@@ -4483,6 +4813,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "pollster"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2f3a9f18d041e6d0e102a0a46750538147e5e8992d3b4873aaafee2520b00ce3"
+
+[[package]]
 name = "polyval"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4493,6 +4829,21 @@ dependencies = [
  "opaque-debug",
  "universal-hash",
  "zeroize",
+]
+
+[[package]]
+name = "portable-atomic"
+version = "1.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "05c8b63e8d9609db387f0324918f81d68fe27748f084ef092fb35954d0539a85"
+
+[[package]]
+name = "portable-atomic-util"
+version = "0.2.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "10ab3eb7f3becc3a1cbc4f2c6f20267996cfc1a6467a873763411b136a122715"
+dependencies = [
+ "portable-atomic",
 ]
 
 [[package]]
@@ -4545,6 +4896,12 @@ checksum = "85eae3c4ed2f50dcfe72643da4befc30deadb458a9b590d720cde2f2b1e97da9"
 dependencies = [
  "zerocopy",
 ]
+
+[[package]]
+name = "presser"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e8cf8e6a8aa66ce33f63993ffc4ea4271eb5b0530a9002db8455ea6050c77bfa"
 
 [[package]]
 name = "prettyplease"
@@ -4632,6 +4989,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "profiling"
+version = "1.0.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d595e54a326bc53c1c197b32d295e14b169e3cfeaa8dc82b529f947fba6bcf5"
+
+[[package]]
 name = "pxfm"
 version = "0.1.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4660,7 +5023,7 @@ dependencies = [
  "pin-project-lite",
  "quinn-proto",
  "quinn-udp",
- "rustc-hash",
+ "rustc-hash 2.1.3",
  "rustls",
  "socket2",
  "thiserror 2.0.21",
@@ -4681,7 +5044,7 @@ dependencies = [
  "rand 0.10.3",
  "rand_pcg",
  "ring",
- "rustc-hash",
+ "rustc-hash 2.1.3",
  "rustls",
  "rustls-pki-types",
  "slab",
@@ -4834,6 +5197,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "range-alloc"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca45419789ae5a7899559e9512e58ca889e41f04f1f2445e9f4b290ceccd1d08"
+
+[[package]]
+name = "raw-window-handle"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "20675572f6f24e9e76ef639bc5552774ed45f1c30e2951e1e99c59888861c539"
+
+[[package]]
+name = "raw-window-metal"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "40d213455a5f1dc59214213c7330e074ddf8114c9a42411eb890c767357ce135"
+dependencies = [
+ "objc2",
+ "objc2-core-foundation",
+ "objc2-foundation",
+ "objc2-quartz-core",
+]
+
+[[package]]
 name = "reactive_graph"
 version = "0.3.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4848,7 +5235,7 @@ dependencies = [
  "or_poisoned",
  "paste",
  "pin-project-lite",
- "rustc-hash",
+ "rustc-hash 2.1.3",
  "rustc_version",
  "send_wrapper",
  "serde",
@@ -4870,7 +5257,7 @@ dependencies = [
  "paste",
  "reactive_graph",
  "reactive_stores_macro",
- "rustc-hash",
+ "rustc-hash 2.1.3",
  "send_wrapper",
 ]
 
@@ -4953,6 +5340,12 @@ name = "regex-syntax"
 version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
+
+[[package]]
+name = "renderdoc-sys"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "19b30a45b0cd0bcca8037f3d0dc3421eaf95327a17cad11964fb8179b4fc4832"
 
 [[package]]
 name = "reqwest"
@@ -5045,9 +5438,9 @@ dependencies = [
 
 [[package]]
 name = "rusqlite"
-version = "0.40.2"
+version = "0.41.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23f2a97da3e3873c73cb2a2e71b35c40ff95e0b1eefa8d72d8499a6928c3b5b3"
+checksum = "da9bba6f3506135e120a6586df05be18b48d18896600646a4bec8f993d91a594"
 dependencies = [
  "bitflags 2.13.2",
  "fallible-iterator 0.3.0",
@@ -5056,6 +5449,12 @@ dependencies = [
  "libsqlite3-sys",
  "smallvec",
 ]
+
+[[package]]
+name = "rustc-hash"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
 
 [[package]]
 name = "rustc-hash"
@@ -5735,6 +6134,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3763264f6b73151db08c50ff20d7d8a0b8796e021cdea7ceedad07b80155fa0e"
 
 [[package]]
+name = "spirv"
+version = "0.4.0+sdk-1.4.341.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d9571ea910ebd84c86af4b3ed27f9dbdc6ad06f17c5f96146b2b671e2976744f"
+dependencies = [
+ "bitflags 2.13.2",
+]
+
+[[package]]
 name = "spki"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5842,7 +6250,7 @@ dependencies = [
  "ntapi",
  "objc2-core-foundation",
  "objc2-io-kit",
- "windows",
+ "windows 0.61.3",
 ]
 
 [[package]]
@@ -5881,7 +6289,7 @@ dependencies = [
  "paste",
  "reactive_graph",
  "reactive_stores",
- "rustc-hash",
+ "rustc-hash 2.1.3",
  "rustc_version",
  "send_wrapper",
  "slotmap",
@@ -5918,6 +6326,15 @@ dependencies = [
  "once_cell",
  "rustix",
  "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "termcolor"
+version = "1.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755"
+dependencies = [
+ "winapi-util",
 ]
 
 [[package]]
@@ -6605,6 +7022,9 @@ dependencies = [
  "leptoskit_bridge",
  "leptoskit_build",
  "leptoskit_l10n",
+ "leptoskit_plugin_app_integrity",
+ "leptoskit_plugin_camera",
+ "leptoskit_plugin_permissions",
  "leptoskit_router",
  "leptoskit_testing",
  "reactive_graph",
@@ -6675,6 +7095,8 @@ name = "verily_kit_android"
 version = "0.1.0"
 dependencies = [
  "leptoskit_bridge_ffi",
+ "leptoskit_plugin_app_integrity",
+ "leptoskit_plugin_camera",
  "leptoskit_plugin_crypto",
  "leptoskit_plugin_device",
  "leptoskit_plugin_filesystem",
@@ -6683,6 +7105,7 @@ dependencies = [
  "leptoskit_plugin_location",
  "leptoskit_plugin_permissions",
  "leptoskit_plugin_secure_store",
+ "leptoskit_plugin_sensors",
  "leptoskit_plugin_speech",
  "solana_kit_leptoskit",
 ]
@@ -6692,6 +7115,8 @@ name = "verily_kit_ios"
 version = "0.1.0"
 dependencies = [
  "leptoskit_bridge_ffi",
+ "leptoskit_plugin_app_integrity",
+ "leptoskit_plugin_camera",
  "leptoskit_plugin_crypto",
  "leptoskit_plugin_device",
  "leptoskit_plugin_filesystem",
@@ -6700,6 +7125,7 @@ dependencies = [
  "leptoskit_plugin_location",
  "leptoskit_plugin_permissions",
  "leptoskit_plugin_secure_store",
+ "leptoskit_plugin_sensors",
  "leptoskit_plugin_speech",
  "solana_kit_leptoskit",
 ]
@@ -6710,6 +7136,8 @@ version = "0.1.0"
 dependencies = [
  "leptoskit",
  "leptoskit_bridge_ffi",
+ "leptoskit_plugin_app_integrity",
+ "leptoskit_plugin_camera",
  "leptoskit_plugin_crypto",
  "leptoskit_plugin_device",
  "leptoskit_plugin_filesystem",
@@ -6718,6 +7146,7 @@ dependencies = [
  "leptoskit_plugin_location",
  "leptoskit_plugin_permissions",
  "leptoskit_plugin_secure_store",
+ "leptoskit_plugin_sensors",
  "leptoskit_plugin_speech",
  "solana_kit_leptoskit",
 ]
@@ -6727,6 +7156,8 @@ name = "verily_kit_macos"
 version = "0.1.0"
 dependencies = [
  "leptoskit_bridge_ffi",
+ "leptoskit_plugin_app_integrity",
+ "leptoskit_plugin_camera",
  "leptoskit_plugin_crypto",
  "leptoskit_plugin_device",
  "leptoskit_plugin_filesystem",
@@ -6735,6 +7166,7 @@ dependencies = [
  "leptoskit_plugin_location",
  "leptoskit_plugin_permissions",
  "leptoskit_plugin_secure_store",
+ "leptoskit_plugin_sensors",
  "leptoskit_plugin_speech",
  "solana_kit_leptoskit",
 ]
@@ -6745,6 +7177,8 @@ version = "0.1.0"
 dependencies = [
  "leptoskit",
  "leptoskit_bridge_ffi",
+ "leptoskit_plugin_app_integrity",
+ "leptoskit_plugin_camera",
  "leptoskit_plugin_crypto",
  "leptoskit_plugin_device",
  "leptoskit_plugin_filesystem",
@@ -6753,6 +7187,7 @@ dependencies = [
  "leptoskit_plugin_location",
  "leptoskit_plugin_permissions",
  "leptoskit_plugin_secure_store",
+ "leptoskit_plugin_sensors",
  "leptoskit_plugin_speech",
 ]
 
@@ -7080,6 +7515,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "wayland-sys"
+version = "0.31.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d8eab23fefc9e41f8e841df4a9c707e8a8c4ed26e944ef69297184de2785e3be"
+dependencies = [
+ "dlib",
+ "log",
+ "once_cell",
+ "pkg-config",
+]
+
+[[package]]
 name = "web-sys"
 version = "0.3.106"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7141,6 +7588,188 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a28ac98ddc8b9274cb41bb4d9d4d5c425b6020c50c46f25559911905610b4a88"
 
 [[package]]
+name = "wgpu"
+version = "30.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "527ccdf43dd5b2e8676eed9984ce00e2bbb0a1b85b70c1969dcb6cd2eb55ab9e"
+dependencies = [
+ "arrayvec",
+ "bitflags 2.13.2",
+ "bytemuck",
+ "cfg-if",
+ "cfg_aliases",
+ "document-features",
+ "hashbrown 0.17.1",
+ "js-sys",
+ "log",
+ "naga",
+ "portable-atomic",
+ "profiling",
+ "raw-window-handle",
+ "smallvec",
+ "static_assertions",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "wgpu-core",
+ "wgpu-hal",
+ "wgpu-types",
+]
+
+[[package]]
+name = "wgpu-core"
+version = "30.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14c018fce9b6270aa203c2fdd56f3cce996713534bd757e4ea58c8560b121f14"
+dependencies = [
+ "arrayvec",
+ "bit-set",
+ "bit-vec",
+ "bitflags 2.13.2",
+ "bytemuck",
+ "cfg_aliases",
+ "document-features",
+ "hashbrown 0.17.1",
+ "indexmap",
+ "log",
+ "naga",
+ "naga-types",
+ "once_cell",
+ "parking_lot",
+ "portable-atomic",
+ "profiling",
+ "raw-window-handle",
+ "rustc-hash 1.1.0",
+ "smallvec",
+ "thiserror 2.0.21",
+ "wgpu-core-deps-apple",
+ "wgpu-core-deps-emscripten",
+ "wgpu-core-deps-wasm",
+ "wgpu-core-deps-windows-linux-android",
+ "wgpu-hal",
+ "wgpu-naga-bridge",
+ "wgpu-types",
+]
+
+[[package]]
+name = "wgpu-core-deps-apple"
+version = "30.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "061f3d319a40d39d00b1ecc2c33b89fe21d4e6fe01859df3500a3a8ecccd6b68"
+dependencies = [
+ "wgpu-hal",
+]
+
+[[package]]
+name = "wgpu-core-deps-emscripten"
+version = "30.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d98b86cf4abf524a902dd35f18ca6a3f08fc2ae9847c8f10b48e30491b1f0b86"
+dependencies = [
+ "wgpu-hal",
+]
+
+[[package]]
+name = "wgpu-core-deps-wasm"
+version = "30.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d260ca2ca8adc654f513a869bf3cac0b47f5b8d3f87803d6942015f8de597aae"
+dependencies = [
+ "wgpu-hal",
+]
+
+[[package]]
+name = "wgpu-core-deps-windows-linux-android"
+version = "30.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7586165fd5f6d881cb9ce4bb71f40d6caab2c0f1837e3fc1d9788a197fb6004f"
+dependencies = [
+ "wgpu-hal",
+]
+
+[[package]]
+name = "wgpu-hal"
+version = "30.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b6b7fb58561a792bc237628ba0792e332de418fefe145f13b5ed8201e6d52f58"
+dependencies = [
+ "android_system_properties",
+ "arrayvec",
+ "ash",
+ "bit-set",
+ "bitflags 2.13.2",
+ "block2",
+ "bytemuck",
+ "cfg-if",
+ "cfg_aliases",
+ "glow",
+ "glutin_wgl_sys",
+ "gpu-allocator",
+ "hashbrown 0.17.1",
+ "js-sys",
+ "khronos-egl",
+ "libc",
+ "libloading",
+ "log",
+ "naga",
+ "naga-types",
+ "ndk-sys",
+ "objc2",
+ "objc2-core-foundation",
+ "objc2-core-graphics",
+ "objc2-foundation",
+ "objc2-metal",
+ "objc2-quartz-core",
+ "once_cell",
+ "ordered-float",
+ "parking_lot",
+ "portable-atomic",
+ "portable-atomic-util",
+ "profiling",
+ "range-alloc",
+ "raw-window-handle",
+ "raw-window-metal",
+ "renderdoc-sys",
+ "smallvec",
+ "static_assertions",
+ "thiserror 2.0.21",
+ "wasm-bindgen",
+ "wayland-sys",
+ "web-sys",
+ "wgpu-naga-bridge",
+ "wgpu-types",
+ "windows 0.62.2",
+ "windows-core 0.62.2",
+ "windows-result 0.4.1",
+]
+
+[[package]]
+name = "wgpu-naga-bridge"
+version = "30.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2f62e73117bb7a62bfd9c5a5841438a823f6566c6442a808ee269d2d055c081"
+dependencies = [
+ "naga",
+ "wgpu-types",
+]
+
+[[package]]
+name = "wgpu-types"
+version = "30.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "99dad6f1fbdbbdb4c278a6508b059d44688f5cebddf78d005a46a31340269286"
+dependencies = [
+ "bitflags 2.13.2",
+ "bytemuck",
+ "js-sys",
+ "log",
+ "naga-types",
+ "raw-window-handle",
+ "static_assertions",
+ "web-sys",
+]
+
+[[package]]
 name = "whoami"
 version = "2.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7190,11 +7819,23 @@ version = "0.61.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9babd3a767a4c1aef6900409f85f5d53ce2544ccdfaa86dad48c91782c6d6893"
 dependencies = [
- "windows-collections",
+ "windows-collections 0.2.0",
  "windows-core 0.61.2",
- "windows-future",
+ "windows-future 0.2.1",
  "windows-link 0.1.3",
- "windows-numerics",
+ "windows-numerics 0.2.0",
+]
+
+[[package]]
+name = "windows"
+version = "0.62.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "527fadee13e0c05939a6a05d5bd6eec6cd2e3dbd648b9f8e447c6518133d8580"
+dependencies = [
+ "windows-collections 0.3.2",
+ "windows-core 0.62.2",
+ "windows-future 0.3.2",
+ "windows-numerics 0.3.1",
 ]
 
 [[package]]
@@ -7204,6 +7845,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3beeceb5e5cfd9eb1d76b381630e82c4241ccd0d27f1a39ed41b2760b255c5e8"
 dependencies = [
  "windows-core 0.61.2",
+]
+
+[[package]]
+name = "windows-collections"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23b2d95af1a8a14a3c7367e1ed4fc9c20e0a26e79551b1454d72583c97cc6610"
+dependencies = [
+ "windows-core 0.62.2",
 ]
 
 [[package]]
@@ -7240,7 +7890,18 @@ checksum = "fc6a41e98427b19fe4b73c550f060b59fa592d7d686537eebf9385621bfbad8e"
 dependencies = [
  "windows-core 0.61.2",
  "windows-link 0.1.3",
- "windows-threading",
+ "windows-threading 0.1.0",
+]
+
+[[package]]
+name = "windows-future"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1d6f90251fe18a279739e78025bd6ddc52a7e22f921070ccdc67dde84c605cb"
+dependencies = [
+ "windows-core 0.62.2",
+ "windows-link 0.2.1",
+ "windows-threading 0.2.1",
 ]
 
 [[package]]
@@ -7285,6 +7946,16 @@ checksum = "9150af68066c4c5c07ddc0ce30421554771e528bde427614c61038bc2c92c2b1"
 dependencies = [
  "windows-core 0.61.2",
  "windows-link 0.1.3",
+]
+
+[[package]]
+name = "windows-numerics"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e2e40844ac143cdb44aead537bbf727de9b044e107a0f1220392177d15b0f26"
+dependencies = [
+ "windows-core 0.62.2",
+ "windows-link 0.2.1",
 ]
 
 [[package]]
@@ -7423,6 +8094,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b66463ad2e0ea3bbf808b7f1d371311c80e115c0b71d60efc142cafbcfb057a6"
 dependencies = [
  "windows-link 0.1.3",
+]
+
+[[package]]
+name = "windows-threading"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3949bd5b99cafdf1c7ca86b43ca564028dfe27d66958f2470940f73d86d75b37"
+dependencies = [
+ "windows-link 0.2.1",
 ]
 
 [[package]]
@@ -7643,6 +8323,12 @@ dependencies = [
  "libc",
  "windows-sys 0.59.0",
 ]
+
+[[package]]
+name = "xml-rs"
+version = "0.8.29"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e450f9b2ed1dff33c94c12589a87338689467b9c4f5d8a5710bd09a847d2c8a7"
 
 [[package]]
 name = "xxhash-rust"

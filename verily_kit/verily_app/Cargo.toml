@@ -18,6 +18,9 @@ leptos = { version = "0.9.0-rc0", default-features = false, optional = true }
 leptoskit = { workspace = true, features = ["auth", "l10n", "query", "rpc"] }
 leptoskit_bridge = { workspace = true, optional = true }
 leptoskit_l10n = { workspace = true }
+leptoskit_plugin_app_integrity = { workspace = true, optional = true }
+leptoskit_plugin_camera = { workspace = true, optional = true }
+leptoskit_plugin_permissions = { workspace = true, optional = true }
 leptoskit_router = { workspace = true }
 # Signals that outlive a screen rebuild (see `state.rs`).
 reactive_graph = "0.3.0-rc0"
@@ -49,6 +52,12 @@ ssr = ["web", "leptos/ssr"]
 native = [
   "leptoskit/guest",
   "dep:leptoskit_bridge",
+  "dep:leptoskit_plugin_app_integrity",
+  "dep:leptoskit_plugin_camera",
+  "dep:leptoskit_plugin_permissions",
+  "leptoskit_plugin_app_integrity/guest",
+  "leptoskit_plugin_camera/guest",
+  "leptoskit_plugin_permissions/guest",
 ]
 android = ["native", "leptoskit/android", "dep:solana_kit_leptoskit", "dep:solana_kit_wallet"]
 ios = ["native", "leptoskit/ios"]
