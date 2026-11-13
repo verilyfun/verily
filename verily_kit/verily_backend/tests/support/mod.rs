@@ -113,8 +113,15 @@ impl World {
 			.with(self.backend.clone())
 	}
 
-	pub async fn call<O: rpc::Operation>(&self, who: &Identity, op: O) -> rpc::Result<O::Output> {
-		rpc::server::call_as(&self.db, who.clone(), None, op).await
+	pub fn call<O: rpc::Operation>(
+		&self,
+		who: &Identity,
+		op: O,
+	) -> impl Future<Output = rpc::Result<O::Output>> + Send {
+		let db = self.db.clone();
+		let who = who.clone();
+		// Dispatch grew past clippy's large-future limit on this pin.
+		Box::pin(async move { rpc::server::call_as(&db, who, None, op).await })
 	}
 
 	/// Puts the development seed's actions in the catalogue.
