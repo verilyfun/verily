@@ -38,33 +38,33 @@ rust-version = "1.95.0"
 
 [workspace.dependencies]
 any_spawner = "0.3"
-leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_auth = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_axum = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_bridge = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_bridge_ffi = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_build = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_config = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_db = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_db_macros = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_db_schema = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_idp = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_l10n = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_plugin_app_integrity = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_plugin_camera = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_plugin_crypto = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_plugin_device = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_plugin_filesystem = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_plugin_http = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_plugin_local_authentication = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_plugin_location = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_plugin_permissions = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_plugin_secure_store = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_plugin_sensors = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_plugin_speech = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_router = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_rpc = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
-leptoskit_testing = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e", default-features = false }
+leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_auth = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_axum = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_bridge = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_bridge_ffi = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_build = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_config = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_db = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_db_macros = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_db_schema = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_idp = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_l10n = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_plugin_app_integrity = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_plugin_camera = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_plugin_crypto = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_plugin_device = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_plugin_filesystem = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_plugin_http = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_plugin_local_authentication = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_plugin_location = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_plugin_permissions = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_plugin_secure_store = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_plugin_sensors = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_plugin_speech = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_router = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_rpc = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
+leptoskit_testing = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016", default-features = false }
 monosecret = { version = "0.5.0", default-features = false, features = ["client"] }
 serde_json = "1"
 # Skribble's leptoskit components, from its pull request
@@ -84,11 +84,11 @@ verily_backend = { path = "verily_backend" }
 # this rev with the others. solana_kit a46f32d selects the bridge, native, and
 # wasm crates from crates.io at =0.3.0; those follow the same revision.
 [patch.crates-io]
-leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e" }
-leptoskit_bridge = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e" }
-leptoskit_bridge_ffi = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e" }
-leptoskit_native = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e" }
-leptoskit_wasm = { git = "https://github.com/ifiokjr/leptoskit", rev = "92ac609ece229043427c7edd7964a7ec7518696e" }
+leptoskit = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016" }
+leptoskit_bridge = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016" }
+leptoskit_bridge_ffi = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016" }
+leptoskit_native = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016" }
+leptoskit_wasm = { git = "https://github.com/ifiokjr/leptoskit", rev = "b6a1990a574a7c077e4f31d408550ae64045a016" }
 
 # solana_kit_native at a46f32d pins rustix =1.1.5. xattr 1.7 in this graph
 # requires rustix ^1.1.6. The patch keeps that revision's sources and accepts
