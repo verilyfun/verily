@@ -31,6 +31,9 @@ let
       "rustc-dev"
       "rustfmt"
     ];
+    # The kit's native hosts compile a Wasm guest. Without this target,
+    # `lk native prepare linux` stops at `can't find crate for std`.
+    targets = [ "wasm32-unknown-unknown" ];
   };
   # Pina loads its rustc-linked lint driver by prepending the Rust sysroot to
   # the process-wide library path. On macOS, use the system compiler so SIP
@@ -164,7 +167,10 @@ in
       coreutils
       swift-format
       swiftlint
-    ];
+    ]
+    # The kit's Linux host enables LeptosKit's gtk feature, so `lk lint`
+    # builds glib-sys. pkg-config only sees packages in this shell.
+    ++ lib.optionals stdenv.isLinux [ gtk4 ];
 
   dotenv.disableHint = true;
 
