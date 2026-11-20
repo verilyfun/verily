@@ -1,0 +1,5 @@
+{
+  "name": "Verily",
+  "install": "[ ! -d '/agent/repos/verily' ] || cd '/agent/repos/verily' || exit $?\nbash .cursor/cloud-install.sh",
+  "start": "[ ! -d '/agent/repos/verily' ] || cd '/agent/repos/verily' || exit $?\nbash .cursor/cloud-start.sh"
+}
