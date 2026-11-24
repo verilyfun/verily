@@ -143,6 +143,21 @@ pub mod verification {
 		Verification::closed()
 	}
 
+	/// Build the verification service from Monosecret-resolved environment variables.
+	///
+	/// Defaults to `manual-review` when unset. In production (`is_production = true`),
+	/// `OpenRouter` fails closed unless blocking guard confirmation and ZDR are set.
+	///
+	/// # Errors
+	///
+	/// When verifier configuration is invalid or fails production AI preflight.
+	pub fn mount_from_env(
+		is_production: bool,
+	) -> Result<Mounted, verily_verification::config::ConfigError> {
+		let env_map: std::collections::HashMap<String, String> = std::env::vars().collect();
+		Verification::from_env(&env_map, is_production)
+	}
+
 	/// HTTP surface that only reports the mount is present. Domain handlers
 	/// call [`Mounted`] methods; they do not live in this crate.
 	pub struct Routes;

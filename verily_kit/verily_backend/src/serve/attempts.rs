@@ -8,6 +8,8 @@
 //! here comes from `verily_verification`; with the manual-review verifier
 //! (the default without secrets) proof goes to a person, never to a pass.
 
+use base64::Engine;
+use base64::engine::general_purpose::STANDARD;
 use chrono::DateTime;
 use chrono::Utc;
 use leptoskit_auth::Account as AuthAccount;
@@ -15,6 +17,8 @@ use leptoskit_db::Connection;
 use leptoskit_db::Id;
 use leptoskit_db::Read;
 use leptoskit_rpc as rpc;
+use sha2::Digest;
+use sha2::Sha256;
 use uuid::Uuid;
 use verily_api::AppealStatus;
 use verily_api::AttemptOpened;
@@ -35,11 +39,15 @@ use verily_shared::ActionRequirementView;
 use verily_shared::ActionVerificationPolicy;
 use verily_shared::EvidenceDecisionStatus;
 use verily_shared::RewardPoolStatus;
+use verily_verification::asn1::hex_lower;
 use verily_verification::capture::SignatureMode;
+use verily_verification::motion;
 use verily_verification::ops::OpError;
 use verily_verification::spoken::SpokenChallenge;
 
 use super::Backend;
+use super::attest::redeem_qr_challenge;
+use super::attest::verify_registered_app_attest_assertion;
 use super::backend;
 use super::catalogue::is_open;
 use super::db;
@@ -53,10 +61,12 @@ use crate::schema::Attempt;
 use crate::schema::CaptureWindowRow;
 use crate::schema::Evidence;
 use crate::schema::EvidenceDecision;
+use crate::schema::EvidenceUploadReservationRow;
 use crate::schema::NewAttempt;
 use crate::schema::NewCaptureWindowRow;
 use crate::schema::NewEvidence;
 use crate::schema::NewEvidenceDecision;
+use crate::schema::NewEvidenceVerificationJobRow;
 use crate::schema::NewSpokenChallengeRow;
 use crate::schema::SpokenChallengeRow;
 
@@ -393,6 +403,713 @@ pub async fn submit_attestation(
 	Ok(AttestationReceipt { bound: pinned })
 }
 
+/// Binds a confirmed immutable storage upload (`reservation_id`) to an open
+/// capture window and queues background verification (`EvidenceVerificationJobRow`).
+#[allow(
+	clippy::too_many_lines,
+	reason = "linear transactional verification of upload reservation, capture window, spoken challenge, evidence, and job"
+)]
+pub async fn submit_media_proof(
+	cx: &rpc::MutationCx,
+	attempt_id: String,
+	requirement_id: String,
+	reservation_id: String,
+) -> rpc::Result<ProofReceipt> {
+	let participant = me(cx.context())?;
+	let backend = backend(cx.context())?;
+	require_active(cx.tx(), participant).await?;
+	let (attempt, _action, requirement) =
+		open_attempt(cx.tx(), participant, &attempt_id, &requirement_id).await?;
+
+	let res_id = Id::<EvidenceUploadReservationRow>::from_uuid(parse_id(&reservation_id)?);
+	let reservation = EvidenceUploadReservationRow::query()
+		.filter(|r| {
+			r.id.eq(res_id) & r.attempt_id.eq(attempt.id) & r.participant_id.eq(participant)
+		})
+		.first(cx.tx())
+		.await
+		.map_err(db)?
+		.ok_or_else(|| rpc::Error::not_found("notFound"))?;
+	if reservation.requirement_id != requirement.id.to_string() {
+		return Err(rpc::Error::invalid("invalidRequest"));
+	}
+	let (Some(version_id), Some(digest)) = (reservation.version_id, reservation.sha256_digest)
+	else {
+		return Err(rpc::Error::invalid("uploadNotConfirmed"));
+	};
+
+	if let Some(existing) = evidence_for(cx.tx(), &attempt, &requirement).await? {
+		return if existing.sha256_digest.as_deref() == Some(digest.as_str()) {
+			Ok(ProofReceipt {
+				digest_hex: digest,
+				stored: true,
+			})
+		} else {
+			Err(rpc::Error::conflict("proofAlreadySubmitted"))
+		};
+	}
+
+	let now = Utc::now();
+	let requirement_key = requirement.id.to_string();
+	let mut window = CaptureWindowRow::query()
+		.filter(|row| {
+			row.attempt_id.eq(attempt.id)
+				& row.requirement_id.eq(requirement_key.clone())
+				& row.consumed_at.is_null()
+				& row.expires_at.gt(now)
+		})
+		.order_by(|row| row.opened_at.desc())
+		.first(cx.tx())
+		.await
+		.map_err(db)?
+		.ok_or_else(|| rpc::Error::invalid("captureWindowClosed"))?;
+
+	if requirement.spoken_challenge_required {
+		let mut word = live_word(cx.tx(), &attempt, &requirement_key, now)
+			.await?
+			.ok_or_else(|| rpc::Error::invalid("spokenChallengeMissing"))?;
+		word.bound_at = Some(now);
+		word.save(cx.tx()).await.map_err(db)?;
+	}
+
+	window.consumed_at = Some(now);
+	window.sha256_digest = Some(digest.clone());
+	window.save(cx.tx()).await.map_err(db)?;
+
+	let evidence = NewEvidence {
+		attempt_id: attempt.id,
+		requirement_key,
+		kind: name(&requirement.kind),
+		storage_path: Some(reservation.object_key),
+		storage_version_id: Some(version_id),
+		mime_type: Some(reservation.mime_type),
+		sha256_digest: Some(digest.clone()),
+		byte_length: reservation.byte_length,
+		provenance_level: "basic".to_owned(),
+		capture_manifest: None,
+		capture_signature: None,
+		capture_public_key: None,
+		capture_key_id: None,
+		capture_key_storage: None,
+		captured_at: now,
+	}
+	.insert(cx.tx())
+	.await
+	.map_err(db)?;
+
+	NewEvidenceVerificationJobRow {
+		evidence_id: evidence.id,
+		attempt_id: attempt.id,
+		status: "queued".to_owned(),
+		attempt_count: 0,
+		last_error_code: None,
+	}
+	.insert(cx.tx())
+	.await
+	.map_err(db)?;
+
+	let decision = proof_decision(backend, &requirement);
+	record_decision(
+		cx.tx(),
+		evidence.id,
+		decision.0,
+		decision.1,
+		decision.2,
+		None,
+		decision.3,
+	)
+	.await?;
+
+	Ok(ProofReceipt {
+		digest_hex: digest,
+		stored: true,
+	})
+}
+
+/// Evaluates a canonical device gyroscope + accelerometer motion trace
+/// deterministically on the server (never trusting client repetition counts).
+#[allow(
+	clippy::too_many_lines,
+	reason = "linear transactional verification of motion trace, capture window, evidence, and deterministic scoring"
+)]
+pub async fn submit_motion_proof(
+	cx: &rpc::MutationCx,
+	attempt_id: String,
+	requirement_id: String,
+	trace_json: String,
+) -> rpc::Result<ProofReceipt> {
+	let participant = me(cx.context())?;
+	require_active(cx.tx(), participant).await?;
+	let (attempt, _action, requirement) =
+		open_attempt(cx.tx(), participant, &attempt_id, &requirement_id).await?;
+	if requirement.kind != ActionRequirementKind::Motion {
+		return Err(rpc::Error::invalid("invalidRequest"));
+	}
+	let samples = motion::parse_canonical_trace_json(&trace_json)
+		.map_err(|_| rpc::Error::invalid("invalidMotionTrace"))?;
+	let digest = motion::motion_trace_sha256(&samples)
+		.map_err(|_| rpc::Error::invalid("invalidMotionTrace"))?;
+
+	if let Some(existing) = evidence_for(cx.tx(), &attempt, &requirement).await? {
+		return if existing.sha256_digest.as_deref() == Some(digest.as_str()) {
+			Ok(ProofReceipt {
+				digest_hex: digest,
+				stored: true,
+			})
+		} else {
+			Err(rpc::Error::conflict("proofAlreadySubmitted"))
+		};
+	}
+
+	let now = Utc::now();
+	let requirement_key = requirement.id.to_string();
+	let mut window = CaptureWindowRow::query()
+		.filter(|row| {
+			row.attempt_id.eq(attempt.id)
+				& row.requirement_id.eq(requirement_key.clone())
+				& row.consumed_at.is_null()
+				& row.expires_at.gt(now)
+		})
+		.order_by(|row| row.opened_at.desc())
+		.first(cx.tx())
+		.await
+		.map_err(db)?
+		.ok_or_else(|| rpc::Error::invalid("captureWindowClosed"))?;
+
+	window.consumed_at = Some(now);
+	window.sha256_digest = Some(digest.clone());
+	window.save(cx.tx()).await.map_err(db)?;
+
+	let evidence = NewEvidence {
+		attempt_id: attempt.id,
+		requirement_key,
+		kind: name(&requirement.kind),
+		storage_path: None,
+		storage_version_id: None,
+		mime_type: Some("application/json".to_owned()),
+		sha256_digest: Some(digest.clone()),
+		byte_length: i64::try_from(trace_json.len()).ok(),
+		provenance_level: "basic".to_owned(),
+		capture_manifest: None,
+		capture_signature: None,
+		capture_public_key: None,
+		capture_key_id: None,
+		capture_key_storage: None,
+		captured_at: now,
+	}
+	.insert(cx.tx())
+	.await
+	.map_err(db)?;
+
+	if let Some(rule) = motion_rule_from_requirement(&requirement) {
+		match motion::analyze(&samples, &rule) {
+			Ok(analysis) => {
+				let status = if analysis.accepted {
+					EvidenceDecisionStatus::Accepted
+				} else {
+					EvidenceDecisionStatus::Rejected
+				};
+				record_decision(
+					cx.tx(),
+					evidence.id,
+					status,
+					"motion-deterministic",
+					analysis.reason_code,
+					None,
+					if analysis.accepted {
+						"Motion trace satisfied the action rule."
+					} else {
+						"Motion trace did not meet the action rule."
+					},
+				)
+				.await?;
+			}
+			Err(_) => {
+				record_decision(
+					cx.tx(),
+					evidence.id,
+					EvidenceDecisionStatus::Rejected,
+					"motion-deterministic",
+					"motion_trace_invalid",
+					None,
+					"Motion trace failed validation.",
+				)
+				.await?;
+			}
+		}
+	} else {
+		let hold = motion::hold_for_review(0);
+		record_decision(
+			cx.tx(),
+			evidence.id,
+			hold.status,
+			"motion-deterministic",
+			hold.reason_code,
+			None,
+			hold.summary,
+		)
+		.await?;
+	}
+
+	Ok(ProofReceipt {
+		digest_hex: digest,
+		stored: true,
+	})
+}
+
+/// Redeems a rotating creator-issued venue QR code once for a `QrCode` requirement.
+pub async fn submit_qr_proof(
+	cx: &rpc::MutationCx,
+	attempt_id: String,
+	requirement_id: String,
+	code: String,
+) -> rpc::Result<ProofReceipt> {
+	let participant = me(cx.context())?;
+	require_active(cx.tx(), participant).await?;
+	let (attempt, action, requirement) =
+		open_attempt(cx.tx(), participant, &attempt_id, &requirement_id).await?;
+	if requirement.kind != ActionRequirementKind::QrCode {
+		return Err(rpc::Error::invalid("invalidRequest"));
+	}
+	redeem_qr_challenge(cx.tx(), action.id, attempt.id, &code).await?;
+
+	let digest = hex_lower(&Sha256::digest(code.trim().as_bytes()));
+	let now = Utc::now();
+	let requirement_key = requirement.id.to_string();
+	if let Some(mut window) = CaptureWindowRow::query()
+		.filter(|row| {
+			row.attempt_id.eq(attempt.id)
+				& row.requirement_id.eq(requirement_key.clone())
+				& row.consumed_at.is_null()
+				& row.expires_at.gt(now)
+		})
+		.order_by(|row| row.opened_at.desc())
+		.first(cx.tx())
+		.await
+		.map_err(db)?
+	{
+		window.consumed_at = Some(now);
+		window.sha256_digest = Some(digest.clone());
+		window.save(cx.tx()).await.map_err(db)?;
+	}
+
+	let evidence = NewEvidence {
+		attempt_id: attempt.id,
+		requirement_key,
+		kind: name(&requirement.kind),
+		storage_path: None,
+		storage_version_id: None,
+		mime_type: None,
+		sha256_digest: Some(digest.clone()),
+		byte_length: None,
+		provenance_level: "basic".to_owned(),
+		capture_manifest: None,
+		capture_signature: None,
+		capture_public_key: None,
+		capture_key_id: None,
+		capture_key_storage: None,
+		captured_at: now,
+	}
+	.insert(cx.tx())
+	.await
+	.map_err(db)?;
+
+	record_decision(
+		cx.tx(),
+		evidence.id,
+		EvidenceDecisionStatus::Accepted,
+		"venue-qr-verifier",
+		"venue_code_verified",
+		None,
+		"Venue code redeemed once.",
+	)
+	.await?;
+
+	Ok(ProofReceipt {
+		digest_hex: digest,
+		stored: true,
+	})
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct StoredLocationObservation {
+	latitude: f64,
+	longitude: f64,
+	accuracy_meters: f64,
+	captured_at_ms: i64,
+}
+
+/// Evaluates a live device GPS fix against the action's geofence, accuracy,
+/// freshness, and implausible-travel rules via [`verily_verification::location::decide`].
+///
+/// Coordinates stay private on the server (`capture_manifest` is `#[db(private)]`)
+/// and mock/simulated fixes are rejected unconditionally.
+#[allow(
+	clippy::too_many_arguments,
+	clippy::too_many_lines,
+	reason = "linear transactional verification of location fix, capture window, geofence, and travel plausibility"
+)]
+pub async fn submit_location_proof(
+	cx: &rpc::MutationCx,
+	attempt_id: String,
+	requirement_id: String,
+	latitude: f64,
+	longitude: f64,
+	accuracy_meters: f64,
+	captured_at_ms: i64,
+	is_mock: bool,
+) -> rpc::Result<ProofReceipt> {
+	let participant = me(cx.context())?;
+	require_active(cx.tx(), participant).await?;
+	let (attempt, action, requirement) =
+		open_attempt(cx.tx(), participant, &attempt_id, &requirement_id).await?;
+	if requirement.kind != ActionRequirementKind::Location {
+		return Err(rpc::Error::invalid("invalidRequest"));
+	}
+	if is_mock {
+		return Err(rpc::Error::invalid("mockLocationRejected"));
+	}
+	if !latitude.is_finite()
+		|| !longitude.is_finite()
+		|| !(-90.0..=90.0).contains(&latitude)
+		|| !(-180.0..=180.0).contains(&longitude)
+		|| !accuracy_meters.is_finite()
+		|| accuracy_meters < 0.0
+	{
+		return Err(rpc::Error::invalid("invalidLocation"));
+	}
+	let captured_at = DateTime::from_timestamp_millis(captured_at_ms)
+		.ok_or_else(|| rpc::Error::invalid("invalidLocation"))?;
+
+	let canonical = format!("{latitude:.6},{longitude:.6},{accuracy_meters:.2},{captured_at_ms}");
+	let digest = hex_lower(&Sha256::digest(canonical.as_bytes()));
+
+	if let Some(existing) = evidence_for(cx.tx(), &attempt, &requirement).await? {
+		return if existing.sha256_digest.as_deref() == Some(digest.as_str()) {
+			Ok(ProofReceipt {
+				digest_hex: digest,
+				stored: true,
+			})
+		} else {
+			Err(rpc::Error::conflict("proofAlreadySubmitted"))
+		};
+	}
+
+	let now = Utc::now();
+	let requirement_key = requirement.id.to_string();
+	let mut window = CaptureWindowRow::query()
+		.filter(|row| {
+			row.attempt_id.eq(attempt.id)
+				& row.requirement_id.eq(requirement_key.clone())
+				& row.consumed_at.is_null()
+				& row.expires_at.gt(now)
+		})
+		.order_by(|row| row.opened_at.desc())
+		.first(cx.tx())
+		.await
+		.map_err(db)?
+		.ok_or_else(|| rpc::Error::invalid("captureWindowClosed"))?;
+
+	window.consumed_at = Some(now);
+	window.sha256_digest = Some(digest.clone());
+	window.save(cx.tx()).await.map_err(db)?;
+
+	let place = super::catalogue::place_for(cx.tx(), action.id).await?;
+	let target_coords = requirement
+		.latitude
+		.zip(requirement.longitude)
+		.or_else(|| place.as_ref().and_then(|p| p.latitude.zip(p.longitude)));
+	let radius_meters = requirement.radius_meters.or_else(|| {
+		place.as_ref().and_then(|p| {
+			(p.radius_meters > 0)
+				.then(|| u32::try_from(p.radius_meters).ok().map(f64::from))
+				.flatten()
+		})
+	});
+	let max_accuracy_meters = requirement.max_accuracy_meters.unwrap_or(100.0);
+
+	let previous =
+		previous_location_observation(cx.tx(), participant, (latitude, longitude)).await?;
+
+	let manifest_json = serde_json::to_string(&StoredLocationObservation {
+		latitude,
+		longitude,
+		accuracy_meters,
+		captured_at_ms,
+	})
+	.ok();
+
+	let evidence = NewEvidence {
+		attempt_id: attempt.id,
+		requirement_key,
+		kind: name(&requirement.kind),
+		storage_path: None,
+		storage_version_id: None,
+		mime_type: Some("application/json".to_owned()),
+		sha256_digest: Some(digest.clone()),
+		byte_length: manifest_json
+			.as_ref()
+			.and_then(|s| i64::try_from(s.len()).ok()),
+		provenance_level: "basic".to_owned(),
+		capture_manifest: manifest_json,
+		capture_signature: None,
+		capture_public_key: None,
+		capture_key_id: None,
+		capture_key_storage: None,
+		captured_at,
+	}
+	.insert(cx.tx())
+	.await
+	.map_err(db)?;
+
+	match (target_coords, radius_meters) {
+		(Some(target), Some(radius)) if radius > 0.0 => {
+			let distance_meters = super::catalogue::haversine_meters((latitude, longitude), target);
+			let obs = verily_verification::location::Observation {
+				accuracy_meters,
+				captured_at,
+			};
+			let decision = verily_verification::location::decide(
+				verily_verification::location::LocationPolicy::default(),
+				now,
+				obs,
+				max_accuracy_meters,
+				distance_meters,
+				radius,
+				previous,
+			)
+			.map_err(|_| rpc::Error::invalid("invalidLocation"))?;
+			record_decision(
+				cx.tx(),
+				evidence.id,
+				decision.status,
+				decision.verifier_type,
+				decision.reason_code,
+				None,
+				decision.summary,
+			)
+			.await?;
+		}
+		_ => {
+			record_decision(
+				cx.tx(),
+				evidence.id,
+				EvidenceDecisionStatus::ManualReview,
+				"geofence",
+				"location_target_missing",
+				None,
+				"A person will check this location proof.",
+			)
+			.await?;
+		}
+	}
+
+	Ok(ProofReceipt {
+		digest_hex: digest,
+		stored: true,
+	})
+}
+
+async fn previous_location_observation(
+	connection: &impl Read,
+	participant: Id<AuthAccount>,
+	current_coords: (f64, f64),
+) -> Result<Option<verily_verification::location::PreviousObservation>, rpc::Error> {
+	let attempts = Attempt::query()
+		.filter(|row| row.participant_id.eq(participant))
+		.order_by(|row| row.started_at.desc())
+		.limit(25)
+		.all(connection)
+		.await
+		.map_err(db)?;
+	let location_kind = name(&ActionRequirementKind::Location);
+	let mut latest: Option<(DateTime<Utc>, StoredLocationObservation)> = None;
+	for attempt in attempts {
+		let rows = Evidence::query()
+			.filter(|row| row.attempt_id.eq(attempt.id) & row.kind.eq(location_kind.clone()))
+			.order_by(|row| row.captured_at.desc())
+			.limit(5)
+			.all(connection)
+			.await
+			.map_err(db)?;
+		for row in rows {
+			let Some(raw) = row.capture_manifest.as_deref() else {
+				continue;
+			};
+			let Ok(parsed) = serde_json::from_str::<StoredLocationObservation>(raw) else {
+				continue;
+			};
+			let Some(ts) = DateTime::from_timestamp_millis(parsed.captured_at_ms) else {
+				continue;
+			};
+			if latest.as_ref().is_none_or(|(prev_ts, _)| ts > *prev_ts) {
+				latest = Some((ts, parsed));
+			}
+		}
+	}
+	Ok(latest.map(|(captured_at, prev)| {
+		let distance_meters =
+			super::catalogue::haversine_meters((prev.latitude, prev.longitude), current_coords);
+		verily_verification::location::PreviousObservation {
+			distance_meters,
+			accuracy_meters: prev.accuracy_meters,
+			captured_at,
+		}
+	}))
+}
+
+/// Cryptographically verifies Android Key Attestation + Play Integrity OR
+/// registered Apple App Attest assertions bound to an already-pinned evidence digest.
+///
+/// Key storage level and hardware provenance are derived solely from verified
+/// certificate chains or registered App Attest keys — never from client claims.
+pub async fn submit_device_attestation(
+	cx: &rpc::MutationCx,
+	attempt_id: String,
+	digest_hex: String,
+	platform: String,
+	payload_b64: String,
+	key_id_b64: Option<String>,
+	integrity_token: Option<String>,
+) -> rpc::Result<AttestationReceipt> {
+	let participant = me(cx.context())?;
+	let backend = backend(cx.context())?;
+	let attempt = owned_attempt(cx.tx(), participant, &attempt_id).await?;
+	let Ok(digest) = verily_verification::binding::normalize_sha256(&digest_hex) else {
+		return Ok(AttestationReceipt { bound: false });
+	};
+	let Some(mut evidence) = Evidence::query()
+		.filter(|row| row.attempt_id.eq(attempt.id) & row.sha256_digest.eq(Some(digest.clone())))
+		.first(cx.tx())
+		.await
+		.map_err(db)?
+	else {
+		return Ok(AttestationReceipt { bound: false });
+	};
+
+	let now = Utc::now();
+	match platform.trim().to_ascii_lowercase().as_str() {
+		"android" => {
+			let Some(verifier) = &backend.android_attestation else {
+				return Ok(AttestationReceipt { bound: false });
+			};
+			let Some(window) = CaptureWindowRow::query()
+				.filter(|r| r.attempt_id.eq(attempt.id) & r.sha256_digest.eq(Some(digest.clone())))
+				.order_by(|r| r.opened_at.desc())
+				.first(cx.tx())
+				.await
+				.map_err(db)?
+			else {
+				return Ok(AttestationReceipt { bound: false });
+			};
+			// Payload is JSON array of base64 DER certificates.
+			let Ok(raw_json) = STANDARD.decode(payload_b64.trim().as_bytes()) else {
+				return Ok(AttestationReceipt { bound: false });
+			};
+			let Ok(cert_b64s) = serde_json::from_slice::<Vec<String>>(&raw_json) else {
+				return Ok(AttestationReceipt { bound: false });
+			};
+			let mut certs = Vec::with_capacity(cert_b64s.len());
+			for b64 in &cert_b64s {
+				let Ok(der) = STANDARD.decode(b64.trim().as_bytes()) else {
+					return Ok(AttestationReceipt { bound: false });
+				};
+				certs.push(der);
+			}
+			let refs: Vec<&[u8]> = certs.iter().map(Vec::as_slice).collect();
+			let mut challenge_hasher = Sha256::new();
+			challenge_hasher.update(window.challenge.as_bytes());
+			challenge_hasher.update(attempt.id.to_string().as_bytes());
+			let expected_challenge = challenge_hasher.finalize();
+
+			let verdict = verifier.verify(&refs, &expected_challenge, now);
+			if !verdict.trusted {
+				return Ok(AttestationReceipt { bound: false });
+			}
+			let mut provenance = "hardware_attested".to_owned();
+			if let (Some(pi), Some(token)) = (&backend.play_integrity, integrity_token.as_deref()) {
+				let pi_verdict = pi.verify(token, &digest, now, false).await;
+				if pi_verdict.trusted {
+					"play_integrity_verified".clone_into(&mut provenance);
+				}
+			}
+			evidence.provenance_level = provenance;
+			evidence.capture_key_id = verdict.device_key_id;
+			evidence.capture_key_storage = verdict.security_level.map(|lvl| format!("{lvl:?}"));
+			evidence.save(cx.tx()).await.map_err(db)?;
+			Ok(AttestationReceipt { bound: true })
+		}
+		"ios" => {
+			let Some(key_id) = key_id_b64.as_deref() else {
+				return Ok(AttestationReceipt { bound: false });
+			};
+			let ok = verify_registered_app_attest_assertion(
+				cx.tx(),
+				backend,
+				participant,
+				key_id,
+				&payload_b64,
+				digest.as_bytes(),
+			)
+			.await?;
+			if !ok {
+				return Ok(AttestationReceipt { bound: false });
+			}
+			"secure_enclave_attested".clone_into(&mut evidence.provenance_level);
+			evidence.capture_key_storage = Some("secureEnclaveAttested".to_owned());
+			evidence.save(cx.tx()).await.map_err(db)?;
+			Ok(AttestationReceipt { bound: true })
+		}
+		_ => Ok(AttestationReceipt { bound: false }),
+	}
+}
+
+fn motion_rule_from_requirement(req: &ActionRequirementView) -> Option<motion::MotionRule> {
+	let kind = match req.motion_type? {
+		verily_shared::ActionMotionType::PhoneToss => motion::MotionActionType::PhoneToss,
+		verily_shared::ActionMotionType::Rotation => motion::MotionActionType::Rotation,
+		verily_shared::ActionMotionType::Shake => motion::MotionActionType::Shake,
+		verily_shared::ActionMotionType::Stillness => motion::MotionActionType::Stillness,
+	};
+	let axis = match req.motion_axis {
+		Some(verily_shared::ActionMotionAxis::Yaw) => motion::MotionAxis::Yaw,
+		Some(verily_shared::ActionMotionAxis::Pitch) => motion::MotionAxis::Pitch,
+		Some(verily_shared::ActionMotionAxis::Roll) => motion::MotionAxis::Roll,
+		_ => motion::MotionAxis::Any,
+	};
+	let rule = motion::MotionRule {
+		kind,
+		axis,
+		target_repetitions: u32::try_from(req.target_repetitions.unwrap_or(1)).unwrap_or(1),
+		minimum_duration_seconds: u32::try_from(req.min_duration_seconds.unwrap_or(1)).unwrap_or(1),
+		maximum_duration_seconds: u32::try_from(req.max_duration_seconds.unwrap_or(30))
+			.unwrap_or(30),
+		minimum_angular_speed_radians_per_second: req
+			.min_angular_speed_radians_per_second
+			.unwrap_or(1.5),
+		maximum_angular_speed_radians_per_second: req
+			.max_angular_speed_radians_per_second
+			.unwrap_or(20.0),
+		minimum_axis_dominance: req.min_axis_dominance.unwrap_or(0.65),
+		minimum_free_fall_milliseconds: u32::try_from(
+			req.min_free_fall_milliseconds.unwrap_or(150),
+		)
+		.unwrap_or(150),
+		maximum_free_fall_milliseconds: u32::try_from(
+			req.max_free_fall_milliseconds.unwrap_or(600),
+		)
+		.unwrap_or(600),
+		minimum_peak_acceleration_meters_per_second_squared: req
+			.min_peak_acceleration_meters_per_second_squared
+			.unwrap_or(10.0),
+		maximum_peak_acceleration_meters_per_second_squared: req
+			.max_peak_acceleration_meters_per_second_squared
+			.unwrap_or(50.0),
+	};
+	motion::validate_rule(&rule).ok()?;
+	Some(rule)
+}
+
 /// Asks the server to decide the attempt from the proof it holds.
 ///
 /// Until every required proof is in, the attempt keeps collecting. A proof a
@@ -417,12 +1134,14 @@ pub async fn complete_attempt(
 }
 
 /// Moves an attempt that is collecting evidence or pending review to where
-/// its proof puts it, and reserves the payout a verified attempt earned.
-pub(super) async fn settle(
+/// its proof puts it, reserves any payout earned, and notifies partner apps
+/// (stamping verification request receipts and queuing signed webhooks).
+pub(crate) async fn settle(
 	connection: &impl Connection,
 	backend: &Backend,
 	attempt: &mut Attempt,
 ) -> Result<AttemptStatus, rpc::Error> {
+	let prev_status = status_of(&attempt.status);
 	let mut action = ActionRow::query()
 		.filter(|row| row.id.eq(attempt.action_id))
 		.first(connection)
@@ -436,7 +1155,7 @@ pub(super) async fn settle(
 		.filter(|requirement| requirement.is_required)
 	{
 		let Some(evidence) = evidence_for(connection, attempt, requirement).await? else {
-			return Ok(status_of(&attempt.status));
+			return Ok(prev_status);
 		};
 		decisions.push(latest_decision(connection, evidence.id).await?);
 	}
@@ -453,23 +1172,167 @@ pub(super) async fn settle(
 		.any(|decision| decision != &Some(EvidenceDecisionStatus::Accepted))
 	{
 		AttemptStatus::PendingReview
-	} else if action
-		.max_verified_completions
-		.is_some_and(|limit| action.verified_completions >= limit)
+	} else if prev_status != AttemptStatus::Verified
+		&& action
+			.max_verified_completions
+			.is_some_and(|limit| action.verified_completions >= limit)
 	{
 		AttemptStatus::CapacityReached
 	} else {
-		action.verified_completions += 1;
-		action.updated_at = now;
-		action.save(connection).await.map_err(db)?;
-		attempt.verified_at = Some(now);
-		attempt.reward_outcome = reserve_reward(connection, backend, &action, attempt).await?;
+		if prev_status != AttemptStatus::Verified {
+			action.verified_completions += 1;
+			action.updated_at = now;
+			action.save(connection).await.map_err(db)?;
+		}
+		attempt.verified_at.get_or_insert(now);
+		if attempt.reward_outcome.is_none() {
+			attempt.reward_outcome = reserve_reward(connection, backend, &action, attempt).await?;
+		}
 		AttemptStatus::Verified
 	};
 	status_name(status).clone_into(&mut attempt.status);
 	attempt.submitted_at.get_or_insert(now);
 	attempt.save(connection).await.map_err(db)?;
+
+	if prev_status != status && matches!(status, AttemptStatus::Verified | AttemptStatus::Rejected)
+	{
+		notify_attempt_outcome(connection, backend, &action, attempt, status).await?;
+	}
 	Ok(status)
+}
+
+/// Stamps matching partner [`crate::schema::VerificationRequestRow`] entries with
+/// a signed Ed25519 JWS receipt and enqueues signed webhook deliveries
+/// (`attempt.verified` / `attempt.rejected`).
+#[allow(
+	clippy::too_many_lines,
+	reason = "stamps partner verification requests with JWS receipts and enqueues deduplicated webhooks"
+)]
+pub(crate) async fn notify_attempt_outcome(
+	connection: &impl Connection,
+	backend: &Backend,
+	action: &ActionRow,
+	attempt: &Attempt,
+	status: AttemptStatus,
+) -> Result<(), rpc::Error> {
+	let (status_str, event_type) = match status {
+		AttemptStatus::Verified => ("verified", "attempt.verified"),
+		AttemptStatus::Rejected => ("rejected", "attempt.rejected"),
+		_ => return Ok(()),
+	};
+	let now = Utc::now();
+	let mut notified_apps = std::collections::HashSet::new();
+
+	// 1. Stamp any matching partner-initiated verification requests.
+	let requests = crate::schema::VerificationRequestRow::query()
+		.filter(|r| r.action_id.eq(attempt.action_id))
+		.all(connection)
+		.await
+		.map_err(db)?;
+	for mut req in requests {
+		let bound_to_attempt = req.attempt_id == Some(attempt.id);
+		let open_for_participant = req.participant_id == Some(attempt.participant_id)
+			&& matches!(req.status.as_str(), "open" | "in_progress");
+		if !bound_to_attempt && !open_for_participant {
+			continue;
+		}
+		let app = crate::schema::VerilyAppRow::query()
+			.filter(|a| a.id.eq(req.app_id))
+			.first(connection)
+			.await
+			.map_err(db)?;
+		req.attempt_id = Some(attempt.id);
+		req.status = status_str.to_owned();
+		let mut signed_receipt = req.receipt_jws.clone();
+		if status == AttemptStatus::Verified
+			&& signed_receipt.is_none()
+			&& let (Some(signer), Some(app_row)) = (&backend.receipt_signer, &app)
+		{
+			let claims = serde_json::json!({
+				"iss": "https://verily.fun",
+				"aud": app_row.slug,
+				"sub": req.external_subject.clone().unwrap_or_else(|| attempt.participant_id.to_string()),
+				"jti": req.id.to_string(),
+				"actionId": req.action_id.to_string(),
+				"attemptId": attempt.id.to_string(),
+				"status": "verified",
+				"iat": now.timestamp(),
+			});
+			let jws = signer.sign_jws(&claims);
+			req.receipt_jws = Some(jws.clone());
+			signed_receipt = Some(jws);
+		}
+		req.save(connection).await.map_err(db)?;
+
+		if let Some(app_row) = app
+			&& app_row.active
+			&& app_row.webhook_url.is_some()
+			&& notified_apps.insert(app_row.id)
+		{
+			let payload = serde_json::json!({
+				"event": event_type,
+				"requestId": req.id.to_string(),
+				"attemptId": attempt.id.to_string(),
+				"actionId": attempt.action_id.to_string(),
+				"externalSubject": req.external_subject,
+				"status": status_str,
+				"receipt": signed_receipt,
+				"occurredAt": now.to_rfc3339(),
+			});
+			crate::schema::NewVerilyAppWebhookDeliveryRow {
+				app_id: app_row.id,
+				event_type: event_type.to_owned(),
+				payload_json: payload.to_string(),
+				status: "pending".to_owned(),
+				attempts: 0,
+				last_status_code: None,
+				next_attempt_at: now,
+			}
+			.insert(connection)
+			.await
+			.map_err(db)?;
+		}
+	}
+
+	// 2. Notify active partner apps owned by the action's creator that have a webhook URL.
+	let creator_id = Id::<AuthAccount>::from_uuid(action.creator_id);
+	let creator_apps = crate::schema::VerilyAppRow::query()
+		.filter(|a| a.owner_id.eq(creator_id))
+		.all(connection)
+		.await
+		.map_err(db)?;
+	for app_row in creator_apps {
+		if !app_row.active || app_row.webhook_url.is_none() || !notified_apps.insert(app_row.id) {
+			continue;
+		}
+		let link = crate::schema::VerilyAppLinkRow::query()
+			.filter(|l| l.app_id.eq(app_row.id) & l.account_id.eq(attempt.participant_id))
+			.first(connection)
+			.await
+			.map_err(db)?;
+		let payload = serde_json::json!({
+			"event": event_type,
+			"attemptId": attempt.id.to_string(),
+			"actionId": attempt.action_id.to_string(),
+			"externalUserId": link.map(|l| l.external_user_id),
+			"status": status_str,
+			"occurredAt": now.to_rfc3339(),
+		});
+		crate::schema::NewVerilyAppWebhookDeliveryRow {
+			app_id: app_row.id,
+			event_type: event_type.to_owned(),
+			payload_json: payload.to_string(),
+			status: "pending".to_owned(),
+			attempts: 0,
+			last_status_code: None,
+			next_attempt_at: now,
+		}
+		.insert(connection)
+		.await
+		.map_err(db)?;
+	}
+
+	Ok(())
 }
 
 /// Reserves the payout index a verified attempt earned, in this transaction,
@@ -520,7 +1383,7 @@ pub(super) async fn latest_decision(
 		.and_then(|decision| decision_status(&decision.status)))
 }
 
-pub(super) async fn record_decision(
+pub(crate) async fn record_decision(
 	connection: &impl Connection,
 	evidence: Id<Evidence>,
 	status: EvidenceDecisionStatus,
@@ -804,10 +1667,16 @@ const fn is_media(kind: ActionRequirementKind) -> bool {
 	)
 }
 
-/// `once`, or the UTC day for a daily action.
+/// `once`, or the action's IANA time-zone day for a daily action (falling back to UTC).
 fn period_key(action: &ActionRow, now: DateTime<Utc>) -> String {
 	match serde_json::from_value(serde_json::Value::String(action.recurrence.clone())) {
-		Ok(ActionRecurrence::Daily) => now.format("%Y-%m-%d").to_string(),
+		Ok(ActionRecurrence::Daily) => {
+			if let Ok(tz) = action.time_zone.parse::<chrono_tz::Tz>() {
+				now.with_timezone(&tz).format("%Y-%m-%d").to_string()
+			} else {
+				now.format("%Y-%m-%d").to_string()
+			}
+		}
 		_ => "once".to_owned(),
 	}
 }

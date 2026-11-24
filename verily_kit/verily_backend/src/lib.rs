@@ -15,7 +15,10 @@
 //! installs [`verily_rewards::RewardsHandle`] on each RPC identity.
 
 mod auth;
+pub mod jobs;
+pub mod mail;
 mod mounts;
+pub mod partner_http;
 pub mod schema;
 mod secrets;
 #[cfg(debug_assertions)]
@@ -147,6 +150,9 @@ pub enum StartError {
 	/// Verification mount refused to start (fail closed).
 	#[error(transparent)]
 	Verification(#[from] verily_verification::config::ConfigError),
+	/// Evidence storage configuration failed closed (e.g. local storage in production).
+	#[error(transparent)]
+	Storage(#[from] verily_verification::storage::StorageError),
 	/// Rewards mount refused to start (fail closed).
 	#[error(transparent)]
 	Rewards(#[from] verily_rewards::ConfigError),
@@ -189,7 +195,8 @@ where
 ///
 /// When `config` includes `[auth.idp]`, the identity provider is built and
 /// mounted. Verification is mounted fail-closed (`Verification::closed`).
-/// Rewards are `Rewards::closed` in a release build and the planted
+/// Rewards are `Rewards::closed` (or live Solana when explicitly configured
+/// with valid custody & RPC settings) in a release build and the planted
 /// development gateway in a debug one. The app's operations answer under
 /// `/_leptoskit/services/verily-backend/api/<name>`, as the signed-in person.
 ///
@@ -228,17 +235,35 @@ pub fn start(
 		None => None,
 	};
 
-	let verification = Arc::new(verification::mount()?);
+	let verification = Arc::new(verification::mount_from_env(!cfg!(debug_assertions))?);
 	#[cfg(debug_assertions)]
 	let rewards = rewards::handle(rewards::mount_development()?);
 	#[cfg(not(debug_assertions))]
-	let rewards = rewards::handle(rewards::mount()?);
-	let backend = BackendHandle::new(Backend {
-		rewards: rewards.0.clone(),
-		verification: verification.clone(),
-		auth: Some(auth.clone()),
-		db: Some(db.clone()),
-	});
+	let rewards = {
+		let env_vec: Vec<(String, String)> = std::env::vars().collect();
+		let pairs: Vec<(&str, &str)> = env_vec
+			.iter()
+			.map(|(k, v)| (k.as_str(), v.as_str()))
+			.collect();
+		let has_solana_mode = env_vec
+			.iter()
+			.any(|(k, v)| k == "VERILY_REWARD_ESCROW_MODE" && v.eq_ignore_ascii_case("solana"));
+		let mounted = if has_solana_mode {
+			let secrets = verily_rewards::config::secrets_from_pairs(pairs);
+			verily_rewards::Rewards::from_secrets(&secrets, verily_rewards::RunMode::Production)?
+		} else {
+			rewards::mount()?
+		};
+		rewards::handle(mounted)
+	};
+
+	let backend = BackendHandle::new(Backend::from_env_checked(
+		rewards.0.clone(),
+		verification.clone(),
+		Some(auth.clone()),
+		Some(db.clone()),
+		!cfg!(debug_assertions),
+	)?);
 
 	let identify = identify(auth.clone(), rewards.clone(), backend.clone());
 	let rpc = operations(db.clone()).identify(identify.clone());
@@ -255,6 +280,7 @@ pub fn start(
 	if roles.web() {
 		app = app
 			.merge(router(&rpc))
+			.merge(partner_http::router(db.clone(), backend.clone()))
 			.nest(
 				&leptoskit_rpc::service_prefix(serve::SERVICE),
 				service.router(),

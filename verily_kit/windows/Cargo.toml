@@ -18,11 +18,19 @@ leptoskit_plugin_permissions = { workspace = true }
 leptoskit_plugin_speech = { workspace = true }
 leptoskit_plugin_secure_store = { workspace = true }
 leptoskit_plugin_crypto = { workspace = true }
+leptoskit_plugin_deep_link = { workspace = true }
+leptoskit_plugin_device_keys = { workspace = true }
+leptoskit_plugin_device_motion = { workspace = true }
 leptoskit_plugin_filesystem = { workspace = true }
 leptoskit_plugin_local_authentication = { workspace = true }
 leptoskit_plugin_device = { workspace = true }
 leptoskit_plugin_camera = { workspace = true }
+leptoskit_plugin_recorder = { workspace = true }
 leptoskit_plugin_app_integrity = { workspace = true }
+leptoskit_plugin_web_auth = { workspace = true }
+mediapipe = { workspace = true, features = ["leptoskit-host"] }
+verily_attest = { workspace = true }
+verily_capture = { workspace = true }
 leptoskit = { workspace = true, features = ["wasm", "rive", "windows", "codepush-http"] }
 
 [[bin]]

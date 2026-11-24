@@ -1,11 +1,13 @@
 //! The route the address bar opens, on the server and in the browser.
 //!
-//! Paths match the links the Flutter app published, so App Links and shared
-//! URLs keep opening the same pages.
+//! Paths match the links the app publishes, so App Links, Universal Links, and
+//! shared URLs keep opening the same pages.
 
 use verily_app::Action;
+use verily_app::AppDetail;
 use verily_app::EditAction;
 use verily_app::Route;
+use verily_app::VerifyRequest;
 use verily_app::initial_route;
 
 #[test]
@@ -17,11 +19,30 @@ fn the_root_opens_the_front_door() {
 
 #[test]
 fn each_page_opens_at_its_own_path() {
+	assert_eq!(initial_route("/sign-in"), Route::SignIn);
 	assert_eq!(initial_route("/do"), Route::Do);
 	assert_eq!(initial_route("/create"), Route::Create);
 	assert_eq!(initial_route("/me"), Route::Me);
 	assert_eq!(initial_route("/settings"), Route::Settings);
 	assert_eq!(initial_route("/reviews?tab=open"), Route::Reviews);
+	assert_eq!(initial_route("/appeals"), Route::Appeals);
+	assert_eq!(initial_route("/apps"), Route::Apps);
+	assert_eq!(
+		initial_route("/apps/app_42"),
+		Route::AppDetail(AppDetail {
+			app: "app_42".to_owned()
+		})
+	);
+	assert_eq!(
+		initial_route("/r/req_99"),
+		Route::VerifyRequest(VerifyRequest {
+			request: "req_99".to_owned()
+		})
+	);
+	assert_eq!(
+		initial_route("/link?app=demo&redirect_uri=myapp://cb"),
+		Route::LinkApp
+	);
 	assert_eq!(
 		initial_route("/actions/act_123"),
 		Route::Action(Action {

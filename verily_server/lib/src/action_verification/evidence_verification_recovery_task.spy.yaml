@@ -1,4 +1,0 @@
-class: EvidenceVerificationRecoveryTask
-serverOnly: true
-fields:
-  batchSize: int

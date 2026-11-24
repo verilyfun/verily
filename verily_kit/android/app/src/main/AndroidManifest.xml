@@ -1,11 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
-    <application android:label="verily_kit" android:theme="@style/LeptosKitTheme" android:enableOnBackInvokedCallback="true">
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <application android:label="Verily" android:theme="@style/LeptosKitTheme" android:enableOnBackInvokedCallback="true">
         <activity android:name="fun.verily.app.MainActivity" android:exported="true" android:launchMode="singleTop" android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize" android:supportsPictureInPicture="true" android:resizeableActivity="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="verily" android:host="r"/>
+                <data android:scheme="verily" android:host="link"/>
+                <data android:scheme="verily" android:host="actions"/>
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https" android:host="verily.fun" android:pathPrefix="/r/"/>
+                <data android:scheme="https" android:host="verily.fun" android:pathPrefix="/link"/>
+                <data android:scheme="https" android:host="verily.fun" android:pathPrefix="/actions/"/>
             </intent-filter>
         </activity>
     </application>

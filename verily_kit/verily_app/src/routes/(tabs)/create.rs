@@ -1,11 +1,14 @@
-//! The creator's notebook, `/create`: drafts and live actions, and the way
-//! to post a new one.
+//! The creator's notebook, `/create`: drafts, live/paused actions, appeals,
+//! and partner Verily Apps.
 
 use leptoskit::component;
 use leptoskit::prelude::Element;
 use leptoskit::prelude::For;
 use leptoskit::prelude::Show;
 use leptoskit::prelude::View;
+use leptoskit::query::use_mutation;
+use leptoskit::rpc::client::mutation_scope;
+use leptoskit::rpc::client::query_scope;
 use leptoskit::rpc::client::use_rpc_query;
 use leptoskit::view;
 use verily_ink::sketches;
@@ -14,18 +17,22 @@ use crate::chrome;
 use crate::l10n::use_l10n;
 use crate::model::DraftRow;
 use crate::ops::ListMyActions;
+use crate::ops::PauseAction;
 use crate::routes::EditAction;
 use crate::routes::Navigation;
 use crate::routes::NewAction;
+use crate::routes::Route;
 use crate::theme;
 use crate::theme::Role;
 
-/// Drafts and live actions.
+/// Drafts, live/paused actions, and links to creator tools.
 #[component]
 pub fn Page(navigation: &Navigation) -> Element {
 	let l10n = use_l10n();
 	let rows = use_rpc_query(|| ListMyActions {});
 	let post = navigation.clone();
+	let appeals = navigation.clone();
+	let apps = navigation.clone();
 	let navigation = navigation.clone();
 	view! {
 		<chrome::Page>
@@ -35,6 +42,18 @@ pub fn Page(navigation: &Navigation) -> Element {
 				on_press=move || post.navigate(NewAction)
 				seed=301
 			/>
+			<View class=theme::ROW>
+				<chrome::Quiet
+					label=l10n.hub_appeals_open()
+					on_press=move || appeals.navigate(Route::Appeals)
+					seed=305
+				/>
+				<chrome::Quiet
+					label=l10n.hub_apps_open()
+					on_press=move || apps.navigate(Route::Apps)
+					seed=307
+				/>
+			</View>
 			{Show(
 				move || rows.is_loading(),
 				move || view! { <chrome::Loading text=l10n.hub_loading() /> },
@@ -82,7 +101,18 @@ fn DraftCard(navigation: Navigation, row: DraftRow) -> Element {
 	let l10n = use_l10n();
 	let seed = chrome::seed_for(&row.id);
 	let id = row.id.clone();
-	let (role, status) = if row.live && row.funded {
+	let pause_id = row.id.clone();
+	let is_paused = row.paused;
+	let pause = use_mutation(mutation_scope::<PauseAction>().with_on_success_async(
+		move |args| async move {
+			args.client
+				.invalidate_scope(&query_scope::<ListMyActions>())
+				.await;
+		},
+	));
+	let (role, status) = if row.paused {
+		(Role::Review, l10n.hub_status_paused())
+	} else if row.live && row.funded {
 		(Role::Place, l10n.hub_status_live())
 	} else if row.funded {
 		(Role::Reward, l10n.hub_reward_funded())
@@ -93,11 +123,33 @@ fn DraftCard(navigation: Navigation, row: DraftRow) -> Element {
 		<chrome::Card seed=seed>
 			<chrome::Title text=row.title />
 			<chrome::Chip role=role text=status seed=seed + 1 />
-			<chrome::Quiet
-				label=l10n.hub_edit()
-				on_press=move || navigation.navigate(EditAction { action: id.clone() })
-				seed=seed + 2
-			/>
+			<View class=theme::ROW>
+				<chrome::Quiet
+					label=l10n.hub_edit()
+					on_press=move || navigation.navigate(EditAction { action: id.clone() })
+					seed=seed + 2
+				/>
+				{(row.live || row.paused).then(|| {
+					let label = if is_paused {
+						l10n.hub_publish()
+					} else {
+						l10n.hub_pause()
+					};
+					view! {
+						<chrome::Quiet
+							label=label
+							disabled=pause.is_pending()
+							on_press=move || {
+								pause.mutate(PauseAction {
+									action_id: pause_id.clone(),
+									paused: !is_paused,
+								});
+							}
+							seed=seed + 3
+						/>
+					}
+				})}
+			</View>
 		</chrome::Card>
 	}
 }

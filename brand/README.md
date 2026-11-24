@@ -1,17 +1,16 @@
 # Verily brand files
 
-Every file here is generated from the brand geometry in
-[`packages/verily_brand/lib/src/geometry.dart`](../packages/verily_brand/lib/src/geometry.dart).
-Do not edit them by hand: change the geometry and re-export (see below), so
-the app, the launch video, and these files can never drift apart.
+Every file here matches the canonical brand geometry in
+[`verily_kit/verily_ink/src/brand.rs`](../verily_kit/verily_ink/src/brand.rs).
+Keep the SVG/PNG assets and `verily_ink` geometry in step so the app, the
+static landing page (`verily_site`), and these files never drift apart.
 
 The vectors are clean: the mark's pin is a filled path, its check is cut out
 of the pin with an SVG `<mask>` (so the background shows through), and every
 other line is a single stroke with round caps and joins. Each file's mask has
-its own id, so several files can be inlined into one page. The app and the
-launch reel draw the same geometry in Skribble's seeded hand-drawn ink; the
-files stay crisp at every size. Read [`docs/brand.md`](../docs/brand.md)
-before using them.
+its own id, so several files can be inlined into one page. The app draws the
+same geometry in Skribble's seeded hand-drawn ink; the files stay crisp at
+every size. Read [`docs/brand.md`](../docs/brand.md) before using them.
 
 | File                             | What it is                                                                                                            | Use it for                                                               |
 | -------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
@@ -24,7 +23,7 @@ before using them.
 | `verily-lockup-stacked.svg`      | Mark centred above the wordmark.                                                                                      | Square and portrait spaces: splash screens, posters, merch.              |
 | `verily-app-icon.svg`            | Paper pin-check (cut and flick 46) on a vermilion rounded square, 1024 artboard; the vermilion shows through the cut. | Store listings, websites, and previews of the app icon.                  |
 | `verily-app-icon-foreground.svg` | The paper pin-check alone on a 108 dp artboard, flick included inside the 66 dp safe zone; the cut is transparent.    | The Android adaptive icon's foreground layer (and its monochrome layer). |
-| `verily-app-icon.png`            | 1024 × 1024 RGB (no alpha channel), full-bleed vermilion with the paper pin-check.                                    | The launcher-icon source for iOS and Android (`flutter_launcher_icons`). |
+| `verily-app-icon.png`            | 1024 × 1024 RGB (no alpha channel), full-bleed vermilion with the paper pin-check.                                    | The launcher-icon source for iOS and Android native hosts.               |
 
 ## App icons
 
@@ -40,15 +39,8 @@ before using them.
   shows through the cut check. The same foreground works as the Android 13+
   monochrome (themed) layer.
 
-## Re-exporting
+## Verification
 
-From `packages/verily_brand`:
-
-```bash
-flutter test tool/export_brand_test.dart --dart-define=BRAND_OUT=../../brand
-```
-
-This rewrites the SVG files and `verily-app-icon.png`. Add
-`--dart-define=SPECIMEN_OUT=../../.screenshots/brand` to also render review
-sheets (the mark at 1024, 96, 48, and 24 px, rough and clean, on paper and on
-night) into the gitignored `.screenshots/` folder.
+Run `devenv shell site:build` to regenerate `verily_kit/dist/site` using the
+same brand geometry from `verily_ink`, and `cargo test -p verily_ink -p verily_site`
+inside `verily_kit/` to verify the mark and wordmark invariants.

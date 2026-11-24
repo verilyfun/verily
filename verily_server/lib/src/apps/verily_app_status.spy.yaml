@@ -1,5 +1,0 @@
-enum: VerilyAppStatus
-serialized: byName
-values:
-  - active
-  - revoked

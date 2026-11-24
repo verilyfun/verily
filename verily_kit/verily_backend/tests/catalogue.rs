@@ -46,6 +46,8 @@ fn draft(title: &str) -> DraftInput {
 		radius_meters: 80,
 		reward_amount: String::new(),
 		proofs: vec![ProofKind::Photo],
+		latitude: None,
+		longitude: None,
 	}
 }
 

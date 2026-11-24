@@ -1,5 +1,0 @@
-class: PayoutWalletView
-fields:
-  walletAddress: String
-  label: String
-  linkedAt: DateTime

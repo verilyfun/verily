@@ -11,7 +11,7 @@ use leptoskit::prelude::View;
 use leptoskit::view;
 use leptoskit_router::navigators::Stack;
 use leptoskit_router::navigators::StackGesture;
-use skribble_leptoskit::SkribblePage;
+use leptoskit_skribble::SkribblePage;
 use verily_ink::sketches;
 
 use crate::chrome;

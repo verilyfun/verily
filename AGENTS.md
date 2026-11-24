@@ -12,31 +12,31 @@ not port those back. Crypto appears only as the unit a reward is paid in.
 
 ## Layout
 
-| Path                             | What                                                              |
-| -------------------------------- | ----------------------------------------------------------------- |
-| `verily_server/`                 | Serverpod 4 server (PostgreSQL + PostGIS)                         |
-| `verily_client/`                 | Generated Serverpod client; never edit by hand                    |
-| `verily_flutter/`                | The Flutter app (Android first, then iOS and web)                 |
-| `verily_kit/verily_site/`        | verily.fun, the landing page: static, deployed apart from the app |
-| `verily_kit/verily_ink/`         | The hand-drawn brand the site and the kit app share (Skribble)    |
-| `packages/verily_evidence/`      | Pure Dart evidence contract shared by app and server              |
-| `packages/verily_brand/`         | Brand tokens, mark, wordmark, stamp, promo reel, launch cover     |
-| `packages/verily_lints/`         | Analyzer plugin: colour tokens, pinned app dependencies           |
-| `packages/verily_escrow_client/` | Generated Dart client for the escrow program; never edit by hand  |
-| `programs/verily_escrow/`        | Pina reward escrow program (`_sbf` is its deploy-only cdylib)     |
-| `brand/`                         | Exported logo and icon files                                      |
-| `docs/`                          | Verification, storage, escrow, provenance research, brand         |
+| Path                               | What                                                                                 |
+| ---------------------------------- | ------------------------------------------------------------------------------------ |
+| `verily_kit/`                      | LeptosKit full-stack Rust workspace (`verily-kit` server binary, web + mobile hosts) |
+| `verily_kit/verily_app/`           | Shared LeptosKit screens, routes, MediaPipe movement trackers, and wallet client     |
+| `verily_kit/verily_backend/`       | LeptosKit RPC operations, Postgres/PostGIS + SQLite schema, auth, partner HTTP, jobs |
+| `verily_kit/verily_api/`           | Shared DTOs between `verily_app` and `verily_backend`                                |
+| `verily_kit/verily_shared/`        | Canonical motion, movement, local-check, and cryptographic hashing primitives        |
+| `verily_kit/verily_verification/`  | Key Attestation, App Attest, Play Integrity, MediaPipe replay, B2 S3, OpenRouter     |
+| `verily_kit/verily_rewards/`       | Reward pool state machine, Cloud KMS custody, and `pina-rs/solana_kit` submission    |
+| `verily_kit/verily_attest/`        | Native hardware attestation plugin (Android Keystore/Play Integrity, iOS App Attest) |
+| `verily_kit/verily_capture/`       | Native live capture plugin (CameraX/AVFoundation photo, video, audio, QR, motion)    |
+| `verily_kit/verily_ink/`           | Hand-drawn Skribble tokens, marks, and sketches shared by the app and landing page   |
+| `verily_kit/verily_site/`          | verily.fun static landing page generator                                             |
+| `programs/verily_escrow/`          | Pina reward escrow program (`_sbf` is its deploy-only cdylib)                        |
+| `brand/`                           | Exported logo and icon files                                                         |
+| `docs/`                            | Verification, storage, escrow, provenance research, brand, and port history          |
 
-The kit pins every leptoskit crate to one git `rev`, never a branch. Skribble
-comes from its pull request (openbudgetfun/skribble#278) and asks for
-leptoskit from crates.io; the kit's `[patch.crates-io]` sends that to the same
-rev. Bump every `rev` in `verily_kit/Cargo.toml` together, the patch included,
-or cargo builds leptoskit twice.
+The kit pins every `leptoskit*` crate to one git `rev` in `verily_kit/Cargo.toml`
+(never a branch), along with `[patch.crates-io]` so `solana_kit_leptoskit` and
+`mediapipe` resolve to the exact same `leptoskit` revision. Bump every `rev`
+together or Cargo builds `leptoskit` twice.
 
-Run everything through `devenv shell` so local work uses the pinned Flutter,
-Rust, Pina, and Serverpod toolchains. Verily's local ports avoid other
-Serverpod projects: API `8180`, insights `8181`, web `8182`, landing page `8183`,
-the LeptosKit kit `8184`, Postgres `8191`.
+Run everything through `devenv shell` so local work uses the pinned Rust, Pina,
+Agave, and Monosecret toolchains. Verily's local ports avoid conflicts with
+other projects: landing page `8183`, LeptosKit server `8184`, Postgres `8191`.
 
 ## Commits and pull requests
 
@@ -71,8 +71,6 @@ either side of the chain boundary.
 - Keep the deploy-only `programs/verily_escrow_sbf` package: Agave's
   `cargo-build-sbf --lto` fails when one package builds both `lib` and
   `cdylib`, and the host library is needed for tests and `pina lint`.
-- Regenerate the Dart client with `devenv shell clients:generate` and check
-  drift with `devenv shell clients:check`. Never edit generated output.
 - The program keypair is a deploy secret. It is gitignored; never print it or
   commit it.
 
@@ -82,24 +80,24 @@ Read [`docs/verification.md`](docs/verification.md) and
 [`docs/provenance-and-watermarking.md`](docs/provenance-and-watermarking.md)
 before changing capture, upload, or verification.
 
-- Proof that demands a fresh capture is captured in the app. Never add a
-  gallery or file picker to such a requirement.
+- Proof that demands a fresh capture is captured in the app via
+  `verily_capture`. Never add a gallery or file picker to such a requirement.
 - Every device signature and Play Integrity request commits to the digest of
   the exact evidence the server accepted. Never accept a token or signature
   that is not bound to the evidence it vouches for.
-- Capture starts with `beginCapture`, before the camera, microphone, sensors,
-  or scanner open. The app signs with a fresh key generated for that window
-  and attested with `SHA-256(captureChallenge ‖ attemptId)`. A key, key id, or
-  storage level is trusted only from its Android Key Attestation chain, never
-  from the client.
+- Capture starts with `begin_capture`, before the camera, microphone, sensors,
+  or scanner open. The app prepares a fresh key via `verily_attest` attested
+  with `SHA-256(captureChallenge ‖ attemptId)`. A key, key id, or storage level
+  is trusted only from its Android Key Attestation chain, never from the client.
 - Google's attestation roots are pinned in code. The test vectors under
-  `verily_server/test/unit/action_verification/key_attestation/vectors` come
-  from `android/keyattestation`; keep them byte-identical.
+  `verily_kit/verily_verification/tests/key_attestation/vectors` come from
+  `android/keyattestation`; keep them byte-identical.
 - An iPhone signs with the App Attest key its account registered, never one
   per window, so App Attest proof is `secureEnclaveAttested` and never claims
   a verified boot. Apple's App Attestation root is pinned in code, an
   assertion's counter must exceed the last one accepted for its key, and the
-  vectors under `.../app_attest/vectors` stay byte-identical.
+  vectors under `verily_kit/verily_verification/tests/app_attest/vectors` stay
+  byte-identical.
 - Evidence originals are private, hash-pinned to an immutable storage version,
   and never modified. Derived renditions may be watermarked; originals never.
 - A watermark is a lookup key, not proof. Never describe a watermark or a
@@ -122,9 +120,10 @@ can eliminate by itself. Every AI integration must preserve these controls:
   from server-owned templates, pinned allowlists, and immutable evidence
   storage.
 - Validate all text before it crosses a model boundary with the centralized
-  `ModelInputSecurity` policy. Validate model-generated verification policies
-  again before persistence and again before use. Reject suspicious input; do
-  not strip a matched phrase and forward the remainder.
+  `ModelInputSecurity` policy in `verily_verification::model_input`. Validate
+  model-generated verification policies again before persistence and again
+  before use. Reject suspicious input; do not strip a matched phrase and
+  forward the remainder.
 - Media-verification prompts must explicitly treat speech, signs, screens,
   subtitles, encoded content, role labels, and control tokens as evidence, not
   instructions. Any model-reported injection signal forces manual review,
@@ -152,15 +151,15 @@ can eliminate by itself. Every AI integration must preserve these controls:
 
 Keep implementation details out of normal user flows. Provider names, model
 routes, confidence scores, chain addresses beyond what a user needs, debug
-ports, stack traces, and raw backend diagnostics belong in logs, tests, or the
-debug-only development menu (`lib/dev/`, guarded by `kDebugMode`). User-facing
-UI explains outcomes and next actions in product language.
+ports, stack traces, and raw backend diagnostics belong in logs or tests.
+User-facing UI explains outcomes and next actions in product language.
 
 ## Secrets
 
 Local development resolves secrets from the ignored root `.env` first, then
-the Development vault (item "Verily") through the route in `monosecret.toml`.
-The `.env` must stay mode `0600` and is never committed.
+the Development vault (item "Verily") through the route in `monosecret.toml`
+and `verily_kit/monosecret.toml`. The `.env` must stay mode `0600` and is
+never committed.
 
 - Resolve secrets only through Monosecret. Never call `op` for secrets directly
   and never retry secret access in a loop; a throttled 1Password account breaks
@@ -174,34 +173,27 @@ The `.env` must stay mode `0600` and is never committed.
 
 ## Localization and colour
 
-- All user-facing Flutter text comes from `AppLocalizations`
-  (`verily_flutter/lib/l10n/app_en.arb`, lowerCamelCase keys grouped by
-  feature). Use ICU placeholders and plurals; never concatenate fragments.
-  Run `flutter gen-l10n` after ARB edits and commit the generated files.
-- Raw colours live only in `verily_flutter/lib/app/theme/verily_theme.dart`
-  (and brand tokens in `packages/verily_brand`). Use
-  `Theme.of(context).colorScheme` or `Theme.of(context).verily` everywhere
-  else. Never use `Color(...)`, `Colors.*`, or `CupertinoColors.*` in app code,
-  including tests and painters. Do not suppress `enforce_theme_palette_colors`.
+- All user-facing app text comes from `verily_kit/verily_app/l10n/en.arb`
+  (regenerated via `lk l10n` into `verily_kit/verily_app/src/l10n.rs`). Use ICU
+  placeholders and plurals; never concatenate fragments.
+- Raw colours live only in `verily_kit/verily_ink/` and
+  `verily_kit/verily_app/src/theme.rs`. Screens use `crate::chrome` and
+  `crate::theme::Role` tokens everywhere else.
 
 ## Screenshots and binary evidence
 
 Never commit screenshots, screen recordings, rendered videos, or other binary
-evidence. Rendered launch media goes to the gitignored `.screenshots/`; attach
-captures to pull requests with `gh pr comment <n> --attach 'shot.png#Alt'`.
-The only committed binaries are product assets the app ships (launcher icon
-source, fonts).
+evidence. Local captures go to the gitignored `.screenshots/`; attach captures
+to pull requests with `gh pr comment <n> --attach 'shot.png#Alt'`. The only
+committed binaries are product assets the app ships (launcher icon source,
+fonts).
 
 ## Seeker Android development workflow
 
-```nu
-devenv shell dev:seeker          # Postgres + Serverpod + adb reverse + app on Seeker
-devenv shell dev:seeker:reload   # hot reload
+```sh
+devenv shell dev:seeker        # Postgres + verily-kit + adb reverse + Android host on Seeker
+devenv shell dev:seeker:status
 devenv shell dev:seeker:stop
-devenv shell dev:seeker:mcp      # restart with Flutter Driver text entry for MCP automation
 ```
 
-Override the device with `SEEKER_DEVICE_ID`. After any Flutter UI change,
-verify on the live device with the Flutter MCP tools: connect to DTD, hot
-reload with `clearRuntimeErrors`, and confirm zero runtime errors before
-committing.
+Override the device with `SEEKER_DEVICE_ID`.

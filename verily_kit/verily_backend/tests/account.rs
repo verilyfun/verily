@@ -214,6 +214,8 @@ async fn closing_needs_the_phrase_then_stops_everything_and_keeps_history() {
 					radius_meters: 0,
 					reward_amount: String::new(),
 					proofs: vec![ProofKind::Photo],
+					latitude: None,
+					longitude: None,
 				},
 			},
 		)

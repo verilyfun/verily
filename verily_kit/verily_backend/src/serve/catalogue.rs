@@ -1,11 +1,16 @@
 //! The Do catalogue, one action, and the creator's drafts.
 
+use std::collections::HashSet;
+
 use chrono::Duration;
 use chrono::Utc;
 use leptoskit_auth::Account as AuthAccount;
 use leptoskit_db::Connection;
 use leptoskit_db::Id;
 use leptoskit_db::Read;
+use leptoskit_db::geo::Geography;
+use leptoskit_db::geo::Meters;
+use leptoskit_db::geo::Point;
 use leptoskit_rpc as rpc;
 use uuid::Uuid;
 use verily_api::ActionCard;
@@ -37,6 +42,7 @@ use super::amount_label;
 use super::backend;
 use super::db;
 use super::me;
+use super::moderation::is_action_safety_held;
 use super::name;
 use super::parse_id;
 use super::proof_kind;
@@ -64,8 +70,8 @@ const DRAFT_REWARD_DAYS: i64 = 30;
 /// Live, open actions, newest first; nearby search nearest first.
 ///
 /// The coordinates are only an input: they are coarsened to about 100 m,
-/// used to rank, and dropped. A card carries a place name and a radius,
-/// never a point.
+/// used to rank via PostGIS/SQLite spatial queries, and dropped. A card carries
+/// a place name and a radius, never a point.
 pub async fn list_available_actions(
 	cx: &rpc::QueryCx,
 	filter: ActionFilter,
@@ -77,6 +83,18 @@ pub async fn list_available_actions(
 	let origin = match filter {
 		ActionFilter::Nearby => Some(coarse_point(latitude, longitude)?),
 		_ => None,
+	};
+	let spatial_ids: Option<HashSet<Id<ActionRow>>> = if let Some((lat, lon)) = origin {
+		let center = Geography(Point::new(lon, lat));
+		let places = ActionPlace::query()
+			.filter(|row| row.location.within_distance(&center, Meters(NEARBY_METERS)))
+			.limit(SCAN)
+			.all(cx.db())
+			.await
+			.map_err(db)?;
+		Some(places.into_iter().map(|p| p.action_id).collect())
+	} else {
+		None
 	};
 	let now = Utc::now();
 	let active = name(&ActionDefinitionStatus::Active);
@@ -93,22 +111,33 @@ pub async fn list_available_actions(
 		if !is_open(&action, now) {
 			continue;
 		}
+		if is_action_safety_held(cx.db(), &action.id.to_string()).await? {
+			continue;
+		}
 		let requirements = requirements(&action)?;
 		if !matches_filter(&filter, &requirements) {
 			continue;
 		}
 		let place = place_for(cx.db(), action.id).await?;
 		let distance = match origin {
-			Some(origin) => match place_point(place.as_ref()) {
-				Some(point) => {
-					let meters = haversine_meters(origin, point);
-					if meters > NEARBY_METERS {
-						continue;
+			Some(origin) => {
+				let indexed_hit = spatial_ids
+					.as_ref()
+					.is_some_and(|set| set.contains(&action.id));
+				match place_point(place.as_ref()) {
+					Some(point) => {
+						let meters = haversine_meters(origin, point);
+						if !indexed_hit && meters > NEARBY_METERS {
+							continue;
+						}
+						if meters > NEARBY_METERS {
+							continue;
+						}
+						meters
 					}
-					meters
+					None => continue,
 				}
-				None => continue,
-			},
+			}
 			None => 0.0,
 		};
 		let opportunity = store::opportunity(cx.db(), &backend.rewards, &action, viewer.uuid())
@@ -146,6 +175,9 @@ pub async fn get_action(cx: &rpc::QueryCx, action_id: String) -> rpc::Result<Act
 	if !is_creator && action.status == name(&ActionDefinitionStatus::Draft) {
 		return Err(rpc::Error::not_found("notFound"));
 	}
+	if !is_creator && is_action_safety_held(cx.db(), &action.id.to_string()).await? {
+		return Err(rpc::Error::not_found("notFound"));
+	}
 	let requirements = requirements(&action)?;
 	let place = place_for(cx.db(), action.id).await?;
 	let opportunity = store::opportunity(cx.db(), &backend.rewards, &action, viewer.uuid())
@@ -176,6 +208,38 @@ pub async fn get_action(cx: &rpc::QueryCx, action_id: String) -> rpc::Result<Act
 		reward_label: reward_label(&opportunity),
 		rewarded: opportunity.reward.is_some(),
 		funded: escrow_funded(&opportunity),
+		paused: action.status == name(&ActionDefinitionStatus::Paused),
+	})
+}
+
+/// Loads one of the creator's own actions into an editable [`DraftInput`].
+pub async fn get_draft(cx: &rpc::QueryCx, action_id: String) -> rpc::Result<DraftInput> {
+	let creator = me(cx.context())?;
+	let backend = backend(cx.context())?;
+	let action = owned_action(cx.db(), creator, parse_id(&action_id)?).await?;
+	let reqs = requirements(&action)?;
+	let place = place_for(cx.db(), action.id).await?;
+	let opportunity = store::opportunity(cx.db(), &backend.rewards, &action, creator.uuid())
+		.await
+		.map_err(into_rpc)?;
+	let reward_amount = opportunity
+		.reward
+		.as_ref()
+		.map(|r| format_atoms_plain(r.amount_per_payout, r.decimals))
+		.unwrap_or_default();
+	Ok(DraftInput {
+		id: Some(action.id.to_string()),
+		title: action.title,
+		summary: action.description,
+		place_name: place
+			.as_ref()
+			.map(|p| p.place_name.clone())
+			.unwrap_or_default(),
+		radius_meters: place.as_ref().map_or(0, |p| p.radius_meters),
+		reward_amount,
+		proofs: reqs.into_iter().map(|r| proof_kind(r.kind)).collect(),
+		latitude: place.as_ref().and_then(|p| p.latitude),
+		longitude: place.as_ref().and_then(|p| p.longitude),
 	})
 }
 
@@ -201,9 +265,41 @@ pub async fn list_my_actions(cx: &rpc::QueryCx) -> rpc::Result<Vec<DraftRow>> {
 			rewarded: opportunity.reward.is_some(),
 			funded: escrow_funded(&opportunity),
 			live: action.status == name(&ActionDefinitionStatus::Active),
+			paused: action.status == name(&ActionDefinitionStatus::Paused),
 		});
 	}
 	Ok(rows)
+}
+
+/// Pauses or resumes one of the creator's own published actions.
+pub async fn pause_action(
+	cx: &rpc::MutationCx,
+	action_id: String,
+	paused: bool,
+) -> rpc::Result<DraftRow> {
+	let creator = me(cx.context())?;
+	let backend = backend(cx.context())?;
+	require_active(cx.tx(), creator).await?;
+	let mut action = owned_action(cx.tx(), creator, parse_id(&action_id)?).await?;
+	let active_str = name(&ActionDefinitionStatus::Active);
+	let paused_str = name(&ActionDefinitionStatus::Paused);
+	if action.status != active_str && action.status != paused_str {
+		return Err(rpc::Error::invalid("actionNotPublished"));
+	}
+	action.status = if paused { paused_str } else { active_str };
+	action.updated_at = Utc::now();
+	action.save(cx.tx()).await.map_err(db)?;
+	let opportunity = store::opportunity(cx.tx(), &backend.rewards, &action, creator.uuid())
+		.await
+		.map_err(into_rpc)?;
+	Ok(DraftRow {
+		id: action.id.to_string(),
+		title: action.title,
+		rewarded: opportunity.reward.is_some(),
+		funded: escrow_funded(&opportunity),
+		live: action.status == name(&ActionDefinitionStatus::Active),
+		paused: action.status == name(&ActionDefinitionStatus::Paused),
+	})
 }
 
 /// Saves a new draft, or replaces one of the creator's own. Saving never
@@ -251,10 +347,19 @@ pub async fn save_action(cx: &rpc::MutationCx, draft: DraftInput) -> rpc::Result
 	};
 
 	let action_id = Id::<ActionRow>::from_uuid(saved.id);
+	let location = content
+		.latitude
+		.zip(content.longitude)
+		.map(|(lat, lon)| Geography(Point::new(lon, lat)));
 	match place_for(cx.tx(), action_id).await? {
 		Some(mut place) => {
 			place.place_name = content.place_name;
 			place.radius_meters = content.radius_meters;
+			if content.latitude.is_some() && content.longitude.is_some() {
+				place.latitude = content.latitude;
+				place.longitude = content.longitude;
+				place.location = location;
+			}
 			place.save(cx.tx()).await.map_err(db)?;
 		}
 		None => {
@@ -262,8 +367,9 @@ pub async fn save_action(cx: &rpc::MutationCx, draft: DraftInput) -> rpc::Result
 				action_id,
 				place_name: content.place_name,
 				radius_meters: content.radius_meters,
-				latitude: None,
-				longitude: None,
+				latitude: content.latitude,
+				longitude: content.longitude,
+				location,
 			}
 			.insert(cx.tx())
 			.await
@@ -317,6 +423,8 @@ struct DraftContent {
 	summary: String,
 	place_name: String,
 	radius_meters: i64,
+	latitude: Option<f64>,
+	longitude: Option<f64>,
 	requirements: Vec<ActionRequirementDraft>,
 	reward: Option<RewardTermsDraft>,
 }
@@ -332,12 +440,30 @@ impl DraftContent {
 		if !(0..=MAX_RADIUS_METERS).contains(&draft.radius_meters) {
 			return Err(rpc::Error::invalid("invalidRequest"));
 		}
+		let (latitude, longitude) = match (draft.latitude, draft.longitude) {
+			(Some(lat), Some(lon)) => {
+				if !lat.is_finite()
+					|| !lon.is_finite()
+					|| !(-90.0..=90.0).contains(&lat)
+					|| !(-180.0..=180.0).contains(&lon)
+				{
+					return Err(rpc::Error::invalid("invalidRequest"));
+				}
+				(Some(lat), Some(lon))
+			}
+			(None, None) => (None, None),
+			_ => return Err(rpc::Error::invalid("invalidRequest")),
+		};
 		if draft.proofs.is_empty() || draft.proofs.len() > MAX_PROOFS {
 			return Err(rpc::Error::invalid("invalidRequest"));
 		}
 		let mut requirements: Vec<ActionRequirementDraft> = Vec::new();
 		for kind in &draft.proofs {
-			let requirement = requirement_for(*kind, draft.radius_meters)?;
+			let mut requirement = requirement_for(*kind, draft.radius_meters)?;
+			if requirement.kind == ActionRequirementKind::Location {
+				requirement.latitude = latitude;
+				requirement.longitude = longitude;
+			}
 			if requirements
 				.iter()
 				.any(|existing| existing.requirement_key == requirement.requirement_key)
@@ -361,6 +487,8 @@ impl DraftContent {
 			summary,
 			place_name,
 			radius_meters: draft.radius_meters,
+			latitude,
+			longitude,
 			requirements,
 			reward,
 		})
@@ -478,6 +606,19 @@ fn parse_amount(text: &str, decimals: i64) -> Result<i64, rpc::Error> {
 		return Err(invalid());
 	}
 	Ok(atoms)
+}
+
+fn format_atoms_plain(atoms: i64, decimals: i64) -> String {
+	let decimals = u32::try_from(decimals.clamp(0, 18)).unwrap_or(0);
+	let scale = 10_i128.pow(decimals);
+	let atoms = i128::from(atoms);
+	let whole = atoms / scale;
+	let fraction = (atoms % scale).abs();
+	if fraction == 0 {
+		return whole.to_string();
+	}
+	let digits = format!("{fraction:0width$}", width = decimals as usize);
+	format!("{whole}.{}", digits.trim_end_matches('0'))
 }
 
 /// A key the creator never sees: the title's letters and a random suffix.
@@ -637,7 +778,7 @@ fn place_point(place: Option<&ActionPlace>) -> Option<(f64, f64)> {
 }
 
 /// Great-circle distance in metres on a sphere the size of the Earth.
-fn haversine_meters(from: (f64, f64), to: (f64, f64)) -> f64 {
+pub(super) fn haversine_meters(from: (f64, f64), to: (f64, f64)) -> f64 {
 	const EARTH_RADIUS_METERS: f64 = 6_371_008.8;
 	let (lat1, lon1) = (from.0.to_radians(), from.1.to_radians());
 	let (lat2, lon2) = (to.0.to_radians(), to.1.to_radians());

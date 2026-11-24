@@ -95,6 +95,7 @@ pub struct Rewards {
 	program: Address,
 	mint_address: Address,
 	arbiter_address: Option<Address>,
+	signers: Option<crate::custody::PayoutSigners>,
 }
 
 impl Rewards {
@@ -140,6 +141,25 @@ impl Rewards {
 		self.arbiter = arbiter.to_string();
 		self.arbiter_address = Some(arbiter);
 		self
+	}
+
+	/// Installs payout signers (Cloud KMS or devnet-only local keypair).
+	#[must_use]
+	pub fn with_signers(mut self, signers: crate::custody::PayoutSigners) -> Self {
+		self.signers = Some(signers);
+		self
+	}
+
+	/// Configured payout signers, when present.
+	#[must_use]
+	pub fn signers(&self) -> Option<&crate::custody::PayoutSigners> {
+		self.signers.as_ref()
+	}
+
+	/// Whether custody signers are installed for submitting releases.
+	#[must_use]
+	pub fn has_signers(&self) -> bool {
+		self.signers.is_some()
 	}
 
 	/// Installs a planted chain. Refused for staging and production.
@@ -202,6 +222,7 @@ fn disabled(run_mode: RunMode, threshold: i64) -> Rewards {
 		program,
 		mint_address: mint,
 		arbiter_address: None,
+		signers: None,
 	}
 }
 
@@ -247,6 +268,7 @@ fn solana(secrets: &Client, run_mode: RunMode, threshold: i64) -> Result<Rewards
 	let mint_address = mint.parse().expect("USDC mint is a valid address");
 	let program = program_id(secrets, run_mode)?;
 	let genesis = genesis(secrets, cluster, run_mode)?;
+	let signers = load_signers(secrets, run_mode, arbiter_address)?;
 	let gateway =
 		SolanaGateway::connect(&rpc_url, program, mint_address, arbiter_address, genesis)?;
 	drop(rpc_url);
@@ -262,7 +284,84 @@ fn solana(secrets: &Client, run_mode: RunMode, threshold: i64) -> Result<Rewards
 		program,
 		mint_address,
 		arbiter_address: Some(arbiter_address),
+		signers,
 	})
+}
+
+fn load_signers(
+	secrets: &Client,
+	run_mode: RunMode,
+	expected_arbiter: Address,
+) -> Result<Option<crate::custody::PayoutSigners>, ConfigError> {
+	use crate::custody::{CustodySigner, KmsTransactionSigner, LocalKeypairSigner, PayoutSigners};
+
+	let arbiter_kms = optional(secrets, "VERILY_REWARD_ARBITER_KMS_KEY");
+	let fee_payer_kms = optional(secrets, "VERILY_REWARD_FEE_PAYER_KMS_KEY");
+	if let (Some(arb_key), Some(fee_key)) = (arbiter_kms, fee_payer_kms) {
+		let fee_addr_raw = required(secrets, "VERILY_REWARD_FEE_PAYER_ADDRESS")?;
+		let fee_addr = Address::from_str(&fee_addr_raw).map_err(|_| {
+			ConfigError::new("VERILY_REWARD_FEE_PAYER_ADDRESS", "must be an address")
+		})?;
+		let kms_json = optional(secrets, "VERILY_REWARD_KMS_CREDENTIALS_JSON");
+		let kms_file = optional(secrets, "VERILY_REWARD_KMS_CREDENTIALS_FILE");
+		let (arb_signer, fee_signer) = match (kms_json, kms_file) {
+			(Some(json), None) => (
+				KmsTransactionSigner::new(expected_arbiter, arb_key, json.clone()).map_err(
+					|_| ConfigError::new("VERILY_REWARD_KMS_CREDENTIALS_JSON", "is invalid"),
+				)?,
+				KmsTransactionSigner::new(fee_addr, fee_key, json).map_err(|_| {
+					ConfigError::new("VERILY_REWARD_KMS_CREDENTIALS_JSON", "is invalid")
+				})?,
+			),
+			(None, Some(path)) => (
+				KmsTransactionSigner::from_credentials_file(
+					expected_arbiter,
+					arb_key,
+					std::path::Path::new(&path),
+				)
+				.map_err(|_| {
+					ConfigError::new("VERILY_REWARD_KMS_CREDENTIALS_FILE", "is invalid")
+				})?,
+				KmsTransactionSigner::from_credentials_file(
+					fee_addr,
+					fee_key,
+					std::path::Path::new(&path),
+				)
+				.map_err(|_| {
+					ConfigError::new("VERILY_REWARD_KMS_CREDENTIALS_FILE", "is invalid")
+				})?,
+			),
+			_ => {
+				return Err(ConfigError::new(
+					"VERILY_REWARD_KMS_CREDENTIALS_JSON",
+					"requires exactly one KMS credential source",
+				));
+			}
+		};
+		return Ok(Some(PayoutSigners::new(
+			CustodySigner::Kms(arb_signer),
+			CustodySigner::Kms(fee_signer),
+		)));
+	}
+
+	if let Some(arb_raw) = optional(secrets, "VERILY_REWARD_ARBITER_KEYPAIR") {
+		let arb = LocalKeypairSigner::from_json_bytes(&arb_raw, run_mode)?;
+		if arb.address() != expected_arbiter {
+			return Err(ConfigError::new(
+				"VERILY_REWARD_ARBITER_KEYPAIR",
+				"does not match VERILY_REWARD_ARBITER_ADDRESS",
+			));
+		}
+		let fee_raw =
+			optional(secrets, "VERILY_REWARD_FEE_PAYER_KEYPAIR").unwrap_or_else(|| arb_raw.clone());
+		let fee = LocalKeypairSigner::from_json_bytes(&fee_raw, run_mode)?;
+		return Ok(Some(PayoutSigners::new(
+			CustodySigner::Local(arb),
+			CustodySigner::Local(fee),
+		)));
+	}
+
+	Ok(None)
 }
 
 fn program_id(secrets: &Client, run_mode: RunMode) -> Result<Address, ConfigError> {

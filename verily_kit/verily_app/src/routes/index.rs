@@ -51,7 +51,7 @@ pub fn Page(navigation: &Navigation) -> Element {
 			/>
 			<chrome::Quiet
 				label=l10n.welcome_have_account()
-				on_press=move || returning.replace(Route::Do)
+				on_press=move || returning.navigate(Route::SignIn)
 				seed=23
 			/>
 		</chrome::Page>

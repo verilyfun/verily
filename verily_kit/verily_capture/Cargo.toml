@@ -1,0 +1,54 @@
+[package]
+name = "verily_capture"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+rust-version.workspace = true
+description = "Verily live capture plugin: camera photo/video with MediaPipe frame feed, microphone, QR scanner, motion trace, location binding, and streaming upload. Never opens a gallery."
+
+[package.metadata.leptoskit.runtime]
+name = "verily-capture"
+apple-module = "VerilyCapture"
+apple-type = "VerilyCapturePlugin"
+apple-context = true
+apple-frameworks = ["AVFoundation", "CoreLocation", "CoreMotion"]
+apple-usage-descriptions = [
+  "NSCameraUsageDescription",
+  "NSMicrophoneUsageDescription",
+  "NSLocationWhenInUseUsageDescription",
+  "NSMotionUsageDescription",
+]
+android-type = "dev.verily.capture.VerilyCapturePlugin"
+android-context = true
+android-permissions = [
+  "android.permission.CAMERA",
+  "android.permission.RECORD_AUDIO",
+  "android.permission.ACCESS_FINE_LOCATION",
+]
+android-dependencies = [
+  "androidx.camera:camera-camera2:1.4.1",
+  "androidx.camera:camera-lifecycle:1.4.1",
+  "androidx.camera:camera-video:1.4.1",
+  "androidx.camera:camera-view:1.4.1",
+  "com.google.mlkit:barcode-scanning:17.3.0",
+]
+
+[package.metadata.leptoskit.runtime.macos]
+unavailable = true
+
+[package.metadata.leptoskit.runtime.linux]
+unavailable = true
+
+[package.metadata.leptoskit.runtime.windows]
+unavailable = true
+
+[package.metadata.leptoskit.runtime.harmonyos]
+unavailable = true
+
+[features]
+default = []
+guest = ["leptoskit_bridge/guest"]
+
+[dependencies]
+leptoskit_bridge = { workspace = true }

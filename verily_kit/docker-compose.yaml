@@ -1,0 +1,56 @@
+services:
+  postgres:
+    # Official PostGIS 3.7 on PostgreSQL 19 (publishes linux/amd64 manifests).
+    image: postgis/postgis:19-3.7
+    platform: linux/amd64
+    ports:
+      - "127.0.0.1:${VERILY_POSTGRES_PORT:-8191}:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: verily
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - verily_data:/var/lib/postgresql
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d verily"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  server:
+    profiles: ["server"]
+    image: verily-kit:local
+    platform: linux/amd64
+    build:
+      context: ..
+      dockerfile: verily_kit/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${VERILY_KIT_PORT:-8184}:8184"
+    environment:
+      VERILY_BIND_ADDRESS: "0.0.0.0"
+      VERILY_PORT: "8184"
+      DATABASE_URL: "postgres://postgres@postgres:5432/verily"
+      AUTH_ENCRYPTION_KEYS:
+      VERILY_ABUSE_RISK_SALT:
+      VERILY_RECEIPT_SIGNING_PRIVATE_KEY:
+      VERILY_EVIDENCE_STORAGE_MODE: "${VERILY_EVIDENCE_STORAGE_MODE:-b2}"
+      VERILY_B2_ENDPOINT:
+      VERILY_B2_REGION:
+      VERILY_B2_BUCKET:
+      VERILY_B2_KEY_ID:
+      VERILY_B2_APPLICATION_KEY:
+      VERILY_MEDIA_VERIFIER_MODE: "${VERILY_MEDIA_VERIFIER_MODE:-manual-review}"
+      VERILY_OPENROUTER_API_KEY:
+      VERILY_OPENROUTER_PROMPT_INJECTION_GUARD:
+      VERILY_OPENROUTER_PROMPT_INJECTION_GUARD_CONFIRMED:
+      VERILY_OPENROUTER_REQUIRE_ZDR:
+      VERILY_REWARD_ESCROW_MODE: "${VERILY_REWARD_ESCROW_MODE:-disabled}"
+      VERILY_REWARD_SOLANA_RPC_URL:
+      VERILY_REWARD_KMS_CREDENTIALS_JSON:
+
+volumes:
+  verily_data:

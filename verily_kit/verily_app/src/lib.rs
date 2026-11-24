@@ -12,6 +12,7 @@ mod editor;
 mod host;
 #[allow(dead_code)]
 mod l10n;
+#[allow(dead_code)]
 mod live;
 // The generated module publishes `axum_route_list`, which this app does not
 // call, and each path is built with `.into()` the router generator emits.
@@ -26,15 +27,18 @@ use std::sync::Mutex;
 use std::sync::PoisonError;
 
 pub mod model;
+pub mod movement;
 pub mod ops;
 pub mod theme;
 
 pub use routes::Action;
+pub use routes::AppDetail;
 pub use routes::Capture;
 pub use routes::EditAction;
 pub use routes::Navigation;
 pub use routes::NewAction;
 pub use routes::Route;
+pub use routes::VerifyRequest;
 
 use leptoskit::component;
 use leptoskit::prelude::Element;
@@ -131,6 +135,11 @@ pub fn screen(shared: &Shared, navigation: &Navigation) -> Element {
 			let signed_in = current.is_some();
 			shared.synchronize_session(current);
 			if signed_in {
+				if matches!(navigation.current(), Route::SignIn) {
+					navigation.replace(Route::Do);
+				}
+				route(shared, navigation)
+			} else if matches!(navigation.current(), Route::Index) {
 				route(shared, navigation)
 			} else {
 				sign_in::page()
@@ -138,7 +147,11 @@ pub fn screen(shared: &Shared, navigation: &Navigation) -> Element {
 		}
 		None if session.is_error() => {
 			shared.synchronize_session(None);
-			sign_in::page()
+			if matches!(navigation.current(), Route::Index) {
+				route(shared, navigation)
+			} else {
+				sign_in::page()
+			}
 		}
 		None => sign_in::checking(),
 	}

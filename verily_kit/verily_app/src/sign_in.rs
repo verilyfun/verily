@@ -19,7 +19,7 @@ use leptoskit::prelude::Set;
 use leptoskit::prelude::View;
 use leptoskit::query::MutateCallbacks;
 use leptoskit::view;
-use skribble_leptoskit::SkribblePage;
+use leptoskit_skribble::SkribblePage;
 
 use crate::chrome;
 use crate::l10n::L10n;
@@ -205,6 +205,37 @@ pub fn SignIn() -> Element {
 		},
 	};
 
+	let providers = leptoskit::auth::client::use_providers();
+	let start_oauth = mutation(
+		"sign_in.oauth",
+		leptoskit::auth::client::sign_in_with_provider(),
+	);
+	let has_google = providers
+		.data()
+		.is_some_and(|list| list.iter().any(|p| p.id == "google"));
+	let google_button = has_google.then(|| {
+		view! {
+			<chrome::Quiet
+				label=l10n.sign_in_have_account_prompt()
+				disabled=working || start_oauth.is_pending()
+				seed=319
+				on_press=move || {
+					notice.set(String::new());
+					start_oauth.mutate_with(
+						leptoskit::auth::StartProvider {
+							provider: "google".to_owned(),
+							redirect_to: Some("/do".to_owned()),
+							prompt: None,
+						},
+						MutateCallbacks::new().on_error(move |args| {
+							notice.set(problem(&l10n, &args.error));
+						}),
+					);
+				}
+			/>
+		}
+	});
+
 	view! {
 		<View class="w-full max-w-md self-center flex flex-col gap-6 pt-6">
 			<View class="flex flex-col items-center gap-4">
@@ -214,6 +245,7 @@ pub fn SignIn() -> Element {
 			</View>
 			<chrome::Card seed=317>
 				{form}
+				{google_button}
 				{(!notice.get().is_empty()).then(|| view! { <chrome::Body text=notice.get() /> })}
 			</chrome::Card>
 		</View>

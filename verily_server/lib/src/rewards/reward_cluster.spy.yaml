@@ -1,5 +1,0 @@
-enum: RewardCluster
-serialized: byName
-values:
-  - devnet
-  - mainnet

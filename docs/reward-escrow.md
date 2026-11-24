@@ -162,21 +162,21 @@ sequenceDiagram
 
 ## Server gateway
 
-The server reaches the program only through the `RewardEscrowGateway`
-interface (`verily_server/lib/src/rewards/reward_escrow_gateway.dart`).
-`VERILY_REWARD_ESCROW_MODE` picks the implementation:
+The server reaches the program only through the `RewardGateway` trait in
+`verily_kit/verily_rewards/src/gateway.rs`. `VERILY_REWARD_ESCROW_MODE` picks
+the implementation:
 
 | Mode                | Gateway                                  | Where                               |
 | ------------------- | ---------------------------------------- | ----------------------------------- |
 | `disabled`          | Refuses every call; rewards fail closed  | The default everywhere              |
 | `local-development` | A labelled simulation that moves nothing | Development and test only, devnet   |
-| `solana`            | `SolanaRewardEscrowGateway`              | Devnet; mainnet only as noted below |
+| `solana`            | `SolanaGateway`                          | Devnet; mainnet only as noted below |
 
-`SolanaRewardEscrowGateway` (`solana_reward_escrow_gateway.dart`) is built on
-the generated `verily_escrow_client` codecs, instruction builders, PDA helper,
-error table, and event parser, and on `solana_kit`. Startup
-(`solana_reward_escrow_configuration.dart`) connects it before the server
-accepts traffic; any failure stops startup.
+`SolanaGateway` (`verily_kit/verily_rewards/src/chain.rs`) is built directly
+on `pina-rs/solana_kit` and `verily_rewards::custody` (Google Cloud KMS
+Ed25519 in staging/production, devnet-only local keypairs in development).
+Startup (`verily_kit/verily_rewards/src/config.rs`) validates the config
+before the server accepts traffic; any failure stops startup.
 
 ### Keys
 
@@ -291,18 +291,14 @@ retry always uses the same index.
 
 ### Testing
 
-- Unit tests (`verily_server/test/unit/rewards/solana_*`, `custody/`) run every
-  method against an in-memory JSON-RPC endpoint behind the real `solana_kit`
-  client, with no network. PDA and vault vectors come from Agave's Rust
-  derivation (`solana find-program-derived-address`), and account and event
-  bytes from the program crate's own `initialize`.
-- `devenv shell test:escrow:e2e` builds the program, starts a throwaway
-  `solana-test-validator` with it at its reviewed address and a test-controlled
-  mint at the devnet USDC address, and runs the server end to end: startup
-  verification, a creator-signed `OpenEscrow` confirmed from finalized state,
-  two releases (one lost and retried, settled from the bitmap without paying
-  twice), event attribution from the real logs, and `EndEarly`. `CloseEscrow`
-  needs at least the three-day refund delay, so it stays in the Mollusk suite.
+- Unit tests (`verily_kit/verily_rewards/src/{chain,custody,decide,config,store}.rs`)
+  run every method against in-memory gateways and real `pina-rs/solana_kit`
+  transaction serialization, with no network. PDA and vault vectors come from
+  Agave's Rust derivation, and account and event layouts match
+  `programs/verily_escrow`.
+- `devenv shell test:escrow` runs the `verily_escrow` unit tests, builds the
+  SBF program (`verily_escrow_sbf`), refreshes the Pina IDL, and runs the
+  Mollusk SPL Token integration suite.
 
 ### Before devnet and before mainnet
 

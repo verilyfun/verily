@@ -473,18 +473,21 @@ pub async fn release_payout(
 	let Some(recipient) = payout.recipient_wallet.clone() else {
 		return hold(connection, &mut payout, &pool, ReleaseCodeHold::Wallet).await;
 	};
-	if Address::from_str(&recipient).is_err() {
-		return finish(
-			connection,
-			&mut payout,
-			&pool,
-			ReleaseOutcome::Failed {
-				code: decide::ReleaseCode::InvalidRecipient,
-				retryable: false,
-			},
-		)
-		.await;
-	}
+	let recipient_address = match Address::from_str(&recipient) {
+		Ok(addr) => addr,
+		Err(_) => {
+			return finish(
+				connection,
+				&mut payout,
+				&pool,
+				ReleaseOutcome::Failed {
+					code: decide::ReleaseCode::InvalidRecipient,
+					retryable: false,
+				},
+			)
+			.await;
+		}
+	};
 	if !rewards.chain_ready() {
 		return Err(RewardsError::Unavailable);
 	}
@@ -506,18 +509,46 @@ pub async fn release_payout(
 	)
 	.await
 	.map_err(RewardsError::from)?;
-	let outcome = decide::decide_release(&decide::ReleaseInput {
+	let vault_address = finalized
+		.as_ref()
+		.and_then(|acc| decide::decode_escrow(&acc.data))
+		.map(|decoded| decoded.vault);
+	let payout_index = u16::try_from(payout.payout_index).unwrap_or(u16::MAX);
+	let mut outcome = decide::decide_release(&decide::ReleaseInput {
 		expected,
 		finalized,
 		confirmed,
 		vault,
 		escrow_address,
-		index: u16::try_from(payout.payout_index).unwrap_or(u16::MAX),
+		index: payout_index,
 		recorded_released: u16::try_from(pool.payouts_released).unwrap_or(0),
 		now_unix: Utc::now().timestamp(),
-		signer_available: false,
+		signer_available: rewards.has_signers(),
 	});
-	if matches!(outcome, ReleaseOutcome::AlreadyReleased) {
+	// All chain/vault/bitmap preconditions passed; submit via Solana when custody signers are configured.
+	if matches!(
+		outcome,
+		ReleaseOutcome::Failed {
+			code: decide::ReleaseCode::SignerUnavailable,
+			retryable: true,
+		}
+	) && let (crate::gateway::Gateway::Solana(solana), Some(signers), Some(vault_addr)) =
+		(&rewards.gateway, rewards.signers(), vault_address)
+	{
+		outcome = solana
+			.submit_release(
+				escrow_address,
+				vault_addr,
+				recipient_address,
+				payout_index,
+				signers,
+			)
+			.await;
+	}
+	if matches!(
+		outcome,
+		ReleaseOutcome::AlreadyReleased | ReleaseOutcome::Released { .. }
+	) {
 		pool.payouts_released += 1;
 		pool.updated_at = Utc::now();
 		pool.save(connection).await?;
@@ -681,16 +712,28 @@ async fn finish(
 	pool: &RewardPoolRow,
 	outcome: ReleaseOutcome,
 ) -> Result<ReleaseReport, RewardsError> {
-	payout.status = match &outcome {
-		ReleaseOutcome::AlreadyReleased => name(&RewardPayoutStatus::Released),
+	match &outcome {
+		ReleaseOutcome::Released { signature } => {
+			payout.status = name(&RewardPayoutStatus::Released);
+			payout.release_signature = Some(signature.clone());
+		}
+		ReleaseOutcome::AlreadyReleased => {
+			payout.status = name(&RewardPayoutStatus::Released);
+			payout.release_signature = None;
+		}
 		ReleaseOutcome::Failed {
 			retryable: true, ..
-		} => name(&RewardPayoutStatus::Releasing),
+		} => {
+			payout.status = name(&RewardPayoutStatus::Releasing);
+			payout.release_signature = None;
+		}
 		ReleaseOutcome::Failed {
 			retryable: false, ..
-		} => name(&RewardPayoutStatus::Failed),
-	};
-	payout.release_signature = None;
+		} => {
+			payout.status = name(&RewardPayoutStatus::Failed);
+			payout.release_signature = None;
+		}
+	}
 	payout.updated_at = Utc::now();
 	payout.save(connection).await?;
 	Ok(ReleaseReport {

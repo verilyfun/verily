@@ -1,7 +1,0 @@
-class: ActionTemplate
-fields:
-  templateKey: String
-  title: String
-  description: String
-  suggestedRecurrence: ActionRecurrence
-  requirements: List<ActionRequirementDraft>

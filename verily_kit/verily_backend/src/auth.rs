@@ -67,6 +67,7 @@ pub fn build_auth(
 
 	if let Some(config) = config.filter(|config| config.auth.is_some()) {
 		if let Ok(builder) = Auth::from_config(db, config) {
+			let builder = attach_env_integrations(builder);
 			return Ok(match development_origin(config) {
 				Some(origin) => builder.origin(origin),
 				None => builder,
@@ -93,10 +94,29 @@ pub fn build_auth(
 		if let Some(header) = &auth.client_ip_header {
 			builder = builder.client_ip_header(header.clone());
 		}
-		return Ok(builder);
+		return Ok(attach_env_integrations(builder));
 	}
 
-	Ok(Auth::builder(db, keys).app_name("Verily"))
+	Ok(attach_env_integrations(
+		Auth::builder(db, keys).app_name("Verily"),
+	))
+}
+
+fn attach_env_integrations(mut builder: AuthBuilder) -> AuthBuilder {
+	if let Some(mailer) = crate::mail::ResendMailer::from_env() {
+		builder = builder.mailer(mailer);
+	}
+	if let (Ok(client_id), Ok(client_secret)) = (
+		std::env::var("VERILY_GOOGLE_CLIENT_ID"),
+		std::env::var("VERILY_GOOGLE_CLIENT_SECRET"),
+	) {
+		let client_id = client_id.trim();
+		let client_secret = client_secret.trim();
+		if !client_id.is_empty() && !client_secret.is_empty() {
+			builder = builder.provider(leptoskit_auth::Provider::google(client_id, client_secret));
+		}
+	}
+	builder
 }
 
 /// The origin a debug build serves on when `[auth] origin` is unset:

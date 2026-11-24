@@ -5,15 +5,27 @@ edition = "2024"
 license = "Apache-2.0"
 publish = false
 rust-version = "1.95"
-description = "Server-side Verily verification. Fail closed. Mounted by verily_backend."
+description = "Server-side Verily verification: attestation, evidence storage, OpenRouter council, motion, and MediaPipe replay. Fail closed."
 
 [dependencies]
 base64 = "0.22"
-chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde", "std"] }
+ciborium = "0.2"
 getrandom = "0.2"
-p256 = { version = "0.13", features = ["ecdsa"] }
+hmac = "0.12"
+mediapipe = { workspace = true, features = ["model-cache", "native", "serde"] }
+p256 = { version = "0.13", features = ["ecdsa", "pkcs8"] }
+p384 = { version = "0.13", features = ["ecdsa", "pkcs8"] }
 regex = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+rsa = { version = "0.9", features = ["sha2"] }
+serde = { version = "1", features = ["derive"] }
 serde_json = { workspace = true }
 sha2 = "0.10"
 thiserror = "2"
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "sync"] }
+url = "2"
 verily_shared = { path = "../verily_shared" }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

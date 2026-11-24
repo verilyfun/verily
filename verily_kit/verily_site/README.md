@@ -2,7 +2,7 @@
 
 verily.fun, the landing page. It deploys on its own, separate from the app. The output is a folder of static files that any CDN or bucket can serve: no server, no JavaScript, and no requests to anyone else.
 
-The page uses leptos HTML for its structure and leptoskit for its ink. The hand-drawn maps, jars, stamps, ticks, and highlights are Skribble components (`skribble_leptoskit`), rendered ahead of time by leptoskit's web renderer. Their entry and scroll motion is leptoskit `Motion`, which runs as plain CSS and stops under reduced motion. The mark is the geometry exported to `brand/verily-mark.svg`, and a test keeps the two identical.
+The page uses leptos HTML for its structure and leptoskit for its ink. The hand-drawn maps, jars, stamps, ticks, and highlights are Skribble components (`leptoskit_skribble`), rendered ahead of time by leptoskit's web renderer. Their entry and scroll motion is leptoskit `Motion`, which runs as plain CSS and stops under reduced motion. The mark is the geometry exported to `brand/verily-mark.svg`, and a test keeps the two identical.
 
 ```sh
 devenv shell site:serve           # render to verily_kit/dist/site and serve on :8183

@@ -1,0 +1,36 @@
+[package]
+name = "verily_attest"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+rust-version.workspace = true
+description = "Verily device proof plugin: Android Key Attestation, Play Integrity, Apple App Attest, and DeviceCheck."
+
+[package.metadata.leptoskit.runtime]
+name = "verily-attest"
+apple-module = "VerilyAttest"
+apple-type = "VerilyAttestPlugin"
+apple-frameworks = ["DeviceCheck", "Security"]
+android-type = "dev.verily.attest.VerilyAttestPlugin"
+android-context = true
+android-dependencies = ["com.google.android.play:integrity:1.4.0"]
+
+[package.metadata.leptoskit.runtime.macos]
+unavailable = true
+
+[package.metadata.leptoskit.runtime.linux]
+unavailable = true
+
+[package.metadata.leptoskit.runtime.windows]
+unavailable = true
+
+[package.metadata.leptoskit.runtime.harmonyos]
+unavailable = true
+
+[features]
+default = []
+guest = ["leptoskit_bridge/guest"]
+
+[dependencies]
+leptoskit_bridge = { workspace = true }

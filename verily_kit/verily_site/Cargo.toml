@@ -14,7 +14,7 @@ path = "src/main.rs"
 [dependencies]
 leptos = { version = "0.9.0-rc0", features = ["ssr"] }
 leptoskit = { workspace = true, features = ["web"] }
-skribble_leptoskit = { workspace = true }
+leptoskit_skribble = { workspace = true }
 verily_ink = { workspace = true }
 
 [dev-dependencies]

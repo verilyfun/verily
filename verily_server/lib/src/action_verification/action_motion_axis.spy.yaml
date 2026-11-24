@@ -1,7 +1,0 @@
-enum: ActionMotionAxis
-serialized: byName
-values:
-  - yaw
-  - pitch
-  - roll
-  - any

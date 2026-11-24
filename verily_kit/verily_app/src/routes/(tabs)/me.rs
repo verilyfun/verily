@@ -51,6 +51,8 @@ pub fn Page(navigation: &Navigation) -> Element {
 	let payouts = use_rpc_query(|| ListMyPayouts {});
 	let wallet = use_rpc_query(|| WalletStatus {});
 	let review = navigation.clone();
+	let appeals = navigation.clone();
+	let apps = navigation.clone();
 	let settings = navigation.clone();
 	view! {
 		<chrome::Page>
@@ -107,6 +109,16 @@ pub fn Page(navigation: &Navigation) -> Element {
 					label=l10n.me_link_review()
 					on_press=move || review.navigate(Route::Reviews)
 					seed=401
+				/>
+				<chrome::Quiet
+					label=l10n.me_link_appeals()
+					on_press=move || appeals.navigate(Route::Appeals)
+					seed=402
+				/>
+				<chrome::Quiet
+					label=l10n.apps_title()
+					on_press=move || apps.navigate(Route::Apps)
+					seed=404
 				/>
 				<chrome::Quiet
 					label=l10n.settings_title()
@@ -322,7 +334,8 @@ fn appeal_form(
 			<chrome::Quiet label=l10n.me_appeal() seed=201 on_press=move || open.set(true) />
 		};
 	}
-	let disabled = submit.is_pending() || !crate::model::valid_appeal_reason(&reason.get());
+	let pending = submit.is_pending();
+	let disabled = pending || !crate::model::valid_appeal_reason(&reason.get());
 	view! {
 		<View class=theme::STACK>
 			<chrome::Title text=l10n.me_appeal_title() />
@@ -332,7 +345,7 @@ fn appeal_form(
 				placeholder=l10n.me_appeal_reason_hint()
 				value=reason.get()
 				seed=205
-				disabled=submit.is_pending()
+				disabled=pending
 				on_change=move |next: &str| {
 					if !submit.is_pending() {
 						reason.set(next.to_owned());
@@ -358,7 +371,7 @@ fn appeal_form(
 				<chrome::Quiet
 					label=l10n.me_appeal_cancel()
 					seed=211
-					disabled=submit.is_pending()
+					disabled=pending
 					on_press=move || open.set(false)
 				/>
 			</View>
@@ -419,6 +432,7 @@ mod tests {
 		loop {
 			tester.pump();
 			if !tester.find_all(&Finder::text(text)).is_empty() {
+				tester.pump();
 				return;
 			}
 			assert!(

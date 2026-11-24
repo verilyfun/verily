@@ -1,13 +1,3 @@
-# Files and directories created by pub
-.dart_tool/
-.packages
-
-# Pubspec overrides
-pubspec_overrides.yaml
-
-# FVM Version Cache
-.fvm/
-
 # Nix/devenv local state
 .devenv/
 .devenv.flake.nix
@@ -37,12 +27,6 @@ target/
 **/keys/
 **/keypairs/
 **/*-keypair.json
-# Upstream key-storage sources in the solana_kit_native patch, not keypairs.
-!verily_kit/patches/solana_kit_native/src/keys/
-!verily_kit/patches/solana_kit_native/src/keys/**
-
-# Serverpod local secrets
-**/config/passwords.yaml
 
 # Local agent session state
 .claude/worktrees/

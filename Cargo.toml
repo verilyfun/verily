@@ -10,9 +10,6 @@ members = [
 # own workspace and never reaches the program's SBF build or this lockfile.
 exclude = [
   "programs/verily_escrow/tests/mollusk",
-  # Patched solana_kit_native is a path dependency of the kit workspace, not a
-  # member of the program workspace.
-  "verily_kit/patches/solana_kit_native",
 ]
 
 [workspace.package]

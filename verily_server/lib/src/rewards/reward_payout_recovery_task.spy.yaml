@@ -1,3 +1,0 @@
-class: RewardPayoutRecoveryTask
-fields:
-  batchSize: int

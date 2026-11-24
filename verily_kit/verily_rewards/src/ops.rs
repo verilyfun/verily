@@ -240,6 +240,7 @@ pub struct ReleaseReportWire {
 impl From<ReleaseReport> for ReleaseReportWire {
 	fn from(report: ReleaseReport) -> Self {
 		let (code, retryable) = match report.outcome {
+			crate::ReleaseOutcome::Released { .. } => ("released".to_owned(), false),
 			crate::ReleaseOutcome::AlreadyReleased => ("alreadyReleased".to_owned(), false),
 			crate::ReleaseOutcome::Failed { code, retryable } => (store_code(&code), retryable),
 		};

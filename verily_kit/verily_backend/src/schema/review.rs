@@ -53,7 +53,14 @@ pub struct EvidenceDecision {
 /// A participant's request for another look at a rejected attempt. One per
 /// attempt.
 #[table(name = "appeals", unique(attempt_id), index(participant_id))]
-#[policy(select, insert, |appeal, cx| {
+#[policy(select, update, |appeal, cx| {
+	cx.signed_in(|me| {
+		appeal.participant_id.eq(me.account)
+			| (appeal.participant_id.ne(me.account)
+				& cx.exists(Reviewer::query().filter(|reviewer| reviewer.account_id.eq(me.account))))
+	})
+})]
+#[policy(insert, |appeal, cx| {
 	cx.signed_in(|me| appeal.participant_id.eq(me.account))
 })]
 pub struct Appeal {

@@ -70,12 +70,12 @@ pub async fn world_with(rewards: Rewards) -> World {
 		.build()
 		.unwrap();
 	let rewards = Arc::new(rewards);
-	let backend = BackendHandle::new(Backend {
-		rewards: rewards.clone(),
-		verification: Arc::new(verily_verification::Verification::closed().unwrap()),
-		auth: Some(auth.clone()),
-		db: Some(db.clone()),
-	});
+	let backend = BackendHandle::new(Backend::for_test(
+		rewards.clone(),
+		Arc::new(verily_verification::Verification::closed().unwrap()),
+		Some(auth.clone()),
+		Some(db.clone()),
+	));
 	World {
 		db,
 		auth,

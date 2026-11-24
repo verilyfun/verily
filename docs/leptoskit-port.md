@@ -1,45 +1,35 @@
 # Moving Verily to LeptosKit
 
-Verily is moving to one Rust stack: the server, the app, and the tooling all
-run on [LeptosKit](https://github.com/ifiokjr/leptoskit) in `verily_kit/`.
-Serverpod (`verily_server/`, `verily_client/`), the Flutter app
-(`verily_flutter/`), and the Dart packages are removed once the kit does
-everything they do. Until then both stacks stay, and the Dart side keeps
-passing its checks.
-
-This page tracks what is left. Each phase lands as its own pull request.
+Verily runs on one Rust stack built on
+[LeptosKit](https://github.com/leptoskit/leptoskit) in `verily_kit/`, paired
+with [`leptoskit/mediapipe`](https://github.com/leptoskit/mediapipe),
+[`pina-rs/solana_kit`](https://github.com/pina-rs/solana_kit), and the Pina
+Solana reward escrow program in `programs/verily_escrow/`.
 
 ## Phases
 
-| Phase | What lands                                                                                                                                                                                                                                               | State       |
-| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| 1     | The app's frame and look: file-router navigators (root stack, Skribble tab bar), routes at the Flutter URLs, the front door, and every screen drawn with Skribble from `verily_ink`                                                                      | In review   |
-| 2     | Sign-in: email codes and Google through `leptoskit_auth`, the `/sign-in` page, and a guard that sends a signed-out person there                                                                                                                          | Not started |
-| 3     | Core server operations behind the existing client stubs: actions, attempts, evidence, nearby search (PostGIS), templates, account closure; the host loads the verification and rewards configuration instead of mounting them closed                     | Not started |
-| 4     | Evidence storage (Backblaze B2 and local), upload reservations, and the background jobs (cleanup, recovery, expiry) on `rpc.jobs`                                                                                                                        | Not started |
-| 5     | Device proof on the server: Android Key Attestation (pinned roots, revocation list, the vectors byte-identical), App Attest and DeviceCheck, Play Integrity                                                                                              | Not started |
-| 6     | Device proof in the app: Verily's own `verily_capture` plugin (camera stills and video, microphone, QR scanning, motion, location binding) and `verily_attest` plugin (per-window attested keys, Play Integrity, App Attest), on Android first, then iOS | Not started |
-| 7     | AI verification: the OpenRouter council transport behind `ModelInputSecurity`, the verification worker, and the adversarial tests                                                                                                                        | Not started |
-| 8     | Rewards end to end: payout signing and custody, recovery, and the wallet link through the Solana mobile wallet adapter                                                                                                                                   | Not started |
-| 9     | Moderation, appeals, abuse risk, and AI usage metering                                                                                                                                                                                                   | Not started |
-| 10    | Verily Apps: partner apps, keys, webhooks, receipts and JWKS, verification requests, the `/api/v1` routes, and the `/r/:request` and `/link` deep links                                                                                                  | Not started |
-| 11    | Tooling: devenv scripts, local CI lanes, the server image, and Monosecret entries for the kit only                                                                                                                                                       | Not started |
-| 12    | Remove Serverpod, Flutter, the Dart packages, and their docs                                                                                                                                                                                             | Not started |
+| Phase | What landed                                                                                                                                                                                                                                                    | State     |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| 1     | App frame and look: file-router navigators (root stack, Skribble tab bar), routes at canonical URLs, front door, and screens drawn with `leptoskit_skribble` + `verily_ink`                                                                                    | Completed |
+| 2     | Sign-in: email codes (Resend) and Google OAuth through `leptoskit_auth`, `/sign-in` route, public `/` front door, and session gate for private routes                                                                                                         | Completed |
+| 3     | Core backend operations: actions, drafts, 12 starter templates, AI authoring, attempts, geofenced location proof (`submit_location_proof` + implausible-travel checks), PostGIS nearby search, rotating venue QR challenges, account closure, and full runtime config loading | Completed |
+| 4     | Evidence storage (Backblaze B2 S3v4 + local disk), presigned upload reservations, immutable version confirmation, and background maintenance sweeps on `rpc::cron` + `rpc::job`                                                                                | Completed |
+| 5     | Server device proof: Android Key Attestation (pinned Google legacy RSA + 2026 CA1 roots, all 10 byte-identical vectors), Apple App Attest (CBOR + CMS receipt + pinned Apple roots, all 3 byte-identical vectors), DeviceCheck, and Play Integrity               | Completed |
+| 6     | App device proof & MediaPipe: `verily_capture` (CameraX/AVFoundation stills, start/stop video & audio, direct host presigned upload, QR, motion, location), `verily_attest` (Keystore/Play Integrity, automatic iOS App Attest registration), `leptoskit/mediapipe` native bridge, and pure-Rust exercise/ball/local-check HUD | Completed |
+| 7     | AI verification: OpenRouter HTTP council transport behind `ModelInputSecurity`, prompt-injection guard fail-closed checks, deterministic motion analyzer, MediaPipe + `ffmpeg` server replay, and adversarial tests                                            | Completed |
+| 8     | Rewards end to end: Google Cloud KMS Ed25519 custody + devnet-only local keypair signer, `pina-rs/solana_kit` transaction construction and submission, recovery sweeps, and Android Mobile Wallet Adapter payout linking + escrow funding                      | Completed |
+| 9     | Moderation, appeals (`/appeals`, RLS-protected reviewer resolution), abuse risk pseudonymization, and AI usage metering                                                                                                                                        | Completed |
+| 10    | Verily Apps: partner apps (`/apps`, `/apps/:app`), API key hashing & rotation, SSRF-safe HMAC-SHA256 webhooks, Ed25519 JWS receipts + `/.well-known/jwks.json`, `/api/v1/*` routes, `/r/:request`, and `/link`                                                 | Completed |
+| 11    | Tooling & deployment: `verily_kit/Dockerfile` (`leptoskit build --release --platform web`, `verily_site`, `ffmpeg`, SHA-256 verified MediaPipe models, unprivileged `app` user), `verily_kit/docker-compose.yaml` (PostgreSQL 19 + PostGIS 3.7), `monosecret.toml`, `devenv.nix`, `tool/local_ci.sh`, and GitHub Actions CI + release workflows pinned to latest LeptosKit | Completed |
+| 12    | Removed Serverpod (`verily_server/`, `verily_client/`), Flutter (`verily_flutter/`), Dart packages (`packages/`), and Serverpod docs                                                                                                                           | Completed |
 
-## Gaps in LeptosKit itself
+## Remaining hardware-dependent checks before store release
 
-These have no LeptosKit equivalent yet. Phase 6 builds them as Verily plugins
-unless LeptosKit gains them first:
-
-- Video and microphone recording (the camera plugin takes stills only).
-- QR scanning.
-- On-device pose and object detection (Flutter uses MediaPipe).
-- Android Key Attestation, Play Integrity, and App Attest (the
-  `app_integrity` plugin is a stub).
-- The Solana mobile wallet adapter on Android (LeptosKit has browser Wallet
-  Standard only).
-- Custom fonts on native hosts, so native screens use the system face rather
-  than the Skribble typefaces. The rough ink, colours, and layout still
-  follow [`DESIGN.md`](../DESIGN.md).
-- Pinning light or dark from inside the app. The kit follows the device's
-  appearance.
+- End-to-end on-device smoke test of `verily_capture`, `verily_attest`,
+  `mediapipe`, and Mobile Wallet Adapter on physical Android (Seeker) and iOS
+  devices using `devenv shell dev:seeker` and Xcode.
+- Provisioning production secrets (PostGIS `DATABASE_URL`,
+  `AUTH_ENCRYPTION_KEYS`, Backblaze B2, Resend, Google OAuth, Play Integrity,
+  Apple DeviceCheck, OpenRouter guardrail-confirmed key, Cloud KMS reward keys,
+  and receipt signing seed) into the deployment environment.
+- Running `devenv shell test:server-image` on a host with Docker or Podman.

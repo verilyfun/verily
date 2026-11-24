@@ -9,4 +9,4 @@ description = "Verily's ink: the brand palette, the pin-check mark, and the hand
 
 [dependencies]
 leptoskit = { workspace = true }
-skribble_leptoskit = { workspace = true }
+leptoskit_skribble = { workspace = true }

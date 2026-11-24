@@ -147,10 +147,43 @@ fn one_payload(signed: &Map<String, Value>) -> Result<Vec<u8>, LinkFault> {
 pub fn begin_link(done: impl FnOnce(Result<(), LinkFault>) + 'static) {
 	#[cfg(all(feature = "android", target_arch = "wasm32"))]
 	{
-		session::start(done);
+		session::start_link(done);
 	}
 	#[cfg(not(all(feature = "android", target_arch = "wasm32")))]
 	{
+		done(Err(LinkFault::Unsupported));
+	}
+}
+
+/// Extracts the base58 Solana transaction signature returned by MWA `sign_and_send_transactions`.
+#[cfg_attr(
+	not(all(feature = "android", target_arch = "wasm32")),
+	allow(dead_code)
+)]
+pub fn funding_signature_from_wallet(signed: &Map<String, Value>) -> Result<String, LinkFault> {
+	let sigs = signed
+		.get("signatures")
+		.and_then(Value::as_array)
+		.ok_or(LinkFault::Invalid)?;
+	if sigs.len() != 1 {
+		return Err(LinkFault::Invalid);
+	}
+	let encoded = sigs[0].as_str().ok_or(LinkFault::Invalid)?;
+	let bytes = STANDARD.decode(encoded).map_err(|_| LinkFault::Invalid)?;
+	let sig = Signature::try_from(bytes.as_slice()).map_err(|_| LinkFault::Invalid)?;
+	Ok(sig.to_string())
+}
+
+/// Asks the creator's mobile wallet to sign and send the server-prepared
+/// `OpenEscrow` funding transaction, then asks the server to verify chain state.
+pub fn begin_fund_escrow(action_id: String, done: impl FnOnce(Result<(), LinkFault>) + 'static) {
+	#[cfg(all(feature = "android", target_arch = "wasm32"))]
+	{
+		session::start_fund(action_id, done);
+	}
+	#[cfg(not(all(feature = "android", target_arch = "wasm32")))]
+	{
+		let _ = action_id;
 		done(Err(LinkFault::Unsupported));
 	}
 }
@@ -173,9 +206,12 @@ mod session {
 
 	use super::LinkFault;
 	use super::authorized_account;
+	use super::funding_signature_from_wallet;
 	use super::proof_from_wallet;
+	use crate::ops::ConfirmRewardFunding;
 	use crate::ops::CreateWalletLinkChallenge;
 	use crate::ops::LinkPayoutWallet;
+	use crate::ops::PrepareRewardFunding;
 
 	/// Devnet is the cluster a reward is funded on until mainnet is reviewed.
 	/// The payout address is the same on every cluster. This call submits nothing.
@@ -188,7 +224,7 @@ mod session {
 		static BUSY: Cell<bool> = const { Cell::new(false) };
 	}
 
-	pub(super) fn start(done: impl FnOnce(Result<(), LinkFault>) + 'static) {
+	pub(super) fn start_link(done: impl FnOnce(Result<(), LinkFault>) + 'static) {
 		if BUSY.replace(true) {
 			done(Err(LinkFault::Failed));
 			return;
@@ -200,9 +236,31 @@ mod session {
 		});
 	}
 
+	pub(super) fn start_fund(
+		action_id: String,
+		done: impl FnOnce(Result<(), LinkFault>) + 'static,
+	) {
+		if BUSY.replace(true) {
+			done(Err(LinkFault::Failed));
+			return;
+		}
+		leptoskit::guest::spawn(async move {
+			let result = fund(action_id).await;
+			BUSY.set(false);
+			done(result);
+		});
+	}
+
 	async fn link() -> Result<(), LinkFault> {
 		let mut events = take_events()?;
 		let result = connect_and_sign(&mut events).await;
+		EVENTS.with(|slot| *slot.borrow_mut() = Some(events));
+		result
+	}
+
+	async fn fund(action_id: String) -> Result<(), LinkFault> {
+		let mut events = take_events()?;
+		let result = connect_and_fund(&mut events, action_id).await;
 		EVENTS.with(|slot| *slot.borrow_mut() = Some(events));
 		result
 	}
@@ -232,6 +290,22 @@ mod session {
 		outcome
 	}
 
+	async fn connect_and_fund(events: &mut Events, action_id: String) -> Result<(), LinkFault> {
+		let mut unrelated = VecDeque::new();
+		let mut wallet = GuestMobileWallet::connect_android(events, |event: Event| {
+			if unrelated.len() == UNRELATED_LIMIT {
+				return Err(leptoskit_bridge::Error::Busy);
+			}
+			unrelated.push_back(event);
+			Ok(())
+		})
+		.await
+		.map_err(map_session)?;
+		let outcome = sign_and_send_escrow(&mut wallet, action_id).await;
+		let _closed = wallet.close().await;
+		outcome
+	}
+
 	async fn sign_challenge(wallet: &mut GuestMobileWallet) -> Result<(), LinkFault> {
 		let authorize = wallet
 			.call(Method::Authorize, authorize_params()?)
@@ -257,6 +331,46 @@ mod session {
 		})
 		.await
 		.map_err(|_| LinkFault::Failed)?;
+		Ok(())
+	}
+
+	async fn sign_and_send_escrow(
+		wallet: &mut GuestMobileWallet,
+		action_id: String,
+	) -> Result<(), LinkFault> {
+		let authorize = wallet
+			.call(Method::Authorize, authorize_params()?)
+			.await
+			.map_err(map_session)?;
+		let (_encoded, address) = authorized_account(&authorize)?;
+		let plan = leptoskit::rpc::client::call(PrepareRewardFunding {
+			action_id: action_id.clone(),
+			creator_wallet: address.to_string(),
+		})
+		.await
+		.map_err(|_| LinkFault::Failed)?;
+		if plan.unsigned_transaction.is_empty() {
+			return Err(LinkFault::Invalid);
+		}
+		let sent = wallet
+			.call(
+				Method::SignAndSendTransactions,
+				object(serde_json::json!({
+					"payloads": [plan.unsigned_transaction]
+				}))?,
+			)
+			.await
+			.map_err(map_session)?;
+		let funding_signature = funding_signature_from_wallet(&sent)?;
+		let confirmed = leptoskit::rpc::client::call(ConfirmRewardFunding {
+			action_id,
+			funding_signature,
+		})
+		.await
+		.map_err(|_| LinkFault::Failed)?;
+		if !confirmed.funded {
+			return Err(LinkFault::Failed);
+		}
 		Ok(())
 	}
 
@@ -322,6 +436,7 @@ mod tests {
 	use solana_kit_core::crypto::Keypair;
 
 	use super::LinkFault;
+	use super::funding_signature_from_wallet;
 	use super::mobile_link_supported;
 	use super::proof_from_wallet;
 
@@ -387,6 +502,22 @@ mod tests {
 		assert_eq!(
 			proof_from_wallet(&empty, &signed(message, &key), message),
 			Err(LinkFault::Invalid)
+		);
+	}
+
+	#[test]
+	fn funding_signature_decodes_base64_ed25519_signature_to_base58() {
+		let key = Keypair::from_seed(&[11; 32]);
+		let sig = key.sign(b"open-escrow-tx");
+		let reply = serde_json::json!({
+			"signatures": [STANDARD.encode(sig.as_bytes())]
+		})
+		.as_object()
+		.cloned()
+		.unwrap();
+		assert_eq!(
+			funding_signature_from_wallet(&reply).unwrap(),
+			sig.to_string()
 		);
 	}
 }

@@ -1,5 +1,0 @@
-enum: AppConfirmationOutcome
-serialized: byName
-values:
-  - accepted
-  - rejected

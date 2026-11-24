@@ -3,8 +3,8 @@
 Use this checklist to accept the App Attest fraud-risk receipt and DeviceCheck
 implementation from [the iOS device-risk PR](https://github.com/verilyfun/verily/pull/9).
 Read [Apple App Attest](verification.md#apple-app-attest) for the verification
-contract and [the operator API](serverpod-api.md#apple-device-risk-and-durable-restrictions)
-for endpoint permissions.
+contract and [`verily_backend::serve::attest`](../verily_kit/verily_backend/src/serve/attest.rs)
+for operator RPC permissions.
 
 **Status: not run.** No physical iPhone or live Apple risk API was used to prepare
 this checklist. Automated tests and a simulator build do not satisfy these cases.
@@ -46,19 +46,19 @@ videos, or other binary evidence.
       proof, such as a live venue QR scan. Confirm ordinary proof acceptance first;
       unrelated location, freshness, abuse or verifier failures must not mask these
       results. Do not fund a real-money reward for this test.
-      Record passing `devenv shell lint:analyze`, `devenv shell lint:format`,
-      `devenv shell lint:native`, `devenv shell test:server` and
-      `devenv shell test:flutter` results for the commits being tested.
-- [ ] **SETUP-3.** Prepare an authenticated staff test client with
-      `device-check.manage`. Prepare separate participant and `evidence.review`
-      accounts without that scope. Use the generated Serverpod client for operator
-      calls, not direct Apple requests from the phone.
+      Record passing `devenv shell lint:all` and `devenv shell test:all` results
+      for the commits being tested.
+- [ ] **SETUP-3.** Prepare an authenticated staff test client with reviewer
+      privileges. Prepare separate participant and reviewer accounts. Call the
+      authenticated `verily-backend` RPC mutations (`query_device_check` /
+      `update_device_check`), not direct Apple requests from the phone.
 - [ ] **SETUP-4.** Confirm the test client can call
-      `generateDeviceCheckToken` on `app.verily/capture_provenance` on the affected
-      iPhone and base64-encode its returned bytes. Transfer a fresh token only through
-      the controlled authenticated test session, keep it in memory, and discard it
-      after use. It must not appear in logs, clipboard history or command arguments.
-      An App Attest key ID cannot replace a DeviceCheck token.
+      `generate_device_check_token` on the `verily-attest` LeptosKit plugin on
+      the affected iPhone and base64-encode its returned bytes. Transfer a fresh
+      token only through the controlled authenticated test session, keep it in
+      memory, and discard it after use. It must not appear in logs, clipboard
+      history or command arguments. An App Attest key ID cannot replace a
+      DeviceCheck token.
 
 There is no shipped operator screen or acceptance command for SETUP-4. Arrange a
 private staff test client before the run. If it is unavailable, mark the operator
@@ -336,9 +336,9 @@ Attest key came from the same phone; a successful run does not eliminate a
 compromised phone relaying a clean phone's token.
 
 Keep automated evidence separate, especially
-[`app_attest_receipt_test.dart`](../verily_server/test/unit/action_verification/app_attest/app_attest_receipt_test.dart),
-[`apple_device_client_test.dart`](../verily_server/test/unit/action_verification/app_attest/apple_device_client_test.dart)
-and [`device_check_test.dart`](../verily_server/test/integration/device_check_test.dart).
+[`app_attest_vectors.rs`](../verily_kit/verily_verification/tests/app_attest_vectors.rs),
+[`app_attest/mod.rs`](../verily_kit/verily_verification/src/app_attest/mod.rs),
+and [`complete_port.rs`](../verily_kit/verily_backend/tests/complete_port.rs).
 
 ## 9. Restore state and sign off
 

@@ -1,3 +1,0 @@
-class: ActionQrChallengeCleanupTask
-fields:
-  batchSize: int

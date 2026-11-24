@@ -11,5 +11,7 @@ mod mark;
 pub mod sketches;
 
 pub use brand::*;
+pub use leptoskit_skribble::Tone;
+pub use mark::lockup;
 pub use mark::mark;
-pub use skribble_leptoskit::Tone;
+pub use mark::wordmark;

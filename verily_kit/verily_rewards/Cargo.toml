@@ -4,23 +4,27 @@ version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
 publish = false
-description = "Server-side actions, escrow checks, and payouts for Verily."
+description = "Server-side actions, escrow checks, KMS/devnet payout signing, and payouts for Verily."
 
 [dependencies]
+base64 = "0.22"
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde", "std"] }
 leptoskit_db = { workspace = true, features = ["sqlite"] }
 leptoskit_rpc = { workspace = true, features = ["sqlite"] }
-monosecret = { version = "0.5.0", default-features = false, features = ["client"] }
+monosecret = { workspace = true }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+rsa = { version = "0.9", features = ["sha2"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-solana_kit_associated_token_account = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32dcfccc4f73b6b5d68bdc6f541151c7e047", features = ["crypto"] }
-solana_kit_client = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32dcfccc4f73b6b5d68bdc6f541151c7e047" }
-solana_kit_core = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32dcfccc4f73b6b5d68bdc6f541151c7e047", features = ["crypto"] }
-solana_kit_native = { git = "https://github.com/pina-rs/solana_kit", rev = "a46f32dcfccc4f73b6b5d68bdc6f541151c7e047" }
+sha2 = "0.10"
+solana_kit_associated_token_account = { workspace = true, features = ["crypto"] }
+solana_kit_client = { workspace = true }
+solana_kit_core = { workspace = true, features = ["crypto"] }
+solana_kit_native = { workspace = true }
 thiserror = "2"
+tokio = { version = "1", features = ["rt", "time"] }
 uuid = { version = "1", features = ["serde", "v4"] }
 verily_shared = { path = "../verily_shared" }
 
 [dev-dependencies]
-base64 = "0.22"
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }

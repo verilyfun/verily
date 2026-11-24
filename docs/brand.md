@@ -5,7 +5,7 @@ should feel hand-drawn, warm, and a little funny, and it should always be
 honest about what proof can and cannot show.
 
 Everything visual in this guide is drawn from one source of geometry,
-[`packages/verily_brand/lib/src/geometry.dart`](../packages/verily_brand/lib/src/geometry.dart).
+[`verily_kit/verily_ink/src/brand.rs`](../verily_kit/verily_ink/src/brand.rs).
 The app's widgets, the launch reel, and the files in [`brand/`](../brand/README.md)
 all read it.
 
@@ -239,41 +239,18 @@ turned 8° anticlockwise, with a rubber-stamp texture (`VerifiedStamp`).
 - Claim a clip is "real". Say what was checked.
 - Stamp anything that has not passed verification.
 
-## Launch media and re-rendering
+## Static site and brand checks
 
-From `packages/verily_brand` (Flutter 3.47.9; ffmpeg on `PATH`):
+The app (`verily_app`) and the static marketing site (`verily_site`) both read
+the canonical brand geometry and tokens from `verily_kit/verily_ink`:
 
 ```bash
-# Promo video (with and without the sound bed) and the Slopper cover:
-dart run tool/render_promo.dart
-#   -> .screenshots/promo/verily-promo.mp4         1920x1080, 30 fps, H.264, AAC
-#   -> .screenshots/promo/verily-promo-silent.mp4
-#   -> .screenshots/promo/verily-cover.png         1280x800, paper
-#   -> .screenshots/promo/verily-cover-night.png   1280x800, night
+# Build the static landing page (verily.fun):
+devenv shell site:build
 
-# Re-score only the sound bed onto the existing silent cut:
-dart run tool/render_promo.dart --remux
-
-# Individual stills of the reel, for review:
-flutter test tool/render_promo_test.dart \
-  --dart-define=PROMO_OUT=../../.screenshots/stills \
-  --dart-define=PROMO_STILLS=1,5,12,20,25,29
-
-# The brand files, plus review sheets of the mark at 1024/96/48/24 px:
-flutter test tool/export_brand_test.dart \
-  --dart-define=BRAND_OUT=../../brand \
-  --dart-define=SPECIMEN_OUT=../../.screenshots/brand
+# Verify mark, wordmark, and landing page invariants:
+cargo test --manifest-path verily_kit/Cargo.toml -p verily_ink -p verily_site
 ```
 
-The reel is a pure function of time (`PromoReel(time:)`), drawn with Skribble
-widgets and the brand widgets, and rendered frame by frame on the Flutter test
-clock with the real Skribble typefaces. Its script lives in `PromoTimeline`,
-which the render tool also reads to score the sound bed: soft plucked notes in
-C major pentatonic at 100 BPM (each squat is one beat and plays the next note
-up) over a quiet root on each bar, a soft pencil texture while text writes,
-coin clinks, and a short, warm thunk (200 Hz falling to 120 Hz) on the exact
-frame the stamp lands. The bed is high-passed at 70 Hz and normalised to −16
-LUFS with a −1.5 dBTP ceiling.
-
-`.screenshots/` is gitignored. Share the media on the launch, a release, or a
-pull request; never commit it.
+`.screenshots/` is gitignored. Share captures on a release or pull request;
+never commit binary evidence.

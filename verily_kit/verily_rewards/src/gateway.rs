@@ -131,6 +131,30 @@ impl SolanaGateway {
 		};
 		chain::fetch_account(&self.client, AccountInfo(*address, config)).await
 	}
+
+	/// Signs, submits, and confirms a `ReleasePayout` transaction on Solana.
+	pub async fn submit_release(
+		&self,
+		escrow: Address,
+		vault: Address,
+		recipient_wallet: Address,
+		payout_index: u16,
+		signers: &crate::custody::PayoutSigners,
+	) -> crate::decide::ReleaseOutcome {
+		chain::submit_and_confirm_release(
+			&self.client,
+			self.program,
+			self.mint,
+			escrow,
+			vault,
+			recipient_wallet,
+			payout_index,
+			signers,
+			std::time::Duration::from_secs(45),
+			std::time::Duration::from_millis(750),
+		)
+		.await
+	}
 }
 
 /// In-memory accounts for tests. `release` still cannot succeed from here:

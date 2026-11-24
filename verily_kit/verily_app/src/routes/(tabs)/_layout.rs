@@ -13,9 +13,9 @@ use leptoskit::prelude::Text;
 use leptoskit::prelude::View;
 use leptoskit::view;
 use leptoskit_router::navigators::route_matches_root;
-use skribble_leptoskit::HighlightKind;
-use skribble_leptoskit::WiredDivider;
-use skribble_leptoskit::WiredHighlight;
+use leptoskit_skribble::HighlightKind;
+use leptoskit_skribble::WiredDivider;
+use leptoskit_skribble::WiredHighlight;
 
 use crate::l10n::use_l10n;
 use crate::routes::Navigation;

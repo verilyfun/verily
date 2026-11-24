@@ -9,21 +9,28 @@
 //! Shared domain records come from [`verily_shared`]. Capture-only types such
 //! as key storage stay in this crate.
 
+pub mod app_attest;
+pub mod asn1;
 pub mod binding;
 pub mod capture;
 pub mod config;
 pub mod council;
 pub mod evidence;
+pub mod key_attestation;
+pub mod local_check;
 pub mod location;
 pub mod model_input;
 pub mod motion;
 pub mod movement;
 pub mod openrouter;
+pub mod openrouter_http;
 pub mod ops;
 pub mod payout;
+pub mod play_integrity;
 pub mod reasons;
 pub mod review;
 pub mod spoken;
+pub mod storage;
 
 pub use ops::Verification;
 

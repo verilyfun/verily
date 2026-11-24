@@ -5,6 +5,8 @@
 
 use leptoskit_db::Id;
 use leptoskit_db::Timestamp;
+use leptoskit_db::geo::Geography;
+use leptoskit_db::geo::Point;
 use leptoskit_db::table;
 use verily_rewards::schema::ActionRow;
 
@@ -23,6 +25,10 @@ pub struct ActionPlace {
 	pub latitude: Option<f64>,
 	#[db(private)]
 	pub longitude: Option<f64>,
+	/// `PostGIS` geography point (SRID 4326) with `GiST` spatial index on Postgres
+	/// and exact spatial parity on `SQLite`. Never leaves the server.
+	#[db(geo(index), private)]
+	pub location: Option<Geography<Point>>,
 	#[db(created_at)]
 	pub created_at: Timestamp,
 	#[db(updated_at)]

@@ -5,11 +5,11 @@
 //! label, and they recolour themselves on night paper.
 
 use leptoskit::prelude::*;
-use skribble_leptoskit::FillStyle;
-use skribble_leptoskit::RoughPen;
-use skribble_leptoskit::Shape;
-use skribble_leptoskit::Sketch;
-use skribble_leptoskit::Tone;
+use leptoskit_skribble::FillStyle;
+use leptoskit_skribble::RoughPen;
+use leptoskit_skribble::Shape;
+use leptoskit_skribble::Sketch;
+use leptoskit_skribble::Tone;
 
 use crate::brand;
 
@@ -506,14 +506,14 @@ pub fn bubble(width: f32, height: f32, seed: i64) -> Element {
 /// "Prove it." circled by hand in vermilion.
 pub fn prove_it() -> Element {
 	view! {
-		<skribble_leptoskit::WiredHighlight
-			kind=skribble_leptoskit::HighlightKind::Circle
+		<leptoskit_skribble::WiredHighlight
+			kind=leptoskit_skribble::HighlightKind::Circle
 			seed=7
 			color=brand::STAMP
 			theme=brand::INK
 		>
 			<Text class="px-2">"Prove it."</Text>
-		</skribble_leptoskit::WiredHighlight>
+		</leptoskit_skribble::WiredHighlight>
 	}
 }
 
@@ -543,8 +543,8 @@ pub fn rising(element: Element, seed: i64) -> Element {
 /// A step's number, circled by hand.
 pub fn step_number(number: usize, seed: i64) -> Element {
 	view! {
-		<skribble_leptoskit::WiredCircle seed=seed theme=brand::INK class="size-14">
+		<leptoskit_skribble::WiredCircle seed=seed theme=brand::INK class="size-14">
 			<Text class="text-xl font-bold">{number.to_string()}</Text>
-		</skribble_leptoskit::WiredCircle>
+		</leptoskit_skribble::WiredCircle>
 	}
 }

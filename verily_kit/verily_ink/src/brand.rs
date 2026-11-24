@@ -4,28 +4,36 @@
 //! These are the only raw colours outside the site's stylesheet tokens. Every
 //! tone carries its night twin, so ink recolours itself on night paper.
 
-use leptoskit::native::Color;
-use skribble_leptoskit::Palette;
-use skribble_leptoskit::Theme;
-use skribble_leptoskit::Tone;
+use leptoskit_skribble::Palette;
+use leptoskit_skribble::Theme;
+use leptoskit_skribble::Tone;
+use leptoskit_skribble::skribble_core::colorway::Rgba;
 
-const fn hex(rgb: u32) -> Color {
-	Color::rgba((rgb >> 16) as u8, (rgb >> 8) as u8, rgb as u8, 0xff)
+const fn hex(rgb: u32) -> Rgba {
+	Rgba::new((rgb >> 16) as u8, (rgb >> 8) as u8, rgb as u8, 0xff)
 }
+
+const LIGHT_WASHES: [Rgba; 3] = [hex(0xDD_EA_D9), hex(0xF6_E8_AF), hex(0xE5_DD_F4)];
+
+const DARK_WASHES: [Rgba; 3] = [hex(0x24_38_2F), hex(0x3B_32_20), hex(0x35_2B_4B)];
 
 /// Plum ink on floral paper, with the night page in dark mode.
 pub const INK: Theme = Theme {
 	light: Palette {
 		ink: hex(0x34_28_3F),
 		paper: hex(0xFF_FA_F0),
+		muted_ink: hex(0x73_66_78),
+		marker: hex(0xF6_E8_AF),
 		accent: hex(0xD1_3F_22),
-		on_accent: hex(0xFF_FA_F0),
+		washes: &LIGHT_WASHES,
 	},
 	dark: Palette {
 		ink: hex(0xFF_FA_F0),
 		paper: hex(0x29_23_31),
+		muted_ink: hex(0xB9_AC_BF),
+		marker: hex(0x3B_32_20),
 		accent: hex(0xF2_85_6A),
-		on_accent: hex(0x29_23_31),
+		washes: &DARK_WASHES,
 	},
 	stroke_width: 2.2,
 	roughness: 1.1,
@@ -37,12 +45,10 @@ pub const INK: Theme = Theme {
 pub const APP: Theme = Theme {
 	light: Palette {
 		accent: hex(0x34_28_3F),
-		on_accent: hex(0xFF_FA_F0),
 		..INK.light
 	},
 	dark: Palette {
 		accent: hex(0xFF_FA_F0),
-		on_accent: hex(0x29_23_31),
 		..INK.dark
 	},
 	stroke_width: 2.6,
@@ -130,21 +136,7 @@ pub const MARK_PEN: f64 = 42.0;
 /// `text-[#34283f] dark:text-[#fffaf0]`.
 #[must_use]
 pub fn tone_class(utility: &str, tone: Tone) -> String {
-	let light = format!("{utility}-[{}]", hex_of(tone.light));
-	if tone.light == tone.dark {
-		light
-	} else {
-		format!("{light} dark:{utility}-[{}]", hex_of(tone.dark))
-	}
-}
-
-fn hex_of(color: Color) -> String {
-	format!(
-		"#{:02x}{:02x}{:02x}",
-		color.red(),
-		color.green(),
-		color.blue()
-	)
+	leptoskit_skribble::ink::tone_class(utility, tone)
 }
 
 #[cfg(test)]

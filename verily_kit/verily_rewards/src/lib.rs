@@ -22,6 +22,7 @@ pub const PREFIX: &str = "/rewards";
 
 pub mod chain;
 pub mod config;
+pub mod custody;
 pub mod decide;
 pub mod gateway;
 pub mod ops;
@@ -31,6 +32,9 @@ pub mod store;
 leptoskit_db::packs!(leptoskit_rpc);
 
 pub use config::{ConfigError, Rewards, RunMode};
+pub use custody::{
+	CustodyError, CustodySigner, KmsTransactionSigner, LocalKeypairSigner, PayoutSigners,
+};
 pub use decide::{
 	FundingMismatch, ReleaseCode, ReleaseOutcome, confirmed_release_signature, inspect_funding,
 	publish_block, review_blocks_release,

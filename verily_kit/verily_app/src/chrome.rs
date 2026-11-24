@@ -12,12 +12,12 @@ use leptoskit::prelude::ScrollView;
 use leptoskit::prelude::Text;
 use leptoskit::prelude::View;
 use leptoskit::view;
-use skribble_leptoskit::ButtonVariant;
-use skribble_leptoskit::FillStyle;
-use skribble_leptoskit::WiredBadge;
-use skribble_leptoskit::WiredButton;
-use skribble_leptoskit::WiredCard;
-use skribble_leptoskit::WiredInput;
+use leptoskit_skribble::ButtonVariant;
+use leptoskit_skribble::FillStyle;
+use leptoskit_skribble::WiredBadge;
+use leptoskit_skribble::WiredButton;
+use leptoskit_skribble::WiredCard;
+use leptoskit_skribble::WiredInput;
 use verily_ink::sketches;
 
 use crate::theme;

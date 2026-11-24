@@ -1,6 +1,0 @@
-enum: EvidenceDecisionStatus
-serialized: byName
-values:
-  - accepted
-  - rejected
-  - manualReview

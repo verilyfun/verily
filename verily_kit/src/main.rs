@@ -13,8 +13,13 @@ use leptoskit::server::tokio;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let (config, _) = leptoskit::config::LeptoskitConfig::load()?;
 	let secrets = verily_backend::load_host_secrets()?;
-	let db = leptoskit::db::Db::connect(secrets.database_url()?).await?;
-	db.migrate(verily_backend::POSTGRES_MIGRATIONS).await?;
+	let database_url = secrets.database_url()?;
+	let db = leptoskit::db::Db::connect(database_url).await?;
+	if database_url.starts_with("sqlite:") {
+		db.migrate(verily_backend::MIGRATIONS).await?;
+	} else {
+		db.migrate(verily_backend::POSTGRES_MIGRATIONS).await?;
+	}
 	let auth = verily_backend::build_auth(&db, &secrets, Some(&config))?;
 	// Use LeptosKit's development mailbox and its debug-only route. The
 	// backend's in-memory test mailer alone has no page to read codes from.
@@ -25,6 +30,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 		..verily_backend::Options::new(&db)
 	};
 	let host = verily_backend::start(&db, auth, Some(&config), options)?;
+	let _jobs = verily_backend::jobs::start_worker(db.clone(), host.backend.clone());
 	// A debug build puts a few live actions in the Do catalogue, once.
 	#[cfg(debug_assertions)]
 	verily_backend::seed_development(&db, &host.rewards.0).await?;
@@ -44,8 +50,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 		.router
 		.fallback_service(leptoskit::server::static_files(&site_root))
 		.merge(readiness.routes());
-	let address: std::net::SocketAddr =
-		format!("{}:{}", config.serve.address, config.serve.port).parse()?;
+	let bind_host = std::env::var("VERILY_BIND_ADDRESS")
+		.ok()
+		.filter(|v| !v.trim().is_empty())
+		.unwrap_or_else(|| config.serve.address.clone());
+	let bind_port: u16 = std::env::var("VERILY_PORT")
+		.ok()
+		.and_then(|v| v.parse().ok())
+		.unwrap_or(config.serve.port);
+	let address: std::net::SocketAddr = format!("{bind_host}:{bind_port}").parse()?;
 	let listener = tokio::net::TcpListener::bind(address).await?;
 
 	println!("listening on http://{address}");

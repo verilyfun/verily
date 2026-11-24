@@ -193,6 +193,10 @@ async fn create(db: &Db, rewards: &Rewards, seed: &SeedAction) -> Result<(), See
 		radius_meters: seed.radius_meters,
 		latitude: Some(seed.point.0),
 		longitude: Some(seed.point.1),
+		location: Some(leptoskit_db::geo::Geography(leptoskit_db::geo::Point::new(
+			seed.point.1,
+			seed.point.0,
+		))),
 	}
 	.insert(&tx)
 	.await?;

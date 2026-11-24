@@ -67,6 +67,7 @@ pub async fn grant_reviewer(
 /// gets an empty queue: there is nothing here they may decide.
 pub async fn list_review_queue(cx: &rpc::QueryCx) -> rpc::Result<Vec<ReviewRow>> {
 	let reviewer = me(cx.context())?;
+	let backend = backend(cx.context())?;
 	if !is_reviewer(cx.db(), reviewer).await? {
 		return Ok(Vec::new());
 	}
@@ -79,6 +80,7 @@ pub async fn list_review_queue(cx: &rpc::QueryCx) -> rpc::Result<Vec<ReviewRow>>
 		.await
 		.map_err(db)?;
 	let mut queue = Vec::new();
+	let now = chrono::Utc::now();
 	for attempt in attempts {
 		let Some(action) = ActionRow::query()
 			.filter(|row| row.id.eq(attempt.action_id))
@@ -107,12 +109,21 @@ pub async fn list_review_queue(cx: &rpc::QueryCx) -> rpc::Result<Vec<ReviewRow>>
 			else {
 				continue;
 			};
+			let media_review_url = match (&evidence.storage_path, &evidence.storage_version_id) {
+				(Some(path), Some(version)) => backend
+					.evidence_store
+					.presign_get_version(path, version, now, 10 * 60)
+					.ok()
+					.map(|presigned| presigned.url),
+				_ => None,
+			};
 			queue.push(ReviewRow {
 				id: evidence.id.to_string(),
 				creator: action.creator_display_name.clone(),
 				requirement: requirement.title.clone(),
 				kind: proof_kind(requirement.kind),
 				needs_person: true,
+				media_review_url,
 			});
 		}
 	}
@@ -240,7 +251,10 @@ pub async fn submit_appeal(
 	})
 }
 
-async fn is_reviewer(connection: &impl Read, account: Id<AuthAccount>) -> Result<bool, rpc::Error> {
+pub(crate) async fn is_reviewer(
+	connection: &impl Read,
+	account: Id<AuthAccount>,
+) -> Result<bool, rpc::Error> {
 	Reviewer::query()
 		.filter(|row| row.account_id.eq(account))
 		.exists(connection)

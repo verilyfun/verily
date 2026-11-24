@@ -170,6 +170,11 @@ pub enum ReleaseCode {
 /// refuses a `local-dev-` prefix and an unconfirmed signature.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ReleaseOutcome {
+	/// ReleasePayout transaction confirmed on chain with this signature.
+	Released {
+		/// Base58 confirmed transaction signature.
+		signature: String,
+	},
 	/// Finalized chain state already has this index set.
 	AlreadyReleased,
 	/// The payout was not released.

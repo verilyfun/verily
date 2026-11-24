@@ -1,3 +1,0 @@
-class: EvidenceUploadCleanupTask
-fields:
-  batchSize: int

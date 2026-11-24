@@ -25,12 +25,6 @@ inputs:
     inputs:
       nixpkgs:
         follows: nixpkgs
-  ifiokjr-nixpkgs-serverpod:
-    # Keep code generation aligned with the Serverpod packages in this workspace.
-    url: github:ifiokjr/nixpkgs/6916068e520396144ebab9b83fb4ab81ddc3f879
-    inputs:
-      nixpkgs:
-        follows: nixpkgs
   nixpkgs:
     url: github:NixOS/nixpkgs/nixpkgs-unstable
   rust-overlay:

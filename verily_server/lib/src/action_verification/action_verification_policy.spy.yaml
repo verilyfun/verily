@@ -1,5 +1,0 @@
-enum: ActionVerificationPolicy
-serialized: byName
-values:
-  - singleModel
-  - modelCouncil

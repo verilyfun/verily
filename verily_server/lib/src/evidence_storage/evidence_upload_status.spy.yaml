@@ -1,6 +1,0 @@
-enum: EvidenceUploadStatus
-serialized: byName
-values:
-  - reserved
-  - confirming
-  - confirmed

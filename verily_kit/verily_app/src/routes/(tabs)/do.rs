@@ -13,8 +13,8 @@ use leptoskit::prelude::Text;
 use leptoskit::prelude::View;
 use leptoskit::rpc::client::use_rpc_query;
 use leptoskit::view;
-use skribble_leptoskit::FillStyle;
-use skribble_leptoskit::WiredBadge;
+use leptoskit_skribble::FillStyle;
+use leptoskit_skribble::WiredBadge;
 use verily_ink::sketches;
 
 use crate::chrome;
@@ -33,16 +33,59 @@ use crate::theme::Role;
 pub fn Page(navigation: &Navigation) -> Element {
 	let l10n = use_l10n();
 	let filter = remember("do.filter", ActionFilter::all);
+	let latitude = remember("do.latitude", || None::<f64>);
+	let longitude = remember("do.longitude", || None::<f64>);
+	let location_notice = remember("do.location_notice", String::new);
 	let actions = use_rpc_query(move || ListAvailableActions {
 		filter: filter.get(),
-		latitude: None,
-		longitude: None,
+		latitude: latitude.get(),
+		longitude: longitude.get(),
 	});
 	let navigation = navigation.clone();
 	view! {
 		<chrome::Page>
 			<chrome::Heading text=l10n.do_title() body=l10n.do_subtitle() />
 			<Filters filter=filter />
+			{Show(
+				move || filter.get() == ActionFilter::Nearby,
+				move || {
+					view! {
+						<View class=theme::ROW>
+							<chrome::Quiet
+								label=l10n.editor_use_my_location()
+								seed=121
+								on_press=move || {
+									#[cfg(all(feature = "native", target_arch = "wasm32"))]
+									{
+										leptoskit::guest::spawn(async move {
+											match crate::host::current_location().await {
+												Some((lat, lon)) => {
+													latitude.set(Some(lat));
+													longitude.set(Some(lon));
+													location_notice.set(String::new());
+												}
+												None => {
+													location_notice
+														.set(l10n.action_location_timed_out().to_owned());
+												}
+											}
+										});
+									}
+									#[cfg(not(all(feature = "native", target_arch = "wasm32")))]
+									{
+										let _ = (latitude, longitude);
+										location_notice.set(l10n.editor_location_off().to_owned());
+									}
+								}
+							/>
+						</View>
+					}
+				},
+			)}
+			{Show(
+				move || !location_notice.get().is_empty(),
+				move || view! { <chrome::Muted text=location_notice.get() /> },
+			)}
 			{Show(
 				move || actions.is_loading(),
 				move || view! { <chrome::Loading text=l10n.do_loading() /> },

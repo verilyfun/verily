@@ -87,6 +87,8 @@ fn the_wallet_challenge_is_the_text_to_sign() {
 #[test]
 fn routes_round_trip() {
 	let routes = [
+		verily_app::Route::Index,
+		verily_app::Route::SignIn,
 		verily_app::Route::Do,
 		verily_app::Route::Action(verily_app::Action {
 			action: "plant-a-tree".into(),
@@ -102,8 +104,16 @@ fn routes_round_trip() {
 		}),
 		verily_app::Route::Me,
 		verily_app::Route::Reviews,
+		verily_app::Route::Appeals,
+		verily_app::Route::Apps,
+		verily_app::Route::AppDetail(verily_app::AppDetail {
+			app: "run-club".into(),
+		}),
+		verily_app::Route::VerifyRequest(verily_app::VerifyRequest {
+			request: "req-1".into(),
+		}),
+		verily_app::Route::LinkApp,
 		verily_app::Route::Settings,
-		verily_app::Route::Index,
 	];
 	for route in routes {
 		let parsed = verily_app::Route::parse(route.href().as_str()).expect("href parses");
@@ -117,6 +127,8 @@ fn every_screen_builds() {
 	let owner = leptoskit::leptos::prelude::Owner::new();
 	owner.with(|| {
 		let routes = [
+			verily_app::Route::Index,
+			verily_app::Route::SignIn,
 			verily_app::Route::Do,
 			verily_app::Route::Action(verily_app::Action {
 				action: "plant-a-tree".into(),
@@ -132,8 +144,16 @@ fn every_screen_builds() {
 			}),
 			verily_app::Route::Me,
 			verily_app::Route::Reviews,
+			verily_app::Route::Appeals,
+			verily_app::Route::Apps,
+			verily_app::Route::AppDetail(verily_app::AppDetail {
+				app: "run-club".into(),
+			}),
+			verily_app::Route::VerifyRequest(verily_app::VerifyRequest {
+				request: "req-1".into(),
+			}),
+			verily_app::Route::LinkApp,
 			verily_app::Route::Settings,
-			verily_app::Route::Index,
 		];
 		for route in routes {
 			let navigation = verily_app::Navigation::new(route);

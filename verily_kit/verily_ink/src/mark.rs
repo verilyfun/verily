@@ -10,7 +10,7 @@ use leptoskit::native::ViewBox;
 use leptoskit::prelude::Vector;
 use leptoskit::prelude::View;
 use leptoskit::view;
-use skribble_leptoskit::Tone;
+use leptoskit_skribble::Tone;
 
 use crate::brand::MARK_CHECK;
 use crate::brand::MARK_FLICK;
@@ -46,6 +46,32 @@ pub fn mark(size: f32, label: Option<&str>) -> Element {
 	match label {
 		Some(label) => frame.aria_label(label.to_owned()),
 		None => frame.aria_hidden(true),
+	}
+}
+
+/// The lowercase "verily" wordmark, drawn in ink on the current surface.
+#[must_use]
+pub fn wordmark(size: f32) -> Element {
+	let class = format!(
+		"font-bold tracking-tight text-[{size}px] {}",
+		tone_class("text", crate::brand::INK_TONE)
+	);
+	leptoskit::prelude::Text("verily").class(class)
+}
+
+/// The pin-check mark beside the "verily" wordmark.
+#[must_use]
+pub fn lockup(mark_size: f32, label: Option<&str>) -> Element {
+	let word_size = (mark_size * 0.72).max(16.0);
+	let row = view! {
+		<View class="flex-row items-center gap-2">
+			{mark(mark_size, None)}
+			{wordmark(word_size)}
+		</View>
+	};
+	match label {
+		Some(label) => row.aria_label(label.to_owned()),
+		None => row,
 	}
 }
 

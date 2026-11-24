@@ -58,6 +58,8 @@ pub struct ActionDetail {
 	/// The action pays a reward. Without one there is nothing to fund.
 	pub rewarded: bool,
 	pub funded: bool,
+	#[serde(default)]
+	pub paused: bool,
 }
 
 /// One proof the action asks for.
@@ -193,6 +195,9 @@ pub struct ReviewRow {
 	pub kind: ProofKind,
 	/// Server-owned reason key, shown with a translated sentence.
 	pub needs_person: bool,
+	/// Short-lived version-pinned URL minted by the server for reviewers only.
+	#[serde(default)]
+	pub media_review_url: Option<String>,
 }
 
 /// A creator's draft or live action.
@@ -204,10 +209,12 @@ pub struct DraftRow {
 	pub rewarded: bool,
 	pub funded: bool,
 	pub live: bool,
+	#[serde(default)]
+	pub paused: bool,
 }
 
-/// What the editor saves. Coordinates stay off this record.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+/// What the editor saves. Public views never expose exact coordinates.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct DraftInput {
 	pub id: Option<String>,
 	pub title: String,
@@ -216,6 +223,10 @@ pub struct DraftInput {
 	pub radius_meters: i64,
 	pub reward_amount: String,
 	pub proofs: Vec<ProofKind>,
+	#[serde(default)]
+	pub latitude: Option<f64>,
+	#[serde(default)]
+	pub longitude: Option<f64>,
 }
 
 impl DraftInput {
@@ -230,6 +241,8 @@ impl DraftInput {
 			radius_meters: 100,
 			reward_amount: String::new(),
 			proofs: vec![ProofKind::Photo],
+			latitude: None,
+			longitude: None,
 		}
 	}
 
@@ -318,6 +331,184 @@ pub struct ReviewDecision {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct AppealReceipt {
 	pub id: String,
+}
+
+/// One built-in starter template in the creator catalogue.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct ActionTemplateItem {
+	pub id: String,
+	pub title: String,
+	pub summary: String,
+	pub category: String,
+	pub place_name: String,
+	pub radius_meters: i64,
+	pub proofs: Vec<ProofKind>,
+}
+
+/// Structured draft returned from AI authoring (never carries rewards).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct ActionDraftSuggestion {
+	pub draft: DraftInput,
+	pub safety_notes: Vec<String>,
+	pub assumptions: Vec<String>,
+}
+
+/// A short-lived QR venue challenge issued to the action's creator.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct QrChallengeView {
+	pub code: String,
+	pub expires_at_unix: i64,
+}
+
+/// Presigned private upload target returned by `request_media_upload`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct MediaUploadPlan {
+	pub reservation_id: String,
+	pub object_key: String,
+	pub upload_url: String,
+	pub headers: Vec<(String, String)>,
+	pub expires_at_unix: i64,
+}
+
+/// Immutable storage seal returned by `confirm_media_upload`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct MediaUploadConfirmed {
+	pub reservation_id: String,
+	pub version_id: String,
+	pub sha256_hex: String,
+	pub byte_length: u64,
+}
+
+/// One-time App Attest registration challenge for an iPhone.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct AppAttestChallengeView {
+	pub challenge_id: String,
+	pub nonce: String,
+}
+
+/// Confirmation that an Apple App Attest key was verified and stored.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct AppAttestKeyRegistered {
+	pub key_id: String,
+	pub registered: bool,
+}
+
+/// Apple DeviceCheck durable two-bit state (operator / moderation only).
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct DeviceCheckBitsView {
+	pub banned: bool,
+	pub review_required: bool,
+}
+
+/// Creator reward pool summary.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct RewardPoolStatusView {
+	pub pool_id: String,
+	pub status: String,
+	pub amount_label: String,
+	pub max_payouts: i64,
+	pub payouts_released: i64,
+	pub escrow_address: Option<String>,
+	pub funding_signature: Option<String>,
+	pub funded: bool,
+}
+
+/// Chain funding parameters returned for wallet signing.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct FundingPlanView {
+	pub pool_id: String,
+	pub escrow_address: String,
+	pub vault_address: String,
+	pub mint: String,
+	pub arbiter: String,
+	pub amount_per_payout: i64,
+	pub max_payouts: i64,
+	pub expires_at_unix: i64,
+	pub refund_delay_seconds: i64,
+	#[serde(default)]
+	pub unsigned_transaction: String,
+}
+
+/// An appeal visible to its participant or the reviewer queue.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct AppealItem {
+	pub id: String,
+	pub attempt_id: String,
+	pub action_title: String,
+	pub reason: String,
+	pub status: AppealStatus,
+	pub resolution_note: Option<String>,
+}
+
+/// Content report or moderation case row.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct ModerationCaseRow {
+	pub id: String,
+	pub target_kind: String,
+	pub target_id: String,
+	pub reason: String,
+	pub status: String,
+	pub notes: Option<String>,
+}
+
+/// Partner integration app owned by a creator.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct VerilyAppRow {
+	pub id: String,
+	pub name: String,
+	pub slug: String,
+	pub webhook_url: Option<String>,
+	pub active: bool,
+	pub key_prefix: String,
+	pub redirect_uris: Vec<String>,
+}
+
+/// Created partner app with one-time API key and webhook HMAC secret.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct VerilyAppCreated {
+	pub app: VerilyAppRow,
+	pub api_key_once: String,
+	pub webhook_secret_once: String,
+}
+
+/// Newly rotated partner API key (shown once).
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct VerilyAppKeyRotated {
+	pub key_id: String,
+	pub api_key_once: String,
+	pub key_prefix: String,
+}
+
+/// Webhook delivery audit row for a partner app.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct VerilyAppDeliveryRow {
+	pub id: String,
+	pub event_type: String,
+	pub status: String,
+	pub attempts: i64,
+	pub last_status_code: Option<i64>,
+}
+
+/// Partner-initiated verification request shown at `/r/:request`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct VerificationRequestView {
+	pub id: String,
+	pub app_name: String,
+	pub action_id: String,
+	pub action_title: String,
+	pub status: String,
+	pub expires_at_unix: i64,
+	pub callback_url: Option<String>,
+	pub receipt_jws: Option<String>,
+}
+
+/// Deep-link account linking authorization code issued at `/link`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct AppLinkExchangeView {
+	pub app_name: String,
+	pub redirect_uri: String,
+	pub code: String,
+	pub state: Option<String>,
 }
 
 #[cfg(test)]

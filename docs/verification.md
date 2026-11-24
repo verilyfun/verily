@@ -6,7 +6,7 @@ together. Evidence bytes are covered in [evidence storage](evidence-storage.md),
 model verification in [OpenRouter verification](openrouter-verification.md) and
 the [cloud verifier contract](video-verifier-contract.md), escrowed rewards in
 [reward escrow](reward-escrow.md), third-party Apps in [platform](platform.md),
-and the RPC surface in [Serverpod API](serverpod-api.md).
+and the RPC surface in [`verily_app::ops`](../verily_kit/verily_app/src/ops.rs).
 
 ## Actions are creator-owned
 
@@ -165,7 +165,7 @@ sequenceDiagram
    the camera warms up. Keys from closed windows, and the single long-lived
    key earlier builds used, are deleted.
 3. **Bind.** After capture the app computes the evidence binding hash
-   (`verily-evidence-binding-v1`, from `packages/verily_evidence`), which
+   (`verily-evidence-binding-v1`, from `verily_kit/verily_shared`), which
    covers kind, capture time, SHA-256, byte length, duration (zero for
    photos), and content type, so nothing vouching for one file can vouch for
    another. The Play Integrity request hash (`verily-capture-request-v2`)
@@ -482,7 +482,7 @@ model provenance. Participants only ever see the product copy.
 secret), `openrouter`, or `cloud`. Partial configuration stops startup.
 
 These internal codes are for audit and review. The app only ever sees the
-public codes in [Serverpod API](serverpod-api.md#reason-codes-the-app-sees):
+public codes in [`verily_verification::reasons`](../verily_kit/verily_verification/src/reasons.rs):
 views map every internal code, including any reason an App sent, onto that
 set.
 
@@ -499,7 +499,7 @@ server with exactly the same model.
 | `sound`   | audio          | YAMNet, float32 v1 (4.1 MB)             | A reviewed subset of AudioSet sounds    |
 
 - **Rule.** `localCheck: {task, label, minScore, minFrames}` on the media rule:
-  a label from the allow-list (`LocalCheckModel` in `packages/verily_evidence`,
+  a label from the allow-list (`LocalCheckSpec` in `verily_shared` / `verily_verification`,
   shared by the server's validation and the app's editor), a minimum
   score of 0.3 to 0.99, and 1 to 30 matching frames or audio windows (one for a
   photo). Without a creator prompt the server writes the verification text
@@ -641,12 +641,8 @@ after commit, or by the one-minute recovery sweep.
 
 ## Schema contracts
 
-The baseline migration (`verily_server/migrations/20261021215105708-verily-baseline`)
-is Serverpod's generated schema plus `tool/schema_contracts.sql`, composed by
-`tool/compose_schema_baseline.dart`. The supplement adds only CHECK
-constraints, functions, and triggers (no indexes, foreign keys, or columns), so
-Serverpod's development-mode schema check still passes. It enforces bounds on
-every value-bearing table, append-only receipts and audits, the no-mixing and
-creator-binding rules for Apps, frozen reward terms, and payout invariants.
-`dart run tool/verify_schema_contracts.dart` checks a live database read-only
-(42 constraints, 9 triggers).
+The database schema lives in `verily_kit/verily_backend/src/schema/` with
+matching SQLite (`migrations/`) and PostgreSQL/PostGIS (`migrations-postgres/`)
+migrations plus row-level security (`#[db(policy(...))]`) policies enforcing
+owner-only drafts/attempts, reviewer-only queues without self-review,
+append-only audits, frozen reward terms, and payout invariants.

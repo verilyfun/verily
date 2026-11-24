@@ -51,6 +51,51 @@ impl Verification<AttestationUnavailable> {
 			android: AttestationUnavailable,
 		})
 	}
+
+	/// Build the verification service from Monosecret-resolved environment values.
+	///
+	/// Defaults to `manual-review` with optional device signatures when unset.
+	/// In production (`is_production = true`), OpenRouter mode fails closed
+	/// unless `VERILY_OPENROUTER_PROMPT_INJECTION_GUARD=block`,
+	/// `VERILY_OPENROUTER_PROMPT_INJECTION_GUARD_CONFIRMED=true`, and
+	/// `VERILY_OPENROUTER_REQUIRE_ZDR=true` are all confirmed.
+	pub fn from_env(
+		environment: &std::collections::HashMap<String, String>,
+		is_production: bool,
+	) -> Result<Self, crate::config::ConfigError> {
+		let token = environment
+			.get("VERILY_MEDIA_VERIFIER_TOKEN")
+			.map(String::as_str);
+		let openrouter_key = environment
+			.get("VERILY_OPENROUTER_API_KEY")
+			.map(String::as_str);
+		let config = VerifierConfig::from_resolved(environment, token, openrouter_key)?;
+		crate::openrouter_http::check_production_ai_deployment(&config, environment, is_production)
+			.map_err(|_| {
+				crate::config::ConfigError::Invalid(
+					"production AI verifier requires confirmed blocking prompt-injection guard and ZDR",
+				)
+			})?;
+		let signature_mode = match environment
+			.get("VERILY_CAPTURE_SIGNATURE_MODE")
+			.map(|v| v.trim().to_ascii_lowercase())
+			.filter(|v| !v.is_empty())
+			.as_deref()
+		{
+			None | Some("optional") => SignatureMode::Optional,
+			Some("required") => SignatureMode::Required,
+			Some(_) => {
+				return Err(crate::config::ConfigError::Invalid(
+					"VERILY_CAPTURE_SIGNATURE_MODE must be optional or required",
+				));
+			}
+		};
+		Ok(Self {
+			config,
+			signature_mode,
+			android: AttestationUnavailable,
+		})
+	}
 }
 
 impl<A: AndroidAttestation> Verification<A> {
@@ -60,6 +105,11 @@ impl<A: AndroidAttestation> Verification<A> {
 			signature_mode,
 			android,
 		}
+	}
+
+	/// Active server-owned verifier configuration.
+	pub fn config(&self) -> &VerifierConfig {
+		&self.config
 	}
 
 	/// Whether a capture must carry a device signature.
@@ -259,5 +309,42 @@ mod tests {
 				if assessment.decision.reason_code == "media_security_review_required"
 					&& assessment.votes.is_empty()
 		));
+	}
+
+	#[test]
+	fn from_env_fails_closed_for_unconfirmed_production_openrouter_and_parses_signature_mode() {
+		let empty = std::collections::HashMap::new();
+		let prod_default = Verification::from_env(&empty, true).unwrap();
+		assert_eq!(prod_default.config().mode, VerifierMode::ManualReview);
+		assert_eq!(prod_default.signature_mode(), SignatureMode::Optional);
+
+		let mut env = std::collections::HashMap::new();
+		env.insert("VERILY_MEDIA_VERIFIER_MODE".into(), "openrouter".into());
+		env.insert("VERILY_OPENROUTER_API_KEY".into(), "sk-or-test".into());
+		env.insert(
+			"VERILY_OPENROUTER_PROMPT_INJECTION_GUARD".into(),
+			"block".into(),
+		);
+		env.insert("VERILY_OPENROUTER_REQUIRE_ZDR".into(), "true".into());
+		env.insert("VERILY_CAPTURE_SIGNATURE_MODE".into(), "required".into());
+
+		// Dev succeeds without GUARD_CONFIRMED; production fails closed.
+		let dev_or = Verification::from_env(&env, false).unwrap();
+		assert_eq!(dev_or.config().mode, VerifierMode::OpenRouter);
+		assert_eq!(dev_or.signature_mode(), SignatureMode::Required);
+		assert!(Verification::from_env(&env, true).is_err());
+
+		// Confirming the blocking guardrail allows production startup.
+		env.insert(
+			"VERILY_OPENROUTER_PROMPT_INJECTION_GUARD_CONFIRMED".into(),
+			"true".into(),
+		);
+		let prod_or = Verification::from_env(&env, true).unwrap();
+		assert_eq!(prod_or.config().mode, VerifierMode::OpenRouter);
+		assert_eq!(prod_or.signature_mode(), SignatureMode::Required);
+
+		// Invalid signature mode fails closed.
+		env.insert("VERILY_CAPTURE_SIGNATURE_MODE".into(), "maybe".into());
+		assert!(Verification::from_env(&env, true).is_err());
 	}
 }

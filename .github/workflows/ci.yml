@@ -1,0 +1,90 @@
+name: ci
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  kit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Install system runtime tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends ffmpeg pkg-config libssl-dev
+
+      - name: Check formatting
+        working-directory: verily_kit
+        run: cargo fmt --all -- --check
+
+      - name: Check verily-kit server binary
+        working-directory: verily_kit
+        run: cargo check --bin verily-kit --locked
+
+      - name: Clippy verily_kit crates and platform features
+        working-directory: verily_kit
+        run: |
+          cargo clippy \
+            -p verily_kit \
+            -p verily_shared \
+            -p verily_api \
+            -p verily_ink \
+            -p verily_site \
+            -p verily_attest \
+            -p verily_capture \
+            -p verily_verification \
+            -p verily_rewards \
+            -p verily_backend \
+            -p verily_app \
+            --all-targets --locked -- -D warnings
+          cargo clippy -p verily_app --features csr --locked -- -D warnings
+          cargo clippy -p verily_app --features native --locked -- -D warnings
+          cargo clippy -p verily_app --features android --locked -- -D warnings
+          cargo clippy -p verily_app --features ios --locked -- -D warnings
+
+      - name: Run verily_kit workspace tests
+        working-directory: verily_kit
+        run: |
+          cargo test \
+            -p verily_shared \
+            -p verily_api \
+            -p verily_ink \
+            -p verily_site \
+            -p verily_attest \
+            -p verily_capture \
+            -p verily_verification \
+            -p verily_rewards \
+            -p verily_backend \
+            -p verily_app \
+            --locked
+
+  escrow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Check escrow formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy escrow program
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Test escrow program
+        run: cargo test -p verily_escrow --locked

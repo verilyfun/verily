@@ -1,3 +1,0 @@
-class: AppEventDeliveryTask
-fields:
-  eventId: UuidValue

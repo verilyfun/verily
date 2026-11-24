@@ -117,34 +117,13 @@
         "type": "github"
       }
     },
-    "ifiokjr-nixpkgs-serverpod": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1794148925,
-        "narHash": "sha256-GHN/RyGMKxmqLwM5z0v4uaazvCK4Yxleg4VhKqnWHXI=",
-        "owner": "ifiokjr",
-        "repo": "nixpkgs",
-        "rev": "6916068e520396144ebab9b83fb4ab81ddc3f879",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ifiokjr",
-        "repo": "nixpkgs",
-        "rev": "6916068e520396144ebab9b83fb4ab81ddc3f879",
-        "type": "github"
-      }
-    },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1793977579,
-        "narHash": "sha256-WrSODdZFVIs/Hh2NzC0bY+ROByi0bATg8WfePX8dPj8=",
+        "lastModified": 1795371335,
+        "narHash": "sha256-oa2P5WZer1A4wuhatl92JyHHEjrrOdIyuvTuI5LUi9Q=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "4fe25e12eb9f4c744966dd3de5a05246cf098601",
+        "rev": "619c39f6eac5d1ed6b8f073a9414baf7034b2356",
         "type": "github"
       },
       "original": {
@@ -161,7 +140,6 @@
         "ifiokjr-nixpkgs": "ifiokjr-nixpkgs",
         "ifiokjr-nixpkgs-monochange": "ifiokjr-nixpkgs-monochange",
         "ifiokjr-nixpkgs-pina": "ifiokjr-nixpkgs-pina",
-        "ifiokjr-nixpkgs-serverpod": "ifiokjr-nixpkgs-serverpod",
         "nixpkgs": "nixpkgs",
         "rust-overlay": "rust-overlay"
       }

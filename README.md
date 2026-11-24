@@ -11,44 +11,50 @@ Verily is an actions database where every action happens somewhere real.
   upload button: the camera is the only way in, each attempt gets a fresh
   spoken challenge, and every capture is signed on the device.
 - **Verily verifies the proof** with deterministic rules (place, venue codes,
-  motion traces), device integrity, an AI verifier or council, and people for
-  the hard cases. Every rejection can be appealed once.
+  motion traces), device integrity (Android Key Attestation, Play Integrity,
+  Apple App Attest / DeviceCheck), MediaPipe local-check replay, an OpenRouter
+  AI verifier or council behind `ModelInputSecurity`, and people for the hard
+  cases. Every rejection can be appealed once.
 - **Rewards are escrowed** on Solana before the action goes live, and pay out
   one fixed amount per verified completion.
 
 See [`PRODUCT.md`](PRODUCT.md) for the product, [`DESIGN.md`](DESIGN.md) for
-the design system (built on [Skribble](https://pub.dev/packages/skribble)),
-and [`docs/`](docs) for how verification, evidence storage, escrow, and
-provenance work.
+the design system (built with `leptoskit_skribble` and `verily_ink`), and
+[`docs/`](docs) for how verification, evidence storage, escrow, provenance, and
+the LeptosKit architecture work.
 
 ## Stack
 
-| Piece        | Choice                                                                       |
-| ------------ | ---------------------------------------------------------------------------- |
-| App          | Flutter (Android first), Riverpod, Flutter Hooks, Skribble                   |
-| Server       | Serverpod 4, PostgreSQL 16 + PostGIS                                         |
-| Evidence     | Private Backblaze B2 (S3), version-pinned, short retention                   |
-| Verification | Rules + Play Integrity + device signatures + OpenRouter models               |
-| Rewards      | `verily_escrow`, a [Pina](https://github.com/pina-rs/pina) program on Solana |
-| Toolchain    | devenv (Nix), FVM, Monosecret                                                |
+| Piece        | Choice                                                                                                  |
+| ------------ | ------------------------------------------------------------------------------------------------------- |
+| App & Web    | [LeptosKit](https://github.com/leptoskit/leptoskit) (`verily_kit/verily_app`), `leptoskit_skribble`     |
+| Server       | LeptosKit Axum + RPC + Auth + Jobs (`verily_kit/verily_backend`), PostgreSQL 19 + PostGIS 3.7           |
+| MediaPipe    | [`leptoskit/mediapipe`](https://github.com/leptoskit/mediapipe) (on-device HUD + server replay)         |
+| Evidence     | Private Backblaze B2 (S3v4), version-pinned, short retention                                            |
+| Verification | Rules + Key Attestation / App Attest / Play Integrity + OpenRouter council + manual review              |
+| Rewards      | `verily_escrow` ([Pina](https://github.com/pina-rs/pina)) + [`pina-rs/solana_kit`](https://github.com/pina-rs/solana_kit) + Cloud KMS |
+| Toolchain    | devenv (Nix), Rust, Monosecret, Docker                                                                  |
 
 ## Getting started
-
-```bash
-devenv shell install:all
-```
 
 ```bash
 devenv up -d
 ```
 
 ```bash
+devenv shell dev:kit
+```
+
+Or on a connected Seeker Android device:
+
+```bash
 devenv shell dev:seeker
 ```
 
-Development needs no cloud secrets: evidence is stored locally, video proof
-goes to manual review, and reward escrow uses a fake gateway. Add
-`VERILY_OPENROUTER_API_KEY` to the ignored `.env` to try AI verification.
+Development needs no cloud secrets: evidence is stored locally, media proof
+goes to manual review, and reward escrow stays disabled or simulated until
+configured. Add `VERILY_OPENROUTER_API_KEY` to the ignored `.env` to try AI
+verification.
 
 ## Checks
 
@@ -60,14 +66,11 @@ devenv shell lint:all
 devenv shell test:all
 ```
 
-## Launch media
+## Production container
 
 ```bash
-devenv shell render:promo
+docker build --platform linux/amd64 -f verily_kit/Dockerfile -t verily-kit .
 ```
-
-Renders the promo reel and the launch cover to the gitignored
-`.screenshots/promo/`.
 
 ## Licence
 

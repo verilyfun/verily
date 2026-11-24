@@ -5,9 +5,9 @@
 //! its night twin as a `dark:` class, so the app follows the device's
 //! appearance on every platform. Screens never write a colour of their own.
 
-use skribble_leptoskit::Palette;
-use skribble_leptoskit::Theme;
-use skribble_leptoskit::Tone;
+use leptoskit_skribble::Palette;
+use leptoskit_skribble::Theme;
+use leptoskit_skribble::Tone;
 use verily_ink::tone_class;
 
 /// The app's pen: plum ink on paper, ink as the filled accent, so the one
