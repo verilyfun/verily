@@ -164,7 +164,10 @@ in
       coreutils
       swift-format
       swiftlint
-    ];
+    ]
+    # The kit's Linux host enables LeptosKit's gtk feature, so `lk lint`
+    # builds glib-sys. pkg-config only sees packages in this shell.
+    ++ lib.optionals stdenv.isLinux [ gtk4 ];
 
   dotenv.disableHint = true;
 
